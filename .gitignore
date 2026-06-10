@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Env
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Capture / browser artifacts (kept out of git; live demos are the source of truth)
+upwork-runs/**/proposal/media/*.webm
+upwork-runs/**/.tmp/
+.playwright-cache/
