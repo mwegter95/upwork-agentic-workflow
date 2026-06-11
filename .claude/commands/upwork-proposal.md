@@ -31,6 +31,26 @@ and wait. If it is a file path, the intake agent will read it.
 4. Start `upwork-runs/<slug>/run.log` and append a one-line status after every
    phase: `<ISO time> | <phase> | <ok|fail|retry> | <one-line note>`.
 
+## Resuming an interrupted run
+
+A run can stop partway (credit/token limit, manual stop). To resume with as
+little rework as possible, treat existing artifacts as already done:
+
+- Reuse the same `slug` (derive it the same way from the posting). Do NOT create
+  a new run directory if one already exists for this posting.
+- Before dispatching each phase, check whether its output already exists in
+  `upwork-runs/<slug>/` and is non-empty: intake -> `brief.json`, planner ->
+  `plan.md`, researcher -> `research.md`, demo-builder -> `build-report.md` (and
+  the demo under `../michaelwegter.com/public/demos/<slug>/`), media-capture ->
+  `proposal/media/`, proposal-writer -> the `proposal/` files, evaluator ->
+  `eval-report.md`.
+- If a phase's output already exists, SKIP it, log `skipped (exists)`, and pass
+  the existing path forward. Only re-run a phase if its output is missing or the
+  evaluator's fix list names it.
+- Continue from the first incomplete phase to the end.
+
+This makes a resumed run cost only the work that was not already finished.
+
 ## Pipeline (run phases in order; each is a subagent via the Task tool)
 
 For each phase, dispatch the named subagent with: the run slug, the paths it
