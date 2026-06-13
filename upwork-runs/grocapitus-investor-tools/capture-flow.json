@@ -1,0 +1,44 @@
+[
+  {
+    "action": "wait",
+    "ms": 600
+  },
+  {
+    "action": "shot",
+    "name": "hero"
+  },
+  {
+    "action": "click",
+    "selector": "#rentSlider"
+  },
+  {
+    "action": "fill",
+    "selector": "#rentSlider",
+    "value": "3000"
+  },
+  {
+    "action": "wait",
+    "ms": 400
+  },
+  {
+    "action": "shot",
+    "name": "after-rent-increase"
+  },
+  {
+    "action": "click",
+    "selector": "#monthlyRent"
+  },
+  {
+    "action": "fill",
+    "selector": "#monthlyRent",
+    "value": "2600"
+  },
+  {
+    "action": "wait",
+    "ms": 300
+  },
+  {
+    "action": "shot",
+    "name": "after-manual-input"
+  }
+]

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Michael Wegter, Proposal: ABA Services Website</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mustard: #e8b820;
+    --cyan-vivid: #12b4c8;
+    --hot-pink: #f0186e;
+    --parrot-green: #6ed46a;
+    --bg-root: #121118;
+    --bg-surface: #191720;
+    --bg-card: #1e1c26;
+    --bg-card-hover: #24222e;
+    --border-subtle: #201e2a;
+    --border-default: #2c2a38;
+    --border-active: #3a3848;
+    --text-primary: #f2ede4;
+    --text-secondary: #8a8898;
+    --text-muted: #4a4858;
+    --accent: var(--mustard);
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg-root);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--cyan-vivid); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mustard);
+    margin: 0 0 12px;
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  h1 { font-size: 44px; line-height: 1.1; }
+  h2 { font-size: 28px; line-height: 1.2; margin-bottom: 16px; }
+  h3 { font-size: 18px; line-height: 1.3; margin-bottom: 8px; }
+  p { margin: 0 0 12px; color: var(--text-primary); }
+  .muted { color: var(--text-secondary); }
+
+  header.site {
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 24px 0;
+    background: var(--bg-surface);
+  }
+  header.site .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.01em;
+    color: var(--text-primary);
+  }
+  .brand-mark {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: var(--mustard);
+    border-radius: 2px;
+    margin-right: 10px;
+    transform: translateY(-1px);
+  }
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-secondary);
+  }
+
+  section { padding: 72px 0; border-bottom: 1px solid var(--border-subtle); }
+  section.hero { padding-top: 88px; padding-bottom: 56px; }
+  .hero h1 { max-width: 820px; }
+  .hero p.lede { font-size: 18px; max-width: 720px; color: var(--text-secondary); margin-top: 16px; }
+
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; align-items: center; }
+  .btn {
+    display: inline-block;
+    padding: 14px 22px;
+    border-radius: 8px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    border: 1px solid transparent;
+    transition: transform 0.08s ease, background 0.15s ease;
+  }
+  .btn-primary {
+    background: var(--mustard);
+    color: #1a1822;
+  }
+  .btn-primary:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border-default);
+    color: var(--text-primary);
+  }
+  .btn-ghost:hover { border-color: var(--border-active); text-decoration: none; }
+  .link-fallback {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .hero-shot {
+    margin-top: 40px;
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+  }
+  .hero-shot img { display: block; width: 100%; height: auto; }
+
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .strip .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .strip .card h3 { color: var(--text-primary); }
+  .strip .card p { color: var(--text-secondary); margin: 6px 0 0; font-size: 14.5px; }
+  .strip .tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mustard);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  ul.tight { padding-left: 20px; margin: 8px 0 0; color: var(--text-secondary); }
+  ul.tight li { margin: 6px 0; }
+  ul.tight li strong { color: var(--text-primary); font-weight: 600; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 40px;
+  }
+  .req-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 14.5px;
+  }
+  .req-table th, .req-table td {
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 10px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .req-table th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mustard);
+    font-weight: 700;
+  }
+  .req-table td.id { font-family: var(--font-mono); color: var(--mustard); font-size: 13px; width: 50px; }
+
+  footer { padding: 40px 0 80px; }
+  footer p { color: var(--text-secondary); font-size: 14.5px; }
+  .sig {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-top: 4px;
+  }
+
+  @media (max-width: 760px) {
+    h1 { font-size: 32px; }
+    h2 { font-size: 22px; }
+    section { padding: 56px 0; }
+    .strip { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; gap: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <div class="brand"><span class="brand-mark"></span>Michael Wegter</div>
+    <div class="nav-link"><a href="https://michaelwegter.com" style="color: var(--text-secondary);">michaelwegter.com</a></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <p class="eyebrow">Proposal, ABA Services Website</p>
+    <h1>A warm, trustworthy clinic site that families can scan in ten seconds and act on.</h1>
+    <p class="lede">I read your posting, then built a working mock of the clinic site you described. It loads in a browser, runs without a backend, and shows exactly the kind of structure I would deliver as the real thing.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://michaelwegter.com/work-samples/aba-services-website">Open the live demo</a>
+      <a class="btn btn-ghost" href="https://michaelwegter.com/demos/aba-services-website/">Raw demo</a>
+      <span class="link-fallback">michaelwegter.com/work-samples/aba-services-website</span>
+    </div>
+    <div class="hero-shot">
+      <a href="https://michaelwegter.com/work-samples/aba-services-website">
+        <img src="media/hero.png" alt="Screenshot of the Bright Path ABA homepage hero, with intake call to action and services strip." />
+      </a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <p class="eyebrow">What is in the demo</p>
+    <h2>Three things to click first.</h2>
+    <div class="strip">
+      <div class="card">
+        <span class="tag">01 Hero and trust</span>
+        <h3>Calm hero, clear CTA</h3>
+        <p>BCBA-led trust strip, an honest one-line value statement, and a single primary action: Request an Intake.</p>
+      </div>
+      <div class="card">
+        <span class="tag">02 Services explorer</span>
+        <h3>Expandable service cards</h3>
+        <p>In-Home, Center-Based, Parent Training, School Consultation. Each card opens to show age range and what to expect.</p>
+      </div>
+      <div class="card">
+        <span class="tag">03 Intake form</span>
+        <h3>Validated, privacy-aware</h3>
+        <p>Real inline validation, accessible labels, and a visible note steering parents away from sharing diagnosis details on the marketing form.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <p class="eyebrow">How I would scope the real build</p>
+        <h2>Five pages, fast, mobile-first, accessible.</h2>
+        <ul class="tight">
+          <li><strong>Site map.</strong> Home, About and Our Approach, Services, Team, Insurance, Contact and Intake. Five to seven pages depending on what you need.</li>
+          <li><strong>Performance and a11y.</strong> Static hosting, sub-second loads, WCAG AA contrast, 44 by 44 touch targets, keyboard navigation, reduced-motion respected.</li>
+          <li><strong>Trust depth.</strong> Named BCBA bios with credentials, plain-language services, insurance row, FAQ, parent-first tone throughout.</li>
+          <li><strong>HIPAA-aware intake.</strong> Marketing form collects only name, email, phone, and a service interest dropdown, with a visible note about not entering medical details. Real intake routes through a HIPAA-eligible channel.</li>
+          <li><strong>Editability.</strong> Optional headless CMS (Sanity or Contentful) if you want to update copy yourselves. Otherwise a clean static build keeps cost and complexity low.</li>
+          <li><strong>SEO basics.</strong> Local schema markup, sensible titles and meta, sitemap, fast Core Web Vitals.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="eyebrow">Requirement coverage</p>
+        <h2>Everything in your posting maps to a screen.</h2>
+        <table class="req-table">
+          <thead>
+            <tr><th>Req</th><th>What you asked for</th><th>Where it lives</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="id">R1</td><td>Professional ABA website</td><td>Entire demo</td></tr>
+            <tr><td class="id">R2</td><td>Visually appealing, communicates values</td><td>Hero, services strip, warm palette</td></tr>
+            <tr><td class="id">R3</td><td>User-friendly</td><td>Anchor nav, accessible form, FAQ</td></tr>
+            <tr><td class="id">R4</td><td>Communicates services clearly</td><td>Services explorer cards</td></tr>
+            <tr><td class="id">R5</td><td>Design and dev integrated</td><td>One artifact, one developer</td></tr>
+            <tr><td class="id">R6</td><td>Graphic design elements</td><td>Custom SVG logo, hero illustration, icons</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <p class="eyebrow">Kickoff questions</p>
+    <h2>Three things I would ask before we start.</h2>
+    <ul class="tight">
+      <li><strong>Page count and structure.</strong> Single scrolling page or a 5 to 7 page site? My recommendation is the latter; the demo shows the single-page version for speed.</li>
+      <li><strong>CMS need.</strong> Do you want to edit copy yourselves after launch? If yes, I would add a small headless CMS layer. If not, a static build is cheaper to maintain.</li>
+      <li><strong>Brand assets.</strong> Do you have a logo, color direction, or photography? If not, I can propose a small visual direction up front so we are aligned before I build.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <p class="eyebrow">Why me</p>
+    <h2>Senior full-stack, ships and supports real software.</h2>
+    <ul class="tight">
+      <li><strong>Daily delivery on real apps.</strong> Currently building an Angular plus .NET system on the Optum RHRP 4 contract, 150 plus story points delivered.</li>
+      <li><strong>Owner mindset.</strong> Spent 2.5 years as the sole developer and SME of a React plus Python platform serving 600 users a month at U.S. Bank, including a six month Azure migration.</li>
+      <li><strong>Frameworks.</strong> React, Vite, vanilla JS, Angular, Flask, .NET, Postgres, SQL, Docker, CI/CD. This demo is plain HTML, CSS, and JS shipped same-origin from my portfolio.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p class="eyebrow">Next step</p>
+    <h2 style="font-size: 22px;">Open the demo, then let's talk.</h2>
+    <p>Click around for five minutes. If it feels right, message me and I will send a short scope and timeline based on your answers to the three questions above.</p>
+    <p class="sig">Michael Wegter</p>
+    <p><a href="https://michaelwegter.com">michaelwegter.com</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

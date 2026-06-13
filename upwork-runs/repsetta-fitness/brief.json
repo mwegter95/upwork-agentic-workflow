@@ -1,0 +1,150 @@
+{
+  "slug": "repsetta-fitness",
+  "title": "Hybrid Mobile App Developer for Fitness Startup",
+  "client": {
+    "name": "Repsetta",
+    "industry": "Fitness / Health & Wellness",
+    "signals": "Early-stage startup building a mobile-first fitness platform. Seeking long-term partner for hybrid development. Fitness domain expertise valued but not required; engineering depth and proven hybrid framework experience are priorities. Budget-conscious (avg $93.75/hr against $50-85 posted range) and actively interviewing."
+  },
+  "summary": "Repsetta is hiring a long-term hybrid mobile app developer (React Native or Flutter) to build high-quality fitness applications. They value both experience and value, working <30 hrs/week over 6+ months. The role requires shipping to both iOS and Android from a single codebase, with a strong emphasis on user-friendly UX in the fitness domain.",
+  "explicit_requirements": [
+    {
+      "id": "R1",
+      "text": "Experience in Health and Wellness domain",
+      "must": false
+    },
+    {
+      "id": "R2",
+      "text": "Mobile App Development expertise",
+      "must": true
+    },
+    {
+      "id": "R3",
+      "text": "Android App Development expertise",
+      "must": true
+    },
+    {
+      "id": "R4",
+      "text": "Experience with React Native and/or Flutter (hybrid frameworks)",
+      "must": true
+    },
+    {
+      "id": "R5",
+      "text": "iOS Development experience",
+      "must": false
+    },
+    {
+      "id": "R6",
+      "text": "Apache Cordova experience",
+      "must": false
+    },
+    {
+      "id": "R7",
+      "text": "Available <30 hours per week",
+      "must": true
+    },
+    {
+      "id": "R8",
+      "text": "Able to commit for 6+ months (long-term engagement)",
+      "must": true
+    },
+    {
+      "id": "R9",
+      "text": "Located in Las Vegas Area or Twin Cities (US-only)",
+      "must": true
+    },
+    {
+      "id": "R10",
+      "text": "Answer proposal question: What is your experience in Health and Wellness?",
+      "must": true
+    },
+    {
+      "id": "R11",
+      "text": "Answer proposal question: What interests you with this project?",
+      "must": true
+    },
+    {
+      "id": "R12",
+      "text": "Answer proposal question: Describe your recent experience with similar projects",
+      "must": true
+    },
+    {
+      "id": "R13",
+      "text": "Answer proposal question: Please list any certifications related to this project",
+      "must": true
+    },
+    {
+      "id": "R14",
+      "text": "Answer proposal question: What frameworks have you worked with?",
+      "must": true
+    },
+    {
+      "id": "R15",
+      "text": "Ability to build high-quality, user-friendly applications",
+      "must": true
+    }
+  ],
+  "implicit_needs": [
+    "Ship single codebase to both iOS and Android (cross-platform deployment)",
+    "Backend API integration capability (likely REST/GraphQL endpoints for fitness data)",
+    "Fitness domain product sense: workout tracking, progress metrics, user engagement patterns",
+    "Clean, modern UX design sensibility for fitness app context",
+    "Ability to work autonomously in a long-term, part-time capacity",
+    "Communication skills (noted preference for Conversational English)"
+  ],
+  "domain": "Fitness / Health & Wellness Mobile Apps",
+  "tech_hints": [
+    "React Native",
+    "Flutter",
+    "NativeWind / Tailwind CSS for styling",
+    "Android-first or dual-platform considerations",
+    "Hybrid/Cordova alternatives",
+    "Backend API integration (REST or GraphQL implied)"
+  ],
+  "success_signals": [
+    "Live, working React Native fitness app demonstrating core features (workout tracking, progress display, user authentication)",
+    "Evidence of shipping to both iOS and Android from a single codebase",
+    "Clean, intuitive UI that shows fitness domain understanding",
+    "Backend integration working smoothly (mocked or real)",
+    "Proof of long-term project engagement and reliability",
+    "Rate alignment with their stated $50-85/hr budget (they are paying $93.75 avg against that range)"
+  ],
+  "budget": {
+    "raw": "$50.00 - $85.00 hourly; <30 hrs/week; 6+ months",
+    "tier": "mid"
+  },
+  "timeline": "6+ months, <30 hours per week, long-term engagement",
+  "red_flags": [
+    "HARD LOCATION GATE: 'MUST BE LOCATED IN LAS VEGAS AREA OR TWIN CITIES.' Michael did not confirm he is in either location; the cover letter must address this honestly and lead with engineering depth + live demo instead of fabricating location.",
+    "US-only applicants; location preference narrowed to Central/Pacific Time Zones + Minnesota/Nevada.",
+    "Competitive marketplace: only <5 proposals but 31 invites sent, 2 already interviewing. Pricing pressure evident (avg bid $93.75 vs. posted range $50-85).",
+    "No explicit mention of backend requirements or API specs; will need to infer from fitness domain during research."
+  ],
+  "demo_concepts": [
+    {
+      "id": "D1",
+      "name": "Workout Logger with Set/Rep Tracking and Rest Timer",
+      "what": "A React Native fitness app where users log exercises, track sets and reps, and follow guided rest timers between sets.",
+      "hero_feature": "Real-time rest timer with visual countdown and audio cue; tap to log sets and watch reps auto-increment with weight/difficulty picker.",
+      "backend_needed": true,
+      "why_wins": "Demonstrates core fitness UX (input, feedback, progress capture) and hybrid cross-platform capability. Showcases Tailwind styling and real backend integration. Immediate, tangible value to a fitness startup."
+    },
+    {
+      "id": "D2",
+      "name": "Guided Workout Program Player",
+      "what": "A structured workout player that displays exercises from a program, shows form cues and video previews, and tracks completion.",
+      "hero_feature": "Full-screen workout view with exercise cards, step-by-step instructions, and one-tap 'complete' marking with progress persistence.",
+      "backend_needed": true,
+      "why_wins": "Illustrates product-thinking in fitness (exercise sequencing, user guidance). Shows ability to manage complex app state (current exercise, completed sets, program progress). Strong for a startup building a workout experience."
+    },
+    {
+      "id": "D3",
+      "name": "Progress Dashboard with Charts and Stats",
+      "what": "A dashboard showing workout history, total volume (weight x reps), personal records, and week-over-week trends via simple charts.",
+      "hero_feature": "Interactive line chart showing progression over time; card layout showing key stats (PR lifts, total workouts, streak). Real data from backend.",
+      "backend_needed": true,
+      "why_wins": "Demonstrates ability to consume and visualize fitness data. Shows data-driven product thinking. Appeals to users who want to see measurable progress. Exercices both React Native + backend query patterns."
+    }
+  ],
+  "notes_from_michael": "Build an ACTUAL React Native app using NativeWind/Tailwind for styling. Use mw-backend as the demo backend (runs on Michael's Surface). Claude must NOTIFY Michael when pushing to mw-backend so he can restart the server. Until then, simulate the backend or run a local Python server on the Mac, then append mw-backend functionality and re-test. Research Repsetta to infer what their app likely needs and bake those use cases into the build. The app must be web-exportable (Expo + react-native-web) so it can embed in the /work-samples area. Location gate (Vegas/Twin Cities, US-only): do NOT fabricate a location; acknowledge it honestly and lead with engineering depth + live demo. Certifications: answer honestly (no formal fitness certs assumed); emphasize app/engineering depth and fitness-domain fit."
+}

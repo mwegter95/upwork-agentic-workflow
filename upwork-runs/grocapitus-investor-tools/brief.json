@@ -1,0 +1,121 @@
+{
+  "slug": "grocapitus-investor-tools",
+  "title": "AI-Powered Real Estate Investor Tools",
+  "client": {
+    "name": "Grocapitus Investments",
+    "industry": "Real Estate Investment & Investor Education",
+    "signals": "Data-driven firm, small fast-moving team, hands-on CEO-technologist, focus on investor education through digital tools, already have a hosted platform"
+  },
+  "summary": "Grocapitus Investments seeks a developer to rapidly build lightweight, functional AI-powered apps for their investor community using vibe-coding tools (Claude, DeepSeek). The role is about directing AI tools, shaping output, and shipping educational real estate apps that help investors learn and make better decisions. They value speed, iteration, and turning brief prompts into working prototypes.",
+  "explicit_requirements": [
+    {
+      "id": "R1",
+      "text": "Demonstrated experience with vibe coding tools (Claude, DeepSeek, Cursor, Replit, v0, etc.)",
+      "type": "must"
+    },
+    {
+      "id": "R2",
+      "text": "Ability to turn a concept or brief prompt into a working prototype",
+      "type": "must"
+    },
+    {
+      "id": "R3",
+      "text": "Build lightweight, functional apps under CEO direction",
+      "type": "must"
+    },
+    {
+      "id": "R4",
+      "text": "All code written by AI tools, not manual coding",
+      "type": "must"
+    },
+    {
+      "id": "R5",
+      "text": "Iterate quickly based on feedback and ship early",
+      "type": "must"
+    },
+    {
+      "id": "R6",
+      "text": "Document process so team can learn and contribute",
+      "type": "must"
+    },
+    {
+      "id": "R7",
+      "text": "Log all hours accurately using WebWork time tracking",
+      "type": "must"
+    },
+    {
+      "id": "R8",
+      "text": "Comfortable working independently and communicating async",
+      "type": "must"
+    },
+    {
+      "id": "R9",
+      "text": "Currently enrolled in computer engineering, computer science, or related program",
+      "type": "preferred"
+    },
+    {
+      "id": "R10",
+      "text": "Genuine curiosity about real estate investing",
+      "type": "preferred"
+    },
+    {
+      "id": "R11",
+      "text": "Reliable internet connection and dedicated workspace for remote work",
+      "type": "must"
+    }
+  ],
+  "implicit_needs": [
+    "Proof that you can go from brief/prompt to working, usable app in hours, not days",
+    "Real usability and taste in design, not toy demos",
+    "Ability to work under creative direction while showing initiative",
+    "Understanding of real estate investor pain points and decision-making",
+    "Track record of shipping with AI tools (portfolio of AI-built apps)"
+  ],
+  "domain": "Real estate investing / investor education",
+  "tech_hints": [
+    "Claude / DeepSeek / Cursor / Replit / v0 (AI/vibe-coding tools)",
+    "Lightweight web apps (JavaScript, React, etc. written by AI)",
+    "Frontend-focused, client-side logic",
+    "Integration with their existing hosted platform"
+  ],
+  "success_signals": [
+    "Portfolio showing multiple apps built quickly with AI tools",
+    "At least one real estate focused demo with genuine investor utility",
+    "Clear process documentation (prompts, iterations, final product)",
+    "Evidence of taste and design sense, not just functional MVPs",
+    "Ability to explain the prompt-to-prototype workflow"
+  ],
+  "budget_timeline": "$30/hour USD, 10-20 hours/week, 100% remote, flexible schedule",
+  "red_flags": [
+    "\"Currently enrolled\" marked preferred, not required - Michael may not be a current student; must not fabricate enrollment status",
+    "\"No manual coding, all code written by AI\" framing is strict; ensure proposal clearly shows AI-vibe-coding approach, not traditional engineering",
+    "10-20 hours/week is quite limited; demos and documentation must be tight and efficient"
+  ],
+  "candidate_demo_concepts": [
+    {
+      "id": "D1",
+      "name": "Rental Cash Flow & Cap Rate Calculator",
+      "what": "A quick-reference tool that calculates monthly cash flow, annual returns, cap rate, and cash-on-cash return from basic property inputs (purchase price, down payment, rent, expenses).",
+      "hero_feature": "Real-time calculation of key investor metrics with visual breakdown of revenue vs. expenses and ROI scenarios",
+      "backend_needed": false,
+      "why_wins": "Directly addresses investor decision-making; shows ability to build something immediately useful and data-driven; demonstrates understanding of core real estate investing metrics"
+    },
+    {
+      "id": "D2",
+      "name": "BRRRR Strategy Analyzer",
+      "what": "Helps investors model the Buy-Rehab-Rent-Refinance-Repeat strategy by calculating total cost of acquisition, rehab budget, refinance scenarios, and projected cash flow post-refinance.",
+      "hero_feature": "Step-by-step breakdown of the BRRRR process with interactive sliders to explore how rehab costs and refinance rates impact final returns",
+      "backend_needed": false,
+      "why_wins": "Shows domain knowledge of a specific advanced investor strategy; demonstrates ability to break down complex financial processes into a usable tool; builds confidence you understand investor workflows"
+    },
+    {
+      "id": "D3",
+      "name": "Mortgage Amortization & Investor Returns Explorer",
+      "what": "Interactive mortgage calculator with amortization schedule and overlay of investor return metrics (principal paydown, equity buildup, tax deduction estimates).",
+      "hero_feature": "Side-by-side comparison of mortgage impact on cash flow and long-term wealth building, with slider to explore different loan terms and rates",
+      "backend_needed": false,
+      "why_wins": "Fundamental tool every investor needs; combines financial rigor with UX clarity; shows you can make complex calculations transparent and intuitive"
+    }
+  ],
+  "notes_from_michael": "Include building a small, helpful real estate app with real usability. In the proposal, showcase screenshots from other AI-built apps (Stage, Life Dashboard, Growyard, Spotify Super User Tools) to demonstrate AI-coding skills. Stage and SSUT have existing screenshots and videos on the website; use Playwright to capture Growyard and Life Dashboard. Do NOT include contact info in the proposal."
+}

@@ -1,0 +1,112 @@
+{
+  "slug": "aba-services-website",
+  "title": "ABA Services Website Design and Development",
+  "client": {
+    "name": null,
+    "industry": "Healthcare/Behavioral Services (ABA - Applied Behavior Analysis)",
+    "signals": "Seeking professional website, mentions 'visually appealing' and 'user-friendly', values both design and development, intermediate budget consciousness, U.S.-based operation"
+  },
+  "summary": "An ABA (Applied Behavior Analysis) clinic needs a professional website to present their services, values, and expertise to potential clients and families. They want design and development as a unified package, with emphasis on clear communication of services and modern aesthetics.",
+  "explicit_requirements": [
+    {
+      "id": "R1",
+      "text": "Design and develop a professional website for ABA services",
+      "must": true
+    },
+    {
+      "id": "R2",
+      "text": "Create a visually appealing design that communicates services and values",
+      "must": true
+    },
+    {
+      "id": "R3",
+      "text": "Ensure the website is user-friendly",
+      "must": true
+    },
+    {
+      "id": "R4",
+      "text": "Effectively communicate the organization's services",
+      "must": true
+    },
+    {
+      "id": "R5",
+      "text": "Integrate web design and web development seamlessly from concept to launch",
+      "must": true
+    },
+    {
+      "id": "R6",
+      "text": "Include graphic design elements (nice-to-have skill)",
+      "must": false
+    }
+  ],
+  "implicit_needs": [
+    "Trust-building visuals and messaging (healthcare-adjacent industry, serving families with children with autism)",
+    "Clear services/offerings page (what types of therapy, age ranges, specialties)",
+    "Contact or intake form for prospect inquiries",
+    "Mobile responsiveness (parents browsing on phones)",
+    "Team/staff bios (testimonials, credentials, expertise to build confidence)",
+    "About/values page explaining the clinic's philosophy",
+    "Professional imagery or placeholder imagery of a welcoming clinic environment",
+    "Fast load times and accessibility (serves families with diverse needs)",
+    "SEO basics (local visibility for ABA services in their area)",
+    "HIPAA-adjacent awareness (privacy-conscious content, no exposed client data)"
+  ],
+  "domain": "Applied Behavior Analysis (ABA) Services / Healthcare-Adjacent Web Presence",
+  "tech_hints": [
+    "No stack specified by client; opportunity to recommend modern, maintainable approach",
+    "Consider: Next.js/React for fast SSR, static hosting (Vercel/Netlify) for simple scaling",
+    "Or: WordPress with professional theme if client prefers CMS + low maintenance"
+  ],
+  "success_signals": [
+    "Clean, modern, professional aesthetic that conveys trust and expertise",
+    "Fast page load times and responsive design across all devices",
+    "Clear visual hierarchy and intuitive navigation",
+    "Compelling services overview that differentiates the clinic",
+    "Functional contact/intake form",
+    "Live demo shows realistic ABA clinic site structure (hero, services, team, testimonial, intake, footer)"
+  ],
+  "application_questions": [
+    "What frameworks have you worked with?",
+    "Describe your recent experience with similar projects"
+  ],
+  "budget": {
+    "raw": "$500.00 Fixed-price",
+    "tier": "low",
+    "notes": "Project is marked 'Ongoing', suggesting this may be phase 1 (MVP) with potential for follow-up work. $500 is well below market rate for full design + dev. Likely scope is 5-7 page brochure site. Implies use of templates, themes, or rapid scaffolding; custom bespoke design unlikely at this budget."
+  },
+  "timeline": "unspecified (posted yesterday, no deadline stated)",
+  "red_flags": [
+    "Budget ($500) is significantly below market rate for both design and development of a professional website (typical: $2k-$8k+). Scope may need aggressive scoping or candidate must be willing to undercharge for portfolio/ongoing relationship.",
+    "No specifics on required pages, features, or design preferences. Vague scope ('visually appealing', 'user-friendly' are not measurable).",
+    "No brand assets, color scheme, or competitor examples provided. Designer will need to lead the vision.",
+    "Location restriction (U.S. only) may be cost-driven (avoiding cheaper offshore), but limits talent pool.",
+    "No mention of backend requirements (email, CMS, dynamic content), so it's unclear if this is a static brochure site or if there are hidden complexity layers.",
+    "'Ongoing project' is ambiguous. Could mean retention work post-launch or could be a red flag for perpetual scope creep without additional payment."
+  ],
+  "demo_concepts": [
+    {
+      "id": "D1",
+      "name": "ABA Clinic Website Showcase",
+      "what": "A fully functional, mock ABA clinic website with hero section, services overview, team bios, testimonial, contact form, and footer. All data is hardcoded/mock; no backend required.",
+      "hero_feature": "Compelling hero banner with clinic tagline, call-to-action button, and welcoming imagery (stock or placeholder) that sets a professional, family-friendly tone.",
+      "backend_needed": false,
+      "why_wins": "Demonstrates the exact deliverable the client expects (a complete, modern clinic website) with no backend complexity. Shows mastery of layout, responsive design, typography, color psychology, and conversion-focused CTAs. Proves the candidate understands ABA clinic brand positioning."
+    },
+    {
+      "id": "D2",
+      "name": "Interactive Services Explorer",
+      "what": "A single-page component that lists ABA services (e.g., In-Home Therapy, Center-Based Services, Parent Training, School Consultation) with expandable details, age ranges, and 'Learn More' links. Mock data only.",
+      "hero_feature": "Smooth expand/collapse animations and category filtering (by age group, service type) that makes browsing services intuitive and delightful.",
+      "backend_needed": false,
+      "why_wins": "Shows the candidate can build interactive UI components that make healthcare services easy to explore. Demonstrates UX thinking beyond static pages. Clinics often need to list multiple service tiers; this proves the candidate can present complex information clearly."
+    },
+    {
+      "id": "D3",
+      "name": "Contact/Intake Form with Validation",
+      "what": "A professional intake form (name, email, phone, child's age, service interest, message) with real-time validation, error states, and a success confirmation page. Form data is logged to console (no backend).",
+      "hero_feature": "Clean, accessible form design with helpful field descriptions, smart validation messages, and a friendly confirmation screen that reassures the user their message was received.",
+      "backend_needed": false,
+      "why_wins": "Intake/contact is the #1 conversion tool for a services clinic. Shows the candidate understands healthcare form best practices (privacy messaging, clear instructions, inclusive language). Proves ability to deliver a core business tool."
+    }
+  ]
+}

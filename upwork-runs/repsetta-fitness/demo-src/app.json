@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Repsetta",
+    "slug": "repsetta-fitness",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#121118",
+    "splash": {
+      "backgroundColor": "#121118"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "experiments": {
+      "baseUrl": "/demos/repsetta-fitness"
+    }
+  }
+}

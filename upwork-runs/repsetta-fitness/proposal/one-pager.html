@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Repsetta Proposal // Michael Wegter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mustard:#e8b820;
+    --cyan-vivid:#12b4c8;
+    --hot-pink:#f0186e;
+    --parrot-green:#6ed46a;
+    --bg-root:#121118;
+    --bg-surface:#191720;
+    --bg-card:#1e1c26;
+    --bg-card-hover:#24222e;
+    --border-subtle:#201e2a;
+    --border-default:#2c2a38;
+    --border-active:#3a3848;
+    --text-primary:#f2ede4;
+    --text-secondary:#8a8898;
+    --text-muted:#4a4858;
+    --font-display:'Space Grotesk',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,sans-serif;
+    --font-mono:'JetBrains Mono','Fira Code',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg-root);
+    color:var(--text-primary);
+    font-family:var(--font-body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px;}
+  .eyebrow{
+    font-family:var(--font-mono);
+    text-transform:uppercase;
+    letter-spacing:.18em;
+    font-size:.72rem;
+    color:var(--mustard);
+    margin-bottom:14px;
+  }
+  h1,h2,h3{font-family:var(--font-display);line-height:1.15;font-weight:600;}
+  a{color:var(--mustard);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* Hero */
+  header.hero{
+    padding:88px 0 56px;
+    border-bottom:1px solid var(--border-subtle);
+    background:radial-gradient(1100px 460px at 75% -8%, rgba(232,184,32,.10), transparent 60%);
+  }
+  header.hero h1{
+    font-size:clamp(2.2rem,5vw,3.4rem);
+    font-weight:700;
+    margin-bottom:18px;
+  }
+  header.hero h1 .accent{color:var(--mustard);}
+  header.hero p.lede{
+    font-size:1.18rem;
+    color:var(--text-secondary);
+    max-width:660px;
+  }
+  .byline{
+    margin-top:26px;
+    font-family:var(--font-mono);
+    font-size:.8rem;
+    color:var(--text-muted);
+    letter-spacing:.04em;
+  }
+  .byline span{color:var(--text-secondary);}
+
+  section{padding:56px 0;border-bottom:1px solid var(--border-subtle);}
+  section h2{font-size:1.7rem;margin-bottom:8px;}
+  section .sub{color:var(--text-secondary);margin-bottom:30px;max-width:680px;}
+
+  /* Demo block */
+  .demo-shot{
+    display:block;
+    border:1px solid var(--border-default);
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 22px 60px rgba(0,0,0,.45);
+    transition:border-color .2s ease, transform .2s ease;
+  }
+  .demo-shot:hover{border-color:var(--border-active);transform:translateY(-3px);}
+  .demo-shot img{display:block;width:100%;height:auto;}
+  .btn-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:26px;align-items:center;}
+  .btn{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:.82rem;
+    letter-spacing:.04em;
+    padding:13px 22px;
+    border-radius:10px;
+    font-weight:500;
+  }
+  .btn.primary{background:var(--mustard);color:#1a1500;}
+  .btn.primary:hover{background:#f3c534;text-decoration:none;}
+  .btn.ghost{border:1px solid var(--border-active);color:var(--text-primary);}
+  .btn.ghost:hover{background:var(--bg-card-hover);text-decoration:none;}
+  .demo-url{
+    font-family:var(--font-mono);
+    font-size:.82rem;
+    color:var(--text-secondary);
+    margin-top:18px;
+    word-break:break-all;
+  }
+
+  /* Stills grid */
+  .stills{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    margin-top:30px;
+  }
+  .still{
+    border:1px solid var(--border-default);
+    border-radius:12px;
+    overflow:hidden;
+    background:var(--bg-card);
+  }
+  .still img{display:block;width:100%;height:auto;}
+  .still .cap{
+    font-family:var(--font-mono);
+    font-size:.68rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    padding:10px 12px;
+    border-top:1px solid var(--border-subtle);
+  }
+
+  /* How it works */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+  .step{
+    background:var(--bg-card);
+    border:1px solid var(--border-default);
+    border-radius:12px;
+    padding:22px;
+  }
+  .step .n{
+    font-family:var(--font-mono);
+    color:var(--mustard);
+    font-size:.78rem;
+    letter-spacing:.08em;
+    margin-bottom:10px;
+  }
+  .step h3{font-size:1.05rem;margin-bottom:8px;}
+  .step p{font-size:.92rem;color:var(--text-secondary);}
+
+  /* Requirement coverage */
+  table{width:100%;border-collapse:collapse;font-size:.92rem;}
+  th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--border-subtle);vertical-align:top;}
+  th{
+    font-family:var(--font-mono);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-size:.68rem;
+    color:var(--text-muted);
+  }
+  td.req{color:var(--text-primary);width:42%;}
+  td.where{color:var(--text-secondary);}
+  .tag{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:.64rem;
+    letter-spacing:.05em;
+    padding:3px 8px;
+    border-radius:5px;
+    margin-right:6px;
+    color:#1a1500;
+    background:var(--mustard);
+  }
+  .tag.demo{background:var(--cyan-vivid);color:#04222a;}
+  .tag.letter{background:var(--parrot-green);color:#06260a;}
+
+  /* Why Michael */
+  .proof{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;}
+  .proof .card{
+    background:var(--bg-card);
+    border:1px solid var(--border-default);
+    border-radius:12px;
+    padding:24px;
+  }
+  .proof .big{
+    font-family:var(--font-display);
+    font-size:1.9rem;
+    font-weight:700;
+    color:var(--mustard);
+    margin-bottom:6px;
+  }
+  .proof p{font-size:.92rem;color:var(--text-secondary);}
+
+  /* Contact */
+  .cta{
+    background:linear-gradient(180deg,var(--bg-card),var(--bg-surface));
+    border:1px solid var(--border-default);
+    border-radius:16px;
+    padding:40px;
+    text-align:center;
+  }
+  .cta h2{font-size:1.6rem;margin-bottom:12px;}
+  .cta p{color:var(--text-secondary);max-width:560px;margin:0 auto 24px;}
+
+  footer{padding:36px 0 60px;text-align:center;}
+  footer p{font-family:var(--font-mono);font-size:.74rem;color:var(--text-muted);letter-spacing:.05em;}
+
+  @media (max-width:560px){
+    section{padding:44px 0;}
+    header.hero{padding:64px 0 44px;}
+    .cta{padding:28px 20px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Proposal // Hybrid Mobile App Developer</p>
+    <h1>I built <span class="accent">Repsetta</span> a working workout tracker before saying a word about it.</h1>
+    <p class="lede">A real React Native app for logging strength training: open today's program, log sets with a live rest timer, save, and watch your progress build. One codebase for iOS, Android, and web, backed by a real API.</p>
+    <p class="byline">Michael Wegter &nbsp;//&nbsp; <span>Full-stack engineer</span> &nbsp;//&nbsp; React Native, Expo, NativeWind, Flask</p>
+  </div>
+</header>
+
+<section id="demo">
+  <div class="wrap">
+    <p class="eyebrow">The live demo</p>
+    <h2>Click it. It actually works.</h2>
+    <p class="sub">This is the real app, not a slideshow. Pick an exercise, enter reps and weight, the rest timer counts down between sets, and Save persists the session to a Flask backend on my own infrastructure. Then it shows up in Progress with your history and a volume chart.</p>
+
+    <a class="demo-shot" href="https://michaelwegter.com/work-samples/repsetta-fitness" target="_blank" rel="noopener">
+      <img src="media/hero.png" alt="Repsetta app, Today's program screen" />
+    </a>
+
+    <div class="btn-row">
+      <a class="btn primary" href="https://michaelwegter.com/work-samples/repsetta-fitness" target="_blank" rel="noopener">Try the live demo</a>
+      <a class="btn ghost" href="https://michaelwegter.com/demos/repsetta-fitness/" target="_blank" rel="noopener">Open the app directly</a>
+    </div>
+    <p class="demo-url">michaelwegter.com/work-samples/repsetta-fitness</p>
+
+    <div class="stills">
+      <div class="still"><img src="media/today.png" alt="Today's program" /><div class="cap">Today // Push Day A</div></div>
+      <div class="still"><img src="media/log.png" alt="Log workout" /><div class="cap">Log // sets and reps</div></div>
+      <div class="still"><img src="media/rest-timer.png" alt="Rest timer" /><div class="cap">Rest // live timer</div></div>
+      <div class="still"><img src="media/progress.png" alt="Progress" /><div class="cap">Progress // volume chart</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>The core capture loop, end to end</h2>
+    <p class="sub">The same loop your product lives or dies on, built to feel fast and clean on a phone.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="n">01</div>
+        <h3>Today's program</h3>
+        <p>A guided session (Push Day A) loads from the backend and seeds the logger with target exercises and sets.</p>
+      </div>
+      <div class="step">
+        <div class="n">02</div>
+        <h3>Log + rest timer</h3>
+        <p>Enter reps and weight per set. Each logged set auto-starts a live countdown ring with pause, plus fifteen seconds, and skip.</p>
+      </div>
+      <div class="step">
+        <div class="n">03</div>
+        <h3>Save to a real API</h3>
+        <p>Finishing posts the full session to a Flask service on my infrastructure. It persists, no fake data.</p>
+      </div>
+      <div class="step">
+        <div class="n">04</div>
+        <h3>Progress</h3>
+        <p>History, total volume, streak, and a volume-per-session chart, drawn from the data you just logged.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="coverage">
+  <div class="wrap">
+    <p class="eyebrow">Requirement coverage</p>
+    <h2>Everything you asked for, mapped</h2>
+    <p class="sub">Your posting laid out clear needs. Here is where each one is answered, in the demo and in my proposal.</p>
+    <table>
+      <thead>
+        <tr><th>What you need</th><th>Where it is covered</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="req">Mobile app development, iOS and Android from one codebase</td><td class="where"><span class="tag demo">Demo</span>Single Expo + React Native codebase that targets iOS, Android, and the web build you are viewing.</td></tr>
+        <tr><td class="req">React Native and/or Flutter (hybrid)</td><td class="where"><span class="tag demo">Demo</span>Built in React Native + NativeWind. Flutter and Cordova noted in my proposal for tradeoff conversations.</td></tr>
+        <tr><td class="req">High-quality, user-friendly app</td><td class="where"><span class="tag demo">Demo</span>Polished UI, real rest-timer UX, on a clean dark fitness theme.</td></tr>
+        <tr><td class="req">Backend / API integration</td><td class="where"><span class="tag demo">Demo</span>Live Flask API on my own infrastructure persists each saved workout.</td></tr>
+        <tr><td class="req">Health and wellness domain understanding</td><td class="where"><span class="tag demo">Demo</span><span class="tag letter">Letter</span>The app reflects how lifters actually log, rest, and track. Honest framing on domain fit in my letter.</td></tr>
+        <tr><td class="req">Certifications</td><td class="where"><span class="tag letter">Letter</span>Answered honestly: no formal fitness cert, engineering depth and a working app instead.</td></tr>
+        <tr><td class="req">Availability under 30 hrs/week, 6+ months</td><td class="where"><span class="tag letter">Letter</span>Comfortable at that pace for the long term.</td></tr>
+        <tr><td class="req">Location (Las Vegas / Twin Cities)</td><td class="where"><span class="tag letter">Letter</span>Addressed upfront and honestly: US-based, fully overlapping Central and Pacific hours, strong async.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <p class="eyebrow">Why Michael</p>
+    <h2>Ships full-stack, owns what he builds, moves fast</h2>
+    <div class="proof">
+      <div class="card">
+        <div class="big">~2.5 yrs</div>
+        <p>Sole developer and SME on a React + Python platform at U.S. Bank serving 600 users a month. If something broke, I could usually fix it within ten minutes.</p>
+      </div>
+      <div class="card">
+        <div class="big">150+ pts</div>
+        <p>Currently delivering on an Angular and .NET contract as my team's go-to for AI-assisted development, in strict Agile.</p>
+      </div>
+      <div class="card">
+        <div class="big">Full-stack</div>
+        <p>React and Angular front ends, Python, .NET, and Java back ends, SQL and PostgreSQL, Docker, CI/CD. I own the app and the API, not half a feature.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="cta">
+      <p class="eyebrow" style="color:var(--mustard);">Next step</p>
+      <h2>Tell me which features matter most first.</h2>
+      <p>If the demo looks like the right direction, I would love to hear your priorities and shape a plan around them. Low pressure. Click the demo, then let's talk.</p>
+      <div class="btn-row" style="justify-content:center;">
+        <a class="btn primary" href="https://michaelwegter.com/work-samples/repsetta-fitness" target="_blank" rel="noopener">Try the live demo</a>
+        <a class="btn ghost" href="https://michaelwegter.com" target="_blank" rel="noopener">michaelwegter.com</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Michael Wegter &nbsp;//&nbsp; michaelwegter.com &nbsp;//&nbsp; Proposal for Repsetta</p>
+  </div>
+</footer>
+
+</body>
+</html>
