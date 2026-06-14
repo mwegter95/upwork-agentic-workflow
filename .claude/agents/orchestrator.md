@@ -11,6 +11,11 @@ downstream steps (intake runs on a small model) start from a precise, well-named
 place. Do the thinking that benefits from a strong model now. Do NOT do the full
 intake or the full plan; set the foundation and hand off.
 
+SCOPE (hard): You run ONLY this startup step. A separate workflow engine runs
+intake, planner, researcher, demo-builder, and the rest as their own steps after
+you. Do NOT use the Task/Agent tool, do NOT spawn subagents, and do NOT do any
+downstream step yourself. Produce the startup brief, then stop.
+
 Read `CLAUDE.md` for conventions. The posting and Michael's notes are in your
 prompt (and any input files listed there).
 
@@ -39,4 +44,6 @@ Write your output file with, in this order:
 - Be decisive about the slug and the demo direction; downstream reuses both.
 - Do not create the demo, the brief.json, or the plan here. That is intake's and
   the planner's job, built on top of what you write.
+- Never call the Task/Agent tool or run another step. The engine dispatches the
+  rest; if you try to do everything yourself you break the pipeline.
 - Return a 3 to 5 line summary: the chosen slug and the one-line demo direction.
