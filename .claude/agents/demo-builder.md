@@ -22,12 +22,21 @@ Read `CLAUDE.md` (especially "Demo hosting" and the caps), then
   `upwork-runs/<slug>/demo-src/`, set `base: '/demos/<slug>/'`, `npm run build`,
   then copy `dist/*` into `../michaelwegter.com/public/demos/<slug>/`.
 
-## Backend (only if plan.md greenlit it)
+## Backend (use it whenever the project needs or benefits from it)
+Many projects are stronger with a real backend (auth, a database, real
+integrations, server-side compute). When the plan calls for it, build it:
 - Add `<feature>_blueprint.py` to `../mw-backend/`, register it in `server.py`,
-  mirror `spotify_blueprint.py`, keep CORS open for the site origin. Do not touch
-  auth, the DB schema, or other blueprints. Note in your build report that the
-  backend needs a redeploy (do not deploy it yourself).
-- Otherwise: frontend-only with realistic mock data from `research.md`.
+  mirror `spotify_blueprint.py` / `apple_music_blueprint.py`, keep CORS open for
+  the site origin. Avoid touching auth, the DB schema, or other blueprints unless
+  the feature truly needs it.
+- Point the demo at `https://api.michaelwegter.com/<prefix>/...`. If the demo
+  needs login, seed a demo/test account and write the credentials into your build
+  report so the deploy-test step can log in and exercise it.
+- Do NOT push or restart the backend yourself. The deploy step pushes it and the
+  Surface auto-deploy watcher restarts the API. Just record the backend changes
+  (files, endpoints, test credentials) in your build report.
+- Frontend-only with realistic mock data is fine for simple demos that gain
+  nothing from a server.
 
 ## Register it
 Add one entry to `../michaelwegter.com/src/data/workSamples.js` using the schema

@@ -148,9 +148,30 @@ never just static images.
   Blueprint, register it in `server.py`, keep CORS open for the site origin.
   Mirror the structure of `spotify_blueprint.py`. Do NOT touch auth, the DB
   schema, or existing blueprints unless the demo truly needs it.
-- **Only touch the backend when the demo genuinely needs server-side work**
-  (secrets, a real DB, heavy compute). Frontend-only demos with mock data are
-  the default and are cheaper and safer.
+- **Use the backend whenever a project needs or benefits from it** (auth, a real
+  DB, real integrations, server-side compute). Many proposals are stronger with a
+  working backend, not just mock data. If the demo needs login, seed a demo/test
+  account and record the credentials so the live test can log in. Keep
+  frontend-only with mock data for simple demos that gain nothing from a server.
+
+---
+
+## Deploy + live test (deploy and deploy-test steps)
+
+- **Deploy = push, both repos.** The `deploy` step commits and pushes
+  `michaelwegter.com` (GitHub Pages auto-builds the site) and, if a blueprint was
+  added, `mw-backend` (the Surface Pro runs an auto-deploy watcher that pulls and
+  restarts the API within ~30s). No step should SSH to or restart the Surface;
+  pushing is the deploy. After pushing, `deploy` verifies the live URLs are up
+  (site 200, `api.michaelwegter.com/health` ok).
+- **deploy-test = exercise the LIVE deployment.** The `deploy-test` step (a check
+  node) runs Playwright against the real deployed site and API, including login
+  and multi-step workflows, and emits `VERDICT: pass|fail`. A fail loops back to
+  `demo-builder` to fix and redeploy. This runs BEFORE `media-capture`, so media
+  and the proposal are built on a verified-live demo.
+- Recommended order when a project has a backend or a live deployment matters:
+  `... -> demo-builder -> deploy -> deploy-test -> media-capture -> ...` (load the
+  `with-deploy` layout in the studio).
 
 ---
 
