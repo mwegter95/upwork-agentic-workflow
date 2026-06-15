@@ -175,6 +175,24 @@ never just static images.
 
 ---
 
+## Feature richness + the CEO (supervisor)
+
+- Every run carries a target **feature richness (1 to 10)** set by a slider in the
+  studio and injected into every step's prompt. Planner and demo-builder must
+  scale ambition to it: 10 = a genuinely full-featured, production-quality app
+  with several working features; 5 = a solid focused app; 1 = a minimal prototype.
+  Build real functionality to the requested level.
+- The **CEO** is a `supervisor` node (agent `ceo`), the supervising partner.
+  Pair it after planner and after demo-builder. It reviews the work against the
+  brief + feature level and either: passes; loops back to its partner with notes
+  (back-and-forth until right); or issues `REDIRECT: <stepId>` + `NOTE:` to re-run
+  an earlier step out of order with new direction, after which the engine resumes
+  at the CEO's position (a detour, the in-between steps are not re-walked). Loops
+  and redirects are bounded by the per-node retry cap.
+- Use the `with-ceo` layout in the studio for this pattern.
+
+---
+
 ## Token-budget rules (every agent follows these)
 
 These are not suggestions. Blowing the budget is a failure mode the workflow is
