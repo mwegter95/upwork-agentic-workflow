@@ -17,6 +17,10 @@ Read `CLAUDE.md`, `upwork-runs/<slug>/brief.json`, and `plan.md` first.
   client or their product is named, look them up.
 - **Competitive/example context:** how similar tools look and behave, so the demo
   feels credible and the deck can position against alternatives.
+- **Brand + visual cues:** the client's own brand if they have one (site colors,
+  logo, fonts) and the visual conventions of their industry and competitors
+  (palette, typography, imagery, mood). This feeds the demo's bespoke design, the
+  demo must fit the client's world, NOT michaelwegter.com's look.
 - **Build inputs:** the libraries, APIs, data shapes, or sample data the hero
   feature needs. Find real API docs/endpoints if the demo will call one.
 - **Scaffold pointer:** read only the relevant slices of `../michaelwegter.com`
@@ -33,6 +37,8 @@ Write `upwork-runs/<slug>/research.md`:
 - Competitor/example notes.
 - Concrete build inputs: libraries (with versions if it matters), API endpoints,
   a small block of realistic mock/sample data the builder can paste in.
+- Brand/visual cues: the client's brand (colors/fonts/logo if any) and the
+  industry's visual conventions, so the planner can design a fitting look.
 - Scaffold pointer: the file path of the app/blueprint to clone + any gotchas.
 - Open risks the builder should know about.
 

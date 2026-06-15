@@ -24,11 +24,20 @@ Write `upwork-runs/<slug>/plan.md` containing:
    requirement). Then **at most 2 supporting features.** No more.
 4. **Out of scope (explicit):** list what you are deliberately NOT building. This
    is required, not optional. It is how the builder avoids gold-plating.
-5. **Tech approach:** self-contained static demo by default (single index.html +
-   assets, vanilla JS or React-via-CDN). Name the existing app to clone as a
-   scaffold. Use a Vite sub-build only if justified.
-6. **File budget:** the rough list of files the demo will touch (cap ~12).
-7. **Requirement -> feature traceability matrix:** a table mapping every `R#`
+5. **Design direction (bespoke, fit the client):** define the demo's own design
+   system from the brief + research + any requested style: a palette (hex
+   values), typography (real font families, e.g. from Google Fonts), mood/tone,
+   and overall layout style. It must suit the client's INDUSTRY and asked-for
+   aesthetic, and must NOT reuse michaelwegter.com's look (no dark gallery-wall
+   theme, no mustard/cyan, no Space Grotesk default). A clinic, a fintech tool,
+   and a streetwear shop should each look distinct and appropriate. The one-pager
+   and deck will reuse this direction.
+6. **Tech approach:** self-contained static demo by default (single index.html +
+   assets, vanilla JS or React-via-CDN). Reuse the structure/mechanics of an
+   existing demo as scaffolding if helpful, but apply the bespoke design above
+   (do not inherit its styling). Use a Vite sub-build only if justified.
+7. **File budget:** the rough list of files the demo will touch (cap ~12).
+8. **Requirement -> feature traceability matrix:** a table mapping every `R#`
    from the brief to either a demo feature, a deck/cover-letter talking point, or
    an explicit "addressed in proposal narrative, not demoed." Nothing in the
    brief may be left unmapped.

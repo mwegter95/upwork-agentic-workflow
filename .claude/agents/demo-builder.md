@@ -16,11 +16,20 @@ Read `CLAUDE.md` (especially "Demo hosting" and the caps), then
 - **Default form:** a self-contained app: one `index.html` plus a local
   `assets/` folder (vanilla JS, or React + htm via CDN). No bundler. This is
   served at `/demos/<slug>/` and iframed by the work-samples route.
-- Use the scaffold the researcher named. Clone its structure rather than writing
-  from scratch.
+- Reuse an existing demo's structure/mechanics as scaffolding if it speeds you
+  up, but build the UI fresh.
 - If `plan.md` chose a Vite sub-build: scaffold under
   `upwork-runs/<slug>/demo-src/`, set `base: '/demos/<slug>/'`, `npm run build`,
   then copy `dist/*` into `../michaelwegter.com/public/demos/<slug>/`.
+
+## Design (bespoke, fit the client)
+Implement the **design direction from `plan.md`** (its palette, fonts, mood,
+layout). Build a cohesive UI that fits the client's industry and the requested
+style. Do NOT reuse michaelwegter.com's look (the dark gallery-wall theme,
+mustard/cyan, Space Grotesk defaults) — that is the portfolio's personality, not
+the client's. Pull appropriate fonts (e.g. Google Fonts) and choose colors that
+suit the domain. Each demo should look like it belongs to the client's world and
+distinct from other demos.
 
 ## Backend (use it whenever the project needs or benefits from it)
 Many projects are stronger with a real backend (auth, a database, real

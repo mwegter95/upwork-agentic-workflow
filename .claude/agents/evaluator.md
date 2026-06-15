@@ -27,8 +27,10 @@ then the run artifacts: `brief.json`, `plan.md`, `build-report.md`,
 5. **No em/en dashes:** grep `cover-letter.md` and `one-pager.html` for the
    characters U+2014 and U+2013. Any hit is a fail. (Command:
    `grep -nP "[\x{2013}\x{2014}]" <file>`.)
-6. **On-brand:** the one-pager uses the design tokens (dark palette + the three
-   site fonts), not default browser styling.
+6. **Cohesive client-fit design:** the demo and one-pager use a deliberate design
+   system suited to the client's industry / requested style (a real palette and
+   fonts, not default browser styling) and do NOT copy michaelwegter.com's look
+   (no dark gallery-wall theme / mustard-cyan / Space Grotesk defaults).
 
 ## Soft scores (1 to 5 each; target >= 4 average, none below 3)
 - Cover letter specificity (no generic filler, references the real demo).

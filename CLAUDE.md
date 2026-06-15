@@ -68,35 +68,32 @@ clone its mechanics:
 `workSamples.js` adds these fields on top: `client`, `postingSummary`,
 `builtFor`, `date` (ISO), `proposalDeckUrl`, `proposalPageUrl`.
 
-### Design tokens (from `src/index.css` `:root`) — use these everywhere
+### Demo design — do NOT copy michaelwegter.com's look
 
-Deck, one-pager, and demo must look like they belong to this site.
+**Each demo gets its own design system, fit for the client's industry and the
+style the posting asks for.** Do not reuse michaelwegter.com's tokens (the dark
+"gallery-wall" theme, mustard/cyan palette, Space Grotesk / Inter / JetBrains
+Mono). That look is the portfolio site's personality, not the client's. A
+fintech tool, a pediatric clinic site, and a streetwear shop should look nothing
+alike, and nothing like this portfolio.
 
-```
-Palette
-  --mustard      #e8b820   (accent / primary)
-  --cyan-vivid   #12b4c8
-  --hot-pink     #f0186e
-  --parrot-red   #e83828
-  --parrot-green #6ed46a
-  --sky-blue     #3a8fcc
-Surfaces (dark theme)
-  --bg-root      #121118   --bg-surface #191720   --bg-card #1e1c26   --bg-card-hover #24222e
-Borders
-  --border-subtle #201e2a  --border-default #2c2a38  --border-active #3a3848
-Text
-  --text-primary #f2ede4   --text-secondary #8a8898   --text-muted #4a4858
-Accent
-  --accent = --mustard
-Fonts
-  --font-display  'Space Grotesk', system-ui, sans-serif   (headings)
-  --font-body     'Inter', system-ui, sans-serif           (body)
-  --font-mono     'JetBrains Mono', 'Fira Code', monospace  (labels, eyebrows, code)
-```
+How the design is decided:
+- **researcher** gathers the client's real brand (their site/logo/colors if they
+  exist) and the visual conventions of their industry and any competitors.
+- **planner** defines a bespoke design direction for the demo: palette (with hex
+  values), typography (real font families appropriate to the vibe), mood/tone,
+  and layout style, derived from the brief + research + any requested style.
+- **demo-builder** implements that design direction faithfully. Pull fonts from
+  Google Fonts as needed; choose colors that fit the industry; match the
+  requested aesthetic.
 
-Visual character: dark gallery-wall aesthetic, ornate picture frames around app
-cards, mono eyebrows in caps with letter-spacing, generous spacing, restrained
-use of the bright palette as accents against the dark surfaces.
+The proposal **one-pager and deck** should also be tailored to the client (lean
+on the demo's design language), not styled like this portfolio.
+
+The ONLY thing that keeps michaelwegter.com's styling is the `/work-samples`
+gallery card + `workSamples.js` registry entry (that is the portfolio's own
+chrome around the embedded demo) — that is handled by the site's components, not
+by the demo's CSS, so you do not need the site palette anywhere in a demo.
 
 ---
 
@@ -239,7 +236,8 @@ A run is only "done" when ALL of these hold:
 3. The demo URL (`/demos/<slug>/`) resolves locally, and after deploy the live
    `/work-samples/<slug>` route returns 200.
 4. The demo link appears in both the cover letter and the deck.
-5. Deck, one-pager, and demo use the design tokens above and contain no em/en
-   dashes.
+5. Demo, one-pager, and deck use a cohesive, bespoke design fit for the client's
+   industry and requested style (NOT michaelwegter.com's look), and contain no
+   em/en dashes.
 6. `eval-report.md` exists with a passing score and an empty (or accepted) fix
    list.

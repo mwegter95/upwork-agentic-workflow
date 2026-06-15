@@ -77,8 +77,9 @@ next subagent — pass the path.
    writes screenshots + a short recording to `proposal/media/`. Returns paths.
 6. **proposal-writer** -> writes `proposal/cover-letter.md`,
    `proposal/one-pager.html`, and `proposal/deck.pptx` using `brief.json`,
-   `plan.md`, the media, `reference/brand-voice.md`, and the design tokens in
-   CLAUDE.md. Returns paths.
+   `plan.md` (including its bespoke design direction), the media, and
+   `reference/brand-voice.md`. The deliverables are styled to fit the client's
+   industry, not michaelwegter.com. Returns paths.
 7. **evaluator** -> writes `eval-report.md`. Scores the whole package against
    `rubric/proposal-rubric.md` and the hard gates in CLAUDE.md. Returns: pass/fail
    per hard gate, soft scores, and a prioritized fix list.

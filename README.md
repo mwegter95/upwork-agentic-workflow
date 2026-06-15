@@ -1,6 +1,6 @@
 # Upwork Proposal Engine
 
-A multi-agent Claude Code workflow that turns a raw Upwork posting into a complete, client-winning proposal package: a polished pitch deck, an on-brand HTML one-pager, a tailored cover letter, and a **real working demo** deployed live to the `/work-samples` section of michaelwegter.com.
+A multi-agent Claude Code workflow that turns a raw Upwork posting into a complete, client-winning proposal package: a polished pitch deck, a client-styled HTML one-pager, a tailored cover letter, and a **real working demo** (with a bespoke design fit for the client's industry, not the portfolio's look) deployed live to the `/work-samples` section of michaelwegter.com.
 
 It runs fully autonomously end to end, then stops once for your review-and-revise pass.
 
@@ -33,7 +33,7 @@ upwork-runs/<slug>/
   run.log             per-phase log for debugging
   proposal/
     deck.pptx         the pitch deck
-    one-pager.html    standalone on-brand proposal page
+    one-pager.html    standalone client-styled proposal page
     cover-letter.md   the Upwork message to paste
     media/            screenshots + screen recording of the demo
 ```

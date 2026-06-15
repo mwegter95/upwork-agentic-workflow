@@ -14,7 +14,7 @@ nothing below 3.
 | H3 | **Demo URL resolves** | `node scripts/link-check.mjs <url>` on the local preview (pre-deploy) or live `/work-samples/<slug>` (post-deploy) returns 200-399. | demo-builder / deploy |
 | H4 | **Demo link present** | The demo link appears in both `cover-letter.md` and the deck. | proposal-writer |
 | H5 | **No em/en dashes** | `grep -nP "[\x{2013}\x{2014}]"` finds nothing in `cover-letter.md` or `one-pager.html`. | proposal-writer |
-| H6 | **On-brand** | One-pager uses the design tokens (dark palette + Space Grotesk / Inter / JetBrains Mono), not default styling. | proposal-writer |
+| H6 | **Cohesive client-fit design** | Demo + one-pager use a deliberate, industry-appropriate design system (not default browser styling, and NOT michaelwegter.com's portfolio look). | proposal-writer / demo-builder |
 
 ## Soft scores (1 to 5)
 
@@ -23,7 +23,7 @@ nothing below 3.
 | **Cover letter specificity** | Names their problem and context, references the real demo, zero generic filler or buzzwords. |
 | **Conciseness** | Skimmable, short, respects the client's time. The demo carries the persuasion. |
 | **Demo quality** | The hero feature actually impresses for THIS client and clearly maps to their #1 need. |
-| **Deck polish** | On-brand, clean, the live demo is front and center. |
+| **Deck polish** | Cohesive client-fit design, clean, the live demo is front and center. |
 | **Persuasiveness** | If you were the client, you would click the demo and shortlist Michael. |
 
 ## Scoring output
