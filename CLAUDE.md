@@ -193,26 +193,44 @@ never just static images.
 ## Token-budget rules (every agent follows these)
 
 These are not suggestions. Blowing the budget is a failure mode the workflow is
-explicitly designed to avoid.
+explicitly designed to avoid. Each step already runs as its own isolated query
+(small context), so spend tokens only on this step's real work.
 
-1. **Isolate heavy work.** Reading repos, browsing, building, capturing, and
-   writing docs each happen inside a subagent. Return a short summary, not the
-   raw material.
-2. **Disk is memory.** Write intermediates to `upwork-runs/<slug>/`. Pass file
-   paths between phases, never file contents.
-3. **Read narrowly.** Use Grep/Glob then targeted `Read` with offsets. Never cat
-   a whole large file to find one thing. This CLAUDE.md already contains most of
-   what you would have gone looking for.
-4. **Reuse, don't regenerate.** Clone the simplest existing app/blueprint as a
-   scaffold instead of writing boilerplate from scratch.
-5. **Respect the caps.** Per run: 1 hero feature + at most 2 supporting features;
-   demo touches at most ~12 files; build timeout 3 min; reflection retries capped
-   at 2; web research capped at ~6 fetches.
-6. **Stream to files, not chat.** Deliverables are written to disk, never echoed
-   back into the conversation.
-7. **Right-size the model.** Cheap phases (intake, media capture, link checks,
-   rubric scoring) run on a small model; plan/build/write run on the strong one.
-   The model is set per agent in its frontmatter.
+1. **Output discipline.** Ultra-concise, high-density. No preamble, no filler, no
+   restating the instructions, no narrating what you are about to do, no polite
+   wrap-ups. Every token should carry technical signal.
+2. **Surgical edits.** To change a file, edit only the lines that change (use
+   Edit). Never rewrite a whole file for a small change. This is the single
+   biggest token waster, do not do it.
+3. **Read narrowly, read handoffs first.** Use Grep/Glob + targeted `Read` with
+   offsets. Read each upstream output's `## handoff` block first (see below) and
+   open the full file only if you actually need more. Never cat a whole large
+   file to find one thing.
+4. **Disk is memory; pass paths, not contents.** Write to `upwork-runs/<slug>/`.
+   Do not paste file contents back into your messages.
+5. **Reuse, don't regenerate.** Clone an existing app/blueprint's structure
+   instead of writing boilerplate from scratch (but design the UI fresh).
+6. **Respect the caps.** Per run: 1 hero feature + at most 2 supporting; demo
+   touches at most ~12 files; build timeout 3 min; retries capped per node; web
+   research capped at ~6 fetches.
+7. **Right-size the model.** It is already set per node (haiku for cheap phases,
+   sonnet for mid, opus/inherit for heavy). Do not request more.
+
+### Handoff blocks (lightweight provenance + compression)
+
+Every step ends its output file with a compact block:
+
+```
+## handoff
+- produced: <what this step made, 1 line>
+- decisions: <key choices the next step must respect>
+- next needs: <what the next step should focus on>
+- risks: <anything unresolved>
+```
+
+It is the provenance trail (debuggable chain of what each step did) AND it lets
+downstream steps act on a few lines instead of re-reading large files. Keep it to
+4 to 6 short bullets. Check nodes (eval/CEO) still end with their `VERDICT:` line.
 
 ---
 
