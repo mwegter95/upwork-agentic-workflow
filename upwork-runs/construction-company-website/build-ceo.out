@@ -1,0 +1,59 @@
+# CEO (Build) Review — Construction Company Website
+
+**Demo:** Cornerstone Construction Co. (`construction-company-website`)
+**Target feature richness:** 10/10
+**Review type:** Build-phase supervisory check (verified by running tools, not assumed)
+
+---
+
+## What I verified (with tools)
+
+1. **File manifest is real.** All 8 source files + 2 binary assets present on disk at
+   `michaelwegter.com/public/demos/construction-company-website/`. hero.mp4 (6.8 MB)
+   and hero-poster.jpg (583 KB) are local/same-origin, matching the brief's hard
+   requirement for a video-background homepage.
+2. **All resources serve 200.** Spun up a local http.server and curled every page and
+   asset: index (`/`), services, projects, contact, hero.mp4, hero-poster.jpg,
+   style.css, main.js, projects.js, contact.js — all returned 200. No broken links;
+   internal nav hrefs all point to existing pages.
+3. **JS is valid.** `node --check` passes on main.js, projects.js, contact.js. No syntax errors.
+4. **JS is defensively guarded.** main.js wraps DOM access in `if (heroVideo && heroVideoWrap)`
+   and similar null-guards (nav, hamburger, fade, stats, FAQ), so missing elements on a
+   given page won't throw on first paint. Hero video has both an `error` listener and a
+   4s readyState timeout that falls back to the poster — exactly the right way to do a
+   video hero.
+5. **Feature richness matches 10/10.** Confirmed real, working features, not placeholders:
+   - Video-background hero with overlay + poster fallback (the headline brief item)
+   - Services page: 3 service sections, each with 3 concrete pricing tiers ($180/sq ft,
+     $260/sq ft, $125/hr, $175/hr, day rates, contact-for-quote) + FAQ accordion
+   - Projects page: 47 hits for filter/card/lightbox markup — filter tabs + lightbox
+     with keyboard nav and focus trap
+   - Contact page: full validated form (full-name, email, phone, service, description,
+     contact-method radio; 8 `required` attributes) with inline errors + success state
+   - Supporting: animated stats counters, testimonials, sticky transparent-to-solid nav,
+     mobile hamburger drawer, scroll fade-ins
+6. **Bespoke, on-brief design.** Industrial charcoal + safety-amber system with
+   Oswald/DM Sans/Archivo — fit for a construction company, not michaelwegter.com's look.
+   Directly serves the "extra clean, medium-rare" UX/UI ask.
+7. **No em/en dashes.** Grep across all html/js/css = none. (The `─` glyphs in HTML
+   comments are box-drawing characters, not dashes — not a violation.)
+8. **Registry entry present.** workSamples.js has the `construction-company-website`
+   entry (id 8) with correct slug and `href: import.meta.env.BASE_URL + "demos/..."`.
+
+## Problems
+
+None blocking. Minor observations for downstream (not fixes required of the builder):
+
+- Live console-error-free verification on first paint and full click-through of filter/
+  lightbox/form submit will be done by **deploy-test** with Playwright (no Playwright
+  module is installed in this repo, so I verified structure + 200s + JS validity instead).
+  Nothing I found suggests a runtime error, but deploy-test is the authoritative gate.
+
+## Decision
+
+Every explicit brief requirement (video hero, services+pricing, contact, projects) is
+implemented as a real working feature; polish and breadth match the 10/10 target; design
+is bespoke and industry-appropriate; writing rules respected; demo loads cleanly. The
+foundation from planner/researcher was sufficient — no REDIRECT needed. Proceed to deploy.
+
+VERDICT: pass

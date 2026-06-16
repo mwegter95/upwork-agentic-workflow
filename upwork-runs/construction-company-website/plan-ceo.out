@@ -1,0 +1,36 @@
+# CEO Review — Plan (Construction Company Website)
+
+**Reviewer:** CEO / supervising partner
+**Step reviewed:** planner.out
+**Target feature richness:** 10/10
+**Date:** 2026-06-15
+
+---
+
+## What I checked
+
+- Read `planner.out` in full against `brief.json` (all 6 requirements, site must-haves, the richness-10 expected scope list, hard gates, and design guidance).
+- Verified the requirement-to-feature traceability matrix actually maps every `brief.json` requirement id (1-6) to concrete features and files.
+- Sanity-checked the build decision, file count vs. the 12-file cap, design direction vs. the "NOT michaelwegter.com" rule, and the hero-video sourcing/fallback strategy.
+
+## Findings
+
+**Faithfulness to brief: strong.**
+- All 6 requirements are mapped to real features (video hero, services+pricing, validated contact form, filterable projects gallery + lightbox, bespoke construction theme, UX/UI polish). The traceability matrix is complete and honest.
+- Every richness-10 expectation in `featureRichness10Expectations.expectedScope` is present: hero video + animated CTA, differentiated pricing tiers, filterable gallery with lightbox, validated form with success state, social proof (stats counters + testimonials), mobile hamburger, micro-interactions, WCAG AA, reduced-motion support.
+- All `siteMustHaves` are covered (responsive breakpoints, sticky nav, footer, hierarchy, imagery, no em/en dashes flagged as build-time check, multi-page feel via 4 real pages).
+
+**Design direction: on-brief and bespoke.**
+- Charcoal/graphite + safety-amber + Oswald/DM Sans is exactly what `designGuidance.DO` and requirement 5 suggested, and is distinct from michaelwegter.com's mustard/cyan + Space Grotesk stack. The "dark" here is industrial/agency-builder dark, not the portfolio's gallery-wall theme. No violation. Sharp-corner buttons + amber accents reads as "established regional builder," matching the "medium rare" metaphor.
+
+**Ambition for 10/10: adequate.**
+- 4 full pages, 8 files, real interactive logic across nav/filter/lightbox/counter/form. This is a genuinely full-featured marketing site, not a prototype. Build decision (FULL) is correctly justified and no prototype trigger fires.
+
+**Risks / notes for downstream (not blockers):**
+1. **Hero video reliability is the single biggest execution risk.** Mixkit/Pexels direct MP4 hotlinking can break (CORS, hotlink protection, URL churn). The fallback to a poster image is well specified, but demo-builder should treat "video actually plays autoplay-muted on the live deploy" as a deploy-test gate, and prefer downloading the MP4 into `assets/` (same-origin) over hotlinking if a reliable royalty-free source allows it. Same-origin asset avoids CORS entirely.
+2. **Imagery via Unsplash/Pexels CDN hotlinks** has the same fragility. The CSS-gradient fallback is acceptable, but a site full of gradient placeholders would undercut the "premium" success criterion. Researcher should hand demo-builder confirmed-working image URLs (or local assets) so the gallery looks real.
+3. Contact form is client-side only. That is the correct call for this brief (no backend value-add), and scope fences already note the production version would add a handler. Fine as-is.
+
+None of these require re-planning; they are build-time guardrails the plan already anticipates. The plan is ambitious enough for 10/10 and faithful to every requirement. No REDIRECT needed.
+
+VERDICT: pass

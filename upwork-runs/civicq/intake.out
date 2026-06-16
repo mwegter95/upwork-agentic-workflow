@@ -1,0 +1,262 @@
+# Intake — CivicQ Landing Page Build
+
+## Client & Project Identity
+
+**Client:** CivicQ (nonpartisan civic information platform)
+**Deliverable:** Public-facing home page + methodology page at civicq.org
+**Positioning:** Michael is an expert US-based front-end developer (✓ qualified; note in proposal) extending an existing staging dark-mode design system, building to spec, not redesigning
+**Brand identity:** Nonpartisan, civic-tech, "no spin just the record," data-forward, transparent, factual, official tone
+**Budget range:** $3,500–$5,000 fixed price (milestone payments welcome)
+**Timeline:** 2–4 weeks from start; hard launch dependency on GoFundMe campaign
+**Target feature richness:** 10/10 (full-featured, production-quality, complete landing page built to spec with all three custom data visualizations working)
+
+---
+
+## The Deliverable — 10-Section Landing Page + /methodology Page
+
+### Main Page (civicq.org) — 10 sections with sticky navigation
+
+1. **Hero**
+   - Video thumbnail
+   - Primary CTA + secondary CTA
+   - Keyword: "no spin, just the record" sensibility
+
+2. **Problem Statement**
+   - Single-column text
+   - Frames the need for civic transparency
+
+3. **Feature Card Grid**
+   - 2×2 grid (4 features)
+   - LIVE / IN DEVELOPMENT status pills on each
+   - Signals honesty about current vs. roadmap features
+
+4. **Scoring Methodology Visualization**
+   - Custom 6-dimension weighted chart (SVG or Recharts/D3)
+   - Must clearly show weights; interactive/animated preferred
+   - Explains how CivicQ scores voting/bill/statement data
+
+5. **Honest Status Disclosure**
+   - Two-column layout: LIVE (what works now) vs. IN DEVELOPMENT (what's coming)
+   - Emphasizes radical transparency
+
+6. **Organization Hub Section**
+   - Wireframe mockup included
+   - Email capture form (Mailchimp/ConvertKit level, but with CSV backup export)
+   - Positioning: for orgs/researchers who want deeper access
+
+7. **Fundraising Module**
+   - $75K funds-breakdown graphic (custom data viz, coded)
+   - Sum must total $75K; readable at a glance
+   - GoFundMe CTA (link provided by client)
+   - **Hard launch dependency:** this is launch-blocking
+
+8. **Partners / Press / Orgs**
+   - Three-column card section
+   - Lists and links
+
+9. **Feedback Banner + Footer**
+   - Sticky feedback call-out
+   - Footer with nav links, copyright, etc.
+
+10. **Sticky Navigation**
+    - Anchor links to all 10 sections above
+    - Active section highlighting on scroll
+    - Integrates with existing search/auth UI
+
+### Secondary Page: /methodology
+
+- Dedicated page at civicq.org/methodology
+- Content provided by client (structured drop-in doc)
+- Same dark-mode design system, responsive, accessible
+
+---
+
+## Hard Requirements (Grading Checklist)
+
+### Stack & Environment
+- **React or Next.js** (client lists both; Next.js is preferred for SEO + structure)
+- **JavaScript**
+- Integrate with existing staging environment and design system
+
+### Design & Styling
+- **Dark-mode design system matched precisely; NOT redesigned**
+- Existing tokens/palette/typography provided to the hired dev (unavailable to us; demo uses a faithful stand-in civic-tech dark theme)
+- Restrained, neutral, institutional aesthetic (no partisan color coding, no loaded language)
+- Nonpartisan in every pixel and word
+
+### Responsive & Performance
+- **Fully responsive:** 390px (mobile) and 1440px (desktop), fluid in between
+- **Lighthouse 85+ on mobile** (accessibility, performance, best practices)
+- Lean build; no unnecessary animation or bloat
+
+### Data Visualizations (3 required, all coded)
+1. **Six-dimension weighted scoring chart**
+   - Bar, donut, or radar chart showing weights clearly
+   - Interactive/animated preferred but functional clarity is required
+   - Built from scratch with SVG or Recharts/D3; no pre-built component
+
+2. **$75K Funds Breakdown Graphic**
+   - Pie, bar, or stacked chart summing to exactly $75K
+   - Readable at a glance; shows allocation across categories
+   - Accessible to low vision / color-blind users
+
+3. **Organization Hub Wireframe Mockup**
+   - Looks like an intentional product design, not a gray box
+   - Shows what org access/research features might look like
+   - Illustrative but appears production-ready
+
+### Forms & Backend Integration
+- **Email Capture Form**
+  - Mailchimp/ConvertKit level integration
+  - **CSV export / backup capability required**
+  - On success: clear confirmation, no page reload on submission
+  - Validating (email required, basic checks)
+
+- **Backend expectation:** Demo should wire mw-backend with a civicq_blueprint.py
+  - POST /subscribe: store email + timestamp to DB
+  - GET /csv-export: return all emails as CSV
+  - This proves the "CSV backup" requirement with working persistence
+
+### Analytics
+- **Plausible or Fathom preferred** (privacy-respecting)
+- Lightweight event hooks in place (placeholder implementation is OK; signals best practices)
+- Page view tracking at minimum
+
+### Accessibility
+- **WCAG 2.1 AA** minimum
+- Semantic HTML (nav, section, main landmarks)
+- Focus states (keyboard nav visible)
+- Color contrast ≥4.5:1 for text; ≥3:1 for large text
+- Alt text on all images
+- ARIA labels where needed (button purposes, status pills, etc.)
+- Respects prefers-reduced-motion
+- Form labels properly associated
+
+---
+
+## The Four To-Apply Asks (Must Answer in Proposal)
+
+1. **Portfolio**
+   - Link the live demo: https://michaelwegter.com/demos/civicq/
+   - Embed in /work-samples/civicq on the site
+   - The demo IS the portfolio piece for this project
+
+2. **Timeline Estimate**
+   - Client window: 2–4 weeks
+   - Must give concrete milestone plan
+   - Account for: design system study → structure/sections → data viz → email form + backend → polish + testing + accessibility audit
+   - Flag GoFundMe hard-launch dependency as a known blocker if not provided on time
+
+3. **Approach to Three Custom Graphics**
+   - Michael builds all three himself in code
+   - No designer assets needed; all three are coded (SVG / Recharts / D3)
+   - Prove this by shipping three fully functional, accessible data visualizations in the demo
+   - Briefly state: "The demo shows all three graphics live"
+
+4. **Fixed Price Bid**
+   - Range: $3,500–$5,000
+   - Must propose a number within or justified outside this range
+   - Milestone payment structure suggested (e.g., 40% design/structure, 40% viz+forms, 20% polish/testing)
+
+---
+
+## Requirements Traceability (Brief → Demo → Proposal)
+
+Every item below must appear in the demo and be explicitly addressed in the cover letter:
+
+| Requirement | Demo Evidence | Proposal Coverage |
+| --- | --- | --- |
+| 10 sections with sticky nav | All sections render; nav anchors work; active state highlights | List the 10 sections; link to live demo |
+| /methodology page | Page loads at /demos/civicq/methodology | Screenshot or description in deck |
+| Dark-mode design system match | Screenshots show neutral, institutional palette | Note that production matches CivicQ's tokens precisely |
+| Responsive 390/1440 | Mobile & desktop views both load/scroll correctly | Mention tested breakpoints |
+| Lighthouse 85+ mobile | Measure in devtools; report score in live test | Note commitment to performance |
+| Six-dimension scoring chart | Chart renders with labels, weights, interactivity | Screenshot in deck; explain the weighting logic |
+| $75K funds breakdown | Graphic shows allocation summing to $75K | Screenshot; note accessibility (color-blind safe) |
+| Org Hub wireframe mockup | Visual appears intentional and product-like | Screenshot; explain the feature |
+| Email capture + CSV export | Form submits; email persists; /csv-export returns rows | Describe backend integration |
+| Analytics setup | Plausible/Fathom events fire; console shows events | Mention privacy-respecting approach |
+| WCAG 2.1 AA | No Lighthouse accessibility failures; pass keyboard nav test | Commit to accessibility standard |
+| GoFundMe CTA | Button links to campaign or placeholder | Note it in deck |
+| US-based developer | Note in cover letter | "I'm US-based and available..." |
+
+---
+
+## Brand Voice & Writing Rules
+
+**Tone & Content:**
+- Nonpartisan, factual, institutional, data-forward
+- "Just the record" — avoid spin, loaded language, partisan color
+- Transparent: emphasize LIVE vs. IN DEVELOPMENT honestly
+- Professional but approachable
+- Placeholder copy should read like real CivicQ copy (about voting records, bill activity, public statements pulled from official sources)
+
+**Writing Hard Rules (CLAUDE.md):**
+- **No em dashes (–) or en dashes (—) anywhere** in cover letter, deck, one-pager
+- Use commas, periods, or rewrite sentences
+- Write in Michael's voice (see reference/brand-voice.md if available)
+- Address client requirements explicitly and concretely
+- No generic filler or buzzword soup
+- Reference the live demo by name and link
+
+**Design Consistency:**
+- Demo, one-pager, and deck use a cohesive **bespoke civic-tech dark design system**
+- NOT michaelwegter.com's mustard/cyan gallery theme
+- Fit for civic tech / nonprofit sector
+- Reflects "institutional, neutral, data-forward" identity
+
+---
+
+## Key Insights & Risks
+
+### Why This Matters (Reading Between the Lines)
+
+1. **The demo is the proposal.** Building all 10 sections + both pages + all three data viz means the proposal can say "here is your home page, already built and live." That beats any amount of prose and directly answers "can you build this?"
+
+2. **Spec fidelity is trust.** Client explicitly fears a dev who redesigns or rewrites. The demo and proposal must signal **discipline and spec-fidelity:** build exactly the 10 sections in order, match their structure (status pills, two-column disclosures, three-column cards), and respect the "build to spec" framing. This is a differentiator.
+
+3. **Nonpartisan is the whole identity.** Every word and visual must read as neutral, institutional, trustworthy. No red/blue partisan color coding, no editorializing. Think official record, data-forward, calm authority.
+
+4. **The three data visualizations are make-or-break.** The proposal must speak to them directly. All three must be **real, coded, accessible** SVG/Recharts visuals — not placeholders or gray boxes. The six-dimension chart should clearly show weights, the $75K breakdown should sum correctly and read at a glance, and the Org Hub mockup should look intentional and product-ready.
+
+5. **Hard launch dependency on GoFundMe.** The fundraising module and $75K graphic are not decoration; they are launch-blocking. Treat the data viz and CTA as first-class deliverables.
+
+6. **Email capture must actually work.** Richness 10 means a submitted email persists and a CSV export returns it. This directly proves the "Mailchimp/ConvertKit + CSV backup" requirement instead of just claiming it. Backend integration adds credibility.
+
+7. **Accessibility + performance are graded.** WCAG 2.1 AA (contrast, focus, semantics, ARIA, reduced-motion) and Lighthouse 85+ are not nice-to-haves; they are explicit requirements. Build lean; avoid over-animation.
+
+---
+
+## Scope & Token Budget
+
+**Demo scope (fitting 10/10 richness):**
+- Hero feature: complete 10-section landing page + /methodology page with sticky anchor nav
+- Supporting feature 1: three coded data visualizations (all working, accessible, interactive)
+- Supporting feature 2: working email capture + CSV export backend integration
+- Minor support: LIVE/IN-DEV status pills, two-column disclosures, responsive polish, analytics hooks, a11y audit
+
+**Token budget constraints:**
+- Demo touches ≤~12 files (index.html + CSS + JS; if Vite: src/App.jsx, pages, components, hooks, assets)
+- Build timeout: 3 min
+- Research fetches: ≤~6 (civic-tech platforms, nonprofit dark-mode patterns, Recharts docs)
+- Reflection retries: ≤2
+
+**Design constraints:**
+- Use existing mw-backend as backend scaffold (copy spotify_blueprint.py pattern for civicq_blueprint.py)
+- Demo form: self-contained static app or small Vite React build (base: '/demos/civicq/')
+- Deploy to ../michaelwegter.com/public/demos/civicq/
+
+---
+
+## Deliverables Checklist (Intake Output)
+
+- [x] Client identity, positioning, tone, and brand rules captured
+- [x] All 10 sections + /methodology page listed and described
+- [x] Hard requirements (stack, responsive, Lighthouse, three data viz, email + CSV, analytics, WCAG 2.1 AA) listed
+- [x] Four to-apply asks explicitly captured
+- [x] Requirements traceability matrix sketched (brief → demo → proposal)
+- [x] Key risks and insights documented
+- [x] Scope and token budget outlined
+- [x] Quality guidance flagged (spec fidelity, nonpartisan neutrality, data viz as make-or-break, backend integration)
+
+**Next steps:** planner will turn this into a concrete build plan (plan.md) with feature breakdown, design direction, and traceability detail. Pair with CEO after planner for spec-fidelity check.

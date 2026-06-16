@@ -1,0 +1,19 @@
+ORCHESTRATOR RUN SUMMARY
+slug: full-stack-developer-python-fastapi
+posting: Full-Stack Developer (Python/FastAPI + React) Compliance SaaS, Large-File Parsing & Rules Engine
+
+PIPELINE: intake -> planner -> researcher -> demo-builder -> media-capture -> proposal-writer -> evaluator -> deploy. All phases OK, single pass, zero reflection retries.
+
+DEMO: "Compliance Reconciliation Console" (lean-full, frontend-only, no backend).
+  Live demo:   https://michaelwegter.com/demos/full-stack-developer-python-fastapi/ (200)
+  Work sample: https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi (SPA route, renders via 404.html shim)
+  Proves: SAF-T PT XML format detection + version/period routing; simulated bounded-memory streaming parse with memory-stability chart (iterparse algorithm, projected to 500MB-equivalent); 10-rule reconciliation engine (R01-R10) with adjustable thresholds + drill-down to source transactions; analytical dashboard with 100k-row server-side-style pagination + CSV export.
+
+PROPOSAL (upwork-runs/full-stack-developer-python-fastapi/proposal/):
+  cover-letter.md, one-pager.html, deck.pptx (8 slides). Both REQUIRED questions (Q1 large-file memory mgmt, Q2 tenant isolation layers) answered concretely in the cover letter. Demo link in both cover letter and deck.
+
+EVALUATOR: PASS on all 6 hard gates; soft avg 4.8/5; fix list empty.
+
+DELIBERATELY SCOPED OUT OF DEMO (addressed in proposal prose only): real 500MB parse, Celery/Redis async, Stripe billing, Supabase/Auth0 adapter, real multi-tenant DB isolation, PDF embedded-XML extraction.
+
+DEPLOY: committed + pushed to michaelwegter.com main (46fd49c); GH Pages live.

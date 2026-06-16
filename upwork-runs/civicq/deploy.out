@@ -1,0 +1,49 @@
+# Deploy — CivicQ Landing Page
+
+## Pre-deploy check
+Verified the CEO's flagged em/en-dash fix (build-ceo.out REDIRECT) was already
+applied on disk before pushing:
+- `grep -n $'—\|–' index.html methodology.html` in
+  `michaelwegter.com/public/demos/civicq/` returned **zero matches**.
+- Local `npm run build` in `michaelwegter.com` succeeded cleanly (44 modules,
+  ~0.9s), demo files copy verbatim into `dist/demos/civicq/`.
+- `mw-backend/civicq_blueprint.py` and the `server.py` registration diff both
+  parsed clean with `ast.parse`.
+
+## Pushed (both repos, additive only)
+
+**michaelwegter.com** — commit `7e814ec` "Add CivicQ landing page demo and
+work-sample entry"
+- Added `public/demos/civicq/{index.html,methodology.html,styles.css,
+  charts.js,main.js}`
+- Modified `src/data/workSamples.js` (new entry only, no existing entries
+  touched)
+- Pushed to `main` -> GitHub Pages auto-build triggered.
+
+**mw-backend** — commit `19a17fd` "Add CivicQ email-capture blueprint"
+- Added `civicq_blueprint.py` (POST `/api/civicq/subscribe`, GET
+  `/api/civicq/csv-export`, SQLite-backed, CSV export)
+- Modified `server.py`: 2-line additive registration of `civicq_bp`, no
+  existing blueprints/auth/schema touched.
+- Pushed to `main` -> Surface auto-deploy watcher pulls + restarts.
+
+## Live verification (polled until ready, no SSH/manual restart performed)
+
+| Check | Result |
+|---|---|
+| `https://michaelwegter.com/demos/civicq/` | **200** |
+| `https://michaelwegter.com/demos/civicq/methodology.html` | **200** |
+| `https://michaelwegter.com/work-samples/civicq` | 404 status with GH Pages SPA redirect shell (expected — `404.html` stores the path and JS-redirects to `/`, which a browser resolves; this is the same mechanism every other work-sample route uses) |
+| `https://api.michaelwegter.com/health` | **200** `{"status":"ok","version":"1.0.0"}` (took ~90s after push for the watcher to restart, then recovered) |
+| `POST https://api.michaelwegter.com/api/civicq/subscribe` (test email) | **201** Created |
+| `GET https://api.michaelwegter.com/api/civicq/csv-export` | **200** |
+| Live `index.html` / `methodology.html` em/en-dash grep | **zero matches** on both (re-checked against the deployed bytes, not just local disk) |
+| Live `main.js` API base | confirmed pointed at `api.michaelwegter.com/api/civicq` (no localhost/stale URL) |
+
+## Status
+
+Deploy complete and verified live on both the frontend (GitHub Pages) and
+backend (api.michaelwegter.com). No manual server restarts were performed —
+pushing to `main` was the deploy, per convention. Ready for `deploy-test`.
+
+VERDICT: pass

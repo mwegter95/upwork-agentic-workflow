@@ -1,0 +1,136 @@
+PLANNER RUN SUMMARY
+slug: full-stack-developer-python-fastapi
+date: 2026-06-14
+
+---
+
+DEMO DECISION
+Chosen concept: "Compliance Reconciliation Console" — merges D1 (streaming XML parser) and D3 (rules engine + anomaly dashboard) into one self-contained static demo. D2 (tenant isolation) is addressed in proposal prose only; it is an architecture story, not a clickable artifact.
+
+Rationale: The client's highest-anxiety questions are (1) can you parse 500+ MB XML without OOM, and (2) do you understand the rules-engine + drill-down pattern. This demo makes both tangible before the client spends a euro. It also pre-answers the Milestone 2 payment gate (R17: iterparse PoC with memory profile), which is the single highest-risk decision point in the client's procurement process.
+
+---
+
+PROTOTYPE vs FULL
+Decision: LEAN FULL
+- No backend integration required (all client-side with sample fixtures + generated data)
+- File count stays under 12
+- Real parse loop, real rule evaluation, real pagination logic -- not static imagery
+- mw-backend: NOT needed
+
+The one honest stub: the demo does not literally stream a 500 MB file in-browser (that is a server-side concern). It simulates the iterparse algorithmic approach with chunked processing, contrasting constant-memory streaming against a naive full-load baseline as record count climbs. The cover letter states this honestly and commits to the real Milestone 2 deliverable.
+
+---
+
+HERO FEATURE
+Streaming-parse + reconciliation rules engine with drill-down (R2 + R4 + R17 + Q1)
+User selects a seeded fiscal XML fixture; the console runs a simulated streaming parse with a live memory-stability readout (streaming vs naive-load comparison), then evaluates 8-12 representative reconciliation rules (with configurable thresholds) and drills down to offending source transactions on failure.
+
+SUPPORTING FEATURE 1
+Analytical dashboard (R5)
+Summary tiles, trend/anomaly chart, paginated table over a 100k-row generated dataset mimicking server-side pagination, CSV export.
+
+SUPPORTING FEATURE 2
+File-format detector (R1)
+Inspects the chosen file, identifies document type, fiscal period, and schema version, and routes to the correct parser profile before parse begins.
+
+---
+
+TECH APPROACH
+Self-contained static app. Single index.html + local assets/. React + htm via CDN (no bundler), styled with michaelwegter.com design tokens (dark gallery aesthetic).
+
+Demo destination: ../michaelwegter.com/public/demos/full-stack-developer-python-fastapi/
+Served at: /demos/full-stack-developer-python-fastapi/
+Site wiring: workSamples.js registry entry, AppFrame.jsx reused unchanged, Navbar.jsx "Work Samples" link added.
+
+---
+
+FILE BUDGET (9 demo files + 3 site-wiring files = 12 total, within cap)
+Demo files:
+  1. index.html
+  2. assets/app.js
+  3. assets/parser.js (streaming parse + memory model + format detector)
+  4. assets/rules.js (rule definitions, evaluator, drill-down)
+  5. assets/dashboard.js (tiles, chart, paginated table, CSV export)
+  6. assets/data.js (100k-row dataset generator)
+  7. assets/styles.css (design tokens + layout)
+  8. assets/samples/saft-sample.xml (clean fixture)
+  9. assets/samples/invoice-ledger-anomalies.xml (fixture with rule violations)
+
+Site wiring:
+  10. src/data/workSamples.js (new registry entry)
+  11. src/pages/WorkSamples.jsx + src/App.jsx route (if not already present)
+  12. src/components/Navbar.jsx (add "Work Samples" link if absent)
+
+---
+
+SCOPE FENCES (out of demo, addressed in prose)
+- Real 500 MB file processing
+- Celery + Redis async infra (R3)
+- Stripe billing (R7, R14)
+- Supabase / Auth0 auth adapter (R13)
+- Multi-tenant DB isolation at API level (R6) -- Q2 answered in cover letter
+- PDF parsing with embedded XML (part of R2) -- described, not built
+- AWS S3 / Azure Blob storage and hosting (R12, R15)
+- Real FastAPI + PostgreSQL backend (R8, R9, R10)
+
+---
+
+REQUIREMENT TRACEABILITY
+R1  File-format detector          -> Demo (Supporting 2)
+R2  Streaming XML + memory stable -> Demo (Hero, simulated) + Prose (PDF, real 500 MB)
+R3  Celery + Redis async          -> Prose only
+R4  170+ rule engine + drill-down -> Demo (Hero, 8-12 representative rules) + Prose
+R5  Dashboard, pagination, export -> Demo (Supporting 1)
+R6  Multi-tenant isolation        -> Prose only (Q2 answer)
+R7  Stripe billing                -> Prose only
+R8  FastAPI backend               -> Prose
+R9  React + TypeScript            -> Both (demo is React; prose confirms TS in real build)
+R10 PostgreSQL                    -> Prose
+R11 Celery + Redis                -> Prose
+R12 AWS S3 / Azure Blob           -> Prose
+R13 Auth adapter                  -> Prose
+R14 Stripe                        -> Prose
+R15 AWS / Azure hosting           -> Prose
+R16 Test discipline (70% cov)     -> Prose (seeded XML fixtures parallel golden-file pattern)
+R17 Milestone 2 gate (iterparse)  -> Both (demo previews; prose commits to real PoC)
+R18 Weekly Monday status updates  -> Prose
+R19 Milestone-close demo calls    -> Prose
+R20 Fixed-price EUR 4,000 terms   -> Prose
+Q1  Largest XML + memory approach -> Cover letter (REQUIRED) + Demo illustrates it
+Q2  Tenant isolation layers       -> Cover letter (REQUIRED): API middleware tenant binding,
+                                     mandatory tenant_id query filters, PostgreSQL RLS,
+                                     optional schema scoping, test enforcement
+
+---
+
+DELIVERABLES EXPECTED FROM DOWNSTREAM AGENTS
+
+researcher:
+- SAF-T XML schema structure (field names, nesting, realistic structure for sample fixtures)
+- Typical fiscal reconciliation rule categories in European compliance contexts
+- Any prior work samples or portfolio pieces from Michael relevant to large-file ETL,
+  SaaS multi-tenant, or rules engines
+- Stripe subscription model details (for prose accuracy)
+- Competitive context: what do winning proposals for this type of posting look like?
+
+demo-builder:
+- Build to ../michaelwegter.com/public/demos/full-stack-developer-python-fastapi/
+- Start from the plan above; plan.md is the binding reference
+- Wire workSamples.js registry entry, AppFrame.jsx (unchanged), Navbar.jsx link
+
+proposal-writer:
+- Must answer Q1 and Q2 directly and concretely in the cover letter (no vague references)
+- Q1 answer: reference largest XML/structured file experience + describe iterparse,
+  elem.clear(), bounded memory approach used in production
+- Q2 answer: enumerate layers (API middleware, tenant_id binding on request, mandatory
+  WHERE clause injection, PostgreSQL RLS policies, test suite asserting cross-tenant
+  query returns empty)
+- Link live demo in cover letter and deck
+- No em dashes or en dashes anywhere
+- Acknowledge Milestone 2 payment gate explicitly; commit to delivering the real
+  500 MB iterparse PoC with memory profile as the gate proof
+
+---
+
+STATUS: Plan locked. plan.md validated. Ready for researcher and demo-builder phases.

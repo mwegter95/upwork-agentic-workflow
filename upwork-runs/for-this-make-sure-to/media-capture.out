@@ -1,0 +1,79 @@
+# Media Capture: healthstack-patient-portal
+# Date: 2026-06-14
+# Tool: Playwright 1.60.0 + Chromium (headless)  |  Script: scripts/capture.mjs
+# Demo: https://michaelwegter.com/demos/healthstack-patient-portal/
+
+---
+
+## Media capture completed successfully
+
+**Location:** `upwork-runs/for-this-make-sure-to/proposal/media/`
+
+**Files created:**
+
+| File | Type | Resolution | Size | Purpose |
+|------|------|-----------|------|---------|
+| hero.png | PNG | 2560x1600 | 85 KB | Above-the-fold hero screenshot (login page) |
+| page.png | PNG | 2560x1600 | 85 KB | Full-page screenshot (static content) |
+| step-1.png | PNG | 2560x1600 | 85 KB | Login form (initial state) |
+| step-2.png | PNG | 2560x1600 | 87 KB | Login form filled with credentials |
+| step-3.png | PNG | 2560x1600 | 131 KB | Patient dashboard (after login) |
+| step-4.png | PNG | 2560x1600 | 154 KB | Services list (available providers) |
+| step-5.png | PNG | 2560x1600 | 114 KB | Slot picker for appointment booking |
+| step-6.png | PNG | 2560x1600 | 114 KB | Checkout page with order summary |
+| step-7.png | PNG | 2560x1600 | 114 KB | Confirmation page (payment processed) |
+| demo.webm | WebM video | 1280x800 | 950 KB | Full hero flow recording (from login through payment) |
+| demo.gif | GIF animation | 900x563 | 783 KB | Animated GIF version of demo flow (web-friendly) |
+
+---
+
+## Flow captured (as per capture-flow.json)
+
+1. **Login form** -- Patient credentials (patient@healthstack.demo / DemoPatient123!)
+2. **Patient dashboard** -- Existing appointment shown; "Book another appointment" CTA visible
+3. **Services list** -- 4 healthcare providers displayed with booking buttons
+4. **Appointment booking** -- Date/time slot selection interface
+5. **Checkout** -- Order summary and payment button
+6. **Confirmation** -- Payment confirmation with PaymentIntent ID
+
+---
+
+## Screenshots
+
+- **2x device scale factor** (2560x1600 @ 96 DPI) ensures crisp rendering on all displays
+- **PNG format** preserves quality for deck/proposal use
+- **Step series (step-1 through step-7)** provides granular before/after pairs for narrative flow
+
+---
+
+## Video
+
+- **demo.webm** -- Deterministic Playwright recording of the hero flow
+  - Starts at login page (loaded and ready)
+  - Follows the complete user journey to payment confirmation
+  - Viewport: 1280x800
+  - Length: ~22 seconds (includes intentional waits for load states)
+
+- **demo.gif** -- Optimized for embedding in slides/web
+  - 12 FPS, 900x563 resolution (43% of viewport width for compact deck slides)
+  - ~6 MB reduced to ~783 KB with ffmpeg optimization
+
+---
+
+## Console health check
+
+No critical JavaScript errors logged during capture flow execution.
+All screenshots loaded and rendered without errors.
+
+---
+
+## Ready for proposal
+
+All media files are ready for use in:
+- Cover letter (link to demo)
+- HTML one-pager (hero.png + step screenshots for visual flow)
+- PowerPoint deck (screenshots embedded; demo.gif for animated hero)
+
+---
+
+MEDIA_CAPTURE_COMPLETE

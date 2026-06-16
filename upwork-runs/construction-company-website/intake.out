@@ -1,0 +1,88 @@
+# Intake — Structured Brief
+
+## Summary
+
+Parsed Upwork posting (construction company website) + orchestrator context into a structured, gradable `brief.json`. Every explicit requirement from the client posting is captured as a discrete line item with clear grading criteria.
+
+## Client Requirements Captured
+
+**Hero Feature (make-or-break):**
+1. **Video-background landing page** — full-viewport hero with text overlay, autoplay muted, loop, graceful fallback. Legibility and performance critical.
+
+**Supporting Features:**
+2. **Services page with pricing** — three service categories (home building, excavation, residential/commercial) with transparent pricing in a professional grid.
+3. **Contact page** — functional form with validation and success state.
+4. **Projects page** — gallery of past work with project images, descriptions, and lightbox detail view.
+
+**Design & UX Requirements:**
+5. **Construction industry theme and styling** — bespoke design (NOT michaelwegter.com's palette). Grounded, professional aesthetic: deep charcoal/graphite, warm concrete grays, confident accent (safety-amber OR blueprint blue). Industrial typography. Generous whitespace, big imagery, subtle motion. Target: "established regional builder with a great agency site."
+6. **Extra-clean professional UX/UI** — exceptional execution on simple concept. Zero template feeling. Responsive, accessible, no console errors, intuitive navigation, polished interactive states.
+
+## Constraints
+
+- U.S.-only freelancer requirement (Michael qualifies).
+- Price negotiable.
+- Feature richness: **10 / 10** — genuinely full-featured, production-quality site with several real working features, extra polish. "Medium rare": refined, confident, not overcooked, not raw.
+
+## Feature Richness 10 Scope
+
+To hit the 10/10 bar on this design-led project, expect:
+- Hero video with animated CTA + gradient overlay
+- Services cards with clear pricing tiers
+- Filterable projects gallery with lightbox
+- Functional contact form (validation + success UX)
+- Testimonials / social proof (stats counters or client quotes)
+- Responsive nav with mobile hamburger menu
+- Smooth scroll + subtle micro-interactions
+- Accessibility pass (WCAG 2.1 AA target)
+- Reduced-motion support
+
+## Deliverables Expected (downstream)
+
+1. **Demo:** Self-contained static app at `../michaelwegter.com/public/demos/construction-company-website/`. Served live at `https://michaelwegter.com/demos/construction-company-website/`.
+2. **Work-sample registry:** Entry added to `workSamples.js` (slug, title, description, category, status, href, color, icon, frameStyle).
+3. **Proposal:** Cover letter + one-pager + PPTX deck, styled to the demo's construction palette (NOT michaelwegter.com). Both letter and deck must reference the live demo by name and link.
+
+## Hard Gates (Evaluator will enforce)
+
+- Every explicit requirement is addressed in the demo and/or proposal.
+- Demo builds + loads with no console errors on first paint.
+- Demo URL resolves locally and live `/work-samples/construction-company-website` returns 200 after deploy.
+- Demo link appears in both cover letter and deck.
+- Demo, one-pager, and deck use cohesive, bespoke design fit for construction industry (NOT michaelwegter.com's look); no em/en dashes.
+- eval-report.md exists with passing score + empty/accepted fix list.
+
+## Design Do's and Don'ts
+
+**DO:**
+- Use grounded, professional palette (charcoal, concrete grays, confident accent).
+- Choose industrial/premium typography (Archivo, Oswald, Anton as display; Inter, Source Sans as body).
+- Build generous whitespace + confident imagery.
+- Implement subtle motion (reduced-motion safe).
+- Target: established regional builder's agency site.
+- Hero video must be smooth, legible, performant.
+
+**DON'T:**
+- Use michaelwegter.com's dark gallery theme or mustard/cyan palette.
+- Use michaelwegter.com's Space Grotesk / Inter / JetBrains Mono stack in the demo.
+- Add gimmicky animations or over-polish.
+- Leave template feeling; must feel bespoke and premium.
+- Use em-dashes or en-dashes anywhere.
+
+## Success Criteria
+
+**Primary:** Demo looks like a premium, trustworthy construction firm's real agency website. Video hero is smooth and legible. All four pages work flawlessly. Every requirement from the posting is visible and functional.
+
+**Secondary:** Proposal letter and deck are in Michael's voice, styled to the demo's construction palette, and explicitly address all client requirements with reference to the live demo.
+
+## Next Step
+
+`planner` consumes `brief.json` and produces `plan.md`:
+- Confirm full build (richness 10 scope confirmed in this brief).
+- Define bespoke design direction (exact palette hex values + Google Font families).
+- Plan hero video sourcing (royalty-free or CSS fallback).
+- Write requirement-to-feature traceability matrix.
+
+---
+
+**File:** `brief.json` (at `upwork-runs/construction-company-website/`)

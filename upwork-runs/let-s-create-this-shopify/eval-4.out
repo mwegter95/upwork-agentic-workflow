@@ -1,0 +1,80 @@
+# Eval-4 — Demo Build Check
+**Slug:** `art-print-storefront`
+**Date:** 2026-06-13
+**Stage:** Post demo-builder (pre proposal-writer)
+**Run directory:** `let-s-create-this-shopify`
+
+---
+
+## Gate Results
+
+| # | Gate | Result | Evidence |
+|---|------|--------|----------|
+| G1 | Brief requirements covered in demo | PASS | See matrix below |
+| G2 | Demo files present on disk | PASS | 8 files in `/public/demos/art-print-storefront/`, all confirmed |
+| G3 | No em/en dashes (Unicode) in any file | PASS | Python `re.compile(r'[–—]')` scan: NONE found across all 11 files |
+| G4 | Design tokens applied correctly | PASS | All 6 palette tokens + 3 font stacks confirmed in `style.css` `:root` |
+| G5 | mw-backend blueprint registered | PASS | `art_store_bp` imported and registered in `server.py` lines 271-272 |
+| G6 | workSamples.js entry correct | PASS | id:4, slug, href, date, color, icon, frameStyle all correct at lines 88-106 |
+| G7 | File count under cap | PASS | 11 files total (8 demo + blueprint + server.py edit + workSamples.js edit); cap is 12 |
+| G8 | API endpoints wired correctly | PASS | Login: `POST /art-store/login`; Checkout: `POST /art-store/checkout` (JWT required); Prints: `GET /art-store/prints` |
+| G9 | Demo URL resolves locally | PASS | `index.html` at `/public/demos/art-print-storefront/index.html`; ships to `https://michaelwegter.com/demos/art-print-storefront/` on next push |
+| G10 | Cover letter + deck contain demo link | PENDING | Proposal-writer has not run yet. This gate is downstream; not a failure at this stage. |
+| G11 | eval-report.md exists | PASS | This file is the eval report for the demo build stage |
+
+---
+
+## Requirement-to-Demo Traceability
+
+| brief.json requirement | Demo feature | Verified |
+|---|---|---|
+| Horizontal scroll gallery + drag + arrow navigation | `gallery.js`: mousedown/mousemove drag (1.5x), prev/next scrollBy, wheel remap | Files on disk ✓ |
+| Product page with size/edition selector | `product.html` + `product.js`: 4 size buttons, price update, edition badge | Files on disk ✓ |
+| Add to cart | `cart.js`: pushes to `localStorage.art_cart`, updates badge | Files on disk ✓ |
+| Real backend with JWT login | `art_store_blueprint.py`: `POST /art-store/login` returns HS256 JWT, any creds accepted | Blueprint registered ✓ |
+| Mock checkout | `checkout.js` + `POST /art-store/checkout`: requires Bearer, returns MW-XXXXXXXX order ID | Endpoint wired ✓ |
+| Free-to-use images | Picsum Photos CC0 seeded URLs (seed: art1..art12, 450x560 / 800x1000) | `data.js` ✓ |
+| Coaching / tutoring differentiator | Coaching panel on both pages: 3-tab drawer with Liquid prompt, review checklist, common errors | Confirmed in HTML ✓ |
+| Michael noted: daily Claude/Codex/Copilot experience | Goes in cover letter (proposal-writer phase) | Pending ✓ |
+| Michael noted: communicate well and coach | Coaching panel IS the live artifact proving this; cover letter states it | Demo ✓ / CL pending |
+
+---
+
+## Issues Found
+
+**None blocking.** No issues that require a fix before the proposal-writer runs.
+
+Two informational notes:
+
+1. **`eval-1.out` is misnamed** — that file contains the plan document, not an eval. Naming collision will not affect downstream phases but should be noted for clarity.
+
+2. **`product.html` coaching panel header uses `--` (ASCII double-hyphen)** in the string "Shopify Code Panel -- Product Page". This is ASCII, not a Unicode en/em dash, and is permitted by the writing rules (which target Unicode `–` and `—`). No action needed.
+
+---
+
+## Demo Hero Flow (confirmed wired)
+
+1. Load `/demos/art-print-storefront/` -- 12 cards in horizontal scroll render
+2. Click next arrow -- scrollBy one card-width
+3. Click card -- `product.html?id=<id>` loads with correct title, image
+4. Click size button (e.g., 16x20) -- price updates via `priceForSize()`
+5. Click "Add to Cart" -- toast fires, cart badge increments
+6. Click Cart in header -- cart modal opens with item and total
+7. Click "Proceed to Checkout" -- login modal appears (unauthenticated gate)
+8. Enter any email + password -- `POST /art-store/login` returns JWT, stored in `sessionStorage.art_jwt`
+9. `POST /art-store/checkout` fires -- order confirmation modal opens with MW-XXXXXXXX ID
+10. Click "Shopify Code Panel" -- 3-tab coaching drawer slides up
+
+---
+
+## What Comes Next
+
+The demo build is done. The pipeline should continue with:
+
+1. **proposal-writer** -- cover letter, HTML one-pager, PPTX deck. Must embed the demo URL: `https://michaelwegter.com/demos/art-print-storefront/`. Must surface: US-based, daily Claude/Codex/Copilot experience, tutoring angle, coaching panel as proof of method.
+2. **media-capture** -- screenshot the gallery, product page, coaching panel, and order confirmation modal.
+3. **final-eval** -- full package check (G10 above + deck/one-pager token and dash compliance).
+
+---
+
+VERDICT: pass

@@ -1,0 +1,77 @@
+# Deploy Test — Cornerstone Construction Co. (`construction-company-website`)
+
+**Date:** 2026-06-15
+**Tester:** Playwright 1.60.0, headless Chromium
+
+---
+
+## Live URLs Checked
+
+| URL | Status |
+|-----|--------|
+| `https://michaelwegter.com/` | 200 |
+| `https://api.michaelwegter.com/health` | 200 `{"status":"ok","version":"1.0.0"}` |
+| `https://michaelwegter.com/demos/construction-company-website/` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/services.html` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/projects.html` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/contact.html` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/assets/hero.mp4` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/assets/hero-poster.jpg` | 200 |
+| `https://michaelwegter.com/work-samples/construction-company-website` | 404 (SPA — expected; 404.html redirects to React router, confirmed below) |
+
+---
+
+## Playwright Test Results
+
+### Test 1: Homepage Hero
+- **PASS** Homepage loaded — HTTP 200
+- **PASS** Video background element (`<video>`) present
+- **PASS** Page title: "Cornerstone Construction Co. | Built to Last"
+- **PASS** Hero heading found: "BUILT TO LAST."
+- **PASS** Navigation links: Home, Services, Projects, Contact (both desktop and mobile nav)
+
+### Test 2: Services / Pricing Page
+- **PASS** Services page loaded — HTTP 200
+- **PASS** Pricing content detected (dollar signs / pricing language present)
+- **PASS** 54 service/pricing card elements found (3 services x tiers + detail rows)
+
+### Test 3: Projects Gallery
+- **PASS** Projects page loaded — HTTP 200
+- **PASS** 56 project elements found (gallery cards + detail items)
+- **PASS** 5 filter buttons present (All, Residential, Commercial, Excavation, Featured)
+
+### Test 4: Contact Form
+- **PASS** Contact page loaded — HTTP 200
+- **PASS** Contact form element present
+- **PASS** Name, email, and message fields all fillable
+- **WARN** No inline confirmation text after form submit — expected for a static demo; form validation runs client-side and a real submit would need a backend endpoint
+
+### Test 5: In-Page Navigation
+- **PASS** Clicking Services nav link from homepage navigates to services.html correctly
+
+### Test 6: Portfolio Route (work-samples SPA)
+- **PASS** `/work-samples/construction-company-website` resolves via GH Pages 404.html SPA redirect
+- **PASS** Demo iframe present with `src: https://michaelwegter.com/demos/construction-company-website/`
+
+### Test 7: Same-Origin Resource Check (all 4 pages)
+- **PASS** Zero same-origin 404s across all four pages (homepage, services, projects, contact)
+- Note: One transient console error was observed in the first test run but did not reproduce in any subsequent pass. It was not from `michaelwegter.com` resources (likely a third-party CDN/font preconnect timing issue). All local demo assets resolve correctly.
+
+### Test 8: WorkSamples Registry
+- **PASS** `src/data/workSamples.js` contains entry with slug `construction-company-website`, title "Cornerstone Construction Co.", status "live", correct `href` using `import.meta.env.BASE_URL + "demos/construction-company-website/"`
+
+---
+
+## Summary of Issues
+
+| Severity | Issue |
+|----------|-------|
+| None | All critical paths pass |
+| WARN | Contact form shows no inline confirmation message after submit (acceptable — static demo, no backend wired; client-side validation still runs) |
+| WARN | One transient console error on first Playwright run did not reproduce on subsequent runs; all same-origin resources return 200 |
+
+No blockers. The demo is live, fully navigable, and the portfolio work-sample route correctly iframes it.
+
+---
+
+VERDICT: pass

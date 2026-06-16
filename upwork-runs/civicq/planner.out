@@ -1,0 +1,270 @@
+# Plan — CivicQ Landing Page Demo
+
+## 1. Demo Concept
+
+Build the actual deliverable: a full, production-quality 10-section CivicQ
+home page plus a `/methodology` page, in a bespoke civic-tech dark design
+system. This is not a mockup of the idea, it is the literal page the client
+asked for, built to spec, with all three required data visualizations working
+and a real email-capture-to-CSV backend. The demo doubles as the portfolio
+answer to "can you build this" and as the proof for all four to-apply asks.
+
+## 2. Prototype vs Full Decision
+
+**Decision: FULL build.** None of the three fallback triggers apply:
+
+1. Hero feature (10-section page + methodology page) needs no backend
+   integration that can't be stubbed; it's pure front-end build-to-spec.
+2. Estimated footprint fits the caps (see Scope Fences below): ~12 files,
+   well inside the file cap, no exotic tooling.
+3. The concept is explicitly a working, clickable, functional page, not a
+   visual-only idea. A static mockup would actively undersell the "build to
+   spec" pitch.
+
+The one piece of real backend work (email capture + CSV export) is small,
+well-scoped, and directly proves a named requirement, so it stays in scope as
+Supporting Feature 2 rather than being downgraded to a fallback.
+
+Target feature richness is 10/10: build all 10 sections, the methodology
+page, all 3 real coded data visualizations, and a working backend-backed
+email capture with CSV export, polished to look like a real institutional
+nonprofit product, not a wireframe.
+
+## 3. Design Direction (bespoke, civic-tech, NOT michaelwegter.com's theme)
+
+The client explicitly forbids redesigning their existing dark-mode system, so
+since we don't have their literal tokens, the demo uses a faithful,
+disciplined "institutional civic tech" stand-in palette and type system —
+restrained, neutral, nonpartisan, data-forward. No red/blue partisan coding
+anywhere.
+
+**Palette**
+- Background base: `#0B0E11` (near-black, slightly cool, not pure black)
+- Surface / card: `#13171C`
+- Surface elevated / hover: `#1A1F26`
+- Border / hairline: `#262C34`
+- Primary text: `#E7EAEE`
+- Secondary / muted text: `#9AA4B1`
+- Accent (single, institutional, NOT red/blue partisan): `#3DBFA8` (a calm
+  teal, "record" / verified-data color), used sparingly for CTAs, active nav
+  state, and chart highlights
+- Secondary accent / warm neutral (for "in development" status, NOT alarmist
+  red): `#C9A227` (muted gold), used only for IN DEVELOPMENT status pills
+- LIVE status pill: teal `#3DBFA8` on `#10221D` background
+- IN DEVELOPMENT status pill: gold `#C9A227` on `#221C0E` background
+- Chart palette (6-dimension scoring chart, color-blind-safe, sequential):
+  teal-to-gray ramp (`#3DBFA8`, `#5FB8C9`, `#7FA8C9`, `#8C97AC`, `#9AA4B1`,
+  `#6E7884`) — avoids hue-based partisan reading, relies on a single
+  perceptually ordered ramp plus labels/patterns for accessibility.
+- Funds breakdown chart: same teal/gray family, each segment additionally
+  labeled with category + dollar amount (not color-dependent).
+
+**Typography**
+- Headlines: "Newsreader" (Google Fonts) — a serif with institutional,
+  editorial, "official record" gravity, used at display sizes only.
+- Body / UI: "Inter" (Google Fonts) — neutral, highly legible, accessible at
+  small sizes, used for body copy, nav, forms, buttons.
+- Numerals / data labels: Inter with tabular-nums for the data visualizations
+  so figures align cleanly.
+
+**Mood / Tone**
+- Calm authority. Generous whitespace, hairline borders instead of heavy
+  shadows, no gradients-as-decoration, no large animated hero graphics beyond
+  the requested video thumbnail. Motion is restrained (subtle fades/slides on
+  scroll-into-view, all wrapped in `prefers-reduced-motion` guards) per the
+  "lean build, no unnecessary animation" requirement.
+- Status pills, two-column disclosures, and three-column cards all use the
+  same border/radius/spacing system so the page reads as one disciplined
+  design system, not assembled sections.
+
+**Layout**
+- Sticky top nav, anchor-linked to all 10 sections, with scroll-spy active
+  state in the accent teal.
+- Max content width ~1200px, fluid down to 390px with a single-column
+  collapse for grids (2x2 feature grid -> 1 column; two-column disclosure ->
+  stacked; three-column partners -> stacked).
+- Section rhythm: consistent vertical padding scale so the page feels
+  machine-consistent (institutional), reinforcing "build to spec, not
+  redesigned."
+
+## 4. Hero Feature
+
+**The 10-section home page + /methodology page, built to spec, in order:**
+
+1. Hero — headline + sub-copy (placeholder CivicQ voice copy), video
+   thumbnail (poster image + play affordance, no real video needed),
+   primary CTA ("See How Scoring Works" -> anchors to section 4) + secondary
+   CTA ("Explore the Organization Hub" -> anchors to section 6).
+2. Problem statement — single-column editorial text block (Newsreader
+   headline + Inter body), framing civic information opacity.
+3. Feature card grid — 2x2 grid, 4 cards, each with a LIVE or IN DEVELOPMENT
+   status pill, icon, title, one-line description.
+4. Scoring methodology visualization — the six-dimension weighted chart
+   (Data Viz #1, see below), with a short explanatory caption and a link to
+   `/methodology`.
+5. Honest status disclosure — two-column layout, "Live Today" vs. "In
+   Development," each a bulleted list, visually distinguished by the pill
+   colors established in section 3.
+6. Organization Hub section — the wireframe mockup (Data Viz #3, see below)
+   alongside copy explaining org/researcher access, plus the email capture
+   form (Supporting Feature 2).
+7. Fundraising module — the $75K funds breakdown graphic (Data Viz #2, see
+   below), GoFundMe CTA button (placeholder href, clearly labeled), framed as
+   launch-critical.
+8. Partners / Press / Orgs — three-column card section, placeholder logos/
+   names with link-outs (can be `#` placeholders, clearly marked as
+   illustrative).
+9. Feedback banner + footer — a slim sticky-on-scroll feedback callout
+   ("See something wrong? Tell us.") plus a real footer: nav links, copyright,
+   nonpartisan disclaimer line (matches the posting's own disclaimer).
+10. Sticky nav — implemented as the page-wide nav bar referenced above;
+    placeholder search icon + auth button (visually present, non-functional,
+    clearly within scope as "integrates with existing search/auth UI" since
+    real auth lives outside this demo).
+
+`/methodology` page: same design system, dedicated route, holds the fuller
+explanation of the six-dimension scoring methodology (expanded prose + the
+same or a detail variant of Data Viz #1), reachable from the nav and from the
+hero/section-4 link.
+
+## 5. Supporting Features
+
+**Supporting Feature 1 — Three coded data visualizations (no library
+placeholders, no designer assets):**
+1. Six-dimension weighted scoring chart: a custom SVG-coded weighted bar
+   chart (each of the 6 dimensions as a horizontal bar, length = weight
+   percentage, labeled with dimension name + weight, animated draw-in on
+   scroll, reduced-motion-safe, full ARIA labeling and a visually-hidden data
+   table fallback for screen readers).
+2. $75K funds breakdown graphic: custom SVG-coded stacked/segmented bar
+   (not a pie, for better label legibility and accessibility) showing
+   category allocations that sum exactly to $75,000, each segment labeled
+   with category name + dollar figure + percentage directly on/near the
+   segment (not legend-only, for color-blind safety).
+3. Organization Hub wireframe mockup: a coded SVG/HTML "product shot" — a
+   stylized browser-chrome frame containing a mock dashboard UI (search bar,
+   a few data rows, a chart thumbnail) styled in the same dark system, so it
+   reads as an intentional, near-production screenshot rather than a gray
+   box wireframe.
+
+**Supporting Feature 2 — Working email capture + CSV export (mw-backend):**
+- New `civicq_blueprint.py` in mw-backend, modeled directly on
+  `spotify_blueprint.py`'s structure, registered in `server.py`.
+- `POST /civicq/subscribe` — validates email, stores `{email, created_at}` in
+  SQLite (new small table), returns JSON success/duplicate/invalid.
+- `GET /civicq/csv-export` — returns all captured emails as a CSV download
+  (proves the "Mailchimp/ConvertKit + CSV backup" requirement with real
+  persistence, not a claim).
+- Frontend form: client-side email validation, fetch-based submit (no page
+  reload), inline success/error state, associated `<label>`, ARIA live
+  region for the result message.
+
+**Minor support (woven through, not separate build items):**
+- LIVE / IN DEVELOPMENT status pill component reused in sections 3 and 5.
+- Scroll-spy sticky nav with active-section highlighting.
+- Lightweight analytics hook: a small `track(eventName)` stub wired to a
+  Plausible-style `<script>` tag placeholder + console-logged custom events
+  on key interactions (CTA clicks, form submit), documented as
+  "drop in real Plausible/Fathom site-id at launch."
+- Accessibility pass: semantic landmarks (`nav`, `main`, `section`,
+  `footer`), skip-to-content link, visible focus rings, 4.5:1 / 3:1 contrast
+  checked against the palette above, alt text on all images/icons, ARIA
+  labels on status pills and icon-only buttons, `prefers-reduced-motion`
+  guards on all scroll animations.
+- Responsive verification at 390px and 1440px (and the fluid range between).
+
+## 6. Scope Fences (explicit exclusions, recorded so nothing creeps)
+
+- No real GoFundMe integration, no real Mailchimp/ConvertKit account, no real
+  Plausible/Fathom site id, no real search/auth backend, no real video file.
+  All are clearly-labeled, functional-looking placeholders/stand-ins, per
+  CLAUDE.md's "default demo form" guidance and the run's token budget.
+- No redesign of CivicQ's real tokens (we don't have them); the stand-in
+  system above is explicitly documented in the proposal as a faithful
+  placeholder to be swapped for the client's real tokens on day one.
+- No CMS, no multi-page site beyond home + `/methodology`.
+- No partisan color coding anywhere, ever, including in chart palettes.
+
+## 7. Build Approach / File Footprint (within the ~12-file cap)
+
+Self-contained static-feel build using a small Vite + React app (warrants a
+bundler given client/server fetch wiring + multiple routes/components),
+output built to `../michaelwegter.com/public/demos/civicq/` with
+`base: '/demos/civicq/'`.
+
+Planned files (~11, within cap):
+1. `index.html`
+2. `src/main.jsx`
+3. `src/App.jsx` (routes: `/` and `/methodology`)
+4. `src/pages/Home.jsx` (composes the 10 sections)
+5. `src/pages/Methodology.jsx`
+6. `src/components/StickyNav.jsx`
+7. `src/components/StatusPill.jsx`
+8. `src/components/charts/ScoringChart.jsx` (Data Viz #1)
+9. `src/components/charts/FundsBreakdown.jsx` (Data Viz #2)
+10. `src/components/charts/OrgHubMockup.jsx` (Data Viz #3)
+11. `src/components/EmailCaptureForm.jsx` + `src/styles.css` (treat as one
+    combined unit if an extra file is needed; section content for items 1-3,
+    5, 8, 9 can live as data/markup inline in `Home.jsx` rather than separate
+    files to stay under the cap)
+
+Backend: 1 additional file in mw-backend (`civicq_blueprint.py`) plus a
+one-line registration edit in `server.py` — outside the demo's own file cap
+since it's a separate repo.
+
+## 8. Milestone / Timeline Plan (for the cover letter)
+
+Maps directly to the client's 2-4 week window and the to-apply ask for a
+concrete estimate:
+
+- **Week 1 (Milestone 1, ~40% of fixed price):** Design-system study against
+  real CivicQ staging tokens, structure all 10 sections + sticky nav to spec,
+  responsive scaffold at 390px/1440px.
+- **Week 2 (Milestone 2, ~40% of fixed price):** Build all three coded data
+  visualizations (scoring chart, funds breakdown, Org Hub mockup), wire email
+  capture form to backend with CSV export, integrate analytics hooks.
+- **Week 3-4 (Milestone 3, ~20% of fixed price):** Polish, full accessibility
+  audit (WCAG 2.1 AA, keyboard nav, contrast, reduced-motion), Lighthouse
+  85+ tuning, cross-device QA, `/methodology` page finalization, handoff.
+- Flag explicitly in the cover letter: the GoFundMe hard-launch dependency is
+  a known external blocker, the funds module and CTA will be built launch-
+  ready on schedule regardless of campaign-side timing.
+
+## 9. Requirements Traceability Matrix (carried forward from intake, confirmed against this plan)
+
+| Requirement | Plan Coverage |
+| --- | --- |
+| 10 sections + sticky nav | Section 4 (Hero Feature), build steps 1-10 above |
+| /methodology page | Hero Feature, `src/pages/Methodology.jsx` |
+| Dark-mode system matched precisely (stand-in) | Section 3 (Design Direction), documented as placeholder for real tokens |
+| Responsive 390/1440 | Minor support; verified explicitly per file footprint |
+| Lighthouse 85+ mobile | Minor support (a11y/perf pass), lean build per Scope Fences |
+| Six-dimension scoring chart | Supporting Feature 1, item 1; `ScoringChart.jsx` |
+| $75K funds breakdown | Supporting Feature 1, item 2; `FundsBreakdown.jsx` |
+| Org Hub wireframe mockup | Supporting Feature 1, item 3; `OrgHubMockup.jsx` |
+| Email capture + CSV export | Supporting Feature 2; `civicq_blueprint.py` + `EmailCaptureForm.jsx` |
+| Analytics setup | Minor support, `track()` stub + Plausible placeholder script |
+| WCAG 2.1 AA | Minor support, accessibility pass list above |
+| GoFundMe CTA | Hero Feature section 7, placeholder href clearly labeled |
+| US-based developer | Cover letter only, no demo evidence needed |
+| Three custom graphics built by Michael himself (to-apply ask 3) | All three coded in React/SVG, no external designer assets, per Supporting Feature 1 |
+| Fixed price bid (to-apply ask 4) | Recommend $4,200 (mid-range, justified by full 10-section build + 3 real data viz + backend), milestone split per Section 8 |
+| Timeline estimate (to-apply ask 2) | Section 8 milestone plan, 3-4 week schedule within client's window |
+| Portfolio (to-apply ask 1) | Live demo at https://michaelwegter.com/demos/civicq/, embedded at /work-samples/civicq |
+
+## 10. Quality Guidance for Downstream Agents
+
+- **demo-builder:** Build to spec, in section order, exactly as listed in
+  Hero Feature. Do not invent extra sections or reorder. Treat the three data
+  visualizations as first-class, fully coded, accessible components, not
+  decorative filler. Wire the real backend for email capture; do not fake
+  persistence client-side only.
+- **CEO (pairs after this plan and after demo-builder):** Check spec
+  fidelity above all else (right number of sections, right order, status
+  pills present, two-column disclosure present, three-column partners
+  present) and check that all three data visualizations are real/coded
+  (not images, not third-party embeds) before passing.
+- **proposal-writer:** Use the milestone plan in Section 8 verbatim for the
+  timeline ask, state plainly that all three graphics are coded by Michael
+  (to-apply ask 3), and bid $4,200 with the 40/40/20 milestone split unless
+  Michael's notes say otherwise.

@@ -1,0 +1,114 @@
+# Orchestrator — Startup Brief & Plan of Attack
+
+## Run identity
+
+- **slug:** `construction-company-website`
+- **run dir:** `upwork-runs/construction-company-website/`
+- **demo target:** `../michaelwegter.com/public/demos/construction-company-website/`
+- **live demo URL (post-deploy):** `https://michaelwegter.com/demos/construction-company-website/`
+- **work-sample route:** `/work-samples/construction-company-website`
+- **feature richness:** 10 / 10 — build a genuinely full-featured, production-quality marketing site with several real working features and extra-clean polish ("medium rare" — the client wants the UI to look *exceptional* on a conceptually simple site).
+
+## What the client actually asked for (raw posting digest)
+
+A professional website for a construction company. The owner builds homes, does
+excavation, and does residential + commercial construction. U.S.-only freelancer
+requirement (Michael qualifies). Price negotiable. Explicit must-haves:
+
+1. **Landing page with a full video background** (hero). This is called out twice — it is the signature feature, treat it as the hero.
+2. **Services page with pricing.**
+3. **Contact page.**
+4. **Projects page** (portfolio / gallery of past work).
+5. **Strong "construction market" theme and styling** — must read as a real, established construction firm.
+6. **Extra-clean, very professional UX/UI.** The client emphasized polish over feature sprawl: simple app, exceptionally executed. "Medium rare" = refined, confident, not overcooked/gimmicky, not raw/unfinished.
+
+## Plan of attack (downstream pipeline)
+
+Recommended step order (use a layout with deploy + CEO if available):
+
+`intake -> planner -> ceo -> researcher -> demo-builder -> ceo -> deploy -> deploy-test -> media-capture -> proposal-writer -> evaluator`
+
+### intake
+- Produce `brief.json`. Capture every explicit requirement above as a discrete,
+  gradable line item: (1) video-background landing, (2) services + pricing page,
+  (3) contact page, (4) projects page, (5) construction theme/styling, (6) extra-clean professional UI.
+- Note constraints: U.S.-only (no action needed, just record), price negotiable,
+  feature richness 10.
+
+### planner
+- Confirm **full build** (not prototype) — richness 10, no backend blocker, scope
+  fits the caps. Hero = video-background landing + services/pricing. Supporting =
+  projects gallery + working contact form.
+- **Bespoke design direction (do NOT use michaelwegter.com's look).** Construction
+  industry = trust, weight, craftsmanship. Suggested direction for planner to
+  refine: a grounded, masculine-but-premium palette (deep charcoal/graphite, warm
+  concrete grays, a single confident accent — safety-amber/hi-vis yellow OR a
+  steel/blueprint blue), strong industrial typography (e.g. a condensed/grotesk
+  display face like Archivo/Anton/Oswald paired with a clean humanist sans like
+  Inter/Source Sans for body), generous whitespace, big confident imagery, subtle
+  motion. Aim for "established regional builder with a great agency site," not a
+  template. Define exact hex + real Google Font families.
+- Hero video: plan a tasteful construction-site loop (drone over a site, framing a
+  home, machinery) with a dark gradient overlay so headline text stays legible.
+  Source a royalty-free clip (Pexels/Coverr/Mixkit) OR a CSS/canvas fallback if no
+  clip is safely available — record the choice. Must autoplay muted, loop,
+  playsinline, with a poster image and a reduced-motion fallback.
+- Write the requirement-to-feature traceability matrix.
+
+### researcher
+- Gather real construction-firm site conventions + 2-3 competitor/agency examples
+  for visual reference. Find royalty-free hero video + project imagery sources
+  (license-clear). Confirm the existing scaffold to clone: AppFrame is reused as-is
+  for the route; the demo itself is a self-contained `index.html` + `assets/`
+  (default form). Pull font + clip URLs so demo-builder doesn't have to hunt.
+
+### demo-builder
+- Build into `public/demos/construction-company-website/`. Self-contained static
+  app (vanilla or React-via-CDN) is the right call here — it's a marketing site.
+- Pages/sections: **Home (video hero)**, **Services + Pricing**, **Projects**,
+  **Contact**. Multi-page feel via routing or anchored sections — make it feel like
+  a real multi-page site with a sticky header nav + footer.
+- Real working features to hit richness 10: video-background hero with overlay +
+  CTA, services grid with transparent pricing cards/tiers, filterable projects
+  gallery with lightbox, a **functional contact form** (validate + success state;
+  wire to a tiny mw-backend blueprint OR a client-side mailto/stub with a
+  convincing success UX — planner decides; if backend, seed nothing sensitive),
+  testimonials/stats counters, "get a quote" flow, responsive + mobile nav,
+  accessibility pass, reduced-motion support. Register in `workSamples.js`
+  (next sequential id; category "Creative" or "Productivity"; frameStyle to match).
+- Hard gates: builds + loads with no console errors on first paint; demo link must
+  later appear in cover letter AND deck; no em/en dashes anywhere.
+
+### deploy -> deploy-test
+- Push michaelwegter.com (and mw-backend only if a contact blueprint was added).
+  Verify live URLs (site 200, /work-samples route 200, /health ok if backend).
+- Playwright the live site: video hero loads, nav works across all four
+  pages/sections, contact form submits + shows success, projects lightbox opens,
+  responsive. Emit VERDICT. Fail loops back to demo-builder.
+
+### media-capture -> proposal-writer -> evaluator
+- Capture hero (video frame), services/pricing, projects gallery, contact.
+- Cover letter + one-pager + PPTX deck in Michael's voice, styled to the demo's
+  construction design language (NOT the portfolio look). Address all 6
+  requirements explicitly, reference the live demo by name + link in both letter
+  and deck. No em/en dashes.
+- Evaluator enforces the 6 hard gates; bounded reflection loop on any miss.
+
+## Quality bar / guardrails for this run
+
+- This is a **design-led** run. The client's bar is polish, not feature count, so
+  the win condition is: it looks like a premium, trustworthy construction firm and
+  the four pages all genuinely work. Don't ship anything that feels like a free
+  template.
+- The **video background is the make-or-break detail** — it must be smooth,
+  legible (text overlay readable), performant, and have a graceful fallback. Test
+  it on the live deploy specifically.
+- Respect token-budget rules: intermediates to disk, narrow reads, clone the
+  AppFrame pattern, demo touches <= ~12 files, build timeout 3 min.
+- Bespoke palette/type only; never michaelwegter.com's dark gallery theme inside
+  the demo.
+
+## Status
+
+Setup complete. Run directory ready at
+`upwork-runs/construction-company-website/`. Next step: `intake`.

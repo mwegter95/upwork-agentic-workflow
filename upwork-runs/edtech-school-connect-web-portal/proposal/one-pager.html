@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SchoolConnect Portal Proposal // Michael Wegter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --primary: #1A56DB;
+    --primary-dark: #1E429F;
+    --accent: #0E9F6E;
+    --warning: #E3A008;
+    --danger: #E02424;
+    --bg: #F9FAFB;
+    --card: #FFFFFF;
+    --border: #E5E7EB;
+    --text: #111827;
+    --muted: #6B7280;
+    --font-head: 'Nunito', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  h1, h2, h3 { font-family: var(--font-head); line-height: 1.2; }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Hero ── */
+  header.hero {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, #2563EB 100%);
+    color: #fff;
+    padding: 64px 0 56px;
+  }
+  header.hero .wrap { display: flex; flex-direction: column; gap: 16px; }
+  .hero-eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.65);
+  }
+  header.hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: #fff;
+  }
+  header.hero h1 .highlight { color: #93C5FD; }
+  header.hero p.lede {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.85);
+    max-width: 600px;
+  }
+  .hero-cta {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: var(--primary-dark);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    width: fit-content;
+    transition: background 0.15s;
+  }
+  .hero-cta:hover { background: #EFF6FF; text-decoration: none; }
+  .hero-cta svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .hero-byline {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+
+  /* ── Section base ── */
+  section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--primary);
+    margin-bottom: 10px;
+  }
+  section h2 {
+    font-size: 1.65rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  section .sub {
+    color: var(--muted);
+    margin-bottom: 32px;
+    max-width: 640px;
+  }
+
+  /* ── Feature cards ── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .feature-card:hover {
+    box-shadow: 0 4px 16px rgba(26,86,219,0.10);
+    border-color: #BFDBFE;
+  }
+  .feature-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+  }
+  .icon-blue { background: #EFF6FF; }
+  .icon-green { background: #ECFDF5; }
+  .icon-yellow { background: #FFFBEB; }
+  .feature-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .feature-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge-blue { background: #DBEAFE; color: #1E429F; }
+  .badge-green { background: #D1FAE5; color: #065F46; }
+  .badge-live { background: var(--accent); color: #fff; }
+
+  /* ── Requirement trace table ── */
+  .req-table { width: 100%; border-collapse: collapse; }
+  .req-table th {
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--border);
+  }
+  .req-table td {
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+    vertical-align: top;
+  }
+  .req-table tr:last-child td { border-bottom: none; }
+  .req-table tr:hover td { background: #F0F7FF; }
+  .check { color: var(--accent); font-weight: 700; }
+
+  /* ── PHP mapping ── */
+  .php-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--card);
+  }
+  .php-grid-head {
+    background: var(--primary);
+    color: #fff;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 10px 16px;
+    letter-spacing: 0.04em;
+  }
+  .php-grid-head.right { background: #1E429F; }
+  .php-row {
+    display: contents;
+  }
+  .php-row .left, .php-row .right {
+    padding: 11px 16px;
+    font-size: 0.87rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-body);
+  }
+  .php-row .left { background: #F3F8FF; color: var(--muted); }
+  .php-row .right { background: var(--card); color: var(--text); }
+  .php-row:last-child .left,
+  .php-row:last-child .right { border-bottom: none; }
+
+  /* ── Roles section ── */
+  .roles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .role-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .role-card.teacher { border-top: 4px solid var(--primary); }
+  .role-card.parent { border-top: 4px solid var(--accent); }
+  .role-card h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .role-card .creds {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-family: monospace;
+    background: #F3F4F6;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 10px 0;
+    display: inline-block;
+  }
+  .role-card ul {
+    margin: 10px 0 0 16px;
+    font-size: 0.87rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── Proof points ── */
+  .proof-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .proof-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .proof-card .number {
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .proof-card .label {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* ── CTA footer ── */
+  footer.cta-footer {
+    background: linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 100%);
+    border-top: 1px solid var(--border);
+    padding: 52px 0;
+    text-align: center;
+  }
+  footer.cta-footer h2 {
+    font-size: 1.9rem;
+    margin-bottom: 10px;
+  }
+  footer.cta-footer p {
+    color: var(--muted);
+    max-width: 500px;
+    margin: 0 auto 24px;
+  }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary);
+    color: #fff;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin: 0 6px;
+    transition: background 0.15s;
+  }
+  .cta-btn:hover { background: var(--primary-dark); text-decoration: none; }
+  .cta-btn.secondary {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .cta-btn.secondary:hover { background: #EFF6FF; }
+
+  @media (max-width: 640px) {
+    .roles-grid, .php-grid { grid-template-columns: 1fr; }
+    .php-grid { display: block; }
+    header.hero h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <p class="hero-eyebrow">Proposal &bull; Michael Wegter &bull; June 2026</p>
+    <h1>SchoolConnect <span class="highlight">Portal</span></h1>
+    <p class="lede">A working school-parent communication platform with real-time messaging, a live student performance dashboard, and an activity feed. Built for your EdTech MVP, available to click right now.</p>
+    <a class="hero-cta" href="https://michaelwegter.com/demos/edtech-school-connect-web-portal/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+      Open live demo
+    </a>
+    <p class="hero-byline">michaelwegter.com/demos/edtech-school-connect-web-portal/</p>
+  </div>
+</header>
+
+<!-- FEATURES -->
+<section>
+  <div class="wrap">
+    <p class="section-label">What is built</p>
+    <h2>Three working features, two real roles</h2>
+    <p class="sub">Log in as a parent or teacher right now. Every feature below is live with a real Flask API backend, not placeholder data.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon icon-blue">💬</div>
+        <span class="badge badge-blue">Hero feature</span>
+        <h3>Real-time Parent-Teacher Messaging</h3>
+        <p>Threaded message bubbles between parent and teacher. Messages are stored in a real database and poll every 4 seconds, so a message sent on the teacher side appears on the parent side without a page refresh. Unread badge updates live in the nav.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-green">📊</div>
+        <span class="badge badge-green">Supporting</span>
+        <h3>Live Student Performance Dashboard</h3>
+        <p>Six subject grade cards (Math, English, Science, History, Art, PE) with letter grades, numeric scores, color-coded status bars, and a Chart.js radar chart. The teacher can update any grade and the parent sees it within seconds via polling.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-yellow">📢</div>
+        <span class="badge badge-green">Supporting</span>
+        <h3>Activity and Announcements Feed</h3>
+        <p>A chronological feed of academic milestones, school events, attendance notes, and teacher announcements. Teachers post from a compose panel and the item appears instantly at the top of the parent's feed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO ROLES -->
+<section>
+  <div class="wrap">
+    <p class="section-label">Two roles, one demo</p>
+    <h2>Experience both sides of the portal</h2>
+    <p class="sub">The login page presents two quick-fill tiles so any reviewer can switch between the parent and teacher perspectives in under 30 seconds.</p>
+    <div class="roles-grid">
+      <div class="role-card teacher">
+        <h3>Teacher View</h3>
+        <div class="creds">teacher@demo.edu / TeachDemo1</div>
+        <ul>
+          <li>See student Alex Johnson's grade summary</li>
+          <li>Update any subject grade (saves to the live API)</li>
+          <li>Post announcements to the activity feed</li>
+          <li>Reply to parent messages in real time</li>
+        </ul>
+      </div>
+      <div class="role-card parent">
+        <h3>Parent View</h3>
+        <div class="creds">parent@demo.edu / ParentDemo1</div>
+        <ul>
+          <li>Dashboard with GPA card, unread message badge, recent activities</li>
+          <li>Grade cards reflect teacher updates within seconds</li>
+          <li>Chronological activity and announcements feed</li>
+          <li>Message thread with the teacher, compose and send</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REQUIREMENT TRACEABILITY -->
+<section>
+  <div class="wrap">
+    <p class="section-label">Requirements covered</p>
+    <h2>Every item in your posting is addressed</h2>
+    <p class="sub">The table below maps each explicit requirement from your post to where it lives in the demo and the production plan.</p>
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>Requirement</th>
+          <th>In the demo</th>
+          <th>Production plan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Two-way school-parent communication</strong></td>
+          <td>Live threaded messaging; both roles compose and receive. 4-second real-time polling.</td>
+          <td class="check">&#10003; Laravel Echo + Pusher WebSockets for the PHP build</td>
+        </tr>
+        <tr>
+          <td><strong>Real-time student performance updates</strong></td>
+          <td>Teacher updates a grade; parent dashboard reflects it within one polling cycle. Chart.js radar chart updates automatically.</td>
+          <td class="check">&#10003; Same data model on MySQL/Eloquent ORM</td>
+        </tr>
+        <tr>
+          <td><strong>Real-time activity updates</strong></td>
+          <td>Teacher posts an announcement; it appears at the top of the parent's activity feed on next poll (4 seconds).</td>
+          <td class="check">&#10003; Server-sent events or Echo channel for PHP</td>
+        </tr>
+        <tr>
+          <td><strong>Functional MVP prototype</strong></td>
+          <td>Full working portal at the demo URL above. Two real logins, three working features, live API.</td>
+          <td class="check">&#10003; Prototype is the production spec</td>
+        </tr>
+        <tr>
+          <td><strong>PHP stack</strong></td>
+          <td>Demo uses Flask + vanilla JS (static host, no PHP runtime). Maps 1:1 to Laravel. See the mapping table below.</td>
+          <td class="check">&#10003; Full PHP/Laravel production build is the handoff</td>
+        </tr>
+        <tr>
+          <td><strong>Fast delivery (1 to 3 months)</strong></td>
+          <td>This prototype already exists and is a clean MVP spec. Clean modular architecture means no rewrites when expanding.</td>
+          <td class="check">&#10003; MVP in 4 to 6 weeks; room to iterate within the contract</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- PHP MAPPING -->
+<section>
+  <div class="wrap">
+    <p class="section-label">PHP production path</p>
+    <h2>The demo maps 1:1 to PHP/Laravel</h2>
+    <p class="sub">The prototype is not a throwaway. Every layer translates directly. The frontend, all user flows, and all data models remain identical. Only the runtime changes.</p>
+    <div class="php-grid">
+      <div class="php-grid-head">Demo layer (prototype)</div>
+      <div class="php-grid-head right">PHP/Laravel production equivalent</div>
+      <div class="php-row">
+        <div class="left">Flask blueprint + routes</div>
+        <div class="right">Laravel Controller + Routes (web.php / api.php)</div>
+      </div>
+      <div class="php-row">
+        <div class="left">SQLite tables (edtech_*)</div>
+        <div class="right">MySQL / PostgreSQL with Eloquent ORM</div>
+      </div>
+      <div class="php-row">
+        <div class="left">PyJWT HS256 tokens</div>
+        <div class="right">Laravel Sanctum or Passport</div>
+      </div>
+      <div class="php-row">
+        <div class="left">Vanilla JS frontend</div>
+        <div class="right">Vue.js, Livewire, or keep vanilla JS</div>
+      </div>
+      <div class="php-row">
+        <div class="left">4-second client polling</div>
+        <div class="right">Laravel Echo + Pusher WebSockets</div>
+      </div>
+      <div class="php-row">
+        <div class="left">Static file serving (GitHub Pages)</div>
+        <div class="right">Laravel on shared hosting or a VPS</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section>
+  <div class="wrap">
+    <p class="section-label">Background</p>
+    <h2>Why this project is a natural fit</h2>
+    <p class="sub">A few concrete data points from past work, not a resume summary.</p>
+    <div class="proof-grid">
+      <div class="proof-card">
+        <div class="number">2.5 yrs</div>
+        <div class="label">Sole developer and SME on a React + Python platform at U.S. Bank, 600 users per month</div>
+      </div>
+      <div class="proof-card">
+        <div class="number">60k</div>
+        <div class="label">Lines of code owned and maintained solo; could fix most issues within 10 minutes</div>
+      </div>
+      <div class="proof-card">
+        <div class="number">150+</div>
+        <div class="label">Story points delivered per sprint at Optum (Angular + .NET), team go-to for AI-assisted development</div>
+      </div>
+      <div class="proof-card">
+        <div class="number">Full stack</div>
+        <div class="label">React, Angular, Python, .NET, Java, PHP-adjacent, SQL, PostgreSQL, Docker, CI/CD</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<footer class="cta-footer">
+  <div class="wrap">
+    <h2>The portal is live right now</h2>
+    <p>Log in as parent or teacher and click through the whole platform. No install, no setup.</p>
+    <div>
+      <a class="cta-btn" href="https://michaelwegter.com/demos/edtech-school-connect-web-portal/" target="_blank" rel="noopener">Open live demo</a>
+      <a class="cta-btn secondary" href="https://michaelwegter.com/work-samples/edtech-school-connect-web-portal" target="_blank" rel="noopener">View on portfolio</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

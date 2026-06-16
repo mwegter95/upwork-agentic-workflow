@@ -1,0 +1,368 @@
+# Research: healthstack-patient-portal
+
+Slug: healthstack-patient-portal
+Date: 2026-06-14
+
+---
+
+## 1. Portfolio Wiring Status (critical: saves demo-builder time)
+
+**workSamples.js** already exists at `../michaelwegter.com/src/data/workSamples.js`.
+Current entries: ids 1-5. Next entry must be **id: 6**.
+
+**App.jsx** already has the `/work-samples/:slug` route (line 30). NO CHANGE NEEDED.
+
+**Navbar.jsx** already has the "Work Samples" link (line 123-128). NO CHANGE NEEDED.
+
+**AppFrame.jsx** already imports and merges both `apps` and `workSamples` (line 10-13):
+```js
+const app = [...apps, ...workSamples].find(a => a.id === appId || a.slug === appId)
+```
+It resolves by both id and slug and uses `app.href` as the iframe src. NO CHANGE NEEDED.
+
+**Only portfolio file that needs editing**: `../michaelwegter.com/src/data/workSamples.js`
+Append id:6 entry (see Section 6 below).
+
+---
+
+## 2. Backend Scaffold: Use art_store_blueprint.py (NOT spotify)
+
+The cleanest template for healthstack is **`art_store_blueprint.py`**, which already has:
+- Module-level ephemeral JWT secret: `_JWT_SECRET = secrets.token_hex(32)`
+- `_make_token(email)` -> `jwt.encode(payload, _JWT_SECRET, algorithm="HS256")`
+- `_decode_token(token)` -> `jwt.decode(...)`
+- `require_token` decorator (checks `Authorization: Bearer <token>`)
+- `/login` endpoint that validates credentials and returns a JWT
+
+For healthstack, adapt this pattern to include a `role` claim in the token.
+
+### Blueprint registration in server.py
+
+Pattern (follows lines 259-270 in server.py):
+```python
+# ─── HealthStack Patient Portal demo blueprint ────────────────────────────────
+from healthstack_blueprint import healthstack_bp
+app.register_blueprint(healthstack_bp)
+```
+Add this block after the `art_store_blueprint` import block. server.py already has
+`import jwt` (line 38) and PyJWT in requirements. The blueprint imports its own `jwt`
+independently (same PyJWT package).
+
+**CORS**: No per-blueprint CORS config needed. The global `CORS(app, origins=_CORS_ORIGINS)`
+in server.py already includes `https://michaelwegter.com`. Confirmed by repsetta_blueprint.py
+which has no CORS setup and works fine.
+
+---
+
+## 3. healthstack_blueprint.py Architecture
+
+### Module-level auth (clone from art_store_blueprint)
+
+```python
+import jwt as _jwt
+import secrets
+import datetime
+
+_JWT_SECRET = secrets.token_hex(32)   # ephemeral demo secret, fine for this
+_JWT_ALG    = "HS256"
+_JWT_TTL    = datetime.timedelta(hours=8)
+
+def _make_token(email: str, role: str) -> str:
+    payload = {
+        "email": email,
+        "role":  role,
+        "exp":   datetime.datetime.utcnow() + _JWT_TTL,
+    }
+    return _jwt.encode(payload, _JWT_SECRET, algorithm=_JWT_ALG)
+
+def _decode_token(token: str) -> dict:
+    return _jwt.decode(token, _JWT_SECRET, algorithms=[_JWT_ALG])
+
+def require_role(allowed_roles):
+    """Decorator factory: allow only tokens with role in allowed_roles."""
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            auth = request.headers.get("Authorization", "")
+            if not auth.startswith("Bearer "):
+                return jsonify({"error": "Unauthorized"}), 401
+            try:
+                payload = _decode_token(auth[7:])
+                if payload.get("role") not in allowed_roles:
+                    return jsonify({"error": "Forbidden"}), 403
+                request.hs_user = payload
+            except _jwt.ExpiredSignatureError:
+                return jsonify({"error": "Token expired"}), 401
+            except Exception:
+                return jsonify({"error": "Invalid token"}), 401
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+```
+
+### Seeded in-memory data (module-level, no DB needed)
+
+```python
+_USERS = {
+    "patient@healthstack.demo": {"password": "DemoPatient123!", "role": "patient", "name": "Jane D."},
+    "admin@healthstack.demo":   {"password": "DemoAdmin123!",   "role": "admin",   "name": "Admin"},
+}
+
+_PROVIDERS = [
+    {"id": 1, "name": "Dr. Sarah Chen",  "specialty": "Family Medicine",   "price": 85, "rating": 4.9, "slots": ["Mon 9am","Mon 11am","Tue 9am","Tue 2pm","Wed 10am","Thu 11am","Fri 9am"]},
+    {"id": 2, "name": "Dr. Marcus Webb", "specialty": "Internal Medicine",  "price": 95, "rating": 4.8, "slots": ["Tue 10am","Tue 1pm","Thu 10am","Thu 3pm"]},
+    {"id": 3, "name": "Dr. Priya Nair",  "specialty": "Pediatrics",         "price": 75, "rating": 4.9, "slots": ["Mon 8am","Wed 8am","Fri 8am","Mon 11am","Wed 12pm"]},
+    {"id": 4, "name": "NP Jordan Kim",   "specialty": "Urgent Care",        "price": 65, "rating": 4.7, "slots": ["Mon 7am","Tue 7am","Wed 7am","Thu 7am","Fri 7am","Sat 9am","Sat 11am"]},
+]
+
+# Pre-seeded bookings: patient has one upcoming appointment
+_BOOKINGS = [
+    {
+        "id": "bk_001",
+        "patient_email": "patient@healthstack.demo",
+        "patient_name": "Jane D.",
+        "provider_id": 1,
+        "provider_name": "Dr. Sarah Chen",
+        "specialty": "Family Medicine",
+        "slot": "Next Tuesday 10:00 AM",
+        "price": 85,
+        "status": "Confirmed",
+        "payment_intent": "pi_demo_abc123",
+        "booked_at": "2026-06-13T09:30:00",
+    }
+]
+
+_AUDIT_LOG = [
+    {"ts": "Today 14:03", "event": "Patient Jane D. viewed their dashboard"},
+    {"ts": "Today 11:42", "event": "Patient Mike T. booked with Dr. Webb"},
+    {"ts": "Today 09:15", "event": "Admin admin@healthstack.demo accessed roster"},
+    {"ts": "Yesterday 16:30", "event": "Patient Jane D. uploaded intake form"},
+    {"ts": "Yesterday 14:22", "event": "Patient Alex R. completed checkout"},
+]
+```
+
+### Endpoints to implement
+
+```
+POST /healthstack/login
+    Body: { email, password }
+    Returns: { token, role, name }
+    Logic: check _USERS dict, call _make_token(email, role)
+
+GET  /healthstack/services
+    No auth required
+    Returns: { providers: _PROVIDERS }
+
+POST /healthstack/book
+    require_role(["patient"])
+    Body: { provider_id, slot }
+    Creates new booking entry in _BOOKINGS (append to list)
+    Returns: { booking_id, provider_name, slot, price, status: "Confirmed" }
+
+POST /healthstack/checkout
+    require_role(["patient"])
+    Body: { booking_id, card_last4 }
+    Fake PaymentIntent: "pi_demo_" + secrets.token_hex(6)
+    Update booking status to "Paid"
+    Returns: { payment_intent_id, amount, status: "succeeded", confirmation: booking_id }
+
+GET  /healthstack/dashboard/patient
+    require_role(["patient"])
+    Returns only bookings where patient_email == request.hs_user["email"]
+    Returns: { user_name, bookings: [...] }
+
+GET  /healthstack/dashboard/admin
+    require_role(["admin"])
+    Returns all bookings + audit log + patient roster (initials only)
+    Returns: { total_bookings, total_patients, bookings: [...], audit_log: _AUDIT_LOG,
+               patients: [{ initials: "J.D.", specialty: "...", last_visit: "..." }] }
+
+POST /healthstack/upload
+    require_role(["patient"])
+    Stub: just returns { success: True, file_id: "file_" + secrets.token_hex(4) }
+    No actual file handling needed
+```
+
+---
+
+## 4. Demo App (CDN React 18 via esm.sh)
+
+### index.html imports
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js"></script>
+```
+
+### app.js ES module imports
+
+```js
+import React, { useState, useEffect, useCallback } from 'https://esm.sh/react@18'
+import { createRoot } from 'https://esm.sh/react-dom@18/client'
+```
+
+Use `createRoot` (React 18 API), not `ReactDOM.render`.
+
+### api.js base URL
+
+```js
+const BASE = 'https://api.michaelwegter.com/healthstack'
+
+function authHeaders() {
+  const token = localStorage.getItem('hs_token')
+  return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+               : { 'Content-Type': 'application/json' }
+}
+
+export async function login(email, password) { ... }
+export async function getServices() { ... }
+export async function book(providerId, slot) { ... }
+export async function checkout(bookingId, cardLast4) { ... }
+export async function getPatientDashboard() { ... }
+export async function getAdminDashboard() { ... }
+export async function uploadFile(file) { ... }
+export function logout() { localStorage.removeItem('hs_token'); localStorage.removeItem('hs_role'); }
+```
+
+### State machine (hash-router pattern)
+
+State: `{ view, token, role, userName, selectedProvider, bookingResult }`
+
+Views: `login | services | slot-picker | checkout | confirmation | patient-dash | admin-dash`
+
+No React Router needed. Use a simple top-level state variable for current view and render
+the matching component.
+
+---
+
+## 5. Sesame Care Reference (UX patterns to clone)
+
+sesamecare.com key UX patterns for the services browser:
+- Dark-on-white card grid in production; adapt to dark theme for this demo
+- Each card: provider photo placeholder (avatar initials circle), name, specialty, star rating, price chip, "Book" CTA button
+- Card layout: 3-col on desktop, 1-col on mobile (CSS grid: repeat(auto-fill, minmax(280px, 1fr)))
+- Price displayed as "$XX / visit" in a colored chip (use --mustard background)
+- Rating displayed as filled stars + numeric (e.g. "4.9 (48 reviews)")
+- Header: site name + role badge + logout; minimal, no sidebar
+- The booking slot picker: a compact date/time grid or segmented list of available times
+
+---
+
+## 6. workSamples.js Entry to Append
+
+```js
+{
+  id: 6,
+  slug: "healthstack-patient-portal",
+  title: "HealthStack Patient Portal",
+  description:
+    "A Sesame-style healthcare booking portal demonstrating Next.js/Supabase architecture patterns: role-based JWT auth (patient vs admin), provider browsing, slot booking, mock Stripe checkout, and HIPAA-aware PHI minimization with an audit log.",
+  category: "Productivity",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/healthstack-patient-portal/",
+  color: "#12b4c8",
+  icon: "🏥",
+  frameStyle: "baroque",
+  client: "US Healthcare Startup (Upwork)",
+  postingSummary:
+    "Full-stack developer needed to build a healthcare web app with Next.js, Supabase, Stripe, and Vercel for US healthcare clients requiring HIPAA-aware design.",
+  builtFor: "Full-Stack Developer (Next.js + Supabase + Stripe) Healthcare Startup (Upwork)",
+  date: "2026-06-14",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+},
+```
+
+---
+
+## 7. Design Implementation Notes
+
+### Color usage in healthstack demo
+- Background shell: `#121118` (--bg-root)
+- Cards: `#1e1c26` (--bg-card), border `#2c2a38` (--border-default)
+- Primary CTA "Book" / "Pay": `#e8b820` (--mustard), dark text `#121118`
+- Provider card accent bar (left border): `#12b4c8` (--cyan-vivid)
+- Admin role badge: `#f0186e` (--hot-pink)
+- Patient role badge: `#12b4c8` (--cyan-vivid)
+- Booking confirmation checkmark: `#6ed46a` (--parrot-green)
+- Error states: `#e83828` (--parrot-red)
+- Text primary: `#f2ede4`, secondary: `#8a8898`, muted: `#4a4858`
+
+### Typography
+- "HealthStack" logo: Space Grotesk 700, "Health" in --mustard, "Stack" in --text-primary
+- Section eyebrows: font-family JetBrains Mono / monospace, uppercase, letter-spacing 0.1em, --text-muted
+- Body: Inter
+- Price chips, badge text: monospace
+
+### Trust signals (visual, easy wins)
+- Small lock icon + "TLS 1.3" chip in the header right side
+- Footer chip: `Demo: PHI handling follows minimum-necessary principle`
+- Admin dashboard: orange "PHI Minimized" label on the patient roster column
+
+---
+
+## 8. File Paths Summary
+
+```
+# Demo (create fresh):
+../michaelwegter.com/public/demos/healthstack-patient-portal/index.html
+../michaelwegter.com/public/demos/healthstack-patient-portal/styles.css
+../michaelwegter.com/public/demos/healthstack-patient-portal/api.js
+../michaelwegter.com/public/demos/healthstack-patient-portal/app.js
+
+# Backend (create):
+../mw-backend/healthstack_blueprint.py
+
+# Backend (edit, add 2 lines after art_store_blueprint block):
+../mw-backend/server.py
+
+# Portfolio (edit, append id:6 to workSamples array):
+../michaelwegter.com/src/data/workSamples.js
+
+# NOT needed (already wired):
+../michaelwegter.com/src/App.jsx         <- /work-samples/:slug route exists
+../michaelwegter.com/src/components/Navbar.jsx  <- Work Samples link exists
+```
+
+---
+
+## 9. Demo Credentials (surface everywhere)
+
+| Role    | Email                    | Password        |
+|---------|--------------------------|-----------------|
+| Patient | patient@healthstack.demo | DemoPatient123! |
+| Admin   | admin@healthstack.demo   | DemoAdmin123!   |
+
+These must appear visibly on the login screen, in the cover letter, and in the deck.
+
+---
+
+## 10. Stack Framing for Deck / Cover Letter
+
+The demo uses React 18 (CDN) + mw-backend Flask JWT. In the proposal, frame it accurately:
+
+- "The demo runs React 18 and communicates with a live Flask API that enforces
+  role-based JWT auth, which is the same access-control pattern I apply with
+  Supabase RLS in production Next.js projects."
+- "In a real build, this becomes: Next.js App Router + Supabase Auth (server-side
+  session) + Row Level Security policies. The demo proves I understand the
+  access-control model, not just the toolchain."
+- Stripe: "The checkout modal in the demo shows the UX flow and calls a mock
+  endpoint. Production uses Stripe.js + server-side PaymentIntents, Stripe webhooks
+  for status updates, and Stripe Customer Portal for subscription management."
+- Vercel: "Next.js deploys to Vercel with environment variables for Supabase and
+  Stripe keys, preview deployments on every PR, and Edge Runtime where latency matters."
+
+---
+
+## 11. Cover Letter Hard Gates (remind proposal-writer)
+
+- First word of cover letter body: **HEALTHSTACK** (exact, caps, no punctuation before it)
+- Reference sesamecare.com by name
+- Include live demo link: `https://michaelwegter.com/demos/healthstack-patient-portal/`
+  or the work-samples route: `https://michaelwegter.com/work-samples/healthstack-patient-portal`
+- Include demo credentials for immediate testing
+- No em dashes or en dashes anywhere
+- State availability and rate/project pricing

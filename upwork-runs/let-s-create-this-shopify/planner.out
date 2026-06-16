@@ -1,0 +1,287 @@
+# Plan: Vibe / Claude Coding Tutor — Art Print Storefront
+**Slug:** `art-print-storefront`
+**Run dir:** `upwork-runs/let-s-create-this-shopify/`
+**Date:** 2026-06-13
+
+---
+
+## 1. Demo Concept
+
+**What it is:** A gallery-forward fine-art print storefront that mirrors the exact
+Shopify OS 2.0 architecture the client will rebuild in Liquid. The demo serves a
+dual purpose: (a) it shows what the finished storefront looks and feels like, and
+(b) it doubles as a teaching artifact with an embedded "How I'd coach this with
+Claude" panel that proves Michael's tutoring value.
+
+**Why this concept wins the proposal:** The client's primary ask is a tutor who
+teaches vibe-coding with Claude, not a contractor who delivers code. Embedding a
+coaching panel directly into the demo product page proves, in the proposal itself,
+that Michael teaches the WHY behind every decision.
+
+---
+
+## 2. Prototype vs. Full Decision: FULL
+
+Building a full, functional demo. No prototype gate tripped:
+
+1. Backend need is trivially stub-able (mock login + mock checkout, no real
+   payment processor, no real Shopify OAuth). mw-backend can expose this cheaply.
+2. Estimated build is ~10 files, well under the 12-file cap.
+3. The concept is interactive, not visual-only. A static mockup would undercut
+   the tutoring pitch.
+
+---
+
+## 3. Hero Feature
+
+**Horizontal-scrolling gallery with drag + arrow navigation**
+
+Flow: Homepage gallery (12 art prints seeded from Picsum.photos) → click a print
+→ Product page with:
+- Editorial full-image view (left) + detail panel (right)
+- Size selector (8x10 / 12x16 / 16x20 / 24x30) with live price update
+- Edition info (limited edition #X of 25, shown via seeded "metafield" data)
+- "Add to Cart" opens a slide-in cart drawer
+- Cart drawer → "Proceed to Checkout" triggers JWT login modal (if not logged in)
+  → POST to /art-store/checkout → confirmation screen with mock order number
+
+---
+
+## 4. Supporting Features (max 2)
+
+**Feature 1 — Mock JWT login**
+- POST /art-store/login with any email + password returns a signed JWT
+- Token stored in sessionStorage, used as Bearer on the checkout call
+- Login modal is minimal: email + password fields, a "Sign in" button
+- No changes to the existing auth core in mw-backend
+
+**Feature 2 — Mock checkout**
+- POST /art-store/checkout accepts the cart JSON + Bearer token
+- Returns a fake confirmed order: { orderId, total, estimatedShipping, items }
+- Confirmation screen shown inline (no page navigation)
+- Order ID is a UUID prefixed with "MW-" for legibility
+
+---
+
+## 5. Teaching Artifact (the differentiator)
+
+An embedded "How I'd coach this with Claude" collapsible panel on the product
+page. It shows three tabbed sections:
+
+1. **The Prompt** — the exact Claude prompt you'd write to generate this Liquid
+   section (horizontal gallery as a Shopify OS 2.0 section with blocks).
+2. **What to Review** — a short checklist: check Liquid syntax, verify
+   section/block schema, test on mobile, confirm metafield keys match the theme
+   editor settings.
+3. **Common Errors** — three common pitfalls when generating Shopify Liquid with
+   Claude, explained in plain language.
+
+This panel is collapsed by default and toggled with a "See the Claude coaching
+notes" button. It does not interrupt the main storefront flow but is immediately
+visible and clickable.
+
+---
+
+## 6. Pages in Demo (Scope-Fenced)
+
+Building 2 pages + 1 overlay, NOT all 5 from the posting:
+
+| Page | Status |
+|---|---|
+| Homepage (horizontal gallery) | BUILT — hero |
+| Product page + teaching panel | BUILT — hero + differentiator |
+| Cart drawer + checkout/login overlay | BUILT — inline, no separate page |
+| Collection page | NOT BUILT — mentioned in proposal as session 2 content |
+| About / Contact | NOT BUILT — mentioned in proposal as simple pages |
+
+Proposal will explain: the demo focuses on the hardest, most technically rich
+pages. The remaining pages are straightforward and we'd build them together in
+session.
+
+---
+
+## 7. File Plan (~10 files, under 12-file cap)
+
+### Demo static app
+Location: `../michaelwegter.com/public/demos/art-print-storefront/`
+
+```
+index.html          Homepage: nav + horizontal scroll gallery
+product.html        Product page: editorial view + variant selector + teaching panel
+assets/style.css    Design tokens (matches site palette) + all layout styles
+assets/gallery.js   Drag-scroll + arrow nav + thumbnail click → product.html
+assets/product.js   Variant selector price update + add-to-cart state
+assets/cart.js      Cart drawer open/close, item list, quantity, subtotal
+assets/checkout.js  Login modal, POST /art-store/checkout, confirmation screen
+assets/data.js      Seeded print catalog (Picsum URLs, titles, prices, editions)
+```
+
+8 files in the demo directory.
+
+### Backend
+Location: `../mw-backend/`
+
+```
+art_store_blueprint.py   Flask blueprint: /art-store/login, /art-store/prints, /art-store/checkout
+server.py                2-line addition: import + register_blueprint
+```
+
+2 files in mw-backend.
+
+### Registry
+Location: `../michaelwegter.com/src/data/`
+
+```
+workSamples.js           Append entry id:4 for art-print-storefront
+```
+
+**Total: 11 files touched**
+
+---
+
+## 8. Backend Blueprint Spec: `art_store_blueprint.py`
+
+Clone `repsetta_blueprint.py` structure (no templates, no SQLite table, pure
+in-memory seed + JWT signing).
+
+```
+art_store_bp = Blueprint("art_store", __name__, url_prefix="/art-store")
+
+Endpoints:
+  POST /art-store/login
+    Body: { email, password }  (any values accepted)
+    Returns: { token: <JWT signed with server SECRET_KEY, exp 1h, sub: email> }
+
+  GET /art-store/prints
+    Returns: PRINTS seed list (12 items, Picsum URLs)
+    No auth required
+
+  POST /art-store/checkout
+    Header: Authorization: Bearer <token>
+    Body: { items: [{printId, size, qty, price}], total }
+    Returns: { orderId: "MW-<uuid4 short>", status: "confirmed",
+               estimatedShipping: "3-5 business days", total }
+```
+
+JWT signing: use the existing `SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")`
+pattern (already used by server.py core auth). No new env var needed.
+
+Seed data: 12 prints using `https://picsum.photos/seed/<slug>/800/1000` URLs.
+Each print has: id, slug, title, artist (fictional), price (base for 8x10),
+edition (limited/open), editionSize (25 for limited), sizes with prices, tags.
+
+---
+
+## 9. workSamples.js Entry
+
+```js
+{
+  id: 4,
+  slug: "art-print-storefront",
+  title: "Art Print Storefront",
+  description:
+    "A gallery-forward fine-art print shop built as a teaching artifact for Shopify OS 2.0 coaching. Horizontal-scroll gallery, editorial product pages with size and edition selectors, a slide-in cart, mock JWT login, and mock checkout backed by the mw-backend API.",
+  category: "Creative",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/art-print-storefront/",
+  color: "#e8b820",
+  icon: "🖼️",
+  frameStyle: "baroque",
+  client: "Demo for Upwork posting",
+  postingSummary:
+    "Photographer building a custom editorial Shopify storefront needs a Claude-assisted vibe-coding tutor for Liquid, JS, and OS 2.0 theme architecture.",
+  builtFor: "Vibe / Claude Coding Tutor (Upwork)",
+  date: "2026-06-13",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+}
+```
+
+---
+
+## 10. Design Direction
+
+Use site design tokens throughout (dark gallery-wall aesthetic). Key choices:
+
+- **Background:** `--bg-root #121118` for the page, `--bg-card #1e1c26` for
+  product detail panel
+- **Accent:** `--mustard #e8b820` for price, add-to-cart CTA, selected variant
+- **Border:** `--border-subtle #201e2a` for frame lines around gallery items
+- **Text:** `--text-primary #f2ede4` headings, `--text-secondary #8a8898` captions
+- **Fonts:** Space Grotesk for headings, Inter for body (both via Google Fonts CDN)
+- **Gallery items:** minimal white-border "frame" effect (border + box-shadow,
+  no heavy ornate chrome in the demo itself since this is an art context)
+- **Teaching panel:** subtle `--bg-surface #191720` background, `--mustard` left
+  border accent, mono font for code excerpts
+
+The visual result should feel like a real gallery e-commerce site, not a toy.
+
+---
+
+## 11. Requirement-to-Feature Traceability Matrix
+
+| Requirement (from brief.json) | Demo Coverage | Proposal Coverage |
+|---|---|---|
+| Horizontal scroll gallery, drag + arrows | index.html hero | Cover letter + deck |
+| Product page, size/edition selector, live price | product.html | Cover letter + deck |
+| Add to cart | Cart drawer in cart.js | Deck |
+| Mock checkout flow | checkout.js + /art-store/checkout | Cover letter |
+| Real mw-backend, login | /art-store/login JWT | Cover letter |
+| Free-to-use images | Picsum.photos (no key) | Deck |
+| OS 2.0 sections + blocks architecture | Teaching panel explains it | Cover letter + deck |
+| Vibe coding / Claude-as-workflow | Teaching panel IS the proof | Cover letter (primary) |
+| Metafields for edition numbering | Seeded in data.js, shown on product page | Deck |
+| Responsive mobile layout | CSS media queries | Deck |
+| Fast load, minimal dependencies | Vanilla JS, no bundler | Deck |
+| Tutor who explains the why | Teaching panel + voice | Cover letter (primary) |
+| Daily Claude/Codex/Copilot experience | Cover letter bio + deck | Cover letter (primary) |
+| US-based | Stated in cover letter | Cover letter |
+| Screen-share style, patience + clarity | Session structure section in deck | Deck + cover letter |
+
+---
+
+## 12. Scope Fences (hard)
+
+- NOT building a Shopify dev store or using Shopify's Liquid engine
+- NOT building Collection, About, or Contact pages in the demo (they are mentioned
+  in the proposal as session 2-3 deliverables)
+- NOT touching existing auth core, DB schema, or other blueprints in mw-backend
+- NOT using a JS bundler or NPM for the demo (vanilla JS + CDN only)
+- Teaching panel is static HTML (no CMS), content hardcoded into product.html
+
+---
+
+## 13. Proposal Voice Guidance
+
+The cover letter must:
+1. Open with the tutoring and AI-workflow angle immediately, not with a generic
+   Shopify credential list
+2. Name "Claude, Codex, and GitHub Copilot" as daily tools in the first or second
+   paragraph, per Michael's notes
+3. Reference the live demo URL and name it "Art Print Storefront demo" or similar
+4. Call out the embedded teaching panel as a concrete example of how sessions
+   would feel
+5. Explicitly address: patience with non-developers, explaining the why, prompt
+   crafting
+6. State US-based early (it is a hard gate in the posting)
+7. No em dashes or en dashes anywhere (hard rule)
+
+The deck should have:
+- A "How I Work with AI" slide showing Claude/Codex/Copilot in the daily workflow
+- A "Session Structure" slide covering screen-share format, prompt crafting,
+  checklists after sessions
+- A "Demo Walkthrough" slide with a screenshot of the gallery and teaching panel
+- A "Shopify OS 2.0 Roadmap" slide naming all 5 pages and the key technical
+  milestones
+
+---
+
+## 14. Research Needed (for researcher phase)
+
+1. Picsum.photos URL pattern confirmation (no API key, deterministic seed URLs)
+2. Shopify OS 2.0 section schema structure (for accurate Liquid examples in the
+   teaching panel and deck)
+3. Any public-domain or CC0 art photography to name/credit in seed data titles
+   (purely cosmetic, images come from Picsum)
+4. Competitive context: what do strong Shopify tutor proposals on Upwork emphasize?
+   (optional, 1-2 fetches max)

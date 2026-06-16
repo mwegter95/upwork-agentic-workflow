@@ -1,0 +1,67 @@
+# CEO Review — CivicQ Plan (plan-ceo)
+
+I reviewed `planner.out` against `brief`/`intake.out`, the posting, and the
+10/10 feature-richness target. This is a strong, disciplined plan. It is faithful
+to the brief and ambitious enough for 10/10. Passing it forward.
+
+## What the plan gets right (verified against the posting)
+
+- **Spec fidelity is the spine.** All 10 sections are listed in the client's
+  exact order, plus the `/methodology` page. Section structure is preserved
+  (2x2 feature grid with status pills, two-column live/in-dev disclosure,
+  three-column partners). This directly answers the client's stated fear of a
+  dev who "redesigns or rewrites" instead of building to spec.
+- **All three data visualizations are real, coded, and accessible** (SVG, no
+  third-party embeds, no gray-box placeholders), each with a clear accessibility
+  story (ARIA, visually-hidden data-table fallback, label-on-segment instead of
+  legend-only, color-blind-safe ramp, no partisan hue coding). This is the
+  make-or-break item and the plan treats it as first-class.
+- **Email capture is real persistence, not a claim.** `civicq_blueprint.py`
+  (modeled on `spotify_blueprint.py`) with `POST /civicq/subscribe` +
+  `GET /civicq/csv-export` proves the "Mailchimp/ConvertKit + CSV backup"
+  requirement with a working backend. Correct call for 10/10.
+- **Nonpartisan discipline is baked into the design system** (teal/gold + neutral
+  grays, explicitly no red/blue), which matches the whole CivicQ identity.
+- **Every requirement is traced** (Section 9 matrix) and every to-apply ask is
+  answered: portfolio = live demo, timeline = 40/40/20 milestone plan within the
+  2-4 week window, three-graphics approach = all coded by Michael, fixed bid =
+  $4,200 (inside the $3,500-$5,000 range, justifiably mid-to-upper given the full
+  build). Good.
+- Prototype-vs-full decision is correctly FULL with the fallback triggers
+  evaluated, and scope fences are explicit so nothing creeps.
+
+## Notes to carry into the build (not blockers — pass-with-guidance)
+
+These do not require a planner loop; demo-builder should fold them in.
+
+1. **Scoring chart interactivity.** Brief says "interactive/animated preferred."
+   Plan currently specifies animated draw-in only. For 10/10, add lightweight
+   interactivity (hover/focus to surface each dimension's exact weight, keyboard
+   focusable bars) on top of the scroll animation. Keep it reduced-motion-safe.
+2. **File-cap pressure is real.** Cramming all 10 sections inline in `Home.jsx`
+   to stay at ~11 files is acceptable, but do not let it degrade polish. If a
+   couple of extra small section/component files are needed to keep the code
+   clean and the sections genuinely production-quality, that is the right
+   trade-off — 10/10 polish beats a hard file count. The ~12-file cap is a
+   guardrail against bloat, not a reason to ship cramped markup.
+3. **Lighthouse 85+ mobile is graded.** Self-host or `font-display: swap` the
+   Newsreader/Inter fonts, lazy-load the hero video poster, and keep JS lean so
+   the perf number is actually hit, not just asserted. deploy-test should report
+   the real score.
+4. **Analytics stub is fine** per scope fences, but make the event hooks visibly
+   real in the demo (console-logged custom events on CTA + form submit) so the
+   "analytics installed" requirement has on-screen evidence, with the Plausible
+   site-id swap documented.
+5. **Org Hub mockup** must read as an intentional product shot (browser chrome +
+   mock dashboard), not a wireframe gray box — the plan says this; hold the build
+   to it at QA.
+
+## Decision
+
+The plan is ambitious enough for 10/10, faithful to the brief, correctly scoped,
+and fully traceable. No requirements were missed (no REDIRECT to intake needed),
+and it is sharp enough that a planner loop would add cost without changing the
+outcome. The notes above are build-time guidance for demo-builder and the
+post-build CEO check, not plan defects.
+
+VERDICT: pass

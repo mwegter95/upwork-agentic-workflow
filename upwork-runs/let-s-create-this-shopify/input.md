@@ -1,0 +1,59 @@
+# Raw input
+
+## Michael's notes
+Let's create this shopify theme powered site for art print selling. I want to have
+a real backend in mw-backend, with login and mock checkout, with images from a
+free to use site. Write up the proposal that says I would be able to communicate
+well and coach in how to claude code the website, and that I have daily experience
+in my full time job and freelancing with building websites using Claude, Codex,
+and Github Copilot.
+
+## Posting: Vibe / Claude Coding Tutor
+Posted last week. Only freelancers located in the U.S. may apply.
+
+### Background & Context
+I am building a custom editorial-style Shopify storefront for selling fine art
+photography prints. The design is minimal and gallery-forward, inspired by
+photographer portfolio sites. Key features include a horizontal scrolling gallery,
+individual print product pages with size/edition selection, and a clean checkout
+flow.
+
+I have a clear visual direction. What I need is hands-on guidance to translate
+this into a real, functioning Shopify theme using Liquid, JavaScript, and
+Shopify's native tools, including no-code builders where they make sense, and to
+learn how to maintain and extend it myself going forward, using Claude as a core
+part of the workflow.
+
+### What I'm Looking For
+A tutor who can work with me in a vibe coding style, meaning we use Claude heavily
+as part of our workflow. You don't just write code for me; you help me understand
+how to prompt Claude effectively, review and refine what it produces, catch errors,
+and build good instincts for AI-assisted development.
+
+### Session Style
+- Screen-share walkthroughs where we build together in real time
+- You explain the why behind each decision, not just the what
+- Help me craft and iterate on Claude prompts that produce quality Shopify code
+- Perhaps an occasional short written summaries or checklists after each session
+
+### Pages Required
+- Homepage: horizontal scroll gallery with drag and arrow navigation
+- Product page: editorial image view, print size selector, edition info, add to cart
+- Collection page: grid or index-style listing of available prints
+- About
+- Contact page
+
+### Key Features
+- Shopify OS 2.0 theme architecture (sections + blocks)
+- Custom Liquid sections for the horizontal gallery
+- Variant-based product options for print sizes and editions
+- Metafields for edition numbering and print details
+- Responsive mobile layout
+- Fast load performance, minimal dependencies
+
+### Ideal Candidate
+- Strong Shopify Liquid knowledge (OS 2.0 preferred)
+- Comfortable working alongside AI tools (Claude, ChatGPT, Copilot, etc.)
+- Experience tutoring or teaching non-developers, patience and clarity matter
+- Ability to explain code decisions in plain language
+- Portfolio or examples of Shopify theme work

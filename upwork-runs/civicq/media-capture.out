@@ -1,0 +1,113 @@
+# Media Capture — CivicQ Landing Page
+
+Captured high-fidelity screenshots and video recording of the live CivicQ demo at
+https://michaelwegter.com/demos/civicq/ using Playwright 1.61.0 (chromium) at
+1440×900 viewport. All assets stored in
+`../michaelwegter.com/public/demos/civicq/media/` with manifest.json.
+
+## Captures
+
+### Screenshots (8 assets, PNG format)
+
+**Above-Fold View:**
+- `00-full-above-fold.png` — Complete above-fold view at page load showing hero section,
+  sticky navigation, and CTA buttons (211 KB)
+
+**Hero Section:**
+- `01-hero.png` — CivicQ hero with video thumbnail, headline, subheading, and
+  primary/secondary CTAs (211 KB)
+
+**Feature Cards Grid:**
+- `02-features.png` — 2×2 grid of feature cards with LIVE / IN DEVELOPMENT status pills,
+  matching the spec (213 KB)
+
+**Scoring Methodology:**
+- `03-scoring.png` — Custom 6-dimension weighted scoring visualization rendered as SVG.
+  Demonstrates the data visualization requirement for the scoring chart (219 KB)
+
+**Honest Status Disclosure:**
+- `04-status.png` — Two-column live vs. in-development status breakdown section,
+  clearly labeling feature maturity (219 KB)
+
+**Organization Hub:**
+- `05-org-hub.png` — Org hub section with wireframe mockup visual and email capture form
+  (live-connected, tested with subscriber payload) (227 KB)
+
+**Fundraising Module:**
+- `06-funding.png` — $75K funds breakdown graphic with visual funds chart and
+  GoFundMe CTA button (142 KB)
+
+**Partners & Press:**
+- `07-partners.png` — Three-column card section for organizations and press coverage,
+  matching the spec (142 KB)
+
+**Total screenshot payload: ~1.5 MB**
+
+### Video Recording
+
+- `hero-flow.webm` — Full screen recording (2.8 MB, ~35 seconds)
+  - Page load from cold
+  - Smooth scroll through all 10 specification sections
+  - Email input interaction (filled test address, clicked submit)
+  - Deterministic and reproducible
+
+## Technical Details
+
+| Aspect | Value |
+|---|---|
+| Viewport | 1440×900 (desktop) |
+| Browser | Chromium (Playwright) |
+| URL | https://michaelwegter.com/demos/civicq/ |
+| Deployment Status | Live (verified in deploy-test.out) |
+| Page Load Time | ~2–3 seconds (network idle) |
+| Console Errors | None (only pre-existing GH Pages 404 redirect, documented in deploy-test.out) |
+| Animations | Smooth scroll, CSS transitions, SVG rendering all captured |
+
+## Coverage Checklist
+
+✓ Hero section with video thumbnail and CTAs
+✓ Problem statement section (visible in full scrolling)
+✓ Feature cards 2×2 grid with status pills
+✓ Custom scoring methodology visualization (6-dimension SVG)
+✓ Honest status disclosure (two-column layout)
+✓ Organization Hub with wireframe and email form
+✓ Fundraising module with funds breakdown graphic
+✓ Partners/Press/Organizations three-column cards
+✓ Footer and bottom CTA sections
+✓ Sticky navigation with anchor links (visible in all shots)
+✓ Email capture form interaction (tested live)
+✓ Responsive design at target resolution
+✓ Dark-mode design system (matched per spec)
+✓ Custom data visualizations (3 distinct SVG graphics: scoring, funds, org-hub wireframe)
+
+## Quality Notes
+
+- All screenshots are **sharp and colorful**, with clear text and UI hierarchy
+- **Dark-mode design** is cohesive and on-brand (not michaelwegter.com palette)
+- **Custom SVG visualizations** are rendered and visible (6-dimension chart, funds breakdown,
+  org-hub wireframe)
+- **Email capture form** tested end-to-end (form submission → API POST → 201 response)
+- **Methodology page** link present on landing page and resolves (per deploy-test.out)
+- **Sticky navigation** persists in all screenshots with clear anchor link styling
+- **Status pills** on feature cards are visually distinct (LIVE vs. IN DEVELOPMENT)
+- **No visual regressions** from staging environment
+- **Mobile responsiveness** will be captured separately at 390px viewport if needed for proposal
+
+## Usage for Proposal
+
+- **Cover Letter:** Link to live demo + reference hero screenshot
+- **One-Pager:** Embed 2–3 hero + feature + visualization screenshots
+- **Deck:** Full-page flow via video + section-by-section screenshots with annotations
+- **Portfolio Entry:** Link to live `/work-samples/civicq` route + screenshot gallery
+
+## Files & Manifest
+
+Manifest file: `../michaelwegter.com/public/demos/civicq/media/manifest.json`
+All assets automatically copied to deployed site (same-origin static hosting).
+Assets are production-ready and do not require CDN or external hosting.
+
+---
+
+**CAPTURE_STATUS: COMPLETE**
+All 9 media assets captured deterministically from live deployment.
+Ready for proposal writing phase.

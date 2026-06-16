@@ -1,0 +1,422 @@
+RESEARCHER RUN SUMMARY
+slug: full-stack-developer-python-fastapi
+date: 2026-06-14
+
+---
+
+## 1. SAF-T XML SCHEMA STRUCTURE
+(Use this to generate realistic sample fixture files for the demo)
+
+### Root structure
+
+```xml
+<AuditFile xmlns="urn:StandardAuditFile-Taxation-Financial:NO"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="...">
+
+  <Header>
+    <AuditFileVersion>1.10</AuditFileVersion>
+    <AuditFileCountry>NO</AuditFileCountry>
+    <AuditFileDateCreated>2024-01-31</AuditFileDateCreated>
+    <SoftwareCompanyName>ComplianceCo</SoftwareCompanyName>
+    <SoftwareID>AuditExport</SoftwareID>
+    <SoftwareVersion>3.2.1</SoftwareVersion>
+    <Company>
+      <RegistrationNumber>987654321MVA</RegistrationNumber>
+      <Name>Acme AS</Name>
+      <Address>...</Address>
+    </Company>
+    <TaxAccountingBasis>A</TaxAccountingBasis>   <!-- A=accrual, C=cash -->
+    <TaxEntity>Headquarters</TaxEntity>
+    <FiscalYear>2023</FiscalYear>
+    <StartDate>2023-01-01</StartDate>
+    <EndDate>2023-12-31</EndDate>
+    <CurrencyCode>EUR</CurrencyCode>
+  </Header>
+
+  <MasterFiles>
+
+    <GeneralLedgerAccounts>
+      <Account>
+        <AccountID>1500</AccountID>
+        <AccountDescription>Accounts Receivable</AccountDescription>
+        <StandardAccountID>1500</StandardAccountID>
+        <GroupingCategory>BS</GroupingCategory>  <!-- BS=balance sheet -->
+        <GroupingCode>CurrentAssets</GroupingCode>
+        <AccountType>Receivable</AccountType>
+        <OpeningDebitBalance>45200.00</OpeningDebitBalance>
+        <ClosingDebitBalance>51800.00</ClosingDebitBalance>
+      </Account>
+      <!-- ... more accounts ... -->
+    </GeneralLedgerAccounts>
+
+    <Customers>
+      <Customer>
+        <CustomerID>C-0001</CustomerID>
+        <AccountID>1500</AccountID>
+        <Name>Bjornstad Consulting</Name>
+        <SelfBillingIndicator>0</SelfBillingIndicator>
+        <OpeningDebitBalance>12000.00</OpeningDebitBalance>
+        <ClosingDebitBalance>15400.00</ClosingDebitBalance>
+      </Customer>
+    </Customers>
+
+    <Suppliers>
+      <Supplier>
+        <SupplierID>S-0001</SupplierID>
+        <AccountID>2400</AccountID>
+        <Name>Nordic Supply AS</Name>
+        <OpeningCreditBalance>8800.00</OpeningCreditBalance>
+        <ClosingCreditBalance>9200.00</ClosingCreditBalance>
+      </Supplier>
+    </Suppliers>
+
+    <TaxTable>
+      <TaxTableEntry>
+        <TaxType>MVA</TaxType>
+        <Description>Standard VAT 25%</Description>
+        <TaxCode>3</TaxCode>
+        <TaxPercentage>25.00</TaxPercentage>
+        <Country>NO</Country>
+      </TaxTableEntry>
+      <TaxTableEntry>
+        <TaxType>MVA</TaxType>
+        <Description>Reduced VAT 15%</Description>
+        <TaxCode>31</TaxCode>
+        <TaxPercentage>15.00</TaxPercentage>
+        <Country>NO</Country>
+      </TaxTableEntry>
+    </TaxTable>
+
+  </MasterFiles>
+
+  <GeneralLedgerEntries>
+    <NumberOfEntries>12847</NumberOfEntries>
+    <TotalDebit>4823100.50</TotalDebit>
+    <TotalCredit>4823100.50</TotalCredit>   <!-- must balance! -->
+
+    <Journal>
+      <JournalID>SALES</JournalID>
+      <Description>Sales Journal</Description>
+      <JournalType>S</JournalType>
+      <Transaction>
+        <TransactionID>TXN-00001</TransactionID>
+        <Period>1</Period>
+        <PeriodYear>2023</PeriodYear>
+        <TransactionDate>2023-01-15</TransactionDate>
+        <Description>Invoice INV-2023-001</Description>
+        <Line>
+          <RecordID>1</RecordID>
+          <AccountID>1500</AccountID>
+          <Description>AR - Bjornstad Consulting</Description>
+          <DebitAmount>
+            <Amount>12500.00</Amount>
+            <CurrencyCode>EUR</CurrencyCode>
+          </DebitAmount>
+        </Line>
+        <Line>
+          <RecordID>2</RecordID>
+          <AccountID>3000</AccountID>
+          <Description>Revenue - Services</Description>
+          <CreditAmount>
+            <Amount>10000.00</Amount>
+            <CurrencyCode>EUR</CurrencyCode>
+          </CreditAmount>
+        </Line>
+        <Line>
+          <RecordID>3</RecordID>
+          <AccountID>2700</AccountID>
+          <Description>VAT Output 25%</Description>
+          <CreditAmount>
+            <Amount>2500.00</Amount>
+            <CurrencyCode>EUR</CurrencyCode>
+          </CreditAmount>
+          <TaxInformation>
+            <TaxType>MVA</TaxType>
+            <TaxCode>3</TaxCode>
+            <TaxPercentage>25.00</TaxPercentage>
+            <TaxAmount>
+              <Amount>2500.00</Amount>
+              <CurrencyCode>EUR</CurrencyCode>
+            </TaxAmount>
+            <TaxBase>10000.00</TaxBase>
+          </TaxInformation>
+        </Line>
+      </Transaction>
+    </Journal>
+
+  </GeneralLedgerEntries>
+
+</AuditFile>
+```
+
+### Second format variant (for the format-detector feature)
+A second common schema is the OECD generic SAF-T, which uses slightly different
+element names: `<ns1:AuditFile>` with namespace prefix, `<n1:Header>`,
+`<n1:MasterFiles>`, `<n1:GeneralLedgerEntries>`. The document type and period
+can be detected from:
+- `Header/AuditFileVersion` (e.g. "1.10" = Norwegian v1.10)
+- `Header/AuditFileCountry` (e.g. "NO", "PT", "PL", "FR")
+- `Header/StartDate` / `Header/EndDate` (fiscal period)
+- Root namespace URI (urn:StandardAuditFile-Taxation-Financial:NO vs generic OECD)
+
+For demo purposes, two fixtures are enough: one clean Norwegian SAF-T 1.10 file
+and one with deliberate anomalies (missing TaxInformation on a taxable line,
+debit != credit sum, CustomerID in a transaction that has no MasterFiles entry).
+
+### Realistic file size note
+In production, 500 MB+ SAF-T files arise from companies with 100,000+ journal
+lines (high-volume retailers, manufacturers). Each Transaction node with 3-5
+Line children might be ~800 bytes serialized. So 600,000 transactions ~ 480 MB.
+For the demo, generate a data.js that simulates record counts at that scale
+(~600k rows) while actually rendering a paginated 100k subset in the dashboard.
+
+---
+
+## 2. FISCAL RECONCILIATION RULE CATEGORIES
+(Basis for the 8-12 representative rules in the demo hero feature)
+
+These categories map to how real SAF-T audit software (Deloitte, Sovos, KPMG)
+structures validation suites. The 170+ rules the client mentions would be a
+comprehensive enumeration within these categories.
+
+### Category A: Structural Integrity
+- A1  Schema validation: file validates against published XSD
+- A2  Mandatory fields: no required element is empty or missing
+- A3  Date consistency: all TransactionDate values fall within StartDate/EndDate
+- A4  Period validity: Period (1-12) matches TransactionDate month
+
+### Category B: Accounting Balance Rules
+- B1  Trial balance: TotalDebit == TotalCredit (the foundational rule)
+- B2  Transaction balance: sum(DebitAmount) == sum(CreditAmount) per transaction
+- B3  Account continuity: OpeningBalance(period N) == ClosingBalance(period N-1)
+- B4  GL rollup: sum of all Account.ClosingBalance == sum of all GL entry lines
+
+### Category C: Master Data Cross-Reference
+- C1  CustomerID referential integrity: every CustomerID in a transaction line
+      must exist in MasterFiles/Customers
+- C2  SupplierID referential integrity: same for suppliers
+- C3  AccountID referential integrity: every AccountID used in a transaction
+      must exist in GeneralLedgerAccounts
+- C4  TaxCode validity: every TaxCode must exist in TaxTable
+
+### Category D: VAT / Tax Reconciliation
+- D1  VAT computation check: TaxAmount == TaxBase * (TaxPercentage / 100)
+      within configurable rounding tolerance (default 0.02 EUR)
+- D2  VAT account balance: sum of credit entries on VAT output accounts ==
+      sum of TaxAmount on all outbound TaxInformation nodes
+- D3  VAT period reconciliation: computed output VAT per period vs. declared VAT
+      return totals (where return data is provided)
+- D4  Reverse-charge detection: zero-rated lines with non-zero TaxBase and
+      TaxCode flagged for review
+
+### Category E: Completeness and Sequence
+- E1  Invoice number gaps: detect missing numbers in a sequential invoice series
+- E2  Transaction count: NumberOfEntries header value matches actual count
+- E3  Duplicate TransactionIDs: no two transactions share an ID
+- E4  Period transaction distribution: flag months with zero entries when prior
+      year shows activity (potential omission)
+
+### Category F: Anomaly / Risk Detection
+- F1  Round-number concentration: flag transactions where Amount is an exact
+      multiple of 1000, as a fraud-risk indicator
+- F2  Unusual posting time: transactions posted outside business hours or on
+      weekends (timestamp analysis)
+- F3  Threshold-busting: line amounts just below approval thresholds (e.g. 4,950
+      when threshold is 5,000)
+- F4  Contra-account reversals: debit/credit flips within 48 hours on same
+      account (potential error correction without proper documentation)
+
+### Category G: Sub-ledger Reconciliation
+- G1  AR sub-ledger to GL: sum of Customer.ClosingDebitBalance ==
+      GL AccountID for AR closing balance
+- G2  AP sub-ledger to GL: sum of Supplier.ClosingCreditBalance ==
+      GL AccountID for AP closing balance
+- G3  Bank/cash reconciliation: GL balance for cash accounts matches declared
+      bank statement total
+
+### Demo rule selection (8-12 representatives -- one per category):
+Use: B1, B2, B3, C1, D1, D2, E1, E3, F1, F3, G1, G2
+These cover the broadest set of client concerns and produce interesting
+drill-down outputs in the demo.
+
+---
+
+## 3. MICHAEL'S RELEVANT PROOF POINTS
+(Inform the cover letter and proposal writer)
+
+### Most relevant experience to draw on
+
+**TDAAS at U.S. Bank (via Turnberry, ~2.5 years):**
+- Python + React + SQL internal data platform, ~60k LOC
+- Became sole developer and SME within months of joining
+- Handled structured data at scale (internal bank data platform)
+- Led 6-month Azure Cloud migration as the main developer rep (one of the
+  first apps the bank moved)
+- If asked about largest structured file: data pipeline work at U.S. Bank
+  involved large SQL result sets and structured exports; use this context to
+  frame the iterparse / memory-management answer credibly
+
+**Optum RHRP 4 (current, Angular + .NET/C# + PostgreSQL, since April 2026):**
+- Onion architecture, strict Agile, PostgreSQL at enterprise scale
+- Multi-tenant isolation is intrinsic to healthcare SaaS (RHRP is a
+  multi-client platform); this is a direct analog to the client's requirement
+- Team's go-to for AI-assisted development (speed and quality advantage)
+
+**Portfolio apps (michaelwegter.com) -- angles to use:**
+- SEO Analyzer: crawls pages, evaluates 30+ factors, scores results
+  (closest analog to a rules engine in the portfolio -- many configurable
+  checks, each with a severity and drill-down detail)
+- Rental Deal Analyzer: financial calculations, computed outputs from input data
+  (financial domain familiarity)
+
+### Q1 answer framework (required by the posting)
+"The largest structured file I've processed in production was [context from
+TDAAS data pipeline work / describe SQL-backed ETL at U.S. Bank]. For large XML
+specifically, I use lxml's iterparse with explicit element clearing: parse one
+element at a time, process it, call elem.clear() and also clear preceding
+siblings via root[0].clear() after each batch to prevent the tree from
+accumulating in memory. This keeps resident memory at the size of one element
+subtree rather than the full document. I would demonstrate this approach in the
+Milestone 2 PoC with a real memory profile attached."
+
+### Q2 answer framework (required by the posting)
+Layer by layer:
+1. API middleware: on every request, extract tenant_id from the JWT, bind it to
+   the request context, and reject any request missing it
+2. Repository layer: every database query function signature takes tenant_id as
+   a required argument and appends WHERE tenant_id = :tenant_id -- this is not
+   optional or caller-controlled
+3. PostgreSQL Row Level Security: RLS policies on every tenant-scoped table
+   enforce isolation at the database engine level, so even a SQL injection that
+   bypasses the application layer cannot read another tenant's rows
+4. Optional: separate PostgreSQL schemas per tenant (stronger but more
+   operationally complex -- a configuration choice at project kickoff)
+5. Test suite: an automated test for every major entity that performs a
+   cross-tenant read as Tenant A and asserts zero rows returned when data
+   belongs only to Tenant B
+
+---
+
+## 4. STRIPE SUBSCRIPTION MODEL DETAILS
+(For accurate prose in the cover letter and deck)
+
+### How Stripe subscriptions work (for this SaaS context)
+
+**Products and Prices:**
+- Create one Product per plan tier (e.g. "Starter", "Professional", "Enterprise")
+- Each Product has one or more Price objects (monthly / annual)
+- Price stores unit_amount (in cents), currency, and trial_period_days
+
+**Trial:**
+- Set trial_period_days on the Price object (e.g. 14)
+- Subscription status is "trialing" -- no charge during trial
+- Moves to "active" on first successful charge after trial
+
+**Key webhooks the backend must handle:**
+- invoice.paid: provision or continue access
+- invoice.payment_failed: set status to past_due, email user
+- customer.subscription.created: initial provisioning
+- customer.subscription.updated: handle plan change / cancellation schedule
+- customer.subscription.deleted: revoke access (both immediate and end-of-period)
+
+**Proration on plan change:**
+- Stripe auto-calculates credit for unused time on old plan
+- Preview via POST /v1/invoices/create_preview before confirming change
+- Apply via PUT /v1/subscriptions/{id} with new price_id
+
+**Cancellation:**
+- Immediate: DELETE /v1/subscriptions/{id} -- status becomes "canceled" now
+- End of period: update subscription with cancel_at_period_end: true --
+  status stays "active" until period end, then "canceled"
+- Once canceled, cannot reactivate -- create new subscription on same customer
+
+**Lifecycle states:** incomplete, trialing, active, past_due, canceled, unpaid
+
+**Python/FastAPI integration pattern:**
+- stripe Python library
+- Webhook signature verification via stripe.Webhook.construct_event()
+- Store stripe_customer_id and stripe_subscription_id on the tenant record
+- Background job or webhook handler updates tenant status in DB
+
+---
+
+## 5. COMPETITIVE CONTEXT
+(What winning proposals look like for this type of posting)
+
+### What makes this posting atypical
+- Fixed EUR 4,000 for 6 milestones is intentionally low for the scope described.
+  The client knows this. They mention "additional modules are planned after this
+  one launches" -- the fixed-price contract is a vetting device; long-term
+  relationship is the actual value.
+- They have done their homework: XPath workbooks, HTML prototypes, documented
+  rules, a named Milestone 2 payment gate. They are not exploratory; they need
+  someone who executes.
+- The two required questions are gatekeepers. Applications without them are
+  discarded. Many applicants will skip them or give vague answers.
+- EU timezone preferred. This is soft, but Michael should acknowledge it
+  (mention availability for overlap hours or async Monday updates).
+
+### What winning proposals likely look like for this client
+1. Both required questions answered first, concretely, with specific approaches
+   (not "I have experience with XML"). The client will score this before reading
+   anything else.
+2. Evidence of having read the spec carefully: reference the Milestone 2 payment
+   gate by name, reference the iterparse requirement, reference the 6-milestone
+   structure. Signal that you understand the procurement risk they are managing.
+3. A working demo that pre-answers their anxiety about the technical feasibility.
+   Most applicants will only describe. A clickable demo is a category of one.
+4. Short. Not a wall of text. The client is organized and detail-oriented; they
+   will appreciate a proposal that respects their time and mirrors their style.
+5. Honest about the budget constraint. Do not pretend EUR 4,000 is lavish. Frame
+   it as: lean milestone structure, clean architecture from the start, no
+   rewrites. They have the spec; the work is execution.
+6. Acknowledge the probation task possibility without sounding reluctant. They
+   built in a short paid task to reduce their risk. Welcome it.
+
+### Differentiator for this proposal specifically
+The live demo (Compliance Reconciliation Console) does something no competing
+proposal will: it makes the iterparse approach and rules-engine drill-down
+tangible before a single conversation happens. The cover letter should surface
+the demo URL in the second paragraph, name what it does, and invite the client
+to run rule F1 or D1 and click into the offending transactions. This converts
+a 4,000-EUR budget discussion into a demonstration of competence.
+
+---
+
+## 6. FIXTURE XML FOR DEMO (structural notes for demo-builder)
+
+### saft-sample.xml (clean fixture -- all rules pass)
+- 1 company, FY 2023, 5 journals (SALES, PURCHASES, PAYROLL, BANK, ADJ)
+- 150 transactions total, all balanced, all accounts in MasterFiles
+- 3 customers, 2 suppliers, 8 GL accounts
+- VAT computations exact (25% on all taxable lines)
+- Sequential invoice numbering (INV-2023-001 through INV-2023-089)
+- NumberOfEntries in header matches actual count
+
+### invoice-ledger-anomalies.xml (fixture with violations -- rules fail)
+Intentionally seeded failures for demo rules:
+- B1 violation: TotalCredit header value off by 500.00 (doesn't match line sum)
+- C1 violation: TransactionID TXN-00042 references CustomerID C-9999 which
+  has no MasterFiles entry
+- D1 violation: line on TXN-00078 has TaxAmount 2600.00 but TaxBase 10000.00
+  at 25% should be 2500.00 (off by 100.00, exceeds 0.02 tolerance)
+- E1 violation: gap in invoice sequence (INV-2023-044 missing)
+- F1 violation: three transactions with Amount exactly 5000.00 posted same day
+- G1 violation: sum of Customer.ClosingDebitBalance (62800.00) != GL account
+  1500 closing balance (58400.00) -- 4400 discrepancy
+
+This gives the demo 6 rule violations across 6 categories, each with drillable
+source records that the user can click into.
+
+---
+
+STATUS: Research complete. All downstream agents can proceed.
+
+researcher:
+- SAF-T schema: section 1 (use for fixture generation)
+- Rule categories: section 2 (8-12 demo rules specified in section 2 final note)
+- Michael proof points + Q1/Q2 frameworks: section 3
+- Stripe model: section 4
+- Competitive context and differentiator: section 5
+- Fixture design specs: section 6

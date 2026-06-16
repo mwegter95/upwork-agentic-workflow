@@ -1,0 +1,69 @@
+# CEO (Build) Review: EdTech School Connect Web Portal
+slug: edtech-school-connect-web-portal
+date: 2026-06-15
+reviewer: ceo
+verdict: pass
+
+---
+
+## What I actually did
+
+I did not take the builder's self-test on faith. I spun the Flask blueprint up in
+an isolated test app on port 5099 and exercised every endpoint with live curl
+calls, then statically verified the frontend wiring and JS integrity.
+
+### Backend (live-tested, not assumed)
+Ran `edtech_blueprint.py` against a real `data/mw.db`. Results:
+
+- **Auth:** parent and teacher logins both return a valid JWT with the correct
+  role/name. Bad password -> `401 Invalid credentials`. No-auth request to a
+  protected route -> `401 Unauthorized`. All correct.
+- **Reads:** `/student`, `/grades`, `/activities`, `/messages` all return seeded
+  data correctly for the parent token.
+- **Role enforcement (the important part):**
+  - Teacher PATCH `/grades/1` (99 / A+) -> `200`, persisted with new `updated_at`.
+  - Parent PATCH `/grades/1` -> `403 Forbidden`. Correct.
+  - Teacher POST `/activities` -> `201`. Parent POST `/activities` -> `403`. Correct.
+- **Messaging:** parent POST `/messages` -> `201`; teacher `/messages/unread-count`
+  then read 2; `/messages/read-all` -> `200`; unread-count dropped to 0. The full
+  read/unread polling loop works.
+
+All 11 endpoints behave as documented. Storage persists across requests.
+
+### Frontend (static + integrity checks)
+- `index.html` (1548 lines) inline script parses cleanly via `new Function` (no JS
+  syntax errors).
+- A single `apiFetch()` wrapper points at `https://api.michaelwegter.com/api/edtech`
+  and every call site (`/login`, `/student`, `/grades`, `/grades/<id>`,
+  `/activities`, `/messages`, `/messages/read-all`, `/messages/unread-count`)
+  maps 1:1 to a real blueprint route with the right HTTP method. No orphan calls.
+- CDN deps present: Chart.js 4.4.0 (jsDelivr) and Nunito/Inter (Google Fonts).
+- 0 em/en dashes in `index.html` and 0 in the blueprint.
+
+### Plumbing
+- Blueprint registered in `server.py` (lines 279-280).
+- `workSamples.js` entry id:7 is complete: slug, title, description, category,
+  status, href (`BASE_URL + demos/<slug>/`), color, icon, frameStyle, client,
+  postingSummary, builtFor, date. Schema-correct.
+
+## Feature richness vs target (10/10)
+Two distinct authenticated roles with divergent UIs; live performance dashboard
+with a Chart.js radar chart that re-renders on teacher edits; inline grade
+management; categorized announcements feed with teacher posting; iMessage-style
+threaded messaging with 4s unread polling and badges; mobile-responsive bottom
+tab bar; toasts; XSS escaping. This is a genuinely full-featured app, not a
+mockup. Meets the 10/10 bar. Every mandatory/nice-to-have skill from the posting
+(PHP-mappable backend, web dev, JS, HTML5) is represented, with an explicit
+Flask->Laravel mapping table prepared for the proposal.
+
+## Problems / notes
+- None blocking. One nit for downstream: a seed activity string uses a
+  double-hyphen ("gymnasium -- all parents welcome"). It is NOT an em/en dash so
+  it passes the writing gate, but it visually reads like a dash. Optional cleanup
+  for proposal-writer if it surfaces in copy; not worth a builder loop.
+- The demo targets the production API, so the messaging/grades flows will only be
+  exercisable in a browser once `deploy` pushes mw-backend live. That is the
+  intended deployment model; `deploy` -> `deploy-test` will confirm live behavior
+  next. The backend logic itself is already proven working here.
+
+VERDICT: pass

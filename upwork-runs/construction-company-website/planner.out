@@ -1,0 +1,371 @@
+# Plan — Construction Company Website Demo
+
+**Slug:** `construction-company-website`
+**Feature Richness:** 10 / 10
+**Build Decision:** FULL BUILD (not prototype)
+**Demo Form:** Self-contained static app (4 HTML pages + shared CSS/JS, no bundler)
+
+---
+
+## Build Decision Rationale
+
+Full build. No prototype trigger applies:
+- No backend integration needed (contact form uses client-side validation + success state only).
+- Scope fits within budget (8 files, well under the 12-file cap).
+- This is a design-led project where visual richness and a working demo are the entire value prop.
+- Feature richness 10 mandates genuinely functional pages, real interactions, and production-level polish.
+
+---
+
+## Demo Concept
+
+A four-page construction company marketing website called **Cornerstone Construction Co.** that demonstrates everything the client asked for:
+
+- A full-viewport video background home page
+- A services page with transparent pricing cards
+- A filterable projects gallery with lightbox
+- A contact page with a validated form
+
+The demo imagines a mid-to-large regional builder doing residential custom homes, excavation, and light commercial work. The brand feels established, confident, and premium without being flashy or over-polished. "Medium rare" means: sharp edges, intentional weight, not overdone.
+
+---
+
+## Bespoke Design Direction
+
+### Palette (exact hex values)
+
+| Role | Name | Hex |
+|---|---|---|
+| Page background | Charcoal Black | `#0D0F12` |
+| Elevated surface | Dark Graphite | `#161A1F` |
+| Card surface | Deep Slate | `#1E2228` |
+| Border / divider | Steel Edge | `#2A2F38` |
+| Concrete mid | Gunmetal Gray | `#7A7F89` |
+| Text primary | Off-White Warm | `#F0EDE8` |
+| Text secondary | Warm Stone | `#9C9790` |
+| Accent primary | Safety Amber | `#E8991A` |
+| Accent hover | Hi-Vis Amber | `#F5AE30` |
+| Accent dark | Burnished Bronze | `#BF7A10` |
+| Overlay start | Black 80% | `rgba(0,0,0,0.80)` |
+| Overlay end | Black 30% | `rgba(0,0,0,0.30)` |
+
+### Typography (Google Fonts)
+
+| Role | Family | Weight | Notes |
+|---|---|---|---|
+| Hero headline | Oswald | 700 (Bold) | Condensed, commanding — "BUILT TO LAST." |
+| Section headings | Oswald | 600 (SemiBold) | Consistent with hero |
+| Sub-headings / labels | Archivo | 700 | More rounded, contrasts Oswald |
+| Body text | DM Sans | 400, 500 | Legible, neutral, slightly warm |
+| Stat numbers | Oswald | 700 | Large tabular feel for counter animation |
+| Pricing / accent copy | DM Sans | 600 | Emphasizes key info |
+
+Google Fonts embed string:
+```
+https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Archivo:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap
+```
+
+### Visual Language
+
+- **Layout:** Full-bleed sections; 1440px max-width container; 80px vertical section padding on desktop, 48px on mobile.
+- **Imagery:** Real construction photos via Pexels/Unsplash CDN URLs embedded inline (researcher to confirm best URLs; demo-builder may fallback to CSS-gradient placeholder cards with construction icons if CDN is unreliable).
+- **Video (hero):** Royalty-free construction B-roll looped as CSS `object-fit: cover` video. See "Video Sourcing" section below.
+- **Cards:** 4px border-radius, subtle border (`#2A2F38`), soft box-shadow on hover. No flashy gradients on cards, just clean surfaces.
+- **Buttons:** Amber fill, black text, 0px radius (sharp corners convey industrial strength). Secondary: transparent with amber border.
+- **Dividers / accents:** Thin amber line (`3px solid #E8991A`) used as section accent left-border or horizontal rule before headings.
+- **Motion:** Fade-in + slight translateY on scroll (IntersectionObserver). Counter animation on stats. Lightbox fade. Hamburger morph. All gated by `prefers-reduced-motion`.
+- **Icons:** Inline SVG (no icon font dependency). Simple construction-themed icons for services.
+
+---
+
+## Hero Video Sourcing
+
+**Primary approach:** Embed a royalty-free MP4 directly in the `<video>` tag using a reliable CDN.
+
+Recommended free sources (researcher/demo-builder picks one working URL):
+1. **Mixkit** (mixkit.co) — free stock video, direct MP4 download allowed. Search: "construction site aerial" or "excavator working" or "building construction workers."
+   - Example URL pattern: `https://assets.mixkit.co/videos/preview/mixkit-<id>-large.mp4`
+2. **Pexels Video API** — direct MP4 URLs available from pexels.com video pages for free.
+3. **Pixabay** — same model.
+
+**Implementation:**
+```html
+<video class="hero-video" autoplay muted loop playsinline poster="assets/hero-poster.jpg">
+  <source src="<CDN_URL>.mp4" type="video/mp4">
+</video>
+```
+
+**Fallback:** If the CDN video cannot be embedded (CORS or load failure), the poster image `assets/hero-poster.jpg` shows (a dark construction site photo), and the amber gradient overlay + headline remain fully readable. The JS `hero.js` handles the error case and removes the `<video>` element gracefully, showing the fallback poster as a full-viewport background image.
+
+**Poster image:** A dark, dramatic construction-site image fetched from Unsplash via URL (no download needed):
+`https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80` (aerial construction site, dark tones).
+
+**Overlay:** Linear gradient `from rgba(0,0,0,0.82) left to rgba(0,0,0,0.35) right` ensures white text is always readable regardless of video frame.
+
+---
+
+## Page-by-Page Feature Plan
+
+### Page 1: `index.html` — Home
+
+**Hero section:**
+- Full-viewport video background (100vw x 100vh)
+- Dark gradient overlay
+- Company name: "CORNERSTONE CONSTRUCTION CO." (small caps, letter-spaced, Archivo 600)
+- Headline: "BUILT TO LAST." (Oswald 700, 96px desktop / 56px mobile, Off-White)
+- Sub-headline: "Residential, commercial, and excavation services serving the region since 2003." (DM Sans, Warm Stone)
+- Two CTAs: "View Our Projects" (amber fill) and "Get a Free Estimate" (amber outline)
+- Scroll indicator (animated arrow bouncing gently)
+
+**Stats bar** (below hero, amber accent band):
+- Animated counters: `23+` Years in Business, `400+` Projects Completed, `98%` Client Satisfaction, `12` States Served
+- Counter animation triggers when scrolled into view (IntersectionObserver + requestAnimationFrame)
+
+**Services teaser** (3 cards):
+- Home Building / Excavation / Commercial Construction
+- Each card: icon (SVG), service name, one-liner, amber "Learn More" link to services.html
+- On dark graphite surface, subtle border
+
+**Featured Projects** (3 cards, 3-column grid):
+- Project name, category tag (e.g., "Residential"), year, project image
+- Hover: amber overlay + "View Project" CTA
+- Links to projects.html
+
+**Testimonials** (2 quotes):
+- Client name, title/location, quote text
+- Left amber border accent
+- Clean sans-serif quote in italic DM Sans
+
+**CTA banner:**
+- Full-width amber band: "READY TO BUILD? LET'S TALK."
+- Button: "Request a Free Estimate" (black on amber)
+
+**Footer:**
+- Logo + tagline
+- Nav links (Home, Services, Projects, Contact)
+- Contact info: phone, email, address
+- Copyright
+
+---
+
+### Page 2: `services.html` — Services & Pricing
+
+**Page header:**
+- Dark background with subtle construction texture (CSS: repeating gradient or dark photo bg)
+- "OUR SERVICES" headline + breadcrumb
+
+**Services grid (3 cards, full-width sections alternating):**
+
+1. **Home Building**
+   - Icon: SVG house/blueprint
+   - Description: custom homes, design-to-build, full project management
+   - Pricing: Starting at $180/sq ft (entry custom) / $260/sq ft (premium custom) / Contact for estate tier
+   - Included: Site prep, foundation, framing, MEP rough-in, drywall, finishes, landscaping
+
+2. **Excavation**
+   - Icon: SVG excavator
+   - Description: grading, site clearing, trenching, pond/foundation excavation
+   - Pricing: $125/hr (standard equipment) / $175/hr (heavy equipment) / Custom day rates for large projects
+   - Included: Operator, fuel, haul-away, site restoration
+
+3. **Commercial Construction**
+   - Icon: SVG building/commercial
+   - Description: light commercial, multi-family, mixed-use, tilt-up
+   - Pricing: Custom quote (project-dependent; "Contact us for a consultation")
+   - Included: Pre-construction planning, GC services, subcontractor management, project close-out
+
+**FAQ accordion (3-4 questions):**
+- "How long does a custom home build take?"
+- "Do you handle permits and inspections?"
+- "Can you work on my existing home?"
+- "What areas do you serve?"
+- Smooth slide-open/close animation, minus icon on open
+
+**CTA:** "Start Your Project" button linking to contact.html
+
+---
+
+### Page 3: `projects.html` — Projects Gallery
+
+**Page header:** Same dark-header treatment as services page.
+
+**Filter bar:**
+- Tabs: All / Residential / Commercial / Excavation
+- Active tab: amber underline + bold
+- Filter is instant (CSS class toggle, no animation lag)
+
+**Project grid (masonry-ish, 3 columns desktop, 2 tablet, 1 mobile):**
+- 9 projects total (3 per category)
+- Each card: full-bleed image, category badge (top-right amber chip), project title, year
+- Hover state: slight scale up (1.02) + image slight zoom + dark overlay + "View Details" CTA
+
+**Project data (mock):**
+- Residential: "Hartwell Estate" (2024), "The Langford Residence" (2023), "Cedar Ridge Custom Home" (2022)
+- Commercial: "Riverside Professional Center" (2024), "Summit Storage Complex" (2023), "Northgate Retail Plaza" (2022)
+- Excavation: "Lake Meridian Basin Prep" (2024), "Highway 7 Utility Trenching" (2023), "Willowbrook Pond Excavation" (2022)
+
+**Lightbox modal:**
+- Triggered by clicking any project card
+- Full-screen dark overlay
+- Large project image (object-fit: contain)
+- Project details: name, category, year, 2-sentence description, services used
+- Close button (X) + ESC key closes
+- Arrow navigation left/right between projects
+
+---
+
+### Page 4: `contact.html` — Contact
+
+**Page header:** same dark header treatment.
+
+**Split layout (desktop: 45/55 left/right):**
+
+*Left: Contact info*
+- Phone: (555) 489-2300
+- Email: info@cornerstoneconstruction.co
+- Address: 4820 Industrial Blvd, Suite 200, Springfield, IL 62701
+- Hours: Mon-Fri 7am-5pm, Sat 8am-12pm
+- Social icons: LinkedIn, Facebook (SVG, amber on hover)
+
+*Right: Contact form*
+- Fields: Full Name*, Email Address*, Phone Number, Service Interest (select: Home Building / Excavation / Commercial / Other), Project Description (textarea, ~4 rows), Preferred Contact Method (radio: Email / Phone)
+- Submit button: "Send My Request" (full-width amber button)
+- Validation: Required fields marked, inline error messages in red on blur, green checkmark on valid input
+- Success state: form replaced by animated amber checkmark + "Thank you, [Name]! We'll be in touch within 1 business day." in a clean panel
+- Error state (generic): "Submission failed. Please email us directly at info@cornerstoneconstruction.co"
+
+---
+
+## Navigation Design
+
+**Desktop nav (sticky, top of page):**
+- Logo left: "CORNERSTONE" (Oswald 700, amber) + "CONSTRUCTION CO." (DM Sans 500, Off-White)
+- Links right: Home / Services / Projects / Contact
+- Active page: amber underline
+- Initial state on home page: transparent background; after 80px scroll: dark semi-opaque background (`rgba(13,15,18,0.95)`) with blur
+- On all other pages: always solid dark background
+
+**Mobile nav (breakpoint: 768px):**
+- Hamburger icon (3 lines, morphs to X on open)
+- Full-height slide-in menu from right (dark background)
+- Large links, amber active state
+- Closes on link click or outside tap
+
+---
+
+## File Structure (8 files, well within 12-file cap)
+
+```
+../michaelwegter.com/public/demos/construction-company-website/
+├── index.html          # Home page
+├── services.html       # Services + pricing page
+├── projects.html       # Projects gallery page
+├── contact.html        # Contact form page
+├── style.css           # All styles (vars, layout, components, pages, responsive)
+├── main.js             # Nav, hamburger, scroll effects, shared IntersectionObserver setup
+├── projects.js         # Filter logic + lightbox
+└── contact.js          # Form validation + success state
+```
+
+Counter animation and hero video handling are inlined in `main.js` (small enough to not warrant separate files).
+
+No bundler. No npm. Pure HTML/CSS/JS with Google Fonts loaded from CDN.
+
+---
+
+## Requirement-to-Feature Traceability Matrix
+
+| Requirement (brief.json id) | Demo Feature | File(s) | Status |
+|---|---|---|---|
+| 1. Video-background landing page | `<video>` hero in index.html, autoplay muted loop, gradient overlay, poster fallback, error handling | index.html, style.css, main.js | Planned |
+| 2. Services page with pricing | services.html with 3 service sections, pricing tiers per service, FAQ accordion | services.html, style.css | Planned |
+| 3. Contact page (functional form + validation) | contact.html with validated form, inline errors, success state | contact.html, style.css, contact.js | Planned |
+| 4. Projects page / gallery | projects.html with 9 projects, filter tabs, lightbox modal, keyboard nav | projects.html, style.css, projects.js | Planned |
+| 5. Construction industry theme | Charcoal/Amber palette, Oswald + DM Sans, industrial icons, full-bleed imagery | style.css (design tokens) | Planned |
+| 6. Extra-clean professional UX/UI | Sticky nav, scroll effects, hover states, responsive breakpoints, WCAG AA, prefers-reduced-motion | style.css, main.js | Planned |
+| Richness 10: Testimonials | 2-quote testimonials section in index.html | index.html, style.css | Planned |
+| Richness 10: Stats counters | Animated number counters (IntersectionObserver) in index.html | index.html, main.js | Planned |
+| Richness 10: Mobile hamburger | Morph hamburger, slide-in panel, ESC close | main.js, style.css | Planned |
+| Richness 10: Micro-interactions | Hover states on cards, buttons, nav links; form feedback; scroll-fade-in sections | style.css, main.js | Planned |
+| Richness 10: Reduced-motion | @media (prefers-reduced-motion: reduce) in CSS, JS animation guards | style.css, main.js | Planned |
+| Richness 10: Lightbox | Full-screen project detail modal with arrow nav + ESC close | projects.js, style.css | Planned |
+| Richness 10: FAQ accordion | Services page animated accordion | services.html, style.css | Planned |
+| Site must-have: Responsive | Mobile/tablet/desktop breakpoints at 768px and 1024px | style.css | Planned |
+| Site must-have: Sticky nav | Transparent-to-solid transition on home; solid always on inner pages | main.js, style.css | Planned |
+| Site must-have: Footer | Consistent footer across all 4 pages | All HTML files, style.css | Planned |
+| Site must-have: No em/en dashes | All copy reviewed during build | All HTML files | Build-time check |
+
+---
+
+## workSamples.js Entry
+
+```js
+{
+  id: <next sequential id>,
+  slug: "construction-company-website",
+  title: "Cornerstone Construction Co.",
+  description: "Full marketing site for a regional construction company: video hero homepage, services and pricing page, filterable projects gallery with lightbox, and a validated contact form. Built with a bespoke industrial design system (charcoal + safety amber, Oswald + DM Sans).",
+  category: "Creative",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/construction-company-website/",
+  color: "#E8991A",
+  icon: "🏗️",
+  frameStyle: "walnut",
+  client: "Upwork — Construction Company Owner",
+  postingSummary: "Professional website for a residential and commercial construction company. Needed video hero homepage, services with pricing, projects gallery, and contact page. Extra emphasis on premium, clean UI.",
+  builtFor: "Upwork proposal",
+  date: "2026-06-15",
+}
+```
+
+---
+
+## Scope Fences (what is NOT in this demo)
+
+- No real backend or form submission endpoint (contact form uses client-side success state only)
+- No CMS or editable content
+- No real company video (royalty-free CDN video or graceful fallback)
+- No real project photos in file system (Unsplash CDN URLs embedded in HTML/JS)
+- No login or user accounts
+- No analytics, chat widget, or third-party integrations
+
+These are deliberate omissions for a proposal demo, not gaps. The proposal will note the full production version would include a backend form handler, CMS integration, and real brand assets.
+
+---
+
+## Build Notes for demo-builder
+
+1. **Video tag:** Set `poster` to an Unsplash construction image URL (dark, dramatic). Set `src` to a Mixkit MP4. In `main.js`, listen for `video.addEventListener('error', ...)` and fall back to showing the poster as background-image on the hero container.
+
+2. **Copy tone:** Confident, regional, trustworthy. No jargon overload. First-person plural ("We build..."). No em-dashes, no en-dashes.
+
+3. **CSS custom properties:** Define all palette, type scale, and spacing tokens at `:root` in `style.css` so they are easy to scan and override.
+
+4. **Counter animation:** Simple RAF loop from 0 to target value over ~1.5s. Use `easeOutQuad` easing. Guard with `prefers-reduced-motion` check (if reduced, just set final value immediately).
+
+5. **Filter logic (projects.js):** Each project card has a `data-category` attribute. Filter tabs toggle an `active` class and set a `data-filter` attribute on the grid container. CSS rule: `.projects-grid[data-filter="residential"] .project-card:not([data-category="residential"]) { display: none; }`. This is instant and requires no animation for correctness, though a brief opacity fade is nice if motion is allowed.
+
+6. **Lightbox:** Maintain an array of project objects. On card click, find the index in the array, set `currentIndex`, render into the modal. Left/right arrows cycle through `currentIndex`. ESC key listener on `document.addEventListener('keydown', ...)`. Trap focus within modal while open (WCAG).
+
+7. **Form validation:** Validate on both `blur` (individual field) and `submit` (all fields). Show error messages in a `<span class="field-error">` below each input. On valid submit, replace `.contact-form` with `.contact-success` div (CSS class toggle, no page reload).
+
+8. **Responsive nav:** At 768px, hide the desktop links, show the hamburger button. Hamburger click toggles `.nav-open` on `<nav>`. CSS handles the drawer positioning and transition. Click outside (document click listener, check `!nav.contains(event.target)`) closes the drawer.
+
+9. **Section scroll animations:** `IntersectionObserver` with `threshold: 0.15`. Add `.visible` class when element enters viewport. CSS: `.fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; } .fade-in.visible { opacity: 1; transform: none; }`. Guard in JS: if `prefers-reduced-motion`, add `.visible` immediately to all elements.
+
+10. **Active nav link:** In each HTML file's `<nav>`, add `class="active"` to the correct link. Do not rely on JS for this (avoids flash of unstyled nav on load).
+
+---
+
+## Proposal Guidance (for proposal-writer)
+
+- **Demo name used in proposal:** "Cornerstone Construction Co. Website Demo"
+- **Demo live URL:** `https://michaelwegter.com/demos/construction-company-website/`
+- **Design system used in proposal one-pager and deck:** Match the demo palette (Charcoal Black `#0D0F12`, Safety Amber `#E8991A`, Off-White `#F0EDE8`, Gunmetal `#7A7F89`). Use Oswald for headings, DM Sans for body in the one-pager/deck.
+- **Key selling points to emphasize:**
+  1. Video-background homepage done right: smooth, legible, performant, with fallback.
+  2. Pricing transparency on the services page (clients love seeing real numbers).
+  3. Filterable project gallery: shows capability across all three service lines at once.
+  4. Clean, industrial design with no template feel.
+  5. Mobile-first responsive, WCAG AA accessible.
+- **Michael's voice notes:** Direct, confident, shows genuine care for the client's business. Mention the "medium rare" brief and show you understood it. Reference specific pages of the demo by name.

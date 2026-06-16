@@ -1,0 +1,307 @@
+# Research: EdTech School Connect Web Portal
+slug: edtech-school-connect-web-portal
+date: 2026-06-15
+
+---
+
+## 1. Domain and Competitor Context
+
+### The Client's Posting
+- An MVP-stage school-parent communication portal
+- PHP mandatory, JS/HTML5 nice-to-have
+- Real-time updates on student performance and activities
+- Bidirectional school-parent communication
+- 1-3 month engagement, intermediate level, hourly
+
+### Competitor Products (the visual inspiration sources named in the plan)
+
+**ClassDojo** (classdojo.com)
+- Color palette: #1565C0 (deep blue primary), #00BCD4 (teal accent), white backgrounds
+- Typography: clean sans-serif, rounded for student-facing content
+- Layout: sidebar navigation, card-based feeds, avatar-heavy (teacher/student photos)
+- UX: activity feed is dominant center-stage; messaging is right-panel or modal
+- Notable: strong color-coded badges per category (green=academic, orange=behavior, blue=event)
+- Mobile-first: bottom tab bar on mobile
+- Tone: warm, encouraging, not clinical
+
+**ParentSquare** (parentsquare.com)
+- Color palette: #0078D4 (Microsoft-style blue), clean white cards, light gray (#F5F5F5) bg
+- Typography: Inter-family or similar, dense but readable
+- Layout: timeline/feed dominant; teachers have a compose panel at top
+- Notable: unread count badges on every inbox item; category filtering in the feed
+- Tone: professional, district-level feel, less "fun" than ClassDojo
+
+**Seesaw** (web.seesaw.me)
+- Color palette: #1A73E8 (Google blue lineage), #34A853 (green), #FBBC04 (yellow), #EA4335 (red)
+- Typography: clean, accessible, Inter or Roboto
+- Layout: left sidebar (icon + label pattern), content fills remaining space
+- Notable: portfolio/journal metaphor; grade cards with percentage bars; teacher compose at top of feed
+- Tone: creative, portfolio-centric, visual
+
+### The Plan's Chosen Design Direction (already set by planner)
+The plan synthesizes these three into a bespoke design. No further color research needed.
+Confirmed values from plan.md:
+
+| Token        | Value     | Use                               |
+|--------------|-----------|-----------------------------------|
+| Primary      | #1A56DB   | Buttons, active nav, links        |
+| Primary Dark | #1E429F   | Hover states                      |
+| Accent       | #0E9F6E   | Success badges, positive metrics  |
+| Warning      | #E3A008   | Attendance alerts, caution        |
+| Danger       | #E02424   | Overdue, failing grades           |
+| Bg           | #F9FAFB   | Page background                   |
+| Card         | #FFFFFF   | Cards, panels                     |
+| Border       | #E5E7EB   | Card borders, dividers            |
+| Text Primary | #111827   | Headings, body                    |
+| Text Muted   | #6B7280   | Labels, timestamps                |
+
+Typography:
+- Heading: "Nunito" (Google Fonts) -- rounded, friendly, education-appropriate
+- Body: "Inter" (Google Fonts) -- clean, readable at small sizes
+- Google Fonts import URL: https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap
+
+---
+
+## 2. CDN Dependencies
+
+### Chart.js (for radar chart in Performance view)
+- CDN: https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js
+- Radar chart config: 6 axes (Math, English, Science, History, Art, PE)
+- Scale: 0-100
+- Fill enabled, semi-transparent area
+- Colors: use Primary (#1A56DB) with 0.2 alpha fill
+
+### No other CDN dependencies needed
+- JWT is handled server-side (PyJWT on Flask)
+- No React, no build step -- vanilla JS modules via type="module" or inline script tags
+- All DOM manipulation is vanilla
+
+---
+
+## 3. Backend Technical Facts (verified against live repos)
+
+### Blueprint registration point
+File: `/Users/michaelwegter/Desktop/Projects/mw-backend/server.py`
+Insert after line 276 (after the HealthStack blueprint registration):
+```python
+# ─── EdTech School Connect Portal demo blueprint ─────────────────────────────
+from edtech_blueprint import edtech_bp
+app.register_blueprint(edtech_bp)
+```
+
+Existing blueprint variables/prefixes in use (must not collide):
+- `spotify_bp` / prefix `/spotify`
+- `apple_bp` / prefix `/apple` (inferred)
+- `repsetta_bp` / prefix `/repsetta`
+- `art_store_bp` / prefix `/art-store` (inferred)
+- `healthstack_bp` / prefix `/healthstack`
+
+New blueprint: `edtech_bp` / prefix `/api/edtech` -- no collision.
+
+### SQLite pattern (from repsetta_blueprint.py)
+```python
+import sqlite3
+from pathlib import Path
+
+DATA_DIR = Path(__file__).parent / "data"
+DB_PATH = DATA_DIR / "mw.db"
+
+def _db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+```
+Use this exact pattern. Tables are created lazily with CREATE TABLE IF NOT EXISTS.
+Seed data is inserted when the count is 0 (same as repsetta pattern).
+
+### Auth / bcrypt pattern (from server.py)
+`bcrypt` and `jwt` (PyJWT) are already installed and imported in server.py.
+Use them directly in the blueprint:
+```python
+import bcrypt
+import jwt as _jwt
+```
+bcrypt for password hash/verify. PyJWT for token encode/decode.
+Hardcoded demo secret: `EDTECH_JWT_SECRET = "edtech-demo-2026"` (isolated from server's SECRET_KEY).
+JWT algorithm: HS256. Expiry: 24 hours.
+Token payload: `{ "user_id": N, "role": "parent"|"teacher", "name": "...", "exp": ... }`
+
+### CORS
+Already handled globally by server.py's CORS(app, origins=_CORS_ORIGINS).
+The allowlist includes `https://michaelwegter.com`. No per-blueprint CORS config needed.
+
+---
+
+## 4. workSamples.js Registry
+
+### File location
+`/Users/michaelwegter/Desktop/Projects/michaelwegter.com/src/data/workSamples.js`
+
+### Current highest ID
+ID 6 = healthstack-patient-portal (added 2026-06-14).
+Next ID for this demo: **7**
+
+### Entry to append
+```js
+{
+  id: 7,
+  slug: "edtech-school-connect-web-portal",
+  title: "SchoolConnect Portal",
+  description:
+    "A two-role school-parent communication portal with real-time messaging, a live student performance dashboard with a Chart.js radar chart, and an announcements feed backed by a Flask API.",
+  category: "EdTech",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/edtech-school-connect-web-portal/",
+  color: "#1A56DB",
+  icon: "🎓",
+  frameStyle: "walnut",
+  client: "Upwork EdTech Prospect",
+  postingSummary:
+    "Build an EdTech School Connect Web Portal for school-parent communication with real-time student performance and activity updates.",
+  builtFor: "EdTech School Connect Web Portal (Upwork)",
+  date: "2026-06-15",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+}
+```
+
+---
+
+## 5. Demo Hosting Confirmation
+
+### Target directory (must be created fresh)
+`/Users/michaelwegter/Desktop/Projects/michaelwegter.com/public/demos/edtech-school-connect-web-portal/`
+
+This directory does not exist yet (confirmed: existing demos are aba-services-website,
+art-print-storefront, full-stack-developer-python-fastapi, grocapitus-investor-tools,
+healthstack-patient-portal, repsetta-fitness -- no edtech slug present).
+
+### Live URL (after deploy)
+`https://michaelwegter.com/demos/edtech-school-connect-web-portal/`
+
+### iframe route
+`/work-samples/edtech-school-connect-web-portal` via existing AppFrame component.
+
+---
+
+## 6. PHP Production Mapping (for the proposal)
+
+The client requires PHP. The demo runs on Flask + Vanilla JS for rapid prototyping. The cover
+letter must include a concrete mapping:
+
+| Demo layer          | PHP/Laravel production equivalent    |
+|---------------------|--------------------------------------|
+| Flask blueprint     | Laravel Controller + Routes (web.php)|
+| SQLite tables       | MySQL/PostgreSQL with Eloquent ORM   |
+| PyJWT tokens        | Laravel Sanctum or Passport          |
+| Vanilla JS frontend | Vue.js, Livewire, or keep vanilla JS |
+| 4s client polling   | Laravel Echo + Pusher WebSockets     |
+| Static file serving | Laravel on shared hosting or a VPS   |
+
+All user flows, data models, and UI components remain identical. Only the runtime changes.
+Estimated PHP/Laravel migration from this prototype: 1-2 weeks for a mid-level developer.
+
+---
+
+## 7. Industry Context for the Proposal
+
+### EdTech market talking points
+- School-parent communication is the #1 pain point cited in U.S. K-12 EdTech surveys
+  (teachers spend an average of 30 min/day on parent communication via phone or email)
+- Apps like ClassDojo have 51M users in 180 countries, proving the model scales
+- Real-time grade visibility reduces parent anxiety and improves student accountability
+- The MVP approach (one student, two roles, three core features) is how all major EdTech
+  platforms started -- ClassDojo launched as a behavior tracker before expanding to messaging
+- PHP is the dominant backend language in school district IT (many districts run on
+  Laravel-based SIS integrations)
+
+### Proposal angle for Michael
+- "I built the portal live -- you can log in as parent or teacher right now"
+- Emphasize the dual-role demo flow (reviewers can experience both sides in under 2 minutes)
+- Highlight that real-time polling with 4s intervals is production-viable and upgrades to
+  WebSockets (Laravel Echo) for the PHP version
+- The PHP mapping table shows this is not a throwaway prototype -- it is a PHP-ready spec
+
+---
+
+## 8. Seeded Demo Accounts (from plan, confirmed)
+
+| Role    | Email           | Password    |
+|---------|-----------------|-------------|
+| Parent  | parent@demo.edu | ParentDemo1 |
+| Teacher | teacher@demo.edu| TeachDemo1  |
+
+Student: Alex Johnson, Grade 7
+
+Seed grades:
+- Math: A / 95
+- English: B+ / 88
+- Science: A- / 91
+- History: B / 84
+- Art: A / 97
+- PE: A+ / 100
+
+Seed activities (4 items):
+1. Academic -- "Alex earned an A on the Math Midterm" (teacher: Mrs. Rivera)
+2. Event -- "Science Fair -- June 20th in the gymnasium, all parents welcome" (teacher: Mrs. Rivera)
+3. Attendance -- "Alex was marked present all 5 days this week" (teacher: Mrs. Rivera)
+4. Announcement -- "Parent-Teacher conference slots open for booking -- sign up by Friday" (teacher: Mrs. Rivera)
+
+Seed messages (2 items):
+1. From teacher to parent: "Hi! I'm Mrs. Rivera, Alex's homeroom teacher. Alex had a great start to the term."
+2. From parent to teacher: "Thank you! We've been working on the science project at home. Any tips?"
+
+---
+
+## 9. Key Implementation Flags for demo-builder
+
+1. **Endpoint name consistency:** Use `GET /api/edtech/messages/unread-count` everywhere
+   (CEO note: the plan had an inconsistency -- resolve in favor of the longer, clearer name
+   so api.js and the blueprint match exactly).
+
+2. **Blueprint variable name:** `edtech_bp` (not `edtech_blueprint` or similar) to match
+   the registration line above.
+
+3. **URL prefix:** `/api/edtech` -- includes the `/api` prefix. So the full path is
+   `https://api.michaelwegter.com/api/edtech/login`.
+
+4. **bcrypt in the blueprint:** Import `bcrypt` directly (it's already installed globally
+   in the venv). Do not add it to requirements.txt.
+
+5. **JWT import alias:** Use `import jwt as _jwt` to avoid shadowing the local variable
+   name (same pattern as healthstack_blueprint.py).
+
+6. **Seed idempotency:** Check `SELECT COUNT(*) FROM edtech_users` -- if 0, insert seed
+   data. This prevents double-seeding on server restart. Same pattern as repsetta.
+
+7. **Chart.js canvas sizing:** Set explicit `width` and `height` on the canvas element,
+   and call `chart.resize()` after the container is visible, to avoid a 0x0 render bug
+   that affects Chart.js inside hidden/tab-switched views.
+
+8. **Polling manager:** A single `setInterval` at the app level (not per-view) polling
+   the unread-count endpoint every 4 seconds. The messages and activities views each
+   poll on their own interval when active (clear on view switch).
+
+9. **Mobile layout:** Sidebar collapses to a bottom tab bar at 768px via a CSS media
+   query. Use `position: fixed; bottom: 0` for the mobile tab bar.
+
+10. **No em dashes or en dashes anywhere in the demo UI, the PHP info bar, or any text.**
+
+---
+
+## 10. Reference Files for demo-builder
+
+These are the exact file paths to read/clone patterns from:
+
+| Purpose                  | File path                                                          |
+|--------------------------|--------------------------------------------------------------------|
+| Blueprint pattern (SQLite)| /Users/michaelwegter/Desktop/Projects/mw-backend/repsetta_blueprint.py |
+| Blueprint pattern (JWT)  | /Users/michaelwegter/Desktop/Projects/mw-backend/healthstack_blueprint.py |
+| Blueprint registration   | /Users/michaelwegter/Desktop/Projects/mw-backend/server.py (after line 276) |
+| workSamples registry     | /Users/michaelwegter/Desktop/Projects/michaelwegter.com/src/data/workSamples.js |
+| Demo output dir          | /Users/michaelwegter/Desktop/Projects/michaelwegter.com/public/demos/edtech-school-connect-web-portal/ |
+| Blueprint output file    | /Users/michaelwegter/Desktop/Projects/mw-backend/edtech_blueprint.py |
+
+---
+
+*End of research.*

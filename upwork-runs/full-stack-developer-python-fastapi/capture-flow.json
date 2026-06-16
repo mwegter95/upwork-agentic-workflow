@@ -1,0 +1,81 @@
+[
+  {
+    "action": "wait",
+    "ms": 1200,
+    "comment": "Allow page to fully load and initial anomalies sample to auto-run"
+  },
+  {
+    "action": "shot",
+    "name": "01-hero-console"
+  },
+  {
+    "action": "wait",
+    "ms": 100
+  },
+  {
+    "action": "shot",
+    "name": "02-format-detector"
+  },
+  {
+    "action": "wait",
+    "ms": 2300,
+    "comment": "Wait for streaming parse animation to complete (2200ms + buffer)"
+  },
+  {
+    "action": "shot",
+    "name": "03-memory-stability-chart"
+  },
+  {
+    "action": "scroll",
+    "to": ".rules-grid",
+    "comment": "Scroll down to rules section"
+  },
+  {
+    "action": "wait",
+    "ms": 300
+  },
+  {
+    "action": "shot",
+    "name": "04-rules-grid"
+  },
+  {
+    "action": "click",
+    "selector": "button.rule-head:first-of-type",
+    "comment": "Click first rule header to expand drill-down"
+  },
+  {
+    "action": "wait",
+    "ms": 400
+  },
+  {
+    "action": "shot",
+    "name": "05-rule-drilldown"
+  },
+  {
+    "action": "click",
+    "selector": "nav.tabs button:nth-child(2)",
+    "comment": "Click dashboard tab"
+  },
+  {
+    "action": "wait",
+    "ms": 2000,
+    "comment": "Wait for 100k dataset generation"
+  },
+  {
+    "action": "shot",
+    "name": "06-dashboard-summary"
+  },
+  {
+    "action": "scroll",
+    "to": ".data-table",
+    "comment": "Scroll to see paginated table and export button"
+  },
+  {
+    "action": "wait",
+    "ms": 400
+  },
+  {
+    "action": "shot",
+    "name": "07-dashboard-table-export"
+  }
+]

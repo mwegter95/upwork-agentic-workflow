@@ -1,0 +1,377 @@
+# Plan: EdTech School Connect Web Portal
+slug: edtech-school-connect-web-portal
+feature richness: 10/10
+
+---
+
+## 1. Demo Concept
+
+**"SchoolConnect" - A two-role parent-teacher communication and performance tracking portal**
+
+A working, full-featured portal serving two distinct user roles: parents and teachers. The demo is seeded with one student ("Alex Johnson"), one parent account, and one teacher account. Both sides of every interaction are demoable by switching logins.
+
+The demo lives at: `https://michaelwegter.com/demos/edtech-school-connect-web-portal/`
+
+---
+
+## 2. Prototype vs Full Decision
+
+**Decision: FULL**
+
+None of the fallback triggers are tripped:
+1. Backend integration IS achievable cheaply via a new Flask blueprint on mw-backend.
+2. Scope fits within caps: ~12 demo files, ~10 blueprint endpoints, builds in under 3 minutes.
+3. This is not a visual-only concept -- real messaging, real grade updates, and real persistence are the core value proposition.
+
+At richness 10/10, this is a production-quality MVP with multiple genuinely working features. Not a prototype with placeholders.
+
+---
+
+## 3. Architecture
+
+### Frontend (static demo)
+- **Location:** `../michaelwegter.com/public/demos/edtech-school-connect-web-portal/`
+- **Stack:** Vanilla JS + CDN-loaded Chart.js (no bundler -- self-contained)
+- **Routing:** Single-page app with hash-based view switching
+- **Auth:** JWT stored in localStorage; fetched from backend at login
+
+### Backend
+- **Location:** `../mw-backend/edtech_blueprint.py`
+- **Register in:** `../mw-backend/server.py` (add `register_blueprint` call, no other changes)
+- **Storage:** New prefixed tables in the existing `data/mw.db` SQLite database
+- **Real-time:** Client-side polling every 4 seconds for messages and activity feed; genuinely live
+
+### Demo Seeded Accounts
+| Role    | Email              | Password    |
+|---------|--------------------|-------------|
+| Parent  | parent@demo.edu    | ParentDemo1 |
+| Teacher | teacher@demo.edu   | TeachDemo1  |
+
+Student: **Alex Johnson**, Grade 7
+
+---
+
+## 4. Bespoke Design System
+
+### Inspiration
+ClassDojo, ParentSquare, Seesaw parent view. Warm, trustworthy, high-contrast, accessible.
+
+### Palette
+| Token       | Value     | Use                              |
+|-------------|-----------|----------------------------------|
+| Primary     | #1A56DB   | Buttons, active nav, links       |
+| Primary Dark| #1E429F   | Hover states                     |
+| Accent      | #0E9F6E   | Success badges, positive metrics |
+| Warning     | #E3A008   | Attendance alerts, caution       |
+| Danger      | #E02424   | Overdue, failing grades          |
+| Bg          | #F9FAFB   | Page background                  |
+| Card        | #FFFFFF   | Cards, panels                    |
+| Border      | #E5E7EB   | Card borders, dividers           |
+| Text Primary| #111827   | Headings, body                   |
+| Text Muted  | #6B7280   | Labels, timestamps               |
+
+### Typography
+- **Heading font:** "Nunito" (Google Fonts) -- friendly, rounded, trustworthy for education
+- **Body font:** "Inter" (Google Fonts) -- clean, accessible, readable at small sizes
+- **Size scale:** 12px / 14px / 16px / 20px / 24px / 32px
+
+### Layout
+- Fixed top header (logo + "SchoolConnect" wordmark + user avatar + role badge + logout)
+- Left sidebar (60px on mobile, 220px on desktop) with nav icons + labels
+- Main content area with responsive card grid
+- No dark mode. Light, warm, high-contrast throughout.
+- Mobile-aware (flex-based, no Grid for max compat)
+
+### NO michaelwegter.com tokens:
+- No dark gallery theme
+- No mustard/cyan palette
+- No Space Grotesk / JetBrains Mono
+- No em dashes or en dashes anywhere
+
+---
+
+## 5. Features (Hero + 2 Supporting + Polish)
+
+### Hero Feature: Real-Time Parent-Teacher Messaging
+
+**Description:** A threaded messaging system between parent and teacher. Both roles can compose and reply. Messages poll from the Flask backend every 4 seconds, so a message sent in the Teacher view appears in the Parent view without a refresh. Unread badge on the inbox nav icon. Message timestamps, read status, and sender name shown.
+
+**Parent experience:**
+- Inbox shows thread with Alex's teacher (Mrs. Rivera)
+- "New Message" compose button
+- Thread view with sent/received bubbles
+- Read receipts (checkmark icon)
+- Unread count badge on nav
+
+**Teacher experience:**
+- Inbox shows all parent threads (one in demo: Alex Johnson's parent)
+- Compose and reply
+- "Mark as read" auto-fires when thread is opened
+- Timestamps
+
+**Backend endpoints:**
+- `POST /api/edtech/login` -- auth, returns JWT with `{ role, name, studentId }`
+- `GET /api/edtech/messages` -- list threads (JWT-gated, role-aware)
+- `POST /api/edtech/messages` -- send a new message
+- `PATCH /api/edtech/messages/<id>/read` -- mark read
+- `GET /api/edtech/messages/unread-count` -- badge count for polling
+
+### Supporting Feature 1: Student Performance Dashboard
+
+**Description:** A visual gradebook showing Alex Johnson's current grades across six subjects, plus a radar chart (Chart.js CDN) showing the performance profile, a calculated GPA, and a recent-grade-changes timeline. Teacher can update a grade inline (click subject card, type new grade, save). Parent sees the update within seconds (polling).
+
+**Parent experience:**
+- "Performance" nav section
+- Quick stats bar at top: GPA, Grade Level, Attendance %
+- Six subject cards (Math, English, Science, History, Art, PE) with current letter grade + numeric score + color-coded status (A=green, B=blue, C=yellow, D/F=red)
+- Radar chart showing 6-axis performance profile
+- "Recent Updates" mini-feed (last 5 grade changes with timestamp and subject)
+
+**Teacher experience:**
+- Same performance section but with edit controls
+- Click any subject card to open an inline edit form
+- Submit new grade (letter + numeric) -- saves to backend, appears on parent side via poll
+- "Post Grade Update" also triggers an automatic activity feed entry
+
+**Backend endpoints:**
+- `GET /api/edtech/performance` -- returns grades JSON for seeded student
+- `POST /api/edtech/performance` -- teacher updates a subject grade (JWT + role=teacher required)
+
+### Supporting Feature 2: Activity and Announcements Feed
+
+**Description:** A chronological feed of school events, academic milestones, attendance records, and announcements. Teacher can post new announcements from a compose form. Parent sees all feed items, newest first, with category badges.
+
+**Parent experience:**
+- "Activity Feed" nav section
+- Chronological card list with category badge (Academic, Event, Attendance, Announcement)
+- Rich feed: seeded items include grade milestone, upcoming science fair, attendance note, field trip announcement
+- Pull-to-refresh (click "Refresh" button -- re-polls)
+- Activity cards show icon, category color, teacher name, timestamp, body text
+
+**Teacher experience:**
+- Same feed view but with a "Post Announcement" sticky compose panel at top
+- Title + body + category dropdown
+- Submit fires `POST /api/edtech/activities` and the new item appears at top of both views
+
+**Backend endpoints:**
+- `GET /api/edtech/activities` -- list all activities, newest first
+- `POST /api/edtech/activities` -- teacher creates a new announcement (JWT + role=teacher required)
+
+### Polish Layer (Richness 10)
+
+These additional details elevate the demo from "solid" to "production-quality":
+
+1. **Role switcher on login screen:** Two big login tiles ("Log in as Parent" / "Log in as Teacher") that pre-fill the email/password so reviewers can instantly switch roles
+2. **Notification badge system:** Unread message count shown in nav and in the page header
+3. **Attendance mini-widget:** In the parent dashboard overview, a small attendance card shows "Alex: 94% present" with a weekly presence grid (colored dots per day)
+4. **Dashboard overview screen (parent):** Landing page after login shows: GPA card, Unread Messages card, Recent Activities card, Next Event card -- a command center
+5. **Teacher home screen:** Shows student profile (photo placeholder, name, grade) and quick-action buttons (Message Parent, Update Grade, Post Announcement)
+6. **"Last updated" timestamps** on every data card so real-time polling is perceptible
+7. **Responsive mobile layout** (sidebar collapses to bottom tab bar below 768px)
+8. **Smooth CSS transitions** on card hover, message send animation, grade save confirmation toast
+9. **Empty states** with friendly illustrations (SVG inline) when inbox is empty or no activities
+10. **PHP production note modal:** A small dismissable "About this demo" info bar at top that explains the demo runs on a modern JS stack for fast prototype iteration, and maps 1:1 to a PHP/Laravel production build
+
+---
+
+## 6. File Map (~12 files)
+
+### Demo files (in `public/demos/edtech-school-connect-web-portal/`)
+1. `index.html` -- app shell, loads fonts, Chart.js CDN, CSS, JS modules
+2. `styles.css` -- full design system (tokens, layout, components)
+3. `app.js` -- router, auth state, polling manager, view orchestrator
+4. `api.js` -- all fetch calls to `/api/edtech/...` with JWT header injection
+5. `login.js` -- dual-role login tiles, form, auth flow
+6. `parent-home.js` -- parent overview dashboard (quick stats cards)
+7. `teacher-home.js` -- teacher overview dashboard (student card, quick actions)
+8. `messages.js` -- shared messaging module (renders correctly for either role)
+9. `performance.js` -- gradebook cards + Chart.js radar chart + grade edit (teacher)
+10. `activities.js` -- feed renderer + compose form (teacher only)
+
+### Backend files (in `mw-backend/`)
+11. `edtech_blueprint.py` -- all `/api/edtech/...` routes: login, messages, performance, activities, seed
+
+### Site registry (in `michaelwegter.com/src/data/`)
+12. `workSamples.js` -- add entry for this demo (new file or update if it exists)
+
+**Total: 12 files.** Within cap.
+
+---
+
+## 7. Backend Blueprint Detail
+
+**File:** `mw-backend/edtech_blueprint.py`
+**Blueprint prefix:** `/api/edtech`
+
+### Tables (auto-created on first request if not exist)
+```sql
+CREATE TABLE IF NOT EXISTS edtech_users (
+  id INTEGER PRIMARY KEY,
+  email TEXT UNIQUE,
+  password_hash TEXT,
+  role TEXT,  -- 'parent' or 'teacher'
+  name TEXT
+);
+
+CREATE TABLE IF NOT EXISTS edtech_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  from_user_id INTEGER,
+  to_user_id INTEGER,
+  body TEXT,
+  is_read INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS edtech_grades (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_name TEXT,
+  subject TEXT,
+  letter_grade TEXT,
+  numeric_score INTEGER,
+  updated_by INTEGER,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS edtech_activities (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT,
+  body TEXT,
+  category TEXT,
+  posted_by_name TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Seed data (auto-seeded on first request)
+- 2 users: parent + teacher (bcrypt hashed)
+- 6 grade rows (Math A/95, English B+/88, Science A-/91, History B/84, Art A/97, PE A+/100)
+- 4 activity items (grade milestone, science fair, attendance note, field trip)
+- 2 seed messages (teacher introduces self, parent replies asking about homework)
+
+### Endpoints
+
+| Method | Path                          | Auth        | Description                              |
+|--------|-------------------------------|-------------|------------------------------------------|
+| POST   | /api/edtech/login             | none        | Returns JWT with role + name             |
+| GET    | /api/edtech/messages          | JWT (any)   | Returns thread for current user's convo  |
+| POST   | /api/edtech/messages          | JWT (any)   | Send a message to the other party        |
+| PATCH  | /api/edtech/messages/:id/read | JWT (any)   | Mark message as read                     |
+| GET    | /api/edtech/messages/unread   | JWT (any)   | Returns { count: N }                     |
+| GET    | /api/edtech/performance       | JWT (any)   | Returns all grade rows for Alex          |
+| POST   | /api/edtech/performance       | JWT teacher | Update one subject grade                 |
+| GET    | /api/edtech/activities        | JWT (any)   | Returns all activity items, newest first |
+| POST   | /api/edtech/activities        | JWT teacher | Create a new announcement                |
+| GET    | /api/edtech/health            | none        | Returns { status: ok } (for deploy test) |
+
+### JWT
+- Use PyJWT (already installed on mw-backend)
+- Secret: a hardcoded demo secret in the blueprint (`EDTECH_JWT_SECRET = "edtech-demo-2026"`)
+- Token payload: `{ user_id, role, name, exp }`
+- Expiry: 24 hours
+
+---
+
+## 8. Requirement Traceability Matrix
+
+| Req ID | Requirement                     | Addressed In Demo                                  | Addressed In Cover Letter                              |
+|--------|---------------------------------|----------------------------------------------------|--------------------------------------------------------|
+| 1      | Two-way school-parent comms     | Messaging module: parent and teacher both compose/reply; real backend; 4s polling | "The portal ships a live bidirectional messaging thread..." |
+| 2      | Real-time student performance   | Performance dashboard + Chart.js radar + live grade updates from teacher side | "...grades update in real time the moment a teacher posts them..." |
+| 3      | Real-time activity updates      | Activity feed with 4s polling + teacher compose    | "...an activity feed that surfaces announcements and events instantly..." |
+| 4      | Functional MVP prototype        | Full working demo at /demos/edtech-school-connect-web-portal/ | "You can log in as parent or teacher right now at [link]..." |
+| 5      | PHP stack (production)          | "About this demo" info bar explains the production path | Dedicated paragraph: demo = product prototype; production = PHP/Laravel, maps 1:1 |
+| 6      | Fast delivery (1-3 months)      | Scope visible in the demo itself; architecture is clean and extensible | "This architecture ships the MVP in 4-6 weeks with room to iterate..." |
+
+---
+
+## 9. Demo Flow for Reviewer (the intended walkthrough)
+
+1. Open `/demos/edtech-school-connect-web-portal/` -- see login page with two tiles
+2. Click "Log in as Teacher" -- pre-fills teacher@demo.edu / TeachDemo1
+3. See teacher home: Alex Johnson's card, quick actions
+4. Go to Performance: see grade cards, update Science from A- to A (save), see confirmation toast
+5. Go to Activities: post a new announcement "Science Fair this Friday!"
+6. Click logout
+7. Click "Log in as Parent" -- pre-fills parent@demo.edu / ParentDemo1
+8. See parent home: GPA card reflects updated Science grade (A now), unread message badge
+9. Go to Messages: see thread with Mrs. Rivera, reply with a new message
+10. Go to Activities: see the Science Fair announcement just posted
+11. Go to Performance: see updated Science grade and the "Recent Updates" feed item
+12. (Optional) Open second browser tab as teacher, send a reply to the parent message, watch it appear on the parent tab within 4 seconds
+
+---
+
+## 10. workSamples.js Registry Entry
+
+```js
+{
+  id: <next sequential id>,
+  slug: "edtech-school-connect-web-portal",
+  title: "SchoolConnect Portal",
+  description: "A two-role school-parent communication portal with real-time messaging, a live student performance dashboard, and an announcements feed.",
+  category: "EdTech",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/edtech-school-connect-web-portal/",
+  color: "#1A56DB",
+  icon: "🎓",
+  frameStyle: "walnut",
+  client: "Upwork EdTech Prospect",
+  postingSummary: "Build an EdTech School Connect Web Portal for school-parent communication with real-time performance and activity updates.",
+  builtFor: "Upwork proposal",
+  date: "2026-06-15",
+  proposalDeckUrl: "",
+  proposalPageUrl: ""
+}
+```
+
+---
+
+## 11. Scope Fences (what is explicitly OUT)
+
+- No multi-student support (one seeded student is enough to prove the concept)
+- No file upload / document sharing
+- No push notifications (polling is sufficient to demonstrate real-time)
+- No class roster beyond the single seeded student
+- No gradebook history charts over multiple terms (single-term snapshot only)
+- No parent self-registration (seeded logins only)
+- No admin role (teacher is the highest role in this demo)
+- No email/SMS integration
+- No school branding customization UI
+
+---
+
+## 12. Production PHP Mapping (for cover letter / proposal)
+
+The demo architecture maps cleanly to a PHP/Laravel production build:
+
+| Demo layer           | PHP/Laravel equivalent              |
+|----------------------|-------------------------------------|
+| Flask blueprint      | Laravel Controller + Routes         |
+| SQLite tables        | MySQL/PostgreSQL with Eloquent ORM  |
+| JWT (PyJWT)          | Laravel Sanctum or Passport         |
+| Vanilla JS frontend  | Vue.js or Livewire (or keep vanilla)|
+| Polling (4s)         | Laravel Echo + Pusher for WebSockets|
+| Static deploy        | Laravel on shared hosting or VPS    |
+
+The front end, all user flows, and all data models remain identical. Only the runtime changes.
+
+---
+
+## 13. Build Order for demo-builder
+
+1. Create `edtech_blueprint.py` in mw-backend (tables + seed + all endpoints)
+2. Register blueprint in `server.py`
+3. Build `index.html` + `styles.css` (design system first)
+4. Build `api.js` (all backend calls, auth header injection)
+5. Build `app.js` (router, auth state, polling manager)
+6. Build `login.js` (dual-role tiles)
+7. Build `parent-home.js` + `teacher-home.js` (dashboard overviews)
+8. Build `messages.js` (threaded messaging)
+9. Build `performance.js` (gradebook + Chart.js)
+10. Build `activities.js` (feed + compose)
+11. Update `workSamples.js` registry entry
+12. Smoke-test: open locally, log in as both roles, complete the reviewer walkthrough above
+
+---
+
+*End of plan.*

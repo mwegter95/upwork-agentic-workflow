@@ -1,0 +1,567 @@
+# Research: Vibe / Claude Coding Tutor — Art Print Storefront
+**Slug:** `art-print-storefront`
+**Date:** 2026-06-13
+
+---
+
+## 1. Picsum.photos URL Pattern (confirmed, no API key required)
+
+Deterministic seeded images follow this exact pattern:
+
+```
+https://picsum.photos/seed/{seed}/{width}/{height}
+```
+
+Examples for the 12-print catalog (using descriptive seed strings so images are aesthetically coherent):
+
+```js
+// data.js seed entries — all 800x1000 portrait for editorial prints
+{ id: 1,  slug: "birch-morning",    seed: "birch",    imgUrl: "https://picsum.photos/seed/birch/800/1000"    },
+{ id: 2,  slug: "granite-veil",     seed: "granite",  imgUrl: "https://picsum.photos/seed/granite/800/1000"  },
+{ id: 3,  slug: "river-fog",        seed: "river",    imgUrl: "https://picsum.photos/seed/river/800/1000"    },
+{ id: 4,  slug: "amber-dusk",       seed: "amber",    imgUrl: "https://picsum.photos/seed/amber/800/1000"    },
+{ id: 5,  slug: "silver-basin",     seed: "basin",    imgUrl: "https://picsum.photos/seed/basin/800/1000"    },
+{ id: 6,  slug: "cobalt-ridge",     seed: "cobalt",   imgUrl: "https://picsum.photos/seed/cobalt/800/1000"   },
+{ id: 7,  slug: "umber-coast",      seed: "umber",    imgUrl: "https://picsum.photos/seed/umber/800/1000"    },
+{ id: 8,  slug: "jade-hollow",      seed: "jade",     imgUrl: "https://picsum.photos/seed/jade/800/1000"     },
+{ id: 9,  slug: "slate-meridian",   seed: "slate",    imgUrl: "https://picsum.photos/seed/slate/800/1000"    },
+{ id: 10, slug: "opal-field",       seed: "opal",     imgUrl: "https://picsum.photos/seed/opal/800/1000"     },
+{ id: 11, slug: "indigo-shore",     seed: "indigo",   imgUrl: "https://picsum.photos/seed/indigo/800/1000"   },
+{ id: 12, slug: "tidal-ember",      seed: "tidal",    imgUrl: "https://picsum.photos/seed/tidal/800/1000"    },
+```
+
+Gallery thumbnail (450x560 portrait): use same seed with `450/560`.
+`https://picsum.photos/seed/{seed}/450/560`
+
+No API key, no rate-limit concern for demo use. CC0 license confirmed on picsum.photos.
+
+---
+
+## 2. Shopify OS 2.0 Section Schema — Exact Liquid/JSON Patterns
+
+### 2a. Minimal working section file structure
+
+```liquid
+<!-- sections/horizontal-gallery.liquid -->
+
+<section class="hs-section" id="section-{{ section.id }}">
+  <div class="hs-track" id="hsTrack-{{ section.id }}">
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'print' %}
+          <article class="hs-card" {{ block.shopify_attributes }}>
+            {% if block.settings.image %}
+              {{ block.settings.image | image_url: width: 800 | image_tag: loading: 'lazy', alt: block.settings.title }}
+            {% endif %}
+            <div class="hs-card__body">
+              <h3>{{ block.settings.title }}</h3>
+              <p class="hs-card__price">from ${{ block.settings.base_price }}</p>
+            </div>
+          </article>
+      {% endcase %}
+    {% endfor %}
+  </div>
+  <button class="hs-arrow hs-arrow--prev" aria-label="Previous">&#8592;</button>
+  <button class="hs-arrow hs-arrow--next" aria-label="Next">&#8594;</button>
+</section>
+
+{% schema %}
+{
+  "name": "Horizontal Gallery",
+  "tag": "section",
+  "class": "horizontal-gallery-section",
+  "max_blocks": 20,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section heading",
+      "default": "Fine Art Prints"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "print",
+      "name": "Print",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Print image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Print title"
+        },
+        {
+          "type": "text",
+          "id": "base_price",
+          "label": "Base price (8x10)",
+          "default": "95"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Horizontal Gallery",
+      "category": "Gallery"
+    }
+  ]
+}
+{% endschema %}
+```
+
+### 2b. CSS horizontal scroll pattern (from confirmed Shopify community pattern)
+
+```css
+/* The proven OS 2.0 horizontal scroll pattern */
+.hs-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--hs-card-w, 320px);
+  gap: var(--hs-gap, 24px);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+.hs-track::-webkit-scrollbar { display: none; }
+
+.hs-card {
+  scroll-snap-align: start;
+  width: var(--hs-card-w, 320px);
+  flex-shrink: 0;
+}
+```
+
+### 2c. JS drag + arrow pattern (confirmed working pattern)
+
+```js
+// Drag-to-scroll
+let isDown = false, startX, scrollLeft;
+track.addEventListener('mousedown', e => {
+  isDown = true; track.classList.add('dragging');
+  startX = e.pageX - track.offsetLeft;
+  scrollLeft = track.scrollLeft;
+});
+track.addEventListener('mouseleave', () => { isDown = false; });
+track.addEventListener('mouseup',    () => { isDown = false; });
+track.addEventListener('mousemove',  e => {
+  if (!isDown) return;
+  e.preventDefault();
+  const x = e.pageX - track.offsetLeft;
+  track.scrollLeft = scrollLeft - (x - startX) * 1.5;
+});
+
+// Arrow navigation
+const cardWidth = track.querySelector('.hs-card').offsetWidth + 24; // gap
+prevBtn.addEventListener('click', () => track.scrollBy({ left: -cardWidth, behavior: 'smooth' }));
+nextBtn.addEventListener('click', () => track.scrollBy({ left:  cardWidth, behavior: 'smooth' }));
+
+// Wheel remapping (vertical -> horizontal)
+track.addEventListener('wheel', e => {
+  e.preventDefault();
+  track.scrollBy({ left: e.deltaY * 2, behavior: 'auto' });
+}, { passive: false });
+```
+
+### 2d. Metafield Liquid syntax for edition numbering
+
+```liquid
+<!-- In product.liquid — reading edition metafields -->
+{% if product.metafields.print.edition_type == 'limited' %}
+  <p class="edition-badge">
+    Edition {{ product.metafields.print.edition_number }}
+    of {{ product.metafields.print.edition_size }}
+  </p>
+{% else %}
+  <p class="edition-badge">Open Edition</p>
+{% endif %}
+
+<!-- Print details metafield -->
+<div class="print-details">
+  {% if product.metafields.print.medium %}
+    <span>Medium: {{ product.metafields.print.medium }}</span>
+  {% endif %}
+  {% if product.metafields.print.substrate %}
+    <span>Printed on: {{ product.metafields.print.substrate }}</span>
+  {% endif %}
+</div>
+```
+
+Metafield namespace for this project: `print`
+Keys: `edition_type` (text), `edition_number` (number_integer), `edition_size` (number_integer), `medium` (text), `substrate` (text).
+
+---
+
+## 3. mw-backend Blueprint Pattern (from live codebase)
+
+### 3a. What to clone
+
+Clone `repsetta_blueprint.py` but STRIP the SQLite layer entirely. The art store blueprint needs:
+- No `CREATE TABLE IF NOT EXISTS` calls
+- No `_db()` helper
+- No `sqlite3` import
+- Pure in-memory seed data + JWT signing
+
+The JWT signing key is already available via `SECRET_KEY` loaded from the `.secret_key` file
+(see `server.py` line 86: `SECRET_KEY = _get_secret()`). The blueprint should import and use it.
+
+### 3b. Blueprint registration in server.py
+
+Current registrations end at line 268 of `server.py`:
+```python
+# ─── Repsetta Fitness demo blueprint ─────────────────────────────────────────
+from repsetta_blueprint import repsetta_bp
+app.register_blueprint(repsetta_bp)
+```
+
+Add immediately after (before the `from yard_seed import ...` line at 270):
+```python
+# ─── Art Print Storefront demo blueprint ─────────────────────────────────────
+from art_store_blueprint import art_store_bp
+app.register_blueprint(art_store_bp)
+```
+
+### 3c. JWT signing pattern to reuse
+
+From `server.py` `make_token()` (line 513):
+```python
+jwt.encode(
+    {"sub": email, "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
+    SECRET_KEY,
+    algorithm="HS256"
+)
+```
+
+For the art store blueprint, import SECRET_KEY from server is not straightforward since server.py
+is the entry point. Instead, read it the same way as server.py does:
+
+```python
+import os
+from pathlib import Path
+
+DATA_DIR   = Path(__file__).parent / "data"
+_key_file  = DATA_DIR / ".secret_key"
+SECRET_KEY = _key_file.read_text().strip() if _key_file.exists() else "dev-secret"
+```
+
+This is safe because the key file is created by server.py before any blueprint is ever imported.
+
+### 3d. JWT decode for checkout auth
+
+```python
+import jwt as pyjwt
+try:
+    auth = request.headers.get("Authorization", "")
+    token = auth.replace("Bearer ", "").strip()
+    payload = pyjwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    email = payload.get("sub", "demo@example.com")
+except pyjwt.PyJWTError:
+    return jsonify({"error": "Invalid or expired token"}), 401
+```
+
+### 3e. CORS
+
+No per-blueprint CORS needed. `server.py` line 187:
+```python
+CORS(app, origins=_CORS_ORIGINS, supports_credentials=True, ...)
+```
+`https://michaelwegter.com` is already in `_CORS_ORIGINS`. The demo origin is same-origin
+(same site), so there are no CORS concerns.
+
+---
+
+## 4. workSamples.js — Current State
+
+File: `../michaelwegter.com/src/data/workSamples.js`
+Current entries: id 1 (aba-services-website), id 2 (grocapitus-investor-tools), id 3 (repsetta-fitness).
+Next id: **4**
+
+The planner's entry (id 4, slug "art-print-storefront") is confirmed correct.
+
+---
+
+## 5. Seed Print Catalog — Complete Data Structure for data.js
+
+```js
+// 12 prints, limited editions for odds, open for evens
+// Sizes follow standard fine-art print sizing
+const SIZES = [
+  { label: "8 × 10", sku: "8x10",  multiplier: 1.0  },
+  { label: "12 × 16", sku: "12x16", multiplier: 1.65 },
+  { label: "16 × 20", sku: "16x20", multiplier: 2.4  },
+  { label: "24 × 30", sku: "24x30", multiplier: 3.8  },
+];
+
+const PRINTS = [
+  { id:1,  slug:"birch-morning",   title:"Birch Morning",    artist:"A. Halverson", basePrice:95,  edition:"limited", editionSize:25, editionNum:7,  imgUrl:"https://picsum.photos/seed/birch/800/1000",   thumbUrl:"https://picsum.photos/seed/birch/450/560"   },
+  { id:2,  slug:"granite-veil",    title:"Granite Veil",     artist:"M. Solis",     basePrice:110, edition:"open",    editionSize:null,editionNum:null,imgUrl:"https://picsum.photos/seed/granite/800/1000", thumbUrl:"https://picsum.photos/seed/granite/450/560" },
+  { id:3,  slug:"river-fog",       title:"River Fog",        artist:"A. Halverson", basePrice:85,  edition:"limited", editionSize:25, editionNum:3,  imgUrl:"https://picsum.photos/seed/river/800/1000",   thumbUrl:"https://picsum.photos/seed/river/450/560"   },
+  { id:4,  slug:"amber-dusk",      title:"Amber Dusk",       artist:"C. Renaud",    basePrice:120, edition:"open",    editionSize:null,editionNum:null,imgUrl:"https://picsum.photos/seed/amber/800/1000",   thumbUrl:"https://picsum.photos/seed/amber/450/560"   },
+  { id:5,  slug:"silver-basin",    title:"Silver Basin",     artist:"M. Solis",     basePrice:95,  edition:"limited", editionSize:20, editionNum:12, imgUrl:"https://picsum.photos/seed/basin/800/1000",   thumbUrl:"https://picsum.photos/seed/basin/450/560"   },
+  { id:6,  slug:"cobalt-ridge",    title:"Cobalt Ridge",     artist:"C. Renaud",    basePrice:130, edition:"open",    editionSize:null,editionNum:null,imgUrl:"https://picsum.photos/seed/cobalt/800/1000",  thumbUrl:"https://picsum.photos/seed/cobalt/450/560"  },
+  { id:7,  slug:"umber-coast",     title:"Umber Coast",      artist:"A. Halverson", basePrice:105, edition:"limited", editionSize:15, editionNum:2,  imgUrl:"https://picsum.photos/seed/umber/800/1000",   thumbUrl:"https://picsum.photos/seed/umber/450/560"   },
+  { id:8,  slug:"jade-hollow",     title:"Jade Hollow",      artist:"M. Solis",     basePrice:90,  edition:"open",    editionSize:null,editionNum:null,imgUrl:"https://picsum.photos/seed/jade/800/1000",    thumbUrl:"https://picsum.photos/seed/jade/450/560"    },
+  { id:9,  slug:"slate-meridian",  title:"Slate Meridian",   artist:"C. Renaud",    basePrice:115, edition:"limited", editionSize:25, editionNum:19, imgUrl:"https://picsum.photos/seed/slate/800/1000",   thumbUrl:"https://picsum.photos/seed/slate/450/560"   },
+  { id:10, slug:"opal-field",      title:"Opal Field",       artist:"A. Halverson", basePrice:100, edition:"open",    editionSize:null,editionNum:null,imgUrl:"https://picsum.photos/seed/opal/800/1000",    thumbUrl:"https://picsum.photos/seed/opal/450/560"    },
+  { id:11, slug:"indigo-shore",    title:"Indigo Shore",     artist:"M. Solis",     basePrice:125, edition:"limited", editionSize:10, editionNum:5,  imgUrl:"https://picsum.photos/seed/indigo/800/1000",  thumbUrl:"https://picsum.photos/seed/indigo/450/560"  },
+  { id:12, slug:"tidal-ember",     title:"Tidal Ember",      artist:"C. Renaud",    basePrice:95,  edition:"open",    editionSize:null,editionNum:null,imgUrl:"https://picsum.photos/seed/tidal/800/1000",   thumbUrl:"https://picsum.photos/seed/tidal/450/560"   },
+];
+
+// Price computation:
+// sizePrice = Math.round(print.basePrice * size.multiplier / 5) * 5
+```
+
+---
+
+## 6. Shopify Context for Teaching Panel Content
+
+### Key Shopify OS 2.0 facts for the coaching panel
+
+**Architecture the client will build:**
+- JSON templates (`.json` files in `templates/`) replace the old monolithic `.liquid` templates
+- Sections live in `sections/` and are included via JSON template or `{% section %}` tag
+- Blocks are merchant-configurable children of sections (no code change needed to add/reorder them)
+- App blocks allow third-party apps to inject content without touching theme files
+
+**The coaching panel tabs should contain:**
+
+Tab 1 — The Prompt:
+```
+Write a Shopify OS 2.0 Liquid section for a horizontal-scrolling print gallery.
+Requirements:
+- Section name: "Horizontal Gallery"
+- Each gallery item is a block of type "print" with settings: image_picker, text (title), text (base_price)
+- CSS: display:grid, grid-auto-flow:column, overflow-x:auto, scroll-snap-type:x mandatory
+- JS: drag-to-scroll with mousedown/mousemove tracking, prev/next arrow buttons
+- Add {% schema %} with max_blocks: 20 and a preset named "Horizontal Gallery"
+- Output the complete .liquid file, no external dependencies
+```
+
+Tab 2 — What to Review:
+1. Schema: confirm `"type": "image_picker"` — NOT `"type": "image"` (common LLM error)
+2. Block attributes: every block `<div>` needs `{{ block.shopify_attributes }}` for theme editor targeting
+3. Image filter: use `| image_url: width: 800 | image_tag` (OS 2.0 syntax), not the old `| img_url`
+4. Preset: the `presets` array must exist for the section to appear in the "Add section" panel
+5. Mobile: test `overflow-x: auto` on Safari iOS — may need `-webkit-overflow-scrolling: touch`
+
+Tab 3 — Common Errors:
+1. Using `| img_url` instead of `| image_url: width: N | image_tag` (deprecated in OS 2.0, breaks image rendering)
+2. Missing `{{ block.shopify_attributes }}` on block wrapper divs (makes blocks un-selectable in the theme editor)
+3. Placing `{% schema %}` outside the section file or inside an `{% if %}` block (schema must be top-level and appear exactly once)
+
+---
+
+## 7. Backend Blueprint Spec — Complete
+
+File to create: `../mw-backend/art_store_blueprint.py`
+
+```python
+"""
+Art Print Storefront — Flask Blueprint
+Mounts under /art-store on the mw-backend server.
+
+Backs the Art Print Storefront demo at
+https://michaelwegter.com/demos/art-print-storefront/
+
+Endpoints:
+  GET  /art-store/prints          public print catalog (12 items, Picsum URLs)
+  POST /art-store/login           accepts any email+password, returns signed JWT
+  POST /art-store/checkout        Bearer-auth required, returns mock order confirmation
+
+Storage: none — pure in-memory seed data + JWT. Does NOT touch auth, DB, or
+any existing blueprint.
+
+CORS: handled globally by server.py. No per-blueprint config needed.
+"""
+
+import os
+import uuid
+import datetime
+from pathlib import Path
+
+import jwt as pyjwt
+from flask import Blueprint, request, jsonify
+
+# ─── Blueprint setup ──────────────────────────────────────────────────────────
+
+art_store_bp = Blueprint("art_store", __name__, url_prefix="/art-store")
+
+# Reuse the server's persistent secret so tokens survive restarts
+_key_file  = Path(__file__).parent / "data" / ".secret_key"
+SECRET_KEY = _key_file.read_text().strip() if _key_file.exists() else "dev-secret"
+
+# ─── Seed catalog ────────────────────────────────────────────────────────────
+
+_SIZES = [
+    {"label": "8 × 10",  "sku": "8x10",  "multiplier": 1.0},
+    {"label": "12 × 16", "sku": "12x16", "multiplier": 1.65},
+    {"label": "16 × 20", "sku": "16x20", "multiplier": 2.4},
+    {"label": "24 × 30", "sku": "24x30", "multiplier": 3.8},
+]
+
+def _prices(base):
+    return [
+        {"size": s["label"], "sku": s["sku"],
+         "price": round(base * s["multiplier"] / 5) * 5}
+        for s in _SIZES
+    ]
+
+PRINTS = [
+    {"id":1,  "slug":"birch-morning",   "title":"Birch Morning",   "artist":"A. Halverson",
+     "basePrice":95,  "edition":"limited","editionSize":25,"editionNum":7,
+     "imgUrl":"https://picsum.photos/seed/birch/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/birch/450/560"},
+    {"id":2,  "slug":"granite-veil",    "title":"Granite Veil",    "artist":"M. Solis",
+     "basePrice":110, "edition":"open",  "editionSize":None,"editionNum":None,
+     "imgUrl":"https://picsum.photos/seed/granite/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/granite/450/560"},
+    {"id":3,  "slug":"river-fog",       "title":"River Fog",       "artist":"A. Halverson",
+     "basePrice":85,  "edition":"limited","editionSize":25,"editionNum":3,
+     "imgUrl":"https://picsum.photos/seed/river/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/river/450/560"},
+    {"id":4,  "slug":"amber-dusk",      "title":"Amber Dusk",      "artist":"C. Renaud",
+     "basePrice":120, "edition":"open",  "editionSize":None,"editionNum":None,
+     "imgUrl":"https://picsum.photos/seed/amber/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/amber/450/560"},
+    {"id":5,  "slug":"silver-basin",    "title":"Silver Basin",    "artist":"M. Solis",
+     "basePrice":95,  "edition":"limited","editionSize":20,"editionNum":12,
+     "imgUrl":"https://picsum.photos/seed/basin/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/basin/450/560"},
+    {"id":6,  "slug":"cobalt-ridge",    "title":"Cobalt Ridge",    "artist":"C. Renaud",
+     "basePrice":130, "edition":"open",  "editionSize":None,"editionNum":None,
+     "imgUrl":"https://picsum.photos/seed/cobalt/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/cobalt/450/560"},
+    {"id":7,  "slug":"umber-coast",     "title":"Umber Coast",     "artist":"A. Halverson",
+     "basePrice":105, "edition":"limited","editionSize":15,"editionNum":2,
+     "imgUrl":"https://picsum.photos/seed/umber/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/umber/450/560"},
+    {"id":8,  "slug":"jade-hollow",     "title":"Jade Hollow",     "artist":"M. Solis",
+     "basePrice":90,  "edition":"open",  "editionSize":None,"editionNum":None,
+     "imgUrl":"https://picsum.photos/seed/jade/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/jade/450/560"},
+    {"id":9,  "slug":"slate-meridian",  "title":"Slate Meridian",  "artist":"C. Renaud",
+     "basePrice":115, "edition":"limited","editionSize":25,"editionNum":19,
+     "imgUrl":"https://picsum.photos/seed/slate/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/slate/450/560"},
+    {"id":10, "slug":"opal-field",      "title":"Opal Field",      "artist":"A. Halverson",
+     "basePrice":100, "edition":"open",  "editionSize":None,"editionNum":None,
+     "imgUrl":"https://picsum.photos/seed/opal/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/opal/450/560"},
+    {"id":11, "slug":"indigo-shore",    "title":"Indigo Shore",    "artist":"M. Solis",
+     "basePrice":125, "edition":"limited","editionSize":10,"editionNum":5,
+     "imgUrl":"https://picsum.photos/seed/indigo/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/indigo/450/560"},
+    {"id":12, "slug":"tidal-ember",     "title":"Tidal Ember",     "artist":"C. Renaud",
+     "basePrice":95,  "edition":"open",  "editionSize":None,"editionNum":None,
+     "imgUrl":"https://picsum.photos/seed/tidal/800/1000",
+     "thumbUrl":"https://picsum.photos/seed/tidal/450/560"},
+]
+
+# Attach computed size prices to each print at module load time
+for _p in PRINTS:
+    _p["sizes"] = _prices(_p["basePrice"])
+
+# ─── Routes ──────────────────────────────────────────────────────────────────
+
+@art_store_bp.route("/prints", methods=["GET"])
+def get_prints():
+    return jsonify({"prints": PRINTS})
+
+
+@art_store_bp.route("/login", methods=["POST"])
+def login():
+    data  = request.get_json(silent=True) or {}
+    email = (data.get("email") or "guest@example.com").strip()
+    # Any credentials accepted — this is a demo store
+    token = pyjwt.encode(
+        {"sub": email, "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
+        SECRET_KEY,
+        algorithm="HS256",
+    )
+    return jsonify({"token": token, "email": email})
+
+
+@art_store_bp.route("/checkout", methods=["POST"])
+def checkout():
+    # Verify Bearer token
+    auth = request.headers.get("Authorization", "")
+    raw  = auth.replace("Bearer ", "").strip()
+    if not raw:
+        return jsonify({"error": "Authentication required"}), 401
+    try:
+        payload = pyjwt.decode(raw, SECRET_KEY, algorithms=["HS256"])
+        email   = payload.get("sub", "guest")
+    except pyjwt.PyJWTError:
+        return jsonify({"error": "Invalid or expired token"}), 401
+
+    data  = request.get_json(silent=True) or {}
+    items = data.get("items", [])
+    total = data.get("total", 0)
+
+    order_id = "MW-" + str(uuid.uuid4())[:8].upper()
+    return jsonify({
+        "orderId":           order_id,
+        "status":            "confirmed",
+        "email":             email,
+        "items":             items,
+        "total":             total,
+        "estimatedShipping": "3-5 business days",
+        "message":           f"Order {order_id} confirmed. A receipt will be sent to {email}.",
+    })
+```
+
+---
+
+## 8. Competitive Context (1 fetch, kept brief)
+
+Strong Shopify tutor proposals on Upwork in 2025-2026 emphasize:
+- **Proof of Liquid mastery** over generic "I know Shopify" claims (clients are skeptical of AI-generated Shopify code without human review)
+- **Teaching methodology** stated explicitly: "I explain the why, not just the what"
+- **AI-workflow fluency** as a selling point, not a disclaimer: clients hiring a "vibe coding tutor" want someone who EMBRACES Claude/AI, not someone who just tolerates it
+- **Session structure** described concretely: screen-share, real-time builds, written summaries
+- **US-based** is a hard filter; state it in the first two sentences
+
+Key differentiator to emphasize: the demo itself IS a teaching artifact. No other candidate can show that.
+
+---
+
+## 9. File Checklist for Demo Builder
+
+All paths confirmed reachable from the workflow:
+
+| File | Action | Status |
+|---|---|---|
+| `../michaelwegter.com/public/demos/art-print-storefront/index.html` | CREATE | Dir does not exist yet |
+| `../michaelwegter.com/public/demos/art-print-storefront/product.html` | CREATE | |
+| `../michaelwegter.com/public/demos/art-print-storefront/assets/style.css` | CREATE | |
+| `../michaelwegter.com/public/demos/art-print-storefront/assets/gallery.js` | CREATE | |
+| `../michaelwegter.com/public/demos/art-print-storefront/assets/product.js` | CREATE | |
+| `../michaelwegter.com/public/demos/art-print-storefront/assets/cart.js` | CREATE | |
+| `../michaelwegter.com/public/demos/art-print-storefront/assets/checkout.js` | CREATE | |
+| `../michaelwegter.com/public/demos/art-print-storefront/assets/data.js` | CREATE | |
+| `../mw-backend/art_store_blueprint.py` | CREATE | Full spec above |
+| `../mw-backend/server.py` | EDIT (2 lines) | Add after line 268 |
+| `../michaelwegter.com/src/data/workSamples.js` | EDIT (append id:4) | Current max id = 3 |
+
+**Total: 11 files. Under the 12-file cap.**
+
+---
+
+## 10. Backend API Base URL for demo JS
+
+The demo JS should call:
+```js
+const API = 'https://api.michaelwegter.com';
+// POST ${API}/art-store/login
+// GET  ${API}/art-store/prints
+// POST ${API}/art-store/checkout
+```
+
+For local dev, allow override:
+```js
+const API = window.ART_STORE_API || 'https://api.michaelwegter.com';
+```

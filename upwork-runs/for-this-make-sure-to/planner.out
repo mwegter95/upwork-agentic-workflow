@@ -1,0 +1,338 @@
+# Plan: healthstack-patient-portal
+
+Slug: healthstack-patient-portal
+Date: 2026-06-14
+Brief source: intake.out
+
+---
+
+## Demo Concept
+
+**HealthStack Patient Portal** - a Sesame-style healthcare booking and dashboard
+experience demonstrating Next.js/React architecture, Supabase-equivalent
+role-based access (server-enforced via mw-backend JWT + RLS analogue), mocked
+Stripe checkout, and HIPAA-aware design choices.
+
+The demo shows two modes in one app: a patient flow and an admin flow. Visitors
+can log in as either persona using credentials shown on the login screen and
+experience genuinely different, permission-scoped data views.
+
+---
+
+## Prototype vs Full Decision
+
+**LEAN FULL.**
+
+All three trip conditions are clear:
+1. Hero does NOT need a live third-party integration. Stripe checkout is mocked
+   server-side. Supabase RLS is demonstrated via mw-backend role-gated endpoints.
+2. Build is under 12 files, well within the 3-minute build cap.
+3. The concept is interactive, not throwaway/visual.
+
+No trip condition was triggered. Build full.
+
+---
+
+## Hero Feature
+
+**Login -> Book appointment -> Mock Stripe checkout -> Role-scoped dashboards**
+
+End-to-end patient flow:
+1. Login screen with two visible persona buttons (Patient / Admin)
+2. Service browser: 3-4 mock providers with specialties, ratings, and available
+   slots (Sesame-style card grid)
+3. Slot selection: pick a date/time, confirm booking
+4. Mock Stripe checkout modal: card form UI, "Pay $95" button, returns confirmed
+   payment (server-side mock returning fake PaymentIntent)
+5. Booking confirmation screen + redirect to patient dashboard
+6. Patient dashboard: only the logged-in patient's bookings, provider info,
+   upcoming appointment card
+7. Switch to Admin: admin dashboard shows all patients, all bookings, aggregate
+   stats, access/audit log panel (who booked what, when viewed)
+
+The role separation is server-enforced: the patient endpoint rejects admin tokens
+and vice versa. This demonstrates the Supabase RLS analogue concretely.
+
+---
+
+## Supporting Features
+
+1. **Mocked Stripe Checkout** - checkout modal with card input UI, POST to
+   /healthstack/checkout, server returns fake confirmed PaymentIntent ID. UI
+   shows masked card, amount, confirmation number.
+
+2. **Role-scoped Admin Dashboard** - separate dashboard view with aggregate
+   booking table, patient roster (initials-only for PHI minimization), and an
+   access/audit log panel ("Patient Jane D. viewed records at 14:03"). Visible
+   PHI minimization label in the UI.
+
+---
+
+## Decorative Elements (set dressing within hero, low-effort)
+
+- Audit log panel in admin view (static mock entries, rendered from API response)
+- "Secure Upload" affordance on patient dashboard: a file input with a lock icon
+  and "End-to-end encrypted" label (stub upload endpoint exists on backend but UI
+  does not require real file handling)
+- HIPAA-aware note banner: small footer chip "Demo: PHI handling follows
+  minimum-necessary principle"
+- Lock icon + "TLS 1.3" chip in the header (visual trust signal)
+
+---
+
+## Scope Fences
+
+### In scope
+- Login with role selection (patient + admin demo accounts)
+- Service/provider browser (3-4 static providers seeded in backend)
+- Slot booking (POST to backend, stored in-memory per session)
+- Mock Stripe checkout (server returns fake PaymentIntent)
+- Patient dashboard (own bookings only, role-gated)
+- Admin dashboard (all bookings, access log, PHI-minimized roster)
+- Secure upload affordance (stub)
+- Design-token-aligned UI matching site aesthetic
+
+### Out of scope
+- Real Supabase project (demo simulates RLS via mw-backend JWT role check)
+- Real Stripe (mocked server-side, framed explicitly in deck as "production uses
+  real Stripe webhooks")
+- Real Vercel deploy (demo hosted at michaelwegter.com/demos/healthstack-patient-portal/)
+- HIPAA certification (addressed in proposal prose only, not built)
+- Appointment cancellation, rescheduling, messaging
+
+---
+
+## Architecture
+
+### Demo app (same-origin static)
+Self-contained React app via CDN (React 18 + ReactDOM via esm.sh or unpkg,
+no bundler). Vanilla ES modules. Renders inside a single index.html. Communicates
+with mw-backend for auth, booking, and data.
+
+**Why not a bundled Vite app:** The demo UI is straightforward enough that a CDN
+React app avoids any build step and keeps the file count minimal. The stack story
+(Next.js + Supabase in production) is explained in the deck, not simulated
+exactly in the demo -- the demo proves the judgment and patterns, not the exact
+toolchain.
+
+### Backend (mw-backend)
+New blueprint: healthstack_blueprint.py
+- JWT-based auth with role claim (patient | admin)
+- In-memory seeded data (no DB writes needed)
+- Role-gated route guards on all data endpoints
+- CORS open for site origin
+
+### Portfolio wiring
+- Add entry to src/data/workSamples.js (or create if not yet existing)
+- Route: /work-samples/healthstack-patient-portal -> AppFrame iframing
+  /demos/healthstack-patient-portal/
+- Add "Work Samples" nav link if not present
+
+---
+
+## File Manifest (10 files total, under 12-file cap)
+
+### Demo (4 files)
+```
+../michaelwegter.com/public/demos/healthstack-patient-portal/
+  index.html       <- app shell, CDN imports (React 18 via esm.sh)
+  app.js           <- full React app: router, all views as components
+  styles.css       <- design-token CSS (dark theme, mustard accent, Space Grotesk)
+  api.js           <- fetch helpers: login(), getServices(), book(), checkout(),
+                      getPatientDashboard(), getAdminDashboard()
+```
+
+### Backend (2 files, 1 edit)
+```
+../mw-backend/
+  healthstack_blueprint.py   <- new Flask blueprint (clone of spotify_blueprint.py)
+  server.py                  <- edit: add import + app.register_blueprint(healthstack_bp)
+```
+
+### Portfolio wiring (2-3 files)
+```
+../michaelwegter.com/src/data/workSamples.js   <- add registry entry (create if absent)
+../michaelwegter.com/src/App.jsx               <- add /work-samples/:slug route if absent
+../michaelwegter.com/src/components/Navbar.jsx <- add "Work Samples" link if absent
+```
+
+Total: 9-10 files. Well within cap.
+
+---
+
+## Build Sequence (for demo-builder)
+
+1. **Build healthstack_blueprint.py first** (backend must exist before demo can
+   make real API calls during local testing)
+   - Clone structure from spotify_blueprint.py
+   - Seed: 2 users (patient + admin), 4 providers, 8 slots
+   - Implement all 6 endpoints (login, services, book, checkout, patient dashboard,
+     admin dashboard)
+   - Register in server.py
+
+2. **Build styles.css** using design tokens from CLAUDE.md. Key classes:
+   - .hs-shell (full viewport, --bg-root background)
+   - .hs-card (--bg-card, --border-default, border-radius 12px)
+   - .hs-btn-primary (--mustard background, dark text)
+   - .hs-btn-ghost (transparent, --border-default, --text-primary)
+   - .hs-badge-admin (--hot-pink), .hs-badge-patient (--cyan-vivid)
+   - .hs-table (for admin roster/audit log)
+   - Provider cards with avatar circle, specialty label, rating stars
+
+3. **Build api.js** - thin fetch wrappers
+   - Base URL: https://api.michaelwegter.com/healthstack
+   - All calls attach Authorization: Bearer <token> from localStorage
+   - Exports: login, getServices, book, checkout, getPatientDashboard,
+     getAdminDashboard, logout
+
+4. **Build app.js** - React app with inline component definitions
+   Views (use a simple hash-router or state-based router, no React Router needed):
+   - LoginView: two persona buttons with credentials shown, POST /login
+   - ServicesView: card grid of providers, "Book" button on each
+   - SlotPickerView: date/time grid for selected provider
+   - CheckoutView: mock card form, "Pay $95", POST /checkout, confirmation
+   - PatientDashboardView: upcoming booking card, secure-upload stub, PHI note
+   - AdminDashboardView: booking table, patient roster (initials), audit log panel
+   - NavBar: logo "HealthStack", role badge, "Switch Account" link, logout
+   State: { token, role, user, view, selectedProvider, selectedSlot, booking }
+
+5. **Build index.html** - minimal shell
+   - Imports React + ReactDOM from esm.sh
+   - Loads styles.css and app.js as module
+   - Single <div id="root"> mount point
+   - Open Graph meta for nice link previews
+
+6. **Wire portfolio**
+   - Add workSamples.js entry (or append to existing)
+   - Confirm /work-samples/:slug route via AppFrame exists in App.jsx
+   - Add "Work Samples" to Navbar if missing
+
+7. **Verify locally**: open /demos/healthstack-patient-portal/, log in as both
+   personas, complete hero flow, check console for errors
+
+---
+
+## Demo Credentials (seed in blueprint, surface in cover letter and deck)
+
+| Role    | Email                      | Password         |
+|---------|----------------------------|------------------|
+| Patient | patient@healthstack.demo   | DemoPatient123!  |
+| Admin   | admin@healthstack.demo     | DemoAdmin123!    |
+
+These must appear in:
+- The demo login screen (shown plainly for visitors)
+- The cover letter (so client can test immediately)
+- The proposal deck slide introducing the demo
+
+---
+
+## Seeded Mock Data (for backend blueprint)
+
+**Providers (4):**
+- Dr. Sarah Chen, Family Medicine, $85/visit, slots: Mon-Fri 9am-5pm
+- Dr. Marcus Webb, Internal Medicine, $95/visit, slots: Tue/Thu 10am-4pm
+- Dr. Priya Nair, Pediatrics, $75/visit, slots: Mon/Wed/Fri 8am-2pm
+- NP Jordan Kim, Urgent Care, $65/visit, slots: Mon-Sat 7am-7pm
+
+**Pre-existing booking for patient demo account:**
+- Upcoming: Dr. Sarah Chen, Family Medicine, next Tuesday 10:00 AM, Confirmed,
+  PaymentIntent: pi_demo_abc123
+
+**Audit log entries for admin view (5 entries, static):**
+- Patient Jane D. viewed their dashboard (today 14:03)
+- Patient Mike T. booked with Dr. Webb (today 11:42)
+- Admin admin@healthstack.demo accessed roster (today 09:15)
+- Patient Jane D. uploaded intake form (yesterday 16:30)
+- Patient Alex R. completed checkout (yesterday 14:22)
+
+---
+
+## Requirement-to-Feature Traceability Matrix
+
+| Requirement                                          | Demo                            | Deck | Cover Letter |
+|------------------------------------------------------|---------------------------------|------|--------------|
+| Next.js / React                                      | React 18 via CDN (framed)       | Y    | Y            |
+| Supabase auth + RLS                                  | JWT role gates on backend       | Y    | Y            |
+| Stripe payments / subscriptions / webhooks           | Mock checkout modal + endpoint  | Y    | Y            |
+| Vercel deploy                                        | Explained in deck               | Y    | Y            |
+| User dashboards                                      | Patient dashboard view          | Y    | Y            |
+| Admin views                                          | Admin dashboard view            | Y    | Y            |
+| Role-based access / secure permissions               | Server-enforced role gates      | Y    | Y            |
+| Healthcare data handling / HIPAA-aware               | PHI minimization, audit log     | Y    | Y            |
+| Sensible early-stage technical decisions             | Shown through choices + deck    | -    | Y            |
+| TypeScript comfort                                   | Deck + cover letter             | Y    | Y            |
+| Appointment booking / scheduling (nice-to-have)      | Slot picker + booking flow      | Y    | -            |
+| Secure file upload (nice-to-have)                    | Upload affordance stub          | Y    | -            |
+| Admin dashboard (nice-to-have)                       | Admin view                      | Y    | -            |
+| Tailwind/shadcn (nice-to-have)                       | Explained in deck               | Y    | -            |
+| HIPAA/privacy experience                             | Audit log + PHI note + prose    | Y    | Y            |
+| MVP from idea to launch                              | Cover letter narrative          | -    | Y            |
+| Named projects with contributions                   | Cover letter section            | -    | Y            |
+| Availability + pricing                               | Cover letter                    | -    | Y            |
+| HEALTHSTACK keyword (hard gate)                      | N/A                             | -    | FIRST WORD   |
+
+---
+
+## Design Notes for Demo
+
+- Background: --bg-root (#121118)
+- Cards: --bg-card (#1e1c26), border --border-default (#2c2a38)
+- Primary CTA: --mustard (#e8b820) background, dark text
+- Provider card accent bar: --cyan-vivid (#12b4c8)
+- Admin badge: --hot-pink (#f0186e)
+- Patient badge: --cyan-vivid (#12b4c8)
+- Font: Space Grotesk for headings (load from Google Fonts), Inter for body
+- Section eyebrows: font-mono, uppercase, letter-spacing 0.1em, --text-muted
+- "HealthStack" logo: Space Grotesk bold, --mustard accent on "Health"
+- Booking confirmation: large checkmark in --parrot-green (#6ed46a)
+- Stripe checkout modal: dark modal overlay, card input with mono font,
+  Stripe logo (text only), payment button --mustard
+
+---
+
+## Deck Outline (for proposal-writer reference)
+
+Slide 1: Title + Live Demo CTA ("Try it now: michaelwegter.com/demos/healthstack-patient-portal/")
+Slide 2: Your Stack / My Experience (Next.js, Supabase, Stripe, Vercel, TypeScript)
+Slide 3: Architecture diagram (Next.js App Router -> Supabase -> Stripe -> Vercel)
+Slide 4: Role-Based Access / RLS demo walkthrough (patient vs admin screenshot)
+Slide 5: HIPAA-Aware Choices (specific, practical: PHI minimization, audit logging,
+          RLS from day one, no PII in logs, signed URLs for files, server-side Stripe)
+Slide 6: The Build Approach (lean MVP -> production-ready, iterative, early decisions matter)
+Slide 7: Relevant Projects (3 examples with concrete contributions)
+Slide 8: Availability + Contact
+
+---
+
+## Cover Letter Requirements Checklist
+
+- [x] First word: HEALTHSTACK (hard gate)
+- [x] References sesamecare.com by name and style ("the Sesame-style booking flow")
+- [x] Demo link included prominently
+- [x] Demo credentials included for immediate testing
+- [x] Next.js experience named with example
+- [x] Supabase experience named (auth + RLS) with example
+- [x] Stripe experience named (webhooks + subscriptions) with example
+- [x] Vercel experience named
+- [x] TypeScript named
+- [x] Healthcare / HIPAA-aware experience addressed specifically
+- [x] 3 relevant project examples with concrete contributions
+- [x] Availability stated
+- [x] Rate or project pricing stated
+- [x] No em dashes or en dashes anywhere
+- [x] Michael's voice: practical, calm, senior, helpful
+
+---
+
+## Quality Gates Pre-Check
+
+- Demo: 10 files, under 12-file cap
+- Build: no bundler step, loads directly from index.html, sub-1-minute "build"
+- Console errors: no external deps beyond CDN React + Google Fonts (stable URLs)
+- Local URL: /demos/healthstack-patient-portal/ resolves from michaelwegter.com/public/
+- Live route: /work-samples/healthstack-patient-portal (AppFrame) after deploy
+- Demo link in cover letter: YES (planned)
+- Demo link in deck: YES (slide 1)
+- Design tokens: YES (all colors from CLAUDE.md palette)
+- No em/en dashes: enforced in writing rules
+- HEALTHSTACK first word: cover letter template starts with it

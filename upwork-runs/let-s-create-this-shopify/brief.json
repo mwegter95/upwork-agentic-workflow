@@ -1,0 +1,89 @@
+{
+  "jobTitle": "Vibe / Claude Coding Tutor — Art Print Storefront",
+  "jobType": "Tutoring + Hands-On Coaching (Not Contract Development)",
+  "slug": "art-print-storefront",
+  "runDirectory": "let-s-create-this-shopify",
+  "postedDate": "last week",
+  "constraints": {
+    "usBasedOnly": true,
+    "applicantMustBe": "Located in the U.S."
+  },
+  "primaryAsk": "Tutor who teaches a non-developer how to build and maintain a custom Shopify theme using Claude-assisted development (vibe coding). The deeper value is not code delivery but teaching the client to prompt Claude well, review outputs critically, and build intuition for AI-assisted Shopify development. Screen-share walkthroughs, explain the why behind decisions, and help craft iterative Claude prompts.",
+  "clientContext": {
+    "who": "Fine-art photographer building a custom Shopify storefront to sell photography prints.",
+    "vision": "Minimal, editorial, gallery-forward design inspired by photographer portfolio sites.",
+    "coreNeed": "Hands-on guidance to translate vision into a real, functioning Shopify theme (Liquid, JavaScript, Shopify native tools) and learn how to maintain/extend it using Claude as a core part of the workflow.",
+    "learningGoal": "Client wants to own the codebase and be able to modify and extend the theme themselves going forward, with Claude as a day-to-day partner."
+  },
+  "sessionStyle": {
+    "format": "Real-time screen-share walkthroughs where you build together",
+    "teaching": "Explain the why behind each decision, not just the what",
+    "promptCrafting": "Help client craft and iterate on Claude prompts that produce quality Shopify code",
+    "documentation": "Occasional short written summaries or checklists after each session",
+    "pacing": "Patient, non-developer-friendly explanations"
+  },
+  "explicitRequirements": {
+    "pages": [
+      "Homepage — horizontal scroll gallery with drag and arrow navigation",
+      "Product page — editorial image view, print size selector, edition info, add to cart",
+      "Collection page — grid or index-style listing of available prints",
+      "About page",
+      "Contact page"
+    ],
+    "keyFeatures": [
+      "Shopify OS 2.0 theme architecture (sections + blocks)",
+      "Custom Liquid sections for the horizontal gallery",
+      "Variant-based product options for print sizes and editions",
+      "Metafields for edition numbering and print details",
+      "Responsive mobile layout",
+      "Fast load performance — minimal dependencies"
+    ],
+    "idealCandidateSignals": [
+      "Strong Shopify Liquid knowledge (OS 2.0 preferred)",
+      "Comfortable working alongside AI tools (Claude, ChatGPT, Copilot, etc.)",
+      "Experience tutoring or teaching non-developers — patience and clarity matter",
+      "Ability to explain code decisions in plain language",
+      "Portfolio or examples of Shopify theme work"
+    ]
+  },
+  "michaelNotes": {
+    "backendRequirement": "Real mw-backend integration with JWT-based mock login and mock checkout flow",
+    "imageSource": "Free-to-use images (Unsplash, Pexels, Picsum, or public-domain art)",
+    "proposalFraming": {
+      "emphasize": "Ability to communicate well and coach the client on Claude-assisted development",
+      "talked_to_daily": "Daily experience in full-time job and freelancing building websites using Claude, Codex, and GitHub Copilot",
+      "positioning": "You are not just a Shopify expert; you are a tutor who uses Claude as a daily partner and can teach others to do the same"
+    }
+  },
+  "demoDirection": {
+    "concept": "Working, gallery-forward art-print storefront demo that serves as a teaching artifact",
+    "hero": {
+      "feature": "Horizontal scrolling gallery with drag + arrow navigation",
+      "flow": "Homepage gallery → Product page with size/edition variant selector and live price update → Add to cart → Mock cart → Mock checkout"
+    },
+    "supporting": [
+      "Mock JWT login (mirror existing auth pattern in mw-backend)",
+      "Mock checkout endpoint returning a confirmed order"
+    ],
+    "architecture": "Static same-origin app (not a Shopify dev store) with real mw-backend blueprint, but framed as the exact OS 2.0 'sections and blocks' architecture the client will rebuild in Liquid",
+    "teachingArtifact": "Embedded 'How I'd coach this with Claude' panel showing: the prompt you'd write, what to review, what errors to catch — turns the demo into proof of tutoring value",
+    "backendDetails": {
+      "addBlueprint": "art_store_blueprint.py (clone spotify_blueprint.py structure)",
+      "endpoints": [
+        "Mock login (JWT, no real auth core changes)",
+        "Mock checkout (returns fake confirmed order)"
+      ],
+      "imageSource": "Free-to-use prints seeded at startup"
+    }
+  },
+  "scopeConstraints": {
+    "demoScope": "1 hero feature (gallery + variant-to-cart) + at most 2 supporting (login, checkout)",
+    "pages": "Not all 5 pages required in demo; show the hero flow well and the tutoring angle, not every page",
+    "performance": "Lean full: vanilla JS / CDN-light build. Model the 'fast load, minimal deps' principle in the demo itself",
+    "notRequired": "Do not set up an actual Shopify dev store; this is a tutor's portfolio proof, not production"
+  },
+  "gatingConstraints": [
+    "Applicant must be US-based (explicit gate in posting)"
+  ],
+  "demoFidelity": "Full, functional prototype (not mockup-only). Clicks through a real hero flow with seeded mock data."
+}

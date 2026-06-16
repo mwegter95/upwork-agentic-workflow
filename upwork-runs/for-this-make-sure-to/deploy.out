@@ -1,0 +1,109 @@
+# Deploy: healthstack-patient-portal
+# Status: COMPLETE (site live; backend blueprint pending Surface watcher restart)
+# Re-verified: 2026-06-14 (deploy step, second pass)
+
+---
+
+## Commits pushed
+
+| Repo | Commit | Branch |
+|------|--------|--------|
+| michaelwegter.com | 8c94e90 | main |
+| mw-backend | 6876837 | main |
+
+---
+
+## Live URL verification
+
+| URL | Status | Notes |
+|-----|--------|-------|
+| https://michaelwegter.com/ | 200 OK | Site root reachable |
+| https://michaelwegter.com/demos/healthstack-patient-portal/ | 200 OK | Demo index confirmed live post-GH-Pages rebuild |
+| https://michaelwegter.com/demos/healthstack-patient-portal/index.html | 200 OK | Demo file directly reachable |
+| https://api.michaelwegter.com/health | {"status":"ok","version":"1.0.0"} | API server healthy |
+| https://api.michaelwegter.com/healthstack/services | 404 | Backend blueprint NOT yet live (see note) |
+| https://api.michaelwegter.com/repsetta/exercises | 200 JSON | Confirms Flask IS running + older blueprints work; only healthstack missing |
+
+---
+
+## Backend watcher note (IMPORTANT for deploy-test)
+
+The `mw-backend` push (commit 6876837) was received by GitHub. The Surface
+auto-deploy watcher should pull it and restart waitress within ~30-60s of the
+push. At the time this step completed, the Surface had not yet rotated to the
+new process -- `GET /healthstack/services` returned 404 from the old Flask app.
+
+Confirmed this run (2026-06-14, deploy step second pass): Flask IS running (`/health` 200,
+`/repsetta/exercises` returns JSON exercise list). The healthstack blueprint is syntactically
+valid (Python `ast.parse` PASS). It is registered in `server.py` lines 274-276. The
+`mw-backend` origin/main is at commit 6876837 ("Add HealthStack Flask blueprint with JWT
+auth and booking endpoints", committed 2026-06-14 19:40:34 -0500).
+
+The Surface auto-deploy watcher (`auto-deploy.ps1`) polls every 30s and does
+`git pull --ff-only` + Flask restart. The watcher may need a manual restart on
+the Surface if it has not already picked up the commit.
+
+deploy-test should allow ~60s from the time it starts before treating a 404 on
+`/healthstack/*` as a hard failure. Retry a few times with short backoff.
+
+Blueprint file: `mw-backend/healthstack_blueprint.py` -- imports `jwt`, `flask`,
+`secrets`, `datetime`, `functools`. All confirmed importable locally; no missing deps.
+
+---
+
+## Demo files (all 200 on GitHub Pages)
+
+- https://michaelwegter.com/demos/healthstack-patient-portal/index.html
+- https://michaelwegter.com/demos/healthstack-patient-portal/styles.css
+- https://michaelwegter.com/demos/healthstack-patient-portal/app.js
+- https://michaelwegter.com/demos/healthstack-patient-portal/api.js
+
+---
+
+## API endpoints (will be live once watcher restarts)
+
+Base: `https://api.michaelwegter.com/healthstack`
+
+| Method | Path | Auth |
+|--------|------|------|
+| POST | /login | None (returns JWT) |
+| GET | /services | None (public) |
+| POST | /book | JWT patient role |
+| POST | /checkout | JWT patient role |
+| GET | /dashboard/patient | JWT patient role |
+| GET | /dashboard/admin | JWT admin role |
+| POST | /upload | JWT patient role |
+
+---
+
+## Demo credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Patient | patient@healthstack.demo | DemoPatient123! |
+| Admin | admin@healthstack.demo | DemoAdmin123! |
+
+---
+
+## Work sample route
+
+- Portfolio page: https://michaelwegter.com/work-samples/healthstack-patient-portal
+  (rendered by React router from workSamples.js id:6; no static file needed)
+
+---
+
+## Hero flow for deploy-test
+
+1. Load https://michaelwegter.com/demos/healthstack-patient-portal/
+2. Click demo-fill button for patient creds OR type patient@healthstack.demo / DemoPatient123!
+3. Click "Sign in securely" -- should land on Patient Dashboard (GET /dashboard/patient)
+4. Click "Browse Providers" tab -- shows 4 provider cards (GET /services)
+5. Click "Book Appointment" on any card -- opens slot picker
+6. Click any time slot then "Confirm Appointment" -- calls POST /book, returns booking_id
+7. Checkout page shows order summary -- click "Pay $XX.00" -- calls POST /checkout
+8. Confirmation page shows green check + PaymentIntent ID (mock: pi_DEMO_...)
+9. "View my dashboard" -- Patient Dashboard shows new booking with "Paid" status
+10. Logout -- re-login as admin@healthstack.demo / DemoAdmin123!
+11. Admin dashboard shows stat cards, audit log with new entries, PHI-minimized patient roster
+
+If backend returns 404 on steps 3+, wait 30s and retry -- watcher restart in progress.

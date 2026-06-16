@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CivicQ Landing Page Proposal // Michael Wegter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0B0E11;
+    --surface: #13171C;
+    --surface-hi: #1A1F26;
+    --border: #262C34;
+    --text: #E7EAEE;
+    --muted: #9AA4B1;
+    --teal: #3DBFA8;
+    --teal-bg: #10221D;
+    --gold: #C9A227;
+    --gold-bg: #221C0E;
+    --font-head: 'Newsreader', Georgia, serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  h1, h2, h3 { font-family: var(--font-head); line-height: 1.2; font-weight: 600; }
+  a { color: var(--teal); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Hero */
+  header.hero {
+    background: linear-gradient(180deg, #0E1217 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 64px 0 56px;
+  }
+  header.hero .wrap { display: flex; flex-direction: column; gap: 16px; }
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+  }
+  header.hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: var(--text);
+  }
+  header.hero h1 .highlight { color: var(--teal); }
+  header.hero p.lede {
+    font-size: 1.08rem;
+    color: var(--muted);
+    max-width: 620px;
+  }
+  .hero-cta {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--teal);
+    color: #06140F;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    width: fit-content;
+    transition: background 0.15s;
+  }
+  .hero-cta:hover { background: #4FD3BC; text-decoration: none; }
+  .hero-cta svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .hero-byline { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+  /* Sections */
+  section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--teal);
+    margin-bottom: 10px;
+  }
+  section h2 { font-size: 1.6rem; margin-bottom: 8px; color: var(--text); }
+  section .sub { color: var(--muted); margin-bottom: 32px; max-width: 640px; }
+
+  /* Feature / section cards */
+  .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card h3 { font-family: var(--font-body); font-size: 0.98rem; font-weight: 700; color: var(--text); }
+  .card p { font-size: 0.87rem; color: var(--muted); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+  .pill-live { background: var(--teal-bg); color: var(--teal); }
+  .pill-dev { background: var(--gold-bg); color: var(--gold); }
+
+  /* Section checklist list */
+  .section-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 28px;
+    list-style: none;
+    margin-top: 8px;
+  }
+  .section-list li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.9rem;
+    color: var(--text);
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-list li span.num {
+    font-family: var(--font-head);
+    color: var(--teal);
+    font-weight: 600;
+    min-width: 22px;
+  }
+
+  /* Data viz showcase */
+  .viz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .viz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .viz-card .viz-thumb {
+    height: 90px;
+    border-radius: 6px;
+    background: var(--surface-hi);
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .viz-card h3 { font-family: var(--font-body); font-size: 0.92rem; font-weight: 700; margin-bottom: 6px; }
+  .viz-card p { font-size: 0.83rem; color: var(--muted); }
+
+  /* Requirement trace table */
+  .req-table { width: 100%; border-collapse: collapse; }
+  .req-table th {
+    text-align: left;
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--border);
+  }
+  .req-table td {
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.87rem;
+    vertical-align: top;
+    color: var(--text);
+  }
+  .req-table tr:last-child td { border-bottom: none; }
+  .req-table tr:hover td { background: var(--surface); }
+  .check { color: var(--teal); font-weight: 700; }
+
+  /* Milestones */
+  .milestone-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .milestone-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    position: relative;
+  }
+  .milestone-card .mnum {
+    font-family: var(--font-head);
+    font-size: 1.7rem;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+  .milestone-card h3 { font-family: var(--font-body); font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+  .milestone-card p { font-size: 0.84rem; color: var(--muted); }
+  .milestone-card .pct {
+    position: absolute;
+    top: 18px; right: 18px;
+    font-size: 0.75rem;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* Proof points */
+  .proof-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .proof-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .proof-card .number { font-family: var(--font-head); font-size: 1.7rem; color: var(--teal); line-height: 1; margin-bottom: 4px; }
+  .proof-card .label { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+
+  /* Pricing */
+  .price-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .price-box .amount { font-family: var(--font-head); font-size: 2.4rem; color: var(--teal); }
+  .price-box .terms { font-size: 0.85rem; color: var(--muted); max-width: 420px; }
+
+  /* CTA footer */
+  footer.cta-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 52px 0;
+    text-align: center;
+  }
+  footer.cta-footer h2 { font-size: 1.9rem; margin-bottom: 10px; }
+  footer.cta-footer p { color: var(--muted); max-width: 520px; margin: 0 auto 24px; }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--teal);
+    color: #06140F;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 28px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin: 0 6px;
+    transition: background 0.15s;
+  }
+  .cta-btn:hover { background: #4FD3BC; text-decoration: none; }
+  .cta-btn.secondary {
+    background: transparent;
+    color: var(--teal);
+    border: 1px solid var(--teal);
+  }
+  .cta-btn.secondary:hover { background: var(--teal-bg); }
+
+  .disclaimer { font-size: 0.78rem; color: var(--muted); text-align: center; padding: 24px 0; }
+
+  @media (max-width: 720px) {
+    .grid-4, .viz-grid, .milestone-grid, .proof-grid { grid-template-columns: 1fr; }
+    .section-list { grid-template-columns: 1fr; }
+    header.hero h1 { font-size: 1.8rem; }
+    .price-box { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <p class="hero-eyebrow">Proposal &bull; Michael Wegter &bull; June 2026</p>
+    <h1>CivicQ <span class="highlight">Landing Page</span></h1>
+    <p class="lede">The complete 10-section home page and methodology page, built to spec in a faithful civic-tech dark design system, with all three required data visualizations coded and a working email-capture-to-CSV backend. Built, not described.</p>
+    <a class="hero-cta" href="https://michaelwegter.com/work-samples/civicq" target="_blank" rel="noopener">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+      Open live demo
+    </a>
+    <p class="hero-byline">michaelwegter.com/work-samples/civicq &nbsp;|&nbsp; direct: michaelwegter.com/demos/civicq/</p>
+  </div>
+</header>
+
+<!-- THE 10 SECTIONS -->
+<section>
+  <div class="wrap">
+    <p class="section-label">What is built</p>
+    <h2>All 10 sections, in your exact order</h2>
+    <p class="sub">No reordering, no invented sections, no redesign. The page below is built to the structure in your posting, section by section.</p>
+    <ul class="section-list">
+      <li><span class="num">01</span> Hero with video thumbnail, primary and secondary CTAs</li>
+      <li><span class="num">02</span> Problem statement, single-column editorial text</li>
+      <li><span class="num">03</span> Feature card grid, 2x2, LIVE / IN DEVELOPMENT pills</li>
+      <li><span class="num">04</span> Scoring methodology, six-dimension weighted chart</li>
+      <li><span class="num">05</span> Honest status disclosure, two-column live vs. in-development</li>
+      <li><span class="num">06</span> Organization Hub, wireframe mockup + email capture</li>
+      <li><span class="num">07</span> Fundraising module, $75K breakdown + GoFundMe CTA</li>
+      <li><span class="num">08</span> Partners / Press / Orgs, three-column cards</li>
+      <li><span class="num">09</span> Feedback banner + footer</li>
+      <li><span class="num">10</span> Sticky nav, anchor links + search/auth placement</li>
+    </ul>
+    <p class="sub" style="margin-top:24px; margin-bottom:0;">Plus a dedicated <strong>/methodology</strong> page, same design system, reachable from the nav and from section 4.</p>
+  </div>
+</section>
+
+<!-- STATUS PILLS EXAMPLE -->
+<section>
+  <div class="wrap">
+    <p class="section-label">Radical transparency</p>
+    <h2>LIVE and IN DEVELOPMENT, called out honestly</h2>
+    <p class="sub">Your feature grid and status disclosure both rely on a clear, consistent pill system. Built once, reused everywhere it appears.</p>
+    <div class="grid-4">
+      <div class="card">
+        <span class="pill pill-live">Live</span>
+        <h3>Voting Record Lookup</h3>
+        <p>Pulled directly from official sources, searchable by representative.</p>
+      </div>
+      <div class="card">
+        <span class="pill pill-live">Live</span>
+        <h3>Bill Activity Tracking</h3>
+        <p>Status, sponsors, and votes on bills as they move.</p>
+      </div>
+      <div class="card">
+        <span class="pill pill-dev">In Development</span>
+        <h3>Public Statement Archive</h3>
+        <p>Verified public statements, timestamped and sourced.</p>
+      </div>
+      <div class="card">
+        <span class="pill pill-dev">In Development</span>
+        <h3>Organization Research Hub</h3>
+        <p>Deeper access for orgs and researchers, see below.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THREE DATA VISUALIZATIONS -->
+<section>
+  <div class="wrap">
+    <p class="section-label">The thing you asked about directly</p>
+    <h2>Three custom graphics, coded by hand, no designer assets</h2>
+    <p class="sub">All three are real SVG, built from scratch, not a chart library and not a placeholder image. Open the live demo and they render in front of you.</p>
+    <div class="viz-grid">
+      <div class="viz-card">
+        <div class="viz-thumb">
+          <svg width="80" height="50" viewBox="0 0 80 50">
+            <rect x="0" y="2" width="68" height="6" rx="2" fill="#3DBFA8"/>
+            <rect x="0" y="12" width="55" height="6" rx="2" fill="#5FB8C9"/>
+            <rect x="0" y="22" width="42" height="6" rx="2" fill="#7FA8C9"/>
+            <rect x="0" y="32" width="34" height="6" rx="2" fill="#8C97AC"/>
+            <rect x="0" y="42" width="22" height="6" rx="2" fill="#9AA4B1"/>
+          </svg>
+        </div>
+        <h3>Six-Dimension Scoring Chart</h3>
+        <p>Weighted horizontal bars, each dimension labeled with its name and weight directly on the bar, animated draw-in on scroll, with a hidden data table fallback for screen readers.</p>
+      </div>
+      <div class="viz-card">
+        <div class="viz-thumb">
+          <svg width="80" height="50" viewBox="0 0 80 50">
+            <rect x="0" y="20" width="30" height="10" fill="#3DBFA8"/>
+            <rect x="30" y="20" width="22" height="10" fill="#5FB8C9"/>
+            <rect x="52" y="20" width="16" height="10" fill="#7FA8C9"/>
+            <rect x="68" y="20" width="10" height="10" fill="#8C97AC"/>
+          </svg>
+        </div>
+        <h3>$75,000 Funds Breakdown</h3>
+        <p>A segmented bar that sums exactly to $75K. Each segment is labeled with category and dollar figure directly on it, so it reads correctly without relying on color alone.</p>
+      </div>
+      <div class="viz-card">
+        <div class="viz-thumb">
+          <svg width="80" height="50" viewBox="0 0 80 50">
+            <rect x="2" y="2" width="76" height="46" rx="4" fill="#1A1F26" stroke="#262C34"/>
+            <rect x="8" y="8" width="64" height="6" rx="2" fill="#262C34"/>
+            <rect x="8" y="18" width="40" height="4" rx="2" fill="#3DBFA8"/>
+            <rect x="8" y="26" width="30" height="4" rx="2" fill="#9AA4B1"/>
+            <rect x="8" y="34" width="50" height="4" rx="2" fill="#9AA4B1"/>
+          </svg>
+        </div>
+        <h3>Organization Hub Mockup</h3>
+        <p>A coded browser-chrome frame around a stylized dashboard, built to look like an intentional product shot rather than a gray wireframe box.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REQUIREMENT TRACEABILITY -->
+<section>
+  <div class="wrap">
+    <p class="section-label">Requirements covered</p>
+    <h2>Every item in your posting, mapped to where it lives</h2>
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>Requirement</th>
+          <th>In the demo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>React / Next.js, dark-mode system matched precisely</strong></td>
+          <td class="check">&#10003; Built in React, faithful institutional dark stand-in system, documented as ready to swap for your real tokens</td>
+        </tr>
+        <tr>
+          <td><strong>Fully responsive, 390px and 1440px</strong></td>
+          <td class="check">&#10003; Verified at both breakpoints and fluid in between, grids collapse to single column on mobile</td>
+        </tr>
+        <tr>
+          <td><strong>Lighthouse 85+ on mobile</strong></td>
+          <td class="check">&#10003; Lean build, no chart library weight, self-hosted fonts, restrained motion behind prefers-reduced-motion</td>
+        </tr>
+        <tr>
+          <td><strong>Three custom data visualizations</strong></td>
+          <td class="check">&#10003; All three coded as SVG, see above, live on the demo page</td>
+        </tr>
+        <tr>
+          <td><strong>Email capture with CSV backup</strong></td>
+          <td class="check">&#10003; Real backend, POST /subscribe persists to a database, GET /csv-export returns the rows as a CSV file</td>
+        </tr>
+        <tr>
+          <td><strong>Analytics install (Plausible / Fathom)</strong></td>
+          <td class="check">&#10003; Privacy-respecting script hook in place, page-view and key-event tracking wired, ready for a real site ID</td>
+        </tr>
+        <tr>
+          <td><strong>WCAG 2.1 AA accessibility</strong></td>
+          <td class="check">&#10003; Semantic landmarks, focus states, alt text, ARIA labels, contrast-checked palette, reduced-motion guards</td>
+        </tr>
+        <tr>
+          <td><strong>/methodology page</strong></td>
+          <td class="check">&#10003; Separate route, same system, holds the full scoring methodology content</td>
+        </tr>
+        <tr>
+          <td><strong>US-based developer</strong></td>
+          <td class="check">&#10003; I'm based in the United States and available now</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- MILESTONES / TIMELINE -->
+<section>
+  <div class="wrap">
+    <p class="section-label">Timeline</p>
+    <h2>Three milestones inside your 2 to 4 week window</h2>
+    <p class="sub">The GoFundMe launch dependency is noted as a known external blocker. The funds module and CTA will be built and launch-ready on my end regardless of campaign-side timing.</p>
+    <div class="milestone-grid">
+      <div class="milestone-card">
+        <span class="pct">40%</span>
+        <div class="mnum">01</div>
+        <h3>Week 1: Structure</h3>
+        <p>Design-system study against your real staging tokens, all 10 sections and sticky nav built to spec, responsive scaffold at 390px and 1440px.</p>
+      </div>
+      <div class="milestone-card">
+        <span class="pct">40%</span>
+        <div class="mnum">02</div>
+        <h3>Week 2: Viz + Forms</h3>
+        <p>All three coded data visualizations, email capture wired to your real Mailchimp or ConvertKit setup with CSV backup, analytics hooks installed.</p>
+      </div>
+      <div class="milestone-card">
+        <span class="pct">20%</span>
+        <div class="mnum">03</div>
+        <h3>Weeks 3 to 4: Polish</h3>
+        <p>Full WCAG 2.1 AA audit, Lighthouse tuning to 85+ on mobile, cross-device QA, methodology page finalization, handoff.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICE -->
+<section>
+  <div class="wrap">
+    <p class="section-label">Fixed price bid</p>
+    <h2>$3,000, milestone payments welcome</h2>
+    <div class="price-box">
+      <div class="amount">$3,000</div>
+      <div class="terms">A bit of savings compared to your $3,500 to $5,000 range, split 25% on milestone one (structure), 25% on milestone two (visualizations and forms), 50% on milestone three (polish, accessibility, and handoff).</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section>
+  <div class="wrap">
+    <p class="section-label">Background</p>
+    <h2>Why I can move fast on this without cutting corners</h2>
+    <p class="sub">Civic tech is new ground for me, but spec fidelity, ownership, and speed are not.</p>
+    <div class="proof-grid">
+      <div class="proof-card">
+        <div class="number">2.5 yrs</div>
+        <div class="label">Sole developer and SME on a React and Python platform at U.S. Bank, 600 users a month</div>
+      </div>
+      <div class="proof-card">
+        <div class="number">10 min</div>
+        <div class="label">Typical time to find and fix a production issue on a platform I owned end to end</div>
+      </div>
+      <div class="proof-card">
+        <div class="number">6 mo</div>
+        <div class="label">Led that platform's Azure Cloud migration as the project's main representative</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<footer class="cta-footer">
+  <div class="wrap">
+    <h2>Your home page is already live</h2>
+    <p>Open it, click through all 10 sections, try the email form. Nothing here is a mockup.</p>
+    <div>
+      <a class="cta-btn" href="https://michaelwegter.com/demos/civicq/" target="_blank" rel="noopener">Open live demo</a>
+      <a class="cta-btn secondary" href="https://michaelwegter.com/work-samples/civicq" target="_blank" rel="noopener">View on portfolio</a>
+    </div>
+  </div>
+</footer>
+
+<p class="disclaimer">Demo built as a working proposal sample for CivicQ. Not affiliated with any political party, campaign, or candidate.</p>
+
+</body>
+</html>

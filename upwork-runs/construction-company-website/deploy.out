@@ -1,0 +1,62 @@
+# Deploy — Cornerstone Construction Co. (`construction-company-website`)
+
+**Date:** 2026-06-15
+**Result:** DEPLOYED — all checks pass
+
+---
+
+## What was deployed
+
+**Repo:** `michaelwegter.com` — frontend + demo only (no backend changes needed; demo is pure static).
+
+**Commit:** `ac517e4` — "Add Cornerstone Construction Co. demo and work sample registry entry"
+
+**Files committed:**
+- `public/demos/construction-company-website/index.html`
+- `public/demos/construction-company-website/services.html`
+- `public/demos/construction-company-website/projects.html`
+- `public/demos/construction-company-website/contact.html`
+- `public/demos/construction-company-website/style.css`
+- `public/demos/construction-company-website/main.js`
+- `public/demos/construction-company-website/projects.js`
+- `public/demos/construction-company-website/contact.js`
+- `public/demos/construction-company-website/assets/hero.mp4`
+- `public/demos/construction-company-website/assets/hero-poster.jpg`
+- `src/data/workSamples.js` (registry entry id=8 added)
+
+**Push:** `main -> origin/main` succeeded. GitHub Actions auto-build triggered and completed.
+
+---
+
+## Live verification
+
+| URL | Status |
+|-----|--------|
+| `https://michaelwegter.com/` (site root) | 200 |
+| `https://api.michaelwegter.com/health` | 200 `{"status":"ok","version":"1.0.0"}` |
+| `https://michaelwegter.com/demos/construction-company-website/` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/services.html` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/projects.html` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/contact.html` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/style.css` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/main.js` | 200 |
+| `https://michaelwegter.com/demos/construction-company-website/assets/hero-poster.jpg` | 200 |
+
+All pages and assets return 200. GitHub Pages build completed approximately 60 seconds after push.
+
+---
+
+## Backend
+
+No backend changes. The demo is self-contained static HTML/CSS/JS with local video asset. No `mw-backend` commit or restart required.
+
+---
+
+## Demo live URL
+
+**https://michaelwegter.com/demos/construction-company-website/**
+
+Portfolio work-sample route (after GH Pages SPA routing resolves):
+**https://michaelwegter.com/work-samples/construction-company-website**
+
+VERDICT: pass

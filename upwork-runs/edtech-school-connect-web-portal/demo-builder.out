@@ -1,0 +1,137 @@
+# Demo Builder Output: EdTech School Connect Web Portal
+slug: edtech-school-connect-web-portal
+date: 2026-06-15
+status: complete
+
+---
+
+## Summary
+
+All three deliverables were verified complete (from a prior partial run) and one
+missing piece (the workSamples.js registry entry) was added.
+
+---
+
+## Files Written / Verified
+
+### 1. Flask Blueprint
+**Path:** `/Users/michaelwegter/Desktop/Projects/mw-backend/edtech_blueprint.py`
+**Status:** Verified complete (497 lines, syntax OK, no em/en dashes)
+**Blueprint variable:** `edtech_bp`
+**URL prefix:** `/api/edtech`
+
+**Endpoints implemented:**
+- `POST  /api/edtech/login`                  -- credential check, returns JWT with role
+- `GET   /api/edtech/student`                -- student info (both roles)
+- `GET   /api/edtech/grades`                 -- student grades (both roles)
+- `PATCH /api/edtech/grades/<id>`            -- update a grade (teacher only)
+- `GET   /api/edtech/activities`             -- activity feed (both roles)
+- `POST  /api/edtech/activities`             -- create activity (teacher only)
+- `GET   /api/edtech/messages`               -- full message thread (both roles)
+- `POST  /api/edtech/messages`               -- send a message (both roles)
+- `GET   /api/edtech/messages/unread-count`  -- unread count for polling (both roles)
+- `PATCH /api/edtech/messages/read-all`      -- mark all from other role as read
+- `PATCH /api/edtech/messages/<id>/read`     -- mark one message as read
+
+**Storage:** SQLite at `data/mw.db`, tables created lazily, seed idempotent (checks COUNT=0)
+**Auth:** bcrypt password hash/verify, PyJWT HS256 tokens, 24-hour TTL
+**Demo accounts seeded:**
+  - parent@demo.edu / ParentDemo1 (parent role, name: Robert Johnson)
+  - teacher@demo.edu / TeachDemo1 (teacher role, name: Mrs. Rivera)
+  - Student: Alex Johnson, Grade 7
+  - Grades: Math A(95), English B+(88), Science A-(91), History B(84), Art A(97), PE A+(100)
+  - 4 seed activities, 2 seed messages
+
+### 2. Blueprint Registration
+**File:** `/Users/michaelwegter/Desktop/Projects/mw-backend/server.py`
+**Status:** Already registered (lines 278-280)
+```python
+# EdTech School Connect Portal demo blueprint
+from edtech_blueprint import edtech_bp
+app.register_blueprint(edtech_bp)
+```
+
+### 3. Demo Frontend
+**Path:** `/Users/michaelwegter/Desktop/Projects/michaelwegter.com/public/demos/edtech-school-connect-web-portal/index.html`
+**Status:** Verified complete (1548 lines, no em/en dashes)
+**Live URL (after deploy):** `https://michaelwegter.com/demos/edtech-school-connect-web-portal/`
+
+**Features implemented (feature richness 10/10):**
+- Role-based login (parent vs teacher) with demo hint cards (click to fill)
+- Parent dashboard: student banner with GPA, top-3 grade stats, recent activity feed, messages shortcut
+- Teacher dashboard: class average, updates count, unread message count
+- Grades view (parent): card grid with letter/score/progress bars + Chart.js radar chart (6 axes)
+- Grade management (teacher): editable table with inline save + radar chart (live-updates on save)
+- Activity feed (parent): full chronological feed with color-coded category badges
+- Post Update (teacher): category selector (Academic/Event/Attendance/Announcement/Behavior) + text area, posts to API and refreshes feed
+- Messages: iMessage-style bubble thread, compose with Enter-to-send, auto-scroll on new message
+- Unread badge: 4-second polling of `/api/edtech/messages/unread-count`, badge on nav and mobile tabs
+- PHP info bar: dark banner explaining Flask-to-PHP/Laravel mapping
+- Mobile responsive: sidebar collapses to fixed bottom tab bar at 768px
+- Toast notifications for save/post/error feedback
+- XSS-safe `esc()` on all user-supplied content
+
+**Design system (bespoke, not michaelwegter.com):**
+- Primary: #1A56DB | Accent: #0E9F6E | Warning: #E3A008 | Danger: #E02424
+- Bg: #F9FAFB | Card: #FFFFFF | Border: #E5E7EB
+- Fonts: Nunito (headings) + Inter (body) via Google Fonts CDN
+- Chart.js 4.4.0 via jsDelivr CDN
+
+### 4. workSamples.js Registry Entry
+**File:** `/Users/michaelwegter/Desktop/Projects/michaelwegter.com/src/data/workSamples.js`
+**Status:** Added (id: 7)
+```js
+{
+  id: 7,
+  slug: "edtech-school-connect-web-portal",
+  title: "SchoolConnect Portal",
+  category: "EdTech",
+  color: "#1A56DB",
+  icon: "🎓",
+  frameStyle: "walnut",
+  date: "2026-06-15",
+}
+```
+
+---
+
+## Self-Test Results
+
+| Check                              | Result |
+|------------------------------------|--------|
+| Blueprint syntax (ast.parse)       | PASS   |
+| Blueprint em/en dashes             | 0      |
+| index.html em/en dashes            | 0      |
+| Blueprint registered in server.py  | PASS   |
+| workSamples.js entry present       | PASS   |
+| workSamples.js id: 7               | PASS   |
+| Demo directory exists              | PASS   |
+| index.html present                 | PASS   |
+
+---
+
+## PHP Mapping (for proposal)
+
+| Demo layer          | PHP/Laravel production equivalent     |
+|---------------------|---------------------------------------|
+| Flask blueprint     | Laravel Controller + Routes (web.php) |
+| SQLite tables       | MySQL/PostgreSQL with Eloquent ORM    |
+| PyJWT tokens        | Laravel Sanctum or Passport           |
+| Vanilla JS frontend | Vue.js, Livewire, or keep vanilla JS  |
+| 4s client polling   | Laravel Echo + Pusher WebSockets      |
+| Static file serving | Laravel on shared hosting or a VPS    |
+
+---
+
+## Demo Accounts (for live test / proposal)
+
+| Role    | Email             | Password    |
+|---------|-------------------|-------------|
+| Parent  | parent@demo.edu   | ParentDemo1 |
+| Teacher | teacher@demo.edu  | TeachDemo1  |
+
+Both roles log in at: `https://michaelwegter.com/demos/edtech-school-connect-web-portal/`
+
+---
+
+*End of demo-builder output.*

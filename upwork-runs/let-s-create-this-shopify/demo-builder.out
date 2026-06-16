@@ -1,0 +1,90 @@
+# Demo Builder Output
+**Slug:** `art-print-storefront`
+**Date:** 2026-06-13
+**Status:** DONE -- all self-test checks passed
+
+---
+
+## Files Created (11 total, under the 12-file cap)
+
+| # | File | Status |
+|---|------|--------|
+| 1 | `michaelwegter.com/public/demos/art-print-storefront/index.html` | Created |
+| 2 | `michaelwegter.com/public/demos/art-print-storefront/product.html` | Created |
+| 3 | `michaelwegter.com/public/demos/art-print-storefront/assets/style.css` | Created |
+| 4 | `michaelwegter.com/public/demos/art-print-storefront/assets/data.js` | Created |
+| 5 | `michaelwegter.com/public/demos/art-print-storefront/assets/gallery.js` | Created |
+| 6 | `michaelwegter.com/public/demos/art-print-storefront/assets/product.js` | Created |
+| 7 | `michaelwegter.com/public/demos/art-print-storefront/assets/cart.js` | Created |
+| 8 | `michaelwegter.com/public/demos/art-print-storefront/assets/checkout.js` | Created |
+| 9 | `mw-backend/art_store_blueprint.py` | Created |
+| 10 | `mw-backend/server.py` | Edited (3 lines added after repsetta_bp registration) |
+| 11 | `michaelwegter.com/src/data/workSamples.js` | Edited (id:4 appended) |
+
+---
+
+## Self-Test Results
+
+- [x] `index.html` and `product.html` present, no em/en dashes found (verified via grep + Python scan)
+- [x] 12 Picsum thumbnail URLs wired (seed: art1..art12, 450x560)
+- [x] Horizontal scroll: drag (mousedown/mousemove, 1.5x multiplier), prev/next arrows (scrollBy card-width), vertical wheel remapped
+- [x] Product page: `getPrintById(id)` parses `?id=` param; graceful 404 fallback if id missing
+- [x] Size selector: 4 buttons (8x10, 12x16, 16x20, 24x30), active state toggles, `priceForSize` recomputes on click
+- [x] Add to cart: pushes `{ printId, title, size, price }` to `localStorage.art_cart`, `updateBadge()` runs on both pages
+- [x] Checkout gated: `doCheckout()` checks `sessionStorage.art_jwt`; if missing, calls `showLoginModal(cb)` then retries checkout in the callback
+- [x] Login POST target: `https://api.michaelwegter.com/art-store/login` -- blueprint mounted at `/art-store`
+- [x] Checkout POST target: `https://api.michaelwegter.com/art-store/checkout` -- requires `Authorization: Bearer <token>`
+- [x] Order confirmation: `.order-id`, `.order-email`, `.order-ship` populated from API response, modal opens
+- [x] Coaching panel: both pages have 3-tab drawer; tab switching works via `data-pane` attribute
+- [x] Zero em dashes and en dashes in all 11 files
+- [x] `workSamples.js` id:4 entry correct (slug, href, date, color, icon, frameStyle)
+- [x] `server.py` diff is exactly 3 lines (comment + import + register_blueprint)
+
+---
+
+## Demo URL
+
+`https://michaelwegter.com/demos/art-print-storefront/`
+
+Hero flow for media capture agent:
+1. Load `/demos/art-print-storefront/` -- 12 cards render in horizontal scroll
+2. Click next arrow -- gallery scrolls right
+3. Click first card -- `product.html?id=1` loads with "Morning Fog" title and image
+4. Click "16 x 20" size button -- price updates to $505
+5. Click "Add to Cart" -- toast: "Morning Fog added to cart", nav badge shows 1
+6. Click Cart button in header -- cart modal opens with item
+7. Click "Proceed to Checkout" -- login modal appears
+8. Enter any email + password, click Sign In -- login POST succeeds, order POST fires
+9. Order confirmation modal opens: order ID (MW-XXXXXXXX), email, shipping estimate
+10. Click "Shopify Code Panel" button -- drawer slides up showing Liquid prompt in Tab 1
+
+---
+
+## Architecture Notes for Proposal Writer
+
+- The coaching panel IS the differentiation: no other candidate can demo a live
+  Shopify tutoring artifact that shows the exact prompt to give Claude, what to
+  review in the output, and the common errors to catch.
+- JWT auth is real (PyJWT, HS256, 1-hour TTL). Any credentials work -- this is
+  intentional and disclosed in the login hint ("Demo: any email and password will work").
+- Cart persists in `localStorage.art_cart` across page navigations (gallery to product).
+- All 12 prints use Picsum Photos CC0 seeded URLs (deterministic, no API key needed).
+- The demo is vanilla JS + ES modules. No bundler, no npm install. Ships as static
+  files alongside the site and auto-deploys with the next push to main.
+
+---
+
+## workSamples.js Entry Summary
+
+```js
+{
+  id: 4,
+  slug: "art-print-storefront",
+  title: "Art Print Storefront",
+  category: "Shopify",
+  color: "#e8b820",
+  icon: "🖼️",
+  frameStyle: "walnut",
+  date: "2026-06-13",
+}
+```

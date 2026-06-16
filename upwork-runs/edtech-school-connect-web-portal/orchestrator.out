@@ -1,0 +1,107 @@
+# Orchestrator — Run Setup
+
+## Project identity
+- **slug:** `edtech-school-connect-web-portal`
+- **run dir:** `upwork-runs/edtech-school-connect-web-portal/`
+- **demo path (local):** `../michaelwegter.com/public/demos/edtech-school-connect-web-portal/`
+- **demo URL (live):** `https://michaelwegter.com/demos/edtech-school-connect-web-portal/`
+- **work-sample route:** `/work-samples/edtech-school-connect-web-portal`
+- **target feature richness:** 10 / 10 (full-featured, production-quality, several real working features)
+
+## What the client actually wants (startup brief)
+A web developer to build an **MVP of an "EdTech School Connect" portal** whose
+core purpose is **two-way communication between schools and parents**, with
+**real-time updates on student performance and activities**. They want a
+**functional prototype delivered fast**.
+
+- Engagement: hourly, less than 30 hrs/week, 1 to 3 months, ongoing project,
+  intermediate level, "mix of experience and value."
+- Mandatory skills listed: **PHP, Web Development.** Nice-to-have: JavaScript, HTML5.
+- They are in MVP stage and explicitly value a working prototype over polish promises.
+
+### Reading between the lines
+- "School Connect" portals are a known category (think ClassDojo, Bloomz,
+  Seesaw, ParentSquare, Schoology/PowerSchool parent portals). The differentiator
+  the posting emphasizes is **communication + real-time performance/activity
+  updates**, so the hero flow should be the parent/teacher loop, not admin CRUD.
+- **PHP is the stated stack** but the deliverable for THIS workflow is a
+  same-origin static demo on michaelwegter.com (no PHP runtime on GH Pages). The
+  proposal must address PHP head-on: the demo proves the product and UX; the
+  cover letter states clearly that production would be built on PHP (the demo
+  uses a JS/static front end + optional mw-backend for live data because it has
+  to run on a static host) and that Michael is fluent in the PHP equivalent.
+  Do NOT pretend the demo is PHP. Position it as a clickable, real-data product
+  prototype that maps 1:1 to a PHP/Laravel build.
+- Audience = two distinct roles (parent and teacher/school). The demo should let
+  a reviewer experience BOTH sides, ideally via role switching or seeded logins.
+
+## Plan of attack (phase ordering)
+Recommended graph (the `with-deploy` + `with-ceo` layout fits well here because
+there is a backend opportunity and richness is maxed):
+
+`intake -> planner -> ceo -> researcher -> demo-builder -> deploy -> deploy-test -> media-capture -> proposal-writer -> evaluator`
+
+Pair the CEO after planner (and again after demo-builder if the studio layout
+allows) to keep ambition aligned with the 10/10 target.
+
+### Guidance per downstream phase
+- **intake:** Capture every explicit requirement as a checklist item:
+  (1) school↔parent communication, (2) real-time student performance updates,
+  (3) real-time activity updates, (4) functional MVP/prototype, (5) PHP stack
+  acknowledgment, (6) fast delivery. Flag the PHP-vs-static-demo tension so the
+  proposal-writer addresses it explicitly. Note the two user roles.
+- **planner:** This is a **full build, not a prototype** (richness 10). Choose a
+  hero feature = the real-time parent↔teacher communication + performance feed.
+  At most 2 supporting features (caps still apply): e.g. (a) a gradebook /
+  performance dashboard with charts, (b) an activity/announcements feed or
+  attendance tracker. Strongly recommend wiring **mw-backend** with a new
+  blueprint so updates are genuinely real-time/persistent (a working DB-backed
+  messaging + performance feed sells the "real-time" claim far better than mock
+  data). Seed a demo parent account AND a demo teacher account; record creds.
+  Define a **bespoke EdTech design system** (friendly, trustworthy, school-brand
+  feel — warm/approachable, accessible contrast, NOT michaelwegter.com's dark
+  gallery theme). Produce the requirement→feature traceability matrix.
+- **researcher:** Pull real conventions from leading school-parent comms apps
+  (ClassDojo, ParentSquare, Seesaw, Bloomz, Schoology parent view): typical
+  layout, color/tone (clean, bright, reassuring), feature set, role separation.
+  Identify the exact existing app+blueprint to clone — clone `spotify_blueprint.py`
+  for the backend scaffold and an existing self-contained demo for the front end.
+- **demo-builder:** Build into the demo path above. If backend greenlit, add one
+  blueprint (messages + performance + activities), register in `server.py`, keep
+  CORS open, do not touch auth/DB schema/other blueprints beyond what's needed.
+  Role switching or dual login so reviewers see both parent and teacher sides.
+- **deploy / deploy-test:** Push both repos if a blueprint was added; Playwright
+  the live site including login on both roles and a full send-message→see-update
+  round trip; emit VERDICT.
+- **media-capture:** Hero flow = a parent receiving/seeing a real-time performance
+  update and exchanging a message with a teacher.
+- **proposal-writer:** Tailor deck + one-pager to the EdTech/school audience using
+  the demo's design language. Embed the live demo link in BOTH cover letter and
+  deck. Explicitly map each requirement to what the demo shows. Address PHP.
+- **evaluator:** Enforce the hard gates; confirm PHP tension is handled honestly.
+
+## Quality guidance / risks to watch
+- **Real-time means real-time.** With richness 10, do not fake it with setTimeout
+  shuffling static JSON only. Prefer a backend-backed feed (polling or SSE) so a
+  message sent on the teacher side actually appears on the parent side. This is
+  the single most credible thing the demo can prove.
+- **Two roles must both be experienceable** in the live demo without friction.
+- **Privacy/trust framing matters in EdTech** (student data, FERPA-style
+  sensibilities). The design and copy should feel safe and parent-friendly; the
+  proposal can note awareness of student-data privacy.
+- **Honesty on stack.** Never claim the demo is PHP. Frame it as a product
+  prototype that translates directly to the client's PHP/Laravel target.
+- **Writing rules:** no em/en dashes anywhere; Michael's voice; concrete, not
+  generic. Cohesive bespoke design across demo + one-pager + deck.
+- **Budget:** 1 hero + ≤2 supporting features, ≤~12 files touched in the demo,
+  3-min build timeout, ≤~6 research fetches, reflection retries ≤2. Disk is
+  memory — pass file paths between phases, not contents.
+
+## Definition of done (carry forward)
+All 6 hard gates in CLAUDE.md must hold: every brief requirement in cover letter
+AND demo/deck; demo builds with no first-paint console errors; demo resolves
+locally and live route 200; demo link in cover letter AND deck; cohesive bespoke
+EdTech design with no em/en dashes; passing `eval-report.md` with empty/accepted
+fix list.
+
+Setup complete. Next step: intake.

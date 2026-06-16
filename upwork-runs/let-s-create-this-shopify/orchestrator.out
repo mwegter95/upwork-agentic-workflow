@@ -1,0 +1,91 @@
+SLUG: art-print-storefront
+
+# Startup brief: Art Print Storefront (Vibe / Claude Coding Tutor)
+
+Note on slugs: run artifacts for this job live in the existing run directory
+`upwork-runs/let-s-create-this-shopify/` (already created by the graph). The
+PUBLIC-FACING demo slug that the demo-builder must use everywhere it matters is
+`art-print-storefront`: the demo folder
+`../michaelwegter.com/public/demos/art-print-storefront/`, the `slug` field in
+`src/data/workSamples.js`, and the live route
+`/work-samples/art-print-storefront`. Use `art-print-storefront` for anything a
+visitor or URL sees; keep run-time intermediates in the existing run dir.
+
+## What the client actually wants
+The client is a fine-art photographer building a minimal, editorial, gallery-
+forward Shopify storefront to sell photography prints (horizontal scroll gallery,
+print product pages with size/edition variants, clean checkout). The deeper ask is
+NOT "build it for me." It is tutoring: a patient, screen-share "vibe coding" tutor
+who builds alongside them in real time using Claude, explains the why behind each
+decision, and teaches them to prompt Claude well so they can maintain and extend
+the theme themselves. Winning this is about demonstrating both real Shopify/OS 2.0
+craft AND the ability to coach a non-developer through AI-assisted development.
+
+## Recommended demo direction
+Build a working, gallery-forward art-print storefront demo that doubles as a
+teaching artifact. The single most impressive thing to show: a smooth horizontal
+scrolling gallery with drag + arrow navigation on the homepage, leading into a
+print product page with a size/edition variant selector and live price update,
+then "add to cart" into a mock cart and a mock checkout. Back it with a real
+mw-backend blueprint providing mock login (JWT, mirror the existing auth pattern)
+and a mock checkout/order endpoint, seeded with prints whose imagery comes from a
+free-to-use source (Unsplash/Pexels/Picsum or curated public-domain art). Frame
+the front end as OS 2.0 "sections and blocks" thinking even though the demo is a
+static same-origin app, so the client sees the exact architecture they will build
+in Liquid. The hero is the gallery + variant-to-cart flow; the login + mock
+checkout proves the "real backend" Michael asked for. A short, embedded "How I'd
+coach this with Claude" panel (the prompt I'd write, what to review, what to catch)
+turns the demo into proof of the tutoring value, which is the actual job.
+
+## Demo direction matches Michael's explicit notes
+- Real backend in mw-backend: add an `art_store_blueprint.py` (clone the
+  `spotify_blueprint.py` structure) with mock login + mock checkout. Do NOT touch
+  auth core, DB schema, or existing blueprints beyond registering the blueprint.
+- Login + mock checkout: required. JWT mock auth like the existing pattern; a
+  checkout endpoint that returns a fake confirmed order. No real payments.
+- Images from a free-to-use site: source prints from a free/royalty-free provider
+  and record the exact source + license in research.md so the deck can cite it.
+
+## Constraints, risks, red flags to respect
+- This is the tutor's portfolio proof, not a production Shopify theme. Lean full
+  per CLAUDE.md, but do not try to run an actual Shopify dev store. The demo is a
+  same-origin static front end + mw-backend, presented as "the architecture we'll
+  recreate in Liquid/OS 2.0."
+- US-only applicants: Michael qualifies; have the cover letter note US-based.
+- Scope creep risk: keep to 1 hero (gallery + variant-to-cart) + at most 2
+  supporting features (mock login, mock checkout). Five marketing pages are NOT
+  all required in the demo; show the hero flow well, not every page.
+- Performance + "minimal dependencies" is a stated value: prefer vanilla JS / a
+  CDN-light build so the demo itself models the "fast load" principle.
+- Voice/positioning: the proposal must foreground tutoring and communication, not
+  just delivery. Include that Michael uses Claude, Codex, and GitHub Copilot daily
+  in his full-time job and freelancing, can communicate well, and can coach the
+  client to "Claude code" the site themselves.
+
+## Quality + naming guidance for downstream
+- intake: Extract EVERY explicit requirement precisely and verbatim-ish into
+  brief.json as a checklist: all 5 required pages; all 6 key features (OS 2.0
+  sections+blocks, custom Liquid horizontal gallery, variant-based size/edition,
+  metafields for edition numbering/print details, responsive mobile, fast load /
+  minimal deps); the session-style asks (screen-share build-along, explain the
+  why, craft/iterate Claude prompts, written summaries/checklists); and the ideal-
+  candidate signals (OS 2.0 Liquid, comfort with AI tools, tutoring non-devs,
+  plain-language explanation, Shopify portfolio). Capture Michael's notes as
+  explicit requirements too: real mw-backend, mock login, mock checkout, free-use
+  images, tutor/communication framing, daily Claude/Codex/Copilot experience.
+  Flag US-only as a gating constraint.
+- planner: Choose hero = horizontal gallery + variant-to-cart; supporting = mock
+  login and mock checkout. Greenlight the mw-backend blueprint explicitly (Michael
+  asked for a real backend). Record the lean-full decision.
+- demo-builder: Use slug `art-print-storefront` for the public demo folder,
+  workSamples `slug`, and route. Add `art_store_blueprint.py` by cloning
+  `spotify_blueprint.py`; register in `server.py`; keep CORS open.
+
+---
+Summary for the operator:
+- SLUG (public demo/route): art-print-storefront (run dir stays let-s-create-this-shopify)
+- Demo direction: a gallery-forward art-print storefront with a drag/arrow
+  horizontal gallery into a size/edition variant-to-cart flow, backed by a real
+  mw-backend mock login + mock checkout, framed as the OS 2.0 architecture we'd
+  rebuild in Liquid, plus a "how I'd coach this with Claude" panel.
+- Backend greenlit: yes (mock login + mock checkout blueprint).

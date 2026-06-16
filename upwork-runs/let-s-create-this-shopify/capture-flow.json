@@ -1,0 +1,112 @@
+[
+  {
+    "action": "wait",
+    "ms": 800
+  },
+  {
+    "action": "shot",
+    "name": "gallery-hero"
+  },
+  {
+    "action": "click",
+    "selector": "#btn-next"
+  },
+  {
+    "action": "wait",
+    "ms": 600
+  },
+  {
+    "action": "shot",
+    "name": "gallery-scrolled"
+  },
+  {
+    "action": "click",
+    "selector": ".print-card"
+  },
+  {
+    "action": "wait",
+    "ms": 800
+  },
+  {
+    "action": "shot",
+    "name": "product-page"
+  },
+  {
+    "action": "click",
+    "selector": ".size-btn"
+  },
+  {
+    "action": "wait",
+    "ms": 400
+  },
+  {
+    "action": "shot",
+    "name": "product-size-selected"
+  },
+  {
+    "action": "click",
+    "selector": "#add-to-cart-btn"
+  },
+  {
+    "action": "wait",
+    "ms": 600
+  },
+  {
+    "action": "shot",
+    "name": "after-add-to-cart"
+  },
+  {
+    "action": "click",
+    "selector": ".cart-btn"
+  },
+  {
+    "action": "wait",
+    "ms": 600
+  },
+  {
+    "action": "shot",
+    "name": "cart-modal-open"
+  },
+  {
+    "action": "click",
+    "selector": "#checkout-btn"
+  },
+  {
+    "action": "wait",
+    "ms": 600
+  },
+  {
+    "action": "shot",
+    "name": "login-modal"
+  },
+  {
+    "action": "fill",
+    "selector": "#login-email",
+    "value": "collector@example.com"
+  },
+  {
+    "action": "wait",
+    "ms": 300
+  },
+  {
+    "action": "fill",
+    "selector": "#login-password",
+    "value": "password123"
+  },
+  {
+    "action": "wait",
+    "ms": 300
+  },
+  {
+    "action": "click",
+    "selector": ".login-btn"
+  },
+  {
+    "action": "wait",
+    "ms": 1000
+  },
+  {
+    "action": "shot",
+    "name": "order-confirmation"
+  }
+]

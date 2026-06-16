@@ -1,0 +1,70 @@
+INTAKE RUN SUMMARY
+posting-title: Full-Stack Developer (Python/FastAPI + React) Compliance SaaS, Large-File Parsing & Rules Engine
+client-domain: B2B SaaS - Compliance & Accounting Automation
+posted: Yesterday
+budget: EUR 4,000 (fixed-price, milestone-based across 6 milestones)
+
+POSTING STRUCTURE
+The client is well-organized and specific:
+- Domain registered, company incorporated, architecture decided
+- Consolidated technical specification + field-level parsing reference docs provided
+- Interactive HTML design prototype as binding visual reference
+- Not exploratory; looking for reliable mid-to-senior developer to build from scratch
+
+CORE SCOPE (7 features)
+1. Unified file-format detector: XML/PDF routing by document type, period, version
+2. Streaming XML parsers: lxml/iterparse memory-stable up to 500+ MB; PDF embedded XML extraction
+3. Asynchronous processing: Celery + Redis with separate heavy/light queues, job lifecycle
+4. Business rules engine: 170+ documented reconciliation rules across document types, configurable thresholds, drill-down
+5. Analytical dashboard: tables, charts, trend/anomaly analysis, server-side pagination (100k+ rows), Excel/PDF export
+6. Multi-tenant architecture: full data isolation per client account, enforced at API level
+7. Subscription billing: Stripe (trial, plans, proration, webhooks, cancellation)
+
+TECH STACK (LOCKED)
+Backend: Python (FastAPI)
+Frontend: React + TypeScript
+Database: PostgreSQL
+Queue: Celery + Redis
+Storage: AWS S3 or Azure Blob
+Auth: Supabase or Auth0 (hard requirement - behind adapter module)
+Payments: Stripe
+Hosting: AWS or Azure
+Client states: "Well-argued alternatives can be discussed at kickoff; the stack will not change mid-project."
+
+DELIVERY METHODOLOGY
+- 6 milestones with written DoD and acceptance criteria
+- Automated tests required: golden-file suites against fixtures, min 70% coverage on business logic, zero critical static analysis findings
+- Milestone 2 payment gate: live POC parsing 500+ MB XML via iterparse + memory profile before proceeding
+- Weekly status (Mondays); demo call end of each milestone (pre-agreed script)
+- EU timezone preferred
+- All code in private GitHub repo owned by client
+
+CLIENT SELECTION CRITERIA
+Looking for:
+1. Proven experience shipping SaaS web applications end-to-end
+2. Demonstrable experience processing large structured files (size + approach required)
+3. Familiarity with multi-tenant isolation and async job architectures
+4. Clean code, honest communication, reliable delivery
+5. Domain knowledge NOT required (documentation covers it)
+
+SCREENING QUESTIONS (REQUIRED FOR PROPOSAL)
+Q1: "What is the largest XML or structured file you have processed in production, and what was your approach to memory management?"
+   -> Tests: real production experience, memory-aware architecture decisions
+
+Q2: "How would you enforce tenant isolation in a FastAPI + PostgreSQL application, and at which layers?"
+   -> Tests: multi-tenant architecture understanding, security-conscious design
+
+CRITICAL NOTES
+- Client may request paid probation task (parse real XML, return structured data via REST) before full build
+- Not "figure it out as you go" - specification is consolidated, reference docs complete, visual design locked
+- This is a serious, well-scoped engagement for a mid-to-senior developer
+- Risk areas for proposal: must answer Q1 and Q2 concretely with production examples; must demonstrate large-file handling; must address tenant isolation layers explicitly
+
+BRIEF STRUCTURED
+brief.json created with all posting details, feature scope, tech stack, methodology, and screening questions structured for downstream consumption by planner, researcher, and proposal-writer agents.
+
+NEXT PHASE
+Planner will determine:
+- Demo concept (likely simulation of core features: format detection, streaming parse with memory visualization, rules engine, dashboard)
+- Which features are in live demo vs. proposal-prose-only
+- Scope boundaries within EUR 4,000 budget

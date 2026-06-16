@@ -1,0 +1,184 @@
+SLUG: healthstack-patient-portal
+
+# Startup brief: HealthStack Patient Portal (US healthcare MVP, Next.js + Supabase + Stripe)
+
+Note on slugs: run artifacts for this job live in the existing run directory
+`upwork-runs/for-this-make-sure-to/` (already created by the graph). The
+PUBLIC-FACING demo slug that the demo-builder must use everywhere it matters is
+`healthstack-patient-portal`: the demo folder
+`../michaelwegter.com/public/demos/healthstack-patient-portal/`, the `slug` field
+in `src/data/workSamples.js`, and the live route
+`/work-samples/healthstack-patient-portal`. Use `healthstack-patient-portal` for
+anything a visitor or URL sees; keep run-time intermediates in the existing run dir.
+
+## What the client actually wants
+An early-stage startup is building a US-market healthcare web app and needs a
+full-stack developer to build the first real working version "properly." The
+named stack is non-negotiable: Next.js, Supabase, Stripe, Vercel, TypeScript.
+The product surface they describe: user accounts, payments/subscriptions,
+patient + admin dashboards, role-based secure access, careful handling of
+sensitive healthcare data, and a clean simple UX. They point at
+https://sesamecare.com/ for style/flow (a consumer-friendly care marketplace:
+browse/book care, pay per visit or via membership) but stress it is a reference,
+not a clone. The deeper ask is trust and judgment: they want someone who
+understands that privacy, permissions, security, and HIPAA-aware development
+matter from day one, who gives realistic estimates, communicates well, and can
+help a non-technical founding team make sensible early architecture decisions.
+This is as much a "can I trust this person to build it right" hire as a coding
+hire.
+
+## HARD GATE: the application keyword
+The posting says: "Proposals that do not start with HEALTHSTACK may not be
+reviewed." The cover letter MUST begin with the literal word HEALTHSTACK as its
+very first token (e.g. "HEALTHSTACK -" or "HEALTHSTACK." on line one). This is a
+pass/fail filter on the client side. intake MUST capture this as an explicit
+requirement; proposal-writer MUST honor it; evaluator MUST verify the cover
+letter's first word is HEALTHSTACK before anything else. Do not bury it, do not
+paraphrase it.
+
+## Recommended demo direction (lean full)
+Build a working "HealthStack" patient portal demo that proves the exact stack and
+the exact concerns the client lists. The single most impressive thing to show:
+role-gated login (patient vs admin/clinician) leading into an appointment booking
+flow that ends in a Stripe-style checkout, with a patient dashboard and a separate
+admin dashboard that demonstrably sees different data. The flow mirrors the Sesame
+reference (find care -> pick a time -> pay) while foregrounding the security story.
+
+Hero flow (the thing media-capture records):
+  1. Log in as a patient (seeded demo account).
+  2. Browse a small set of services/providers, pick an appointment slot
+     (booking/scheduling = a stated "nice to have" and a Sesame-style core flow).
+  3. Confirm + pay via a mocked Stripe checkout (payment intent / subscription
+     style), land on a confirmation with the booking in the patient dashboard.
+  4. Show that switching to the admin account reveals an admin dashboard with the
+     booking + a different, permission-scoped data view, demonstrating role-based
+     access (this is the Supabase RLS / "secure access for different user types"
+     story made visible).
+
+Weave the HIPAA-aware framing through the UI so it reads as deliberate, not
+decorative: a visible "PHI minimized" note, an access/audit-log panel showing who
+viewed what, and a secure-file-upload affordance for a medical form (another
+stated nice-to-have). These are cheap to show and directly answer "handling
+healthcare-related user data carefully."
+
+## Demo hosting + backend (greenlit)
+Per CLAUDE.md the demo is a same-origin static app under
+`michaelwegter.com/public/demos/<slug>/`, NOT a deployed Next.js server. That is
+fine and should be stated plainly in the proposal: the live demo is a faithful
+front-end + a real mw-backend standing in for Supabase/Stripe, and the production
+build for the client would be Next.js on Vercel with Supabase Auth/Postgres/RLS
+and real Stripe webhooks. Do not try to run an actual Next.js/Supabase/Vercel
+deployment in this workflow.
+
+Backend: GREENLIT. Add a `healthstack_blueprint.py` to mw-backend by cloning the
+`spotify_blueprint.py` structure (do NOT touch auth core, the DB schema, or
+existing blueprints beyond registering the new one). It should expose:
+  - mock JWT auth with TWO seeded roles: a patient account and an admin account
+    (mirror the existing JWT pattern; this stands in for Supabase Auth + RLS).
+  - appointment/slot data + a "book" endpoint that records a booking against the
+    logged-in user.
+  - a mock Stripe payment/checkout endpoint that returns a fake confirmed
+    payment/subscription (NO real Stripe keys, NO real charges).
+  - role-scoped reads: the patient endpoint returns only that patient's data; the
+    admin endpoint returns the aggregate/admin view. Make the role separation real
+    in the API, not faked in the front end, so it genuinely demonstrates
+    server-enforced permissions (the RLS analogue).
+Seed and RECORD the demo credentials (patient + admin) so deploy-test can log in
+and so the cover letter/deck can invite the client to try both roles.
+
+## Prototype-vs-full decision
+Lean FULL. None of the three fallback triggers fire: the hero (auth ->
+book -> pay -> role-scoped dashboards) is fully buildable with mw-backend mocks
+inside budget, it fits the file/time caps, and the concept is interactive, not a
+throwaway mockup. Real Stripe charges, a real Supabase project, real Vercel
+deploy, and actual HIPAA certification are deliberately OUT of the demo and are
+addressed in proposal prose only.
+
+## Scope fences (respect the caps)
+- 1 hero: login -> book -> pay -> role-scoped patient + admin dashboards.
+- At most 2 supporting features: (1) mocked Stripe checkout/subscription, (2) the
+  admin view / role separation. Treat the audit-log panel and secure-file-upload
+  affordance as lightweight set dressing inside the hero, not as additional full
+  features. Do NOT build real Stripe, real Supabase, or a Next.js server.
+- Demo touches <= ~12 files; build timeout 3 min; reflection retries <= 2; web
+  research <= ~6 fetches.
+
+## Constraints, risks, red flags to respect
+- Named stack is the whole point. The proposal and deck must speak Next.js +
+  Supabase (Auth, Postgres, RLS, Storage) + Stripe (webhooks, subscriptions) +
+  Vercel + TypeScript fluently and concretely, and must be explicit that the live
+  demo simulates that architecture same-origin (mw-backend as the Supabase/Stripe
+  stand-in). Be honest about this so it reads as integrity, not overclaim.
+- HIPAA: client says "you don't need to be a compliance expert" but DO need
+  HIPAA-aware practices (least-privilege RLS, PHI minimization, audit logging,
+  encrypted-at-rest framing, BAA awareness for Supabase/Stripe/Vercel). Speak to
+  this with specific, practical engineering choices, not compliance buzzwords.
+- This is a trust/judgment hire for a non-technical founding team. Voice should be
+  practical, calm, senior: realistic estimates, sensible early-stage tradeoffs,
+  "here's what I'd do first and why," willingness to suggest better approaches.
+- "Do not send a generic proposal." Reference the live demo by name and link,
+  reference Sesame's flow specifically, and answer their requirements concretely.
+
+## REQUIRED application items (must ALL appear in the cover letter)
+The posting lists a "To apply" checklist; every item must be addressed:
+  1. A few examples of relevant projects + what Michael did on each.
+  2. Experience with Next.js, Stripe, Supabase, and Vercel (name each).
+  3. Any healthcare / HIPAA / privacy-related project experience.
+  4. Availability.
+  5. Hourly rate or rough project pricing.
+And the body must start with HEALTHSTACK (see HARD GATE above). intake must turn
+each of these into an explicit, checkable requirement.
+
+## Quality + naming guidance for downstream
+- intake: Extract EVERY explicit requirement into brief.json as a checklist. The
+  "what we need help with" list (Next.js build, Supabase auth/db/storage/perms,
+  Stripe payments/subscriptions/webhooks, Vercel deploy/manage, user dashboards +
+  admin views, secure access per user type, careful healthcare data handling,
+  pragmatic early-stage technical decisions, bug-fix/perf/launch readiness). The
+  "looking for" list (strong Next.js/React, Supabase auth + RLS, real Stripe incl
+  webhooks + subscriptions, TypeScript, production-ready features, good comms +
+  realistic estimates, independence, suggests better approaches). The nice-to-haves
+  (HIPAA-aware/privacy apps, appointment/scheduling, secure file upload, admin
+  dashboards, Tailwind/shadcn, MVP-to-launch, startup/small-team). The "To apply"
+  checklist (5 items above). Flag the HEALTHSTACK keyword as a gating requirement
+  and US-healthcare market as context. Capture Michael's note ("use Next.js, React,
+  and Supabase") as a confirmed stack constraint.
+- planner: hero = login -> book -> Stripe-style pay -> role-scoped patient + admin
+  dashboards; supporting = mock Stripe checkout/subscription and the admin/role
+  separation. Greenlight the mw-backend `healthstack_blueprint.py` explicitly.
+  Record lean-full. Build the requirement-to-feature traceability matrix so each
+  brief.json requirement maps to demo, deck, or cover-letter prose.
+- researcher: capture Sesame's flow (browse care -> book -> pay per visit or
+  membership) and any specifics worth referencing; confirm the Supabase RLS +
+  Stripe webhook + Vercel facts to be cited accurately; identify
+  `spotify_blueprint.py` as the exact clone target. Cap at ~6 fetches.
+- demo-builder: use slug `healthstack-patient-portal` for the public demo folder,
+  workSamples `slug`, and route. Add `healthstack_blueprint.py` by cloning
+  `spotify_blueprint.py`; register in `server.py`; keep CORS open. Seed + record
+  patient and admin demo credentials. Use the site design tokens (dark gallery
+  aesthetic) so the demo belongs to the site; a clean clinical/health accent is
+  fine within the palette. No em/en dashes anywhere in UI copy.
+- deploy / deploy-test: backend changed, so push BOTH repos; deploy-test logs in
+  as both seeded roles and verifies the patient cannot see admin data and the
+  pay/book flow completes. VERDICT pass before media-capture.
+- proposal-writer: cover letter FIRST WORD = HEALTHSTACK; answer all 5 "To apply"
+  items; embed the live demo link in cover letter AND deck; cite the role-based
+  access + HIPAA-aware choices concretely; Michael's voice; no generic filler; no
+  em/en dashes.
+- evaluator: verify the HEALTHSTACK first-word gate, the 5 application items, the
+  6 standard hard gates, and that the named stack is addressed honestly (demo
+  simulates Supabase/Stripe same-origin, production = Next.js/Vercel).
+
+---
+Summary for the operator:
+- SLUG (public demo/route): healthstack-patient-portal (run dir stays for-this-make-sure-to)
+- Demo direction: a HealthStack patient portal where a patient logs in, books an
+  appointment Sesame-style, pays via a mocked Stripe checkout, and sees a
+  role-scoped patient dashboard, while a separate admin login proves server-enforced
+  role-based access (the Supabase RLS story), with HIPAA-aware touches (audit log,
+  PHI-minimized note, secure file upload). Backed by a real mw-backend blueprint as
+  the Supabase/Stripe stand-in; production framed as Next.js + Supabase + Stripe on
+  Vercel.
+- Backend greenlit: yes (mock JWT 2-role auth + booking + mock Stripe + role-scoped reads).
+- Critical gates: cover letter MUST start with HEALTHSTACK; all 5 "To apply" items
+  answered; live demo link in cover letter + deck; no em/en dashes.

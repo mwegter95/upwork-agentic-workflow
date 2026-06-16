@@ -1,0 +1,133 @@
+{
+  "slug": "construction-company-website",
+  "clientName": "Construction Company Owner",
+  "projectTitle": "Professional Construction Company Website",
+  "postingUrl": "upwork-proposal",
+  "intakeDate": "2026-06-15",
+  "featureRichness": 10,
+  "constraints": {
+    "geographicRestriction": "U.S.-only freelancers (Michael qualifies)",
+    "pricing": "Negotiable",
+    "buildType": "full (not prototype)"
+  },
+  "clientContext": {
+    "businessType": "Construction company",
+    "services": [
+      "Home building",
+      "Excavation",
+      "Residential construction",
+      "Commercial construction"
+    ],
+    "designBrief": "Professional, premium, trustworthy appearance. Simple app scope with exceptional execution. Emphasizes polish and clean UX/UI over feature sprawl. Client metaphor: 'medium rare' (refined, confident, not overcooked/gimmicky, not raw/unfinished)."
+  },
+  "requirements": [
+    {
+      "id": 1,
+      "title": "Video-background landing page (hero)",
+      "description": "Full-viewport video background on the homepage with headline and CTA overlay. This is the signature feature, called out twice in the posting. Must be smooth, legible (text readable over video), performant, with graceful fallback for no-video browsers.",
+      "category": "hero_feature",
+      "gradingCriteria": "Video plays on page load (autoplay muted, loop, playsinline), has readable text overlay with appropriate dark gradient, poster image provided, reduced-motion fallback works"
+    },
+    {
+      "id": 2,
+      "title": "Services page with pricing",
+      "description": "Dedicated page or section showcasing the three main service lines (home building, excavation, residential/commercial construction) with transparent, clear pricing information displayed in a professional grid or card layout.",
+      "category": "supporting_feature",
+      "gradingCriteria": "All three service categories displayed; pricing is clear and transparent; layout is professional and easy to scan"
+    },
+    {
+      "id": 3,
+      "title": "Contact page",
+      "description": "Dedicated contact page with a functional contact form. Must include validation and a convincing success state (either backend submission or well-designed client-side UX).",
+      "category": "supporting_feature",
+      "gradingCriteria": "Contact form is present and functional; inputs are validated; form submission shows clear success state; form is accessible"
+    },
+    {
+      "id": 4,
+      "title": "Projects page / portfolio gallery",
+      "description": "Gallery showcasing past construction projects. Should include project images, descriptions, and project details. Can include filtering by project type (residential, commercial, excavation).",
+      "category": "supporting_feature",
+      "gradingCriteria": "Projects displayed with images and descriptions; layout is clean and professional; preferably includes lightbox or modal for project detail view"
+    },
+    {
+      "id": 5,
+      "title": "Construction industry theme and styling",
+      "description": "Bespoke design direction tailored to construction industry. Must convey trust, professionalism, craftsmanship, and weight. NOT the michaelwegter.com dark gallery-wall look. Suggested palette: deep charcoal/graphite, warm concrete grays, confident accent (safety-amber/hi-vis OR steel/blueprint blue). Industrial typography (condensed display + clean humanist sans). Generous whitespace, big confident imagery, subtle motion. Target aesthetic: 'established regional builder with a great agency site.'",
+      "category": "design_requirement",
+      "gradingCriteria": "Design is bespoke and industry-appropriate; palette is grounded and professional; typography supports premium construction-firm aesthetic; no michaelwegter.com tokens used in demo CSS"
+    },
+    {
+      "id": 6,
+      "title": "Extra-clean, professional UX/UI polish",
+      "description": "Exceptional execution on a simple concept. Clean typography, generous spacing, intuitive navigation, attention to detail in interactive states (hover, focus, active), responsive design across all breakpoints, accessibility compliance, and subtle animations. Zero template feeling.",
+      "category": "design_requirement",
+      "gradingCriteria": "No console errors on first paint; navigation is intuitive across all pages; hover/focus states are polished; responsive layout works on mobile/tablet/desktop; accessibility standards met; subtle, purposeful animations (no gimmicks)"
+    }
+  ],
+  "siteMustHaves": [
+    "Responsive design (mobile, tablet, desktop)",
+    "Sticky or persistent navigation header",
+    "Footer with company info / links",
+    "Clear visual hierarchy",
+    "Professional imagery (royalty-free construction/project photos)",
+    "No em-dashes or en-dashes in any copy",
+    "Multi-page site feel (whether via routing or anchored sections)"
+  ],
+  "featureRichness10Expectations": {
+    "description": "Build a full, genuinely feature-rich marketing site at production quality. Not minimal, not prototype.",
+    "expectedScope": [
+      "Hero video with animated CTA and gradient overlay",
+      "Services grid with pricing cards/tiers (clearly differentiated)",
+      "Filterable projects gallery with lightbox/modal detail view",
+      "Functional contact form with validation and success state",
+      "Testimonials or social proof section (quotes/stats counters)",
+      "Responsive navigation with mobile hamburger menu",
+      "Smooth scroll and subtle micro-interactions",
+      "Accessibility pass (WCAG 2.1 AA target)",
+      "Reduced-motion support for animations"
+    ]
+  },
+  "deliverables": {
+    "demo": "Self-contained static app at `../michaelwegter.com/public/demos/construction-company-website/`; served live at `https://michaelwegter.com/demos/construction-company-website/`",
+    "workSampleRegistry": "Entry added to `workSamples.js` with slug, title, description, category ('Creative' or 'Productivity'), status 'live', href, color (bespoke palette), icon (emoji), frameStyle ('baroque' or 'walnut')",
+    "proposal": "Cover letter + HTML one-pager + PPTX deck in Michael's voice, styled to demo's construction aesthetic (NOT michaelwegter.com look). All three must reference the live demo by name and link. No em/en dashes."
+  },
+  "hardGates": [
+    "Every explicit requirement (video, services/pricing, contact, projects, construction theme, professional polish) is addressed in the demo and/or proposal",
+    "Demo builds and loads with no console errors on first paint",
+    "Demo URL resolves locally and live `/work-samples/construction-company-website` returns 200 after deploy",
+    "Demo link appears in both cover letter and deck",
+    "Demo, one-pager, and deck use cohesive, bespoke design fit for construction industry; NOT michaelwegter.com's look; no em/en dashes",
+    "eval-report.md exists with passing score and empty/accepted fix list"
+  ],
+  "designGuidance": {
+    "DO": [
+      "Use a grounded, professional palette (charcoal, concrete grays, confident accent)",
+      "Choose industrial/premium typography (Archivo, Oswald, Anton as display; Inter, Source Sans as body)",
+      "Build generous whitespace and confident imagery",
+      "Implement subtle motion (reduced-motion safe)",
+      "Target: established regional builder's agency site",
+      "Hero video must be smooth and legible with proper overlay"
+    ],
+    "DONT": [
+      "Use michaelwegter.com's dark gallery theme or mustard/cyan palette",
+      "Use michaelwegter.com's Space Grotesk / Inter / JetBrains Mono stack in the demo",
+      "Add gimmicky animations or over-polish",
+      "Leave template feeling (must feel bespoke and premium)",
+      "Use em-dashes or en-dashes anywhere"
+    ]
+  },
+  "tokenBudgetRules": {
+    "intermediates": "Write to `upwork-runs/construction-company-website/`; pass file paths between phases",
+    "reads": "Use Grep/Glob then targeted Read with offsets; never cat whole files",
+    "reuse": "Clone AppFrame pattern for route; demo is self-contained static app (no bundler unless scope requires it)",
+    "demoScope": "Demo touches ~12 files max",
+    "buildTimeout": "3 minutes max",
+    "reflectionRetries": "Capped at 2 per node",
+    "webResearch": "~6 fetches max"
+  },
+  "successCriteria": {
+    "primary": "Demo looks like a premium, trustworthy construction firm's real agency website. Video hero is smooth and legible. All four pages work flawlessly. Every requirement from the posting is visible and functional.",
+    "secondary": "Proposal letter and deck are in Michael's voice, styled to the demo's construction palette, and explicitly address all client requirements with reference to the live demo."
+  }
+}

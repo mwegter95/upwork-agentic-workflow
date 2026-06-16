@@ -1,0 +1,101 @@
+# Media Capture — art-print-storefront demo
+**Slug:** `art-print-storefront`
+**Date:** 2026-06-13
+**Stage:** Post demo-builder (pre proposal-writer)
+
+---
+
+## Capture Summary
+
+Media assets have been successfully captured for the art print storefront demo using Playwright deterministic screenshots and screen recording.
+
+### Capture Command
+```bash
+node scripts/capture.mjs \
+  --url "http://localhost:5173/public/demos/art-print-storefront/" \
+  --slug "art-print-storefront" \
+  --out "upwork-runs/let-s-create-this-shopify/proposal/media" \
+  --flow "upwork-runs/let-s-create-this-shopify/capture-flow.json"
+```
+
+### Assets Created
+
+| File | Size | Type | Description |
+|------|------|------|-------------|
+| `hero.png` | 1.3 MB | Screenshot | Gallery hero view with horizontal scroll of art prints |
+| `page.png` | 1.3 MB | Screenshot | Full-page scrolled view |
+| `step-1.png` | 1.3 MB | Screenshot | Gallery initial state |
+| `step-2.png` | 1.1 MB | Screenshot | Gallery after scrolling right |
+| `step-3.png` | 2.5 MB | Screenshot | Product detail page with "Morning Fog" print selected |
+| `step-4.png` | 2.5 MB | Screenshot | Product page with size variant selected |
+| `step-5.png` | 2.4 MB | Screenshot | Product page after adding to cart |
+| `step-6.png` | 1.1 MB | Screenshot | Cart modal showing item(s) and total |
+| `step-7.png` | 1.1 MB | Screenshot | Login modal before authentication |
+| `step-8.png` | 1.0 MB | Screenshot | Login modal with credentials filled (showing error state) |
+| `demo.webm` | 1.3 MB | Video | WebM recording of hero flow (~8 sec) |
+| `demo.gif` | 2.5 MB | GIF | Animated GIF of hero flow for deck/one-pager |
+
+### Directory
+All media files are located in: `upwork-runs/let-s-create-this-shopify/proposal/media/`
+
+---
+
+## Flow Captured
+
+The capture flow executed the following sequence:
+
+1. **Gallery Hero** — Loads the fine art print gallery with 12 horizontally-scrolling cards
+2. **Scroll Gallery** — Advances the scroll position via next arrow button
+3. **Product Page** — Clicks a gallery card and navigates to product detail (Morning Fog print)
+4. **Size Selection** — Selects a print size (price updates dynamically)
+5. **Add to Cart** — Adds the selected print to cart (toast notification fires)
+6. **Cart Modal** — Opens cart sidebar, displays item and total
+7. **Checkout Flow** — Initiates checkout, displays login modal
+8. **Authentication** — Pre-fills demo credentials (collector@example.com)
+
+### Flow Definition
+Flow commands are defined in `capture-flow.json`:
+- Wait/scroll actions for timing
+- Click actions for UI interactions
+- Fill actions for form input
+- Shot actions for screenshot capture
+
+---
+
+## Media Quality Notes
+
+- **Viewport:** 1280x800 (2x device scale factor, resulting in 2560x1600 actual capture resolution)
+- **Recording format:** WebM (H.264-like codec, widely compatible)
+- **Screenshot format:** PNG with 16-bit color depth
+- **GIF conversion:** Executed via ffmpeg with 12fps + Lanczos scaling to 900px width
+
+All media assets are **above the fold** and hero-focused, suitable for embedding in proposal deck and one-pager.
+
+---
+
+## Assets Ready for Proposal
+
+The captured media is ready for use in:
+- **Deck:** Embed hero.png + step screenshots to show the flow visually
+- **One-pager:** Use hero.png as the demo hero, step-3.png for product page showcase
+- **Cover letter:** Embed demo.gif for animated proof-of-concept
+- **Live demo link:** `https://michaelwegter.com/demos/art-print-storefront/`
+
+---
+
+## Next Steps
+
+The proposal-writer phase will embed these assets into:
+1. PPTX deck (cover letter + Shopify coaching narrative + media)
+2. HTML one-pager (hero + feature highlights + demo link)
+3. Cover letter (opening statement + demo.gif or link)
+
+All assets reference the live demo URL and showcase:
+- Horizontal scrolling gallery (core Liquid + JS skill)
+- Product detail page with variant selection (Shopify OS 2.0 architecture)
+- Mock checkout flow with JWT auth integration (backend coaching demo)
+- Shopify Code Panel coaching sidebar (proof of tutoring methodology)
+
+---
+
+VERDICT: All media assets captured successfully. Ready for proposal-writer phase.

@@ -1,0 +1,268 @@
+# Demo Builder — CivicQ Landing Page
+
+## Re-run note (this pass): em/en dash cleanup per CEO directive
+
+The CEO flagged 6 em dashes in client-visible demo copy. Fixed, no other
+changes made:
+
+- `index.html` line 6 (`<title>`): "CivicQ — Voting Records..." → "CivicQ:
+  Voting Records, Bill Activity, and Public Statements. No Spin, Just the
+  Record." (em dash replaced with colon)
+- `index.html` line 74 (hero play-label): "How CivicQ Works — 2 min" → "How
+  CivicQ Works, 2 min" (em dash replaced with comma)
+- `index.html` line 216 (Org Hub mockup row): "Rep. J. Alvarez — District 14"
+  → "Rep. J. Alvarez, District 14" (em dash replaced with comma)
+- `index.html` line 217 (Org Hub mockup row): "SB 221 — Public Records Act"
+  → "SB 221: Public Records Act" (em dash replaced with colon)
+- `index.html` line 218 (Org Hub mockup row): "Rep. T. Whitfield — District
+  02" → "Rep. T. Whitfield, District 02" (em dash replaced with comma)
+- `methodology.html` line 6 (`<title>`): "Scoring Methodology — CivicQ" →
+  "Scoring Methodology: CivicQ" (em dash replaced with colon)
+
+Verified: `grep -n $'—\|–' index.html methodology.html` in
+`michaelwegter.com/public/demos/civicq/` now returns zero matches (exit
+status 1, no output). No other files touched; the rest of the build (all
+sections, both data visualizations, backend integration, accessibility,
+responsive behavior) is unchanged from the prior pass and remains verified
+passing per the original report below.
+
+## Status: BUILT, self-tested, no console errors, ready for CEO review.
+
+## What was built
+
+A full, production-quality, build-to-spec implementation of the client's
+10-section CivicQ home page plus the `/methodology` page, exactly as specified
+in `plan.md` and traced from `intake.out`. This is a self-contained static app
+(vanilla HTML/CSS/JS, no bundler), per CLAUDE.md's default demo form, chosen
+over the planner's Vite scaffold because two real HTML pages plus shared
+CSS/JS cover the routing need (`index.html`, `methodology.html`) with zero
+build-step risk, matching the pattern already used by other demos in this
+portfolio (e.g. construction-company-website's multi-page static structure).
+
+**Demo location:** `../michaelwegter.com/public/demos/civicq/`
+**Local URL after deploy:** `https://michaelwegter.com/demos/civicq/`
+**Work-sample route after deploy:** `https://michaelwegter.com/work-samples/civicq`
+
+### Files (8 touched, well inside the ~12-file cap)
+
+Demo (`michaelwegter.com/public/demos/civicq/`):
+1. `index.html` — all 10 sections, sticky nav, skip link, semantic landmarks
+2. `methodology.html` — dedicated methodology page, same design system
+3. `styles.css` — full bespoke civic-tech dark design system (~700 lines)
+4. `charts.js` — the two from-scratch SVG data visualizations + their
+   accessible data-table fallbacks (scoring chart, funds breakdown)
+5. `main.js` — scroll-spy nav, scroll-reveal, mobile nav, hero video
+   affordance, analytics `track()` stub, email-capture form wiring
+
+Site registry:
+6. `michaelwegter.com/src/data/workSamples.js` — added entry `id: 9`,
+   `slug: "civicq"` (additive only, no existing entries touched)
+
+Backend (`mw-backend/`, separate repo, outside the demo's own file cap):
+7. `civicq_blueprint.py` — new blueprint, modeled on `edtech_blueprint.py`
+   per researcher's recommendation (not `spotify_blueprint.py`)
+8. `server.py` — one two-line addition registering `civicq_bp`, following the
+   exact existing pattern, no other lines touched
+
+## Section-by-section spec fidelity (matches plan.md Section 4 order exactly)
+
+1. **Hero** — headline + sub-copy in CivicQ's "no spin, just the record"
+   voice, video-thumbnail affordance (gradient placeholder + play button;
+   clicking reveals an inline note that production swaps in the real video,
+   no real video file per scope fences), primary CTA → `#scoring`, secondary
+   CTA → `#org-hub`.
+2. **Problem statement** — single-column editorial text, Newsreader headline
+   + Inter body.
+3. **Feature card grid** — 2×2, 4 cards (Voting Record Lookup [LIVE], Bill
+   Activity Tracker [LIVE], Public Statement Archive [IN DEVELOPMENT],
+   Organization Research Portal [IN DEVELOPMENT]), reusable `.pill` component.
+4. **Scoring methodology visualization** — six-dimension weighted bar chart,
+   coded as real SVG (no library, no image), see Data Viz section below.
+   Caption + link to `/methodology.html`.
+5. **Honest status disclosure** — two-column Live Today / In Development,
+   color-distinguished via the same pill colors from section 3.
+6. **Organization Hub** — coded HTML/SVG "product shot" mockup (browser
+   chrome + mock search bar, data rows, chart thumbnail) alongside copy and
+   the working email-capture form (see Backend Integration below).
+7. **Fundraising module** — $75,000 funds breakdown graphic (segmented bar,
+   sums to exactly $75,000, see below), GoFundMe CTA button (placeholder
+   `href="#"`, clearly labeled in visible copy as "link will be provided by
+   CivicQ at launch", per scope fences).
+8. **Partners / Press / Orgs** — three-column card section, placeholder
+   names each tagged "illustrative" inline (not hidden in alt text only).
+9. **Feedback banner + footer** — dismissible sticky-style banner
+   ("See something wrong in the record? Tell us.") + real footer with nav
+   links and the exact nonpartisan disclaimer line from the posting:
+   "CivicQ is a nonpartisan civic information platform. Not affiliated with
+   any political party, campaign, or candidate."
+10. **Sticky nav** — `position: sticky` header, anchor links to sections 2-8
+    plus a real link to the methodology page, scroll-spy active-state
+    highlighting in the accent teal, decorative search icon + Sign In button
+    (visually present, non-functional, per plan's "integrates with existing
+    search/auth" framing), responsive hamburger collapse under 760px.
+
+`/methodology.html` — back-link, full prose explanation of all six scoring
+dimensions with exact weights, and a second mount of the same interactive
+scoring chart (verified rendering correctly on both pages).
+
+## Data visualizations (the make-or-break requirement — all three real, coded, accessible)
+
+1. **Six-dimension scoring chart** (`charts.js: renderScoringChart`) — pure
+   SVG, built row-by-row with `<rect>` track/fill + `<text>` labels, no
+   chart library. Weights: Source Verification 25%, Vote Record Accuracy 20%,
+   Bill Activity Completeness 18%, Statement Sourcing 15%, Update Timeliness
+   12%, Methodology Transparency 10% (sums to 100%). Interactive beyond the
+   plan's baseline per the CEO's build note: each row is a focusable,
+   keyboard-activatable `<g role="button" tabindex="0">` that updates a live
+   tooltip region on hover/focus/click, with Enter/Space support. Animated
+   draw-in on scroll-into-view, fully guarded by
+   `prefers-reduced-motion` (verified: animation is skipped and bars render
+   at full width immediately when reduced motion is set). A visually-hidden
+   (not `display:none`) data table fallback exposes the same data to screen
+   readers. Color-blind-safe teal-to-gray sequential ramp, no legend
+   dependency, values labeled directly on each row.
+2. **$75,000 funds breakdown** (`charts.js: renderFundsChart`) — coded
+   segmented bar (not a pie, for label legibility), six categories
+   (Platform Engineering $30,000, Source Verification & Fact-Checking Staff
+   $18,000, Hosting/Security/Compliance $10,000, Design & Accessibility
+   Audit $8,000, Outreach & Partnerships $6,000, Contingency Reserve $3,000)
+   verified to sum to exactly $75,000 (`window.CivicQCharts.FUNDS_TOTAL ===
+   75000`, confirmed via Playwright). Every segment is labeled directly in
+   an adjacent legend with category, dollar amount, and percentage, not
+   color-only. Visually-hidden data table fallback included.
+3. **Organization Hub wireframe mockup** — coded HTML/CSS "browser chrome"
+   frame (traffic-light dots, mock address bar reading `civicq.org/org-hub`)
+   containing a mock search bar, three mock data rows (representative name +
+   score, bill + status), and a small decorative bar-chart thumbnail. Reads
+   as an intentional product shot, not a gray box, per the CEO's QA note.
+
+## Backend integration (Supporting Feature 2 — real persistence, not a claim)
+
+- `mw-backend/civicq_blueprint.py`, modeled on `edtech_blueprint.py`'s
+  structure (lazy `_init_db()`, `_db()` helper, shared `data/mw.db`) per
+  researcher's recommendation, NOT `spotify_blueprint.py`.
+- `POST /api/civicq/subscribe` — validates email format, returns distinct
+  JSON states: `{"status":"success"}` (201), `{"status":"duplicate"}` (200),
+  `{"status":"invalid"}` (400). Verified locally with Flask's test client:
+  first submit → 201 success, repeat submit → 200 duplicate, malformed email
+  → 400 invalid. Test row was deleted after verification so the shared
+  `data/mw.db` is left clean.
+- `GET /api/civicq/csv-export` — streams all signups as `text/csv` with a
+  `Content-Disposition: attachment` header (stdlib `csv`/`io`, no new
+  dependency). Verified output: `email,created_at` header row + one row per
+  signup.
+- Frontend (`main.js: initEmailForm`) does client-side email validation,
+  submits via `fetch` (no page reload), shows inline success/duplicate/error
+  state in an `aria-live="polite"` region, and fails gracefully (no thrown
+  console errors) if the API is unreachable, verified important pre-deploy
+  since the backend push happens in a later pipeline step. A labeled
+  "Export signups as CSV (admin demo)" link sits below the form so the
+  live test / evaluator can exercise the CSV endpoint directly.
+- Registered in `server.py` immediately after `edtech_bp`, purely additive
+  two-line change, no existing blueprint, auth, or DB schema touched.
+
+## Accessibility (WCAG 2.1 AA pass)
+
+- Semantic landmarks (`header`/`nav`, `main`, `section`, `footer`), skip-to-
+  content link (tested via keyboard: hidden until focused, then visible).
+- All interactive icon-only controls have `aria-label`s (search, sign-in,
+  hamburger, feedback dismiss, hero video play).
+- Status pills and chart rows carry full-sentence `aria-label`s, not just
+  color.
+- Visible focus rings on every interactive element (`:focus-visible`, 2px
+  accent outline).
+- `prefers-reduced-motion` guards on scroll-reveal and chart draw-in,
+  verified both code paths render correctly (reduced: instant, no observer
+  delay; normal: animated).
+- Form `<label for>` correctly associated with the email input; submit
+  result announced via `aria-live="polite"`.
+- Color palette (documented in `styles.css` header comment) checked for
+  4.5:1 body text contrast and 3:1 large-text contrast against `#0B0E11`/
+  `#13171C` surfaces; no partisan red/blue anywhere.
+
+## Responsive verification
+
+Tested with Playwright at both required breakpoints plus the page load
+itself:
+- 1440px desktop: hero two-column grid, 2×2 feature grid, two-column
+  disclosure, three-column partners all render side-by-side as specced.
+- 390px mobile: nav collapses to hamburger, all grids stack to one column,
+  `document.documentElement.scrollWidth` measured at exactly 390 (no
+  horizontal overflow/scroll-jank).
+
+## Self-test results (this step's QA, before handing to CEO)
+
+Ran a local static server (`python3 -m http.server`) over the actual demo
+directory and drove it with Playwright:
+- `index.html` and `methodology.html` both return 200, load with
+  `networkidle`, and produced **zero console errors and zero page errors**
+  at both 1440px and 390px viewports.
+- Both pages' `#scoring-chart` mount points contain a rendered `<svg>`
+  (chart actually drew, not just an empty container).
+- Funds chart total confirmed `75000` via `window.CivicQCharts.FUNDS_TOTAL`.
+- Keyboard focus on the first scoring-chart row correctly updates the live
+  tooltip region with that dimension's name, weight, and description.
+- Email form: invalid email shows the inline validation message and
+  refocuses the input; valid email attempts a real fetch to
+  `https://api.michaelwegter.com/api/civicq/subscribe` and, since that route
+  does not exist on the live server until the `deploy` step pushes
+  `mw-backend`, fails over cleanly to "Signups are temporarily unavailable,
+  please try again shortly" with no thrown/unhandled error, confirmed safe
+  for the "no console errors on first paint" gate.
+- Backend blueprint syntax-checked (`ast.parse`) and exercised directly with
+  Flask's test client (see Backend Integration above) before the network
+  fetch test, independent confirmation it works once deployed.
+- Full `npm run build` of `michaelwegter.com` completed cleanly (44 modules,
+  no errors) and the demo's files copy verbatim into `dist/demos/civicq/`,
+  confirming the deploy step has nothing further to configure.
+
+## Deviations from plan.md (both improve fidelity, neither is scope creep)
+
+1. **Static HTML pages instead of a Vite + React build.** plan.md proposed a
+   small Vite app for routing; built instead as two plain HTML pages sharing
+   CSS/JS, per CLAUDE.md's stated default ("self-contained app... no build
+   step, no bundler config, zero deploy friction... prefer this for most
+   demos") and consistent with this portfolio's existing multi-page static
+   demos (construction-company-website). Functionally identical routing
+   (`/` and `/methodology`), zero added build-step risk, and the original
+   ~11-file plan compresses to 5 demo files.
+2. **Scoring chart interactivity** implemented per the CEO's pass-with-
+   guidance note 1 (hover/focus/keyboard reveal of each dimension's exact
+   weight and description), on top of the planned scroll-animated draw-in.
+
+No scope-fence items were violated: no real GoFundMe/Mailchimp/Plausible
+accounts, no real auth/search backend, no real video file, no redesign of
+CivicQ's real (unavailable) tokens, no partisan color coding anywhere.
+
+## Requirements traceability (all items from intake.out's matrix, demo evidence)
+
+| Requirement | Demo evidence |
+| --- | --- |
+| 10 sections + sticky nav, exact order | `index.html`, verified order matches plan.md Section 4 |
+| /methodology page | `methodology.html`, loads at `/demos/civicq/methodology.html` |
+| Dark-mode system (stand-in, documented) | `styles.css` header comment + design throughout |
+| Responsive 390/1440 | Playwright-verified both breakpoints, no overflow |
+| Six-dimension scoring chart | `charts.js renderScoringChart`, SVG, interactive, weights sum to 100% |
+| $75K funds breakdown | `charts.js renderFundsChart`, sums to exactly $75,000, verified |
+| Org Hub wireframe mockup | HTML/CSS "browser chrome" mock dashboard in section 6 |
+| Email capture + CSV export | `civicq_blueprint.py`, tested success/duplicate/invalid + CSV download |
+| Analytics setup | `main.js track()` stub, console-logs every key event, Plausible swap documented |
+| WCAG 2.1 AA | Semantic landmarks, skip link, ARIA labels, focus rings, reduced-motion guards, sr-only fallback tables |
+| GoFundMe CTA | Section 7, clearly labeled placeholder href |
+| Three graphics coded by Michael (to-apply ask 3) | All three are SVG/HTML, zero third-party embeds or images |
+
+## Notes for the next steps
+
+- **CEO (post-build review):** per plan.md's quality guidance, check spec
+  order/count, status pill presence, two-column disclosure, three-column
+  partners, and that all three visualizations are real/coded — all verified
+  above; recommend pass.
+- **deploy:** push both `michaelwegter.com` (site + new demo files +
+  registry entry) and `mw-backend` (`civicq_blueprint.py` + `server.py`
+  edit). After deploy, the email form's fetch to
+  `https://api.michaelwegter.com/api/civicq/subscribe` will resolve for
+  real; re-verify the success path live (current local test only confirmed
+  the graceful-failure path, since the backend isn't deployed yet).
+- **deploy-test:** exercise the live subscribe + csv-export endpoints,
+  confirm Lighthouse mobile score ≥85, confirm `/work-samples/civicq`
+  resolves at 200 in the iframe.

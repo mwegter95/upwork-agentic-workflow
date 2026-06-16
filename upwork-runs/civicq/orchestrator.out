@@ -1,0 +1,193 @@
+# Orchestrator — Run Setup
+
+## Project identity
+- **slug:** `civicq`
+- **run dir:** `upwork-runs/civicq/`
+- **demo path (local):** `../michaelwegter.com/public/demos/civicq/`
+- **demo URL (live):** `https://michaelwegter.com/demos/civicq/`
+- **work-sample route:** `/work-samples/civicq`
+- **target feature richness:** 10 / 10 (full-featured, production-quality, the
+  complete landing page built to spec with all three custom data visualizations
+  working)
+
+## What the client actually wants (startup brief)
+CivicQ is a **nonpartisan civic information platform** (voting records, bill
+activity, public statements pulled from official sources, "no spin, just the
+record"). They need an **expert US-based front-end developer** to build the
+**public-facing home page at civicq.org**, extending an existing staging
+dark-mode design system (not redesigning it). All copy is final and provided in
+a structured drop-in document; the dev is **building to spec**, not authoring
+content or design.
+
+The deliverable is a **10-section landing page with sticky navigation**, plus one
+additional page (`civicq.org/methodology`):
+
+1. Hero with video thumbnail + primary/secondary CTAs
+2. Problem statement (single-column text)
+3. Feature card grid (2×2, with LIVE / IN DEVELOPMENT status pills)
+4. Scoring methodology with a custom data viz (6-dimension weighted chart)
+5. Honest status disclosure (two-column: live vs. in-development)
+6. Organization Hub section with wireframe mockup + email capture
+7. Fundraising module with funds-breakdown graphic + GoFundMe CTA
+8. Partners / Press / Orgs (three-column card section)
+9. Feedback banner + footer
+10. Sticky nav with anchor links + existing search/auth
+
+### Hard requirements (the grading checklist)
+- React or **Next.js** (stack listed: React, Next.js, JavaScript, Tailwind CSS)
+- **Dark-mode design system matched precisely**, not redesigned
+- **Fully responsive: 390px mobile / 1440px desktop**
+- **Lighthouse 85+ on mobile**
+- **Three custom data visualizations** (coded SVG or Recharts/D3):
+  1. Six-dimension scoring chart (weighted bar or donut)
+  2. $75K funds-breakdown graphic
+  3. Organization Hub wireframe mockup
+- **Email capture form** (Mailchimp/ConvertKit) **with CSV backup**
+- **Analytics install** (Plausible or Fathom preferred)
+- **WCAG 2.1 AA accessibility**
+- The extra **/methodology page** (content provided)
+
+### To-apply asks (the proposal must answer all four)
+1. Portfolio (link the live demo + /work-samples/civicq)
+2. Timeline estimate (their window is 2–4 weeks; give a concrete milestone plan)
+3. **Approach to the three custom graphics** — say plainly that Michael builds
+   them himself in code (no designer assets needed). The demo PROVES this by
+   shipping all three as real coded visualizations.
+4. Fixed price bid (their range is $3,500–$5,000; milestone payments welcome)
+
+### Reading between the lines
+- This is the rare posting where the demo IS the deliverable category. The single
+  most persuasive move is to **build the actual landing page they describe** —
+  all 10 sections, sticky nav, both pages, all three data viz, working email
+  capture — so the proposal can say "here is your home page, already built and
+  live, click it." That beats any amount of prose.
+- "Matched precisely, not redesigned" + "all copy is final" means the client
+  fears a freelancer who will go rogue on brand or rewrite their words. The demo
+  and proposal should signal **discipline and spec-fidelity**: a restrained,
+  professional civic-tech dark theme, placeholder copy that reads like real
+  CivicQ copy (nonpartisan, factual, "just the record" tone), and visible respect
+  for the "build to spec" framing.
+- **Nonpartisan is the brand's whole identity.** Every word and visual must read
+  as neutral, institutional, trustworthy. No red/blue partisan coding, no
+  editorializing. Think official-record, data-forward, calm authority.
+- "LIVE / IN DEVELOPMENT status pills" and the "honest status disclosure"
+  section signal a brand that prides itself on **radical transparency about what
+  works today vs. what's coming**. Honor that in the demo copy.
+- **Hard launch dependency on a GoFundMe campaign** — the fundraising module and
+  its $75K breakdown graphic are not decoration; they are launch-blocking. Treat
+  that data viz and the GoFundMe CTA as first-class.
+- US-based requirement: Michael qualifies (note it in the cover letter; do not
+  belabor it).
+
+## Plan of attack (phase ordering)
+Recommended graph. Email capture with CSV backup is a real backend opportunity,
+so a backend + live test add credibility, and richness is maxed — use
+`with-deploy` + `with-ceo`:
+
+`intake -> planner -> ceo -> researcher -> demo-builder -> deploy -> deploy-test -> media-capture -> proposal-writer -> evaluator`
+
+Pair the CEO after planner (and again after demo-builder if the layout allows) to
+keep ambition aligned with the 10/10 target and spec fidelity.
+
+### Guidance per downstream phase
+- **intake:** Capture every explicit requirement as a checklist item: the 10
+  sections, the /methodology page, React/Next, precise dark-mode match, responsive
+  390/1440, Lighthouse 85+ mobile, the **three** named data viz, email capture +
+  CSV backup, analytics, WCAG 2.1 AA. Also capture the four to-apply asks
+  (portfolio, timeline, graphics approach, fixed bid). Flag that brand assets are
+  "provided" in real life but unavailable to us — the demo must invent a faithful
+  stand-in dark civic-tech design system and note that production matches CivicQ's
+  actual tokens.
+- **planner:** This is a **full build, not a prototype** (richness 10). Hero
+  feature = the complete 10-section landing page with **sticky anchor nav** and
+  smooth scroll. The **three custom data visualizations are the centerpiece** and
+  must be real, coded, and animated/interactive where sensible (the six-dimension
+  weighted scoring chart, the $75K funds-breakdown graphic, the Org Hub wireframe
+  mockup). Supporting features (within caps): (a) **working email capture** wired
+  to **mw-backend** with a real persisted list + a CSV-export/backup endpoint
+  (this directly proves the "Mailchimp/ConvertKit + CSV backup" requirement far
+  better than a dead form), and (b) the **/methodology second page** + LIVE/IN-DEV
+  status pills and the honest live-vs-in-dev disclosure. Add a lightweight
+  privacy-respecting analytics stub (Plausible-style event hooks) to satisfy the
+  analytics line. Define a **bespoke civic-tech dark design system** (neutral,
+  institutional, data-forward — slate/ink backgrounds, a restrained accent or
+  two, high-contrast legible type, NOT michaelwegter.com's mustard/cyan gallery
+  theme). Produce the requirement→feature traceability matrix; every one of the
+  10 sections plus both pages must trace to demo output.
+- **researcher:** Pull conventions from real civic-data / govtech platforms
+  (GovTrack, OpenSecrets, Ballotpedia, ProPublica, Vote Smart, Plural/LegiScan)
+  and modern nonprofit dark-mode landing pages: neutral institutional palettes,
+  data-viz idioms for scoring/weights and budget breakdowns, transparency-forward
+  copy patterns. Confirm the **demo form** (self-contained static app is likely
+  ideal here; a small Vite/React build is fine if the data viz warrants it — note
+  base path `/demos/civicq/`). Identify the exact backend scaffold to clone:
+  `spotify_blueprint.py` for the email-capture blueprint. Cap at ~6 fetches.
+- **demo-builder:** Build into the demo path above. Ship **all 10 sections + the
+  /methodology page**, sticky anchor nav with active-section highlighting, all
+  **three coded data visualizations**, and a **working email capture** form. If
+  backend greenlit, add ONE blueprint (`civicq_blueprint.py`: POST subscribe +
+  GET csv-export), register in `server.py`, keep CORS open, don't touch
+  auth/DB/other blueprints beyond what's needed. Responsive at 390 and 1440;
+  semantic HTML, focus states, alt text, ARIA, and color contrast for **WCAG 2.1
+  AA**; keep it lean for **Lighthouse 85+ mobile**. Self-test: build + load with
+  no first-paint console errors.
+- **deploy / deploy-test:** Push both repos if the blueprint was added. Playwright
+  the live site: scroll through all 10 sections, click each sticky-nav anchor,
+  verify the three data viz render, submit the email form and confirm it persists
+  (and that CSV export returns rows), load /methodology. Emit VERDICT.
+- **media-capture:** Hero flow = a top-to-bottom scroll of the finished landing
+  page hitting the three data visualizations, plus a successful email-capture
+  submission. Capture both mobile (390) and desktop (1440) framings if feasible.
+- **proposal-writer:** Tailor deck + one-pager to the civic-tech / nonprofit
+  audience using the demo's design language (neutral, institutional, factual).
+  Answer all **four** to-apply asks explicitly: portfolio (the live demo link),
+  timeline (concrete milestones inside their 2–4 week window, noting the GoFundMe
+  hard-launch dependency), **graphics approach** (Michael codes all three himself,
+  no designer assets needed — point at the live ones), and a **fixed price bid**
+  inside $3,500–$5,000 with milestone structure. Embed the live demo link in BOTH
+  the cover letter AND the deck. Map each of the 10 sections + both pages +
+  every key requirement to what the demo shows. Note US-based.
+- **evaluator:** Enforce the hard gates; confirm all 10 sections, both pages, all
+  three data viz, email capture, accessibility, and the four to-apply answers are
+  present and traceable.
+
+## Quality guidance / risks to watch
+- **Spec fidelity is the whole pitch.** The client explicitly fears a dev who
+  redesigns or rewrites. Build exactly the 10 sections they listed, in order, with
+  their structure (status pills, two-column disclosures, three-column cards). The
+  demo should look like *their* product, not a Michael-flavored reinterpretation.
+- **The three data visualizations are make-or-break** and the proposal must speak
+  to them directly. Build all three as real, coded, accessible SVG/Recharts
+  visuals — the six-dimension weighted scoring chart should clearly show the
+  weights, the $75K breakdown should sum to $75K and read at a glance, and the Org
+  Hub wireframe should look like an intentional product mockup, not a gray box.
+- **Nonpartisan neutrality** in every pixel and word. No partisan color coding, no
+  loaded language. Calm, official, data-first. This is itself a design constraint.
+- **Email capture must actually work** at richness 10. Prefer mw-backend so a
+  submitted email persists and a CSV export returns it — that proves the
+  "Mailchimp/ConvertKit + CSV backup" requirement instead of just claiming it.
+- **Accessibility + performance are graded requirements**, not nice-to-haves:
+  WCAG 2.1 AA (contrast, focus, semantics, ARIA, reduced-motion respect) and a
+  lean enough build to clear Lighthouse 85+ on mobile. Don't over-animate.
+- **Brand-assets honesty.** CivicQ's real tokens/logo/staging are provided to the
+  hired dev but unavailable to us. The demo uses a faithful stand-in dark
+  civic-tech system; the proposal should state plainly that production matches
+  CivicQ's actual design system and copy doc precisely. Never imply we have their
+  real assets.
+- **Writing rules:** no em/en dashes anywhere; Michael's voice; concrete, not
+  generic; reference the live demo by name and link. Cohesive bespoke design
+  across demo + one-pager + deck (civic-tech dark, not the portfolio look).
+- **Budget:** 1 hero + ≤2 supporting features, ≤~12 files touched in the demo,
+  3-min build timeout, ≤~6 research fetches, reflection retries ≤2. Disk is
+  memory — pass file paths between phases, not contents.
+
+## Definition of done (carry forward)
+All 6 hard gates in CLAUDE.md must hold: every brief requirement (all 10
+sections, both pages, three data viz, email capture + CSV, analytics, responsive,
+WCAG 2.1 AA, Lighthouse 85+) addressed in the cover letter AND represented in the
+demo/deck; demo builds with no first-paint console errors; demo resolves locally
+and the live `/work-samples/civicq` route returns 200; demo link in cover letter
+AND deck; cohesive bespoke civic-tech design with no em/en dashes; passing
+`eval-report.md` with an empty/accepted fix list.
+
+Setup complete. Next step: intake.

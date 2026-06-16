@@ -1,0 +1,204 @@
+{
+  "projectMetadata": {
+    "slug": "edtech-school-connect-web-portal",
+    "title": "EdTech School Connect Web Portal",
+    "postedDate": "2026-06-14",
+    "location": "Worldwide",
+    "engagementType": "Hourly, Ongoing",
+    "timeCommitment": "Less than 30 hrs/week",
+    "duration": "1 to 3 months",
+    "experienceLevel": "Intermediate",
+    "clientBudgetEthos": "Mix of experience and value"
+  },
+
+  "clientSummary": {
+    "primaryNeed": "MVP of an EdTech School Connect portal for two-way school-parent communication with real-time updates on student performance and activities",
+    "stage": "MVP / functional prototype in short timeframe",
+    "emphasis": "Working prototype over polish promises; fast delivery valued"
+  },
+
+  "mandatorySkills": [
+    "PHP",
+    "Web Development"
+  ],
+
+  "niceToHaveSkills": [
+    "JavaScript",
+    "HTML5"
+  ],
+
+  "explicitRequirements": [
+    {
+      "id": 1,
+      "requirement": "School-parent two-way communication",
+      "description": "Bidirectional messaging/communication channel between schools/teachers and parents",
+      "priority": "hero"
+    },
+    {
+      "id": 2,
+      "requirement": "Real-time student performance updates",
+      "description": "Live updates on student grades, progress, and academic performance visible to parents",
+      "priority": "hero"
+    },
+    {
+      "id": 3,
+      "requirement": "Real-time activity updates",
+      "description": "Live updates on student activities, announcements, or events",
+      "priority": "hero"
+    },
+    {
+      "id": 4,
+      "requirement": "Functional MVP prototype",
+      "description": "Working, clickable prototype that demonstrates the core platform",
+      "priority": "hero"
+    },
+    {
+      "id": 5,
+      "requirement": "PHP stack for production",
+      "description": "Acknowledge and map to PHP/Laravel implementation for production (proposal must address this explicitly)",
+      "priority": "technical-constraint"
+    },
+    {
+      "id": 6,
+      "requirement": "Fast delivery",
+      "description": "Capable of delivering functional prototype within the 1-3 month, <30hrs/week envelope",
+      "priority": "constraint"
+    }
+  ],
+
+  "userRoles": [
+    {
+      "role": "Parent",
+      "description": "Primary recipient of student performance and activity updates; can message teachers",
+      "keyActions": [
+        "View real-time student performance/grades",
+        "View student activities and announcements",
+        "Send messages to teachers",
+        "Receive messages and updates"
+      ]
+    },
+    {
+      "role": "Teacher / School Staff",
+      "description": "Sends updates on student performance and activities; receives and responds to parent messages",
+      "keyActions": [
+        "Update/post student performance data",
+        "Create and share activities/announcements",
+        "Send messages to parents",
+        "Receive and respond to parent inquiries"
+      ]
+    }
+  ],
+
+  "targetFeatureRichness": 10,
+  "featureRichnessDefinition": "Full-featured, production-quality app with several real working features (not a minimal prototype or mockup; hero flow + 2 supporting features, real data, real-time behavior)",
+
+  "demoDeliverableSpec": {
+    "format": "Self-contained static web app (JavaScript/React frontend + optional backend integration)",
+    "hostingLocation": "Same-origin at michaelwegter.com/demos/edtech-school-connect-web-portal/",
+    "stackNote": "Demo uses JavaScript/static front end (not PHP, because it runs on GitHub Pages), but proposal must explicitly state that production builds on PHP/Laravel. Frame the demo as a product prototype that maps 1:1 to a PHP implementation.",
+    "mustSupport": [
+      "Parent role login and experience",
+      "Teacher role login and experience",
+      "Role switching or dual seeded logins so reviewer can see both sides",
+      "Real-time (or real-feeling) communication and performance updates"
+    ],
+    "noConsoleErrors": true,
+    "buildsSuccessfully": true
+  },
+
+  "heroFeature": "Real-time parent-teacher communication and performance feed",
+  "heroDescription": "A working messaging system between parent and teacher, plus a live performance dashboard showing student grades/progress. This is the core value prop.",
+
+  "supportingFeatures": [
+    {
+      "name": "Student Performance Dashboard / Gradebook",
+      "description": "Visual display (charts, progress bars) of student academic performance with real-time updates"
+    },
+    {
+      "name": "Activity / Announcements Feed",
+      "description": "Chronological feed of student activities, attendance updates, or school announcements visible to parents"
+    }
+  ],
+
+  "backendOpportunity": {
+    "recommended": true,
+    "rationale": "Real-time messaging and genuine performance updates sell the 'real-time' claim far better than mock data. Backend provides persistence and credibility.",
+    "suggested": {
+      "newBlueprint": "edtech_blueprint.py or messages_performance_blueprint.py",
+      "baseOn": "Existing spotify_blueprint.py pattern",
+      "features": [
+        "Messages (create, retrieve, mark read)",
+        "Performance/grades (fetch, update)",
+        "Activities/announcements (post, list)"
+      ],
+      "noChanges": "Do NOT modify auth, DB schema, or existing blueprints beyond what the new blueprint needs"
+    },
+    "demoAccounts": {
+      "required": true,
+      "parentCredentials": "seed one demo parent account with credentials to record",
+      "teacherCredentials": "seed one demo teacher account with credentials to record"
+    }
+  },
+
+  "designDirection": {
+    "industryFocus": "EdTech / K-12 schools",
+    "tone": "Friendly, trustworthy, approachable, safe (critical for parent-facing education tech)",
+    "visuals": "Warm colors, excellent accessibility contrast, school/institutional feel (not playful like a consumer app, not dark/moody like michaelwegter.com)",
+    "doNotUse": "michaelwegter.com's dark gallery theme, mustard/cyan palette, Space Grotesk font",
+    "accessibility": "High contrast ratios, clear hierarchy, parent-friendly (not overly technical)",
+    "research": "Pull conventions from real school-parent apps (ClassDojo, ParentSquare, Seesaw, Bloomz, Schoology parent view)"
+  },
+
+  "proposalRequirements": {
+    "coverLetter": [
+      "Map all 6 explicit requirements concretely to what the demo shows",
+      "Address the PHP-stack question directly: explain that the demo is a clickable product prototype using a modern stack for fast iteration on a static host, but maps 1:1 to a PHP/Laravel production build",
+      "Emphasize the real-time communication and performance-update hero flows",
+      "Include the live demo URL (https://michaelwegter.com/demos/edtech-school-connect-web-portal/)",
+      "Write in Michael's voice (see reference/brand-voice.md)",
+      "No em dashes or en dashes; use commas or rewrite sentences"
+    ],
+    "onePager": [
+      "Tailored to EdTech/school audience (not michaelwegter.com style)",
+      "Use the demo's bespoke design language",
+      "Embed the live demo link",
+      "Show how each requirement is addressed",
+      "No em/en dashes"
+    ],
+    "deck": [
+      "Tailored to EdTech/school audience (not michaelwegter.com style)",
+      "Use the demo's bespoke design language",
+      "Embed the live demo link",
+      "Reference the hero flow (parent-teacher communication + performance updates)",
+      "Acknowledge the two user roles and the dual-login/role-switching experience",
+      "No em/en dashes"
+    ]
+  },
+
+  "criticalNotes": [
+    "PHP stack question is significant: proposal must address this honestly. Demo is JavaScript/static; production is PHP. Be clear and avoid pretending the demo IS PHP.",
+    "Real-time is the differentiator. Do not fake updates with setTimeout shuffles. Prefer a backend-backed feed (polling or server-sent events) so messages and performance updates genuinely propagate.",
+    "Two distinct user roles MUST be experienceable in the live demo. Seeded dual logins or role-switching UI is required.",
+    "EdTech = parent trust is paramount. Design, copy, and data handling must feel secure and professional.",
+    "Feature richness is 10/10: this is a full build with multiple real working features, not a one-feature mockup.",
+    "Requirement traceability: every item in explicitRequirements[] must appear in the cover letter AND be represented in the demo or deck."
+  ],
+
+  "hardGates": [
+    "Every explicit requirement in this brief is addressed in the cover letter AND represented in the demo or deck",
+    "Demo builds and loads with no first-paint console errors",
+    "Demo resolves locally at /demos/edtech-school-connect-web-portal/ and after deploy the live /work-samples/edtech-school-connect-web-portal route returns 200",
+    "Demo link appears in both the cover letter and the deck",
+    "Demo, one-pager, and deck use cohesive, bespoke EdTech design (NOT michaelwegter.com's look) with no em/en dashes",
+    "eval-report.md exists with a passing score and empty (or accepted) fix list"
+  ],
+
+  "budgetCaps": {
+    "heroFeatures": 1,
+    "supportingFeatures": "at most 2",
+    "demoFilesTouched": "at most ~12",
+    "buildTimeout": "3 minutes",
+    "researchFetches": "at most ~6",
+    "reflectionRetries": "at most 2"
+  }
+}

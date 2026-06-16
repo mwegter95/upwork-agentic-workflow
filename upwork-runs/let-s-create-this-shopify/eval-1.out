@@ -1,0 +1,248 @@
+# Plan: Art Print Storefront Demo
+**Slug:** `art-print-storefront`
+**Date:** 2026-06-13
+**Posting:** Vibe / Claude Coding Tutor
+
+---
+
+## 1. Demo Concept
+
+Build a working fine-art print storefront that mirrors the Shopify OS 2.0 pages the client wants to build, implemented as a self-contained static demo (HTML + vanilla JS) backed by a real JWT-auth Flask API on mw-backend. The demo IS the teaching artifact: it ships with a coaching panel that shows the real Shopify Liquid prompt used to generate each section, what to review in Claude's output, and the common errors to catch. No other candidate can show that.
+
+**Why full, not prototype:** The hero feature (horizontal gallery) requires no backend integration, the backend endpoints are trivially simple (3 routes, pure in-memory), and all data comes from free Picsum URLs. No budget trip-wire is hit.
+
+---
+
+## 2. Decision: Full Demo (not prototype)
+
+Prototype fall-back conditions -- all three fail to trip:
+1. Backend integration: 3 REST endpoints, pure in-memory, no secrets -- trivially safe to implement.
+2. Build complexity: 11 files, under the 12-file cap; no bundler needed; vanilla JS only.
+3. Concept: Not throwaway -- a clickable store with login + checkout is concrete proof of skill.
+
+**Record:** building full.
+
+---
+
+## 3. Hero Feature
+
+**Horizontal-scrolling print gallery (index.html)**
+
+- 12 print cards displayed in a horizontal scroll container
+- CSS: `display:grid; grid-auto-flow:column; scroll-snap-type:x mandatory; overflow-x:auto; scrollbar-width:none`
+- JS drag-to-scroll: mousedown/mousemove tracking with 1.5x speed multiplier
+- Arrow navigation (prev/next): scrollBy one card-width with smooth behavior
+- Vertical wheel remapped to horizontal scroll
+- Each card: Picsum thumb image (450x560), title, artist, edition badge ("Limited Ed." or "Open"), price from
+- Clicking a card navigates to `product.html?id=<id>` (same-origin, no router needed)
+- Coaching panel (bottom drawer, toggled by "Shopify Code Panel" button) with 3 tabs:
+  - Tab 1 "The Prompt": the exact Claude prompt to generate the Liquid section
+  - Tab 2 "What to Review": 5 checklist items (image_picker type, block.shopify_attributes, image_url filter, preset array, Safari iOS test)
+  - Tab 3 "Common Errors": 3 OS 2.0 gotchas (img_url deprecated, missing block attributes, schema placement)
+
+---
+
+## 4. Supporting Features (max 2)
+
+### 4a. Product detail page (product.html)
+- Reads `?id=<id>` from the URL, fetches print data from the in-memory catalog via `data.js`
+- Full editorial image (800x1000 Picsum)
+- Edition badge: "Limited Edition N of M" or "Open Edition"
+- Print size selector: 4 radio-style buttons (8x10, 12x16, 16x20, 24x30) with computed prices
+- Print medium + substrate metadata display (mocked)
+- "Add to Cart" button: appends to localStorage cart (key: `art_cart`), shows a brief toast
+- "View Cart" link in the nav shows badge with item count
+- Cart summary modal: list of items, total, "Proceed to Checkout" button
+- Coaching panel (same structure as gallery page, content focused on product.liquid + metafield Liquid patterns)
+
+### 4b. Login + mock checkout (checkout.js, via mw-backend)
+- Login modal: email + password fields; any credentials accepted; calls `POST /art-store/login`, stores JWT in sessionStorage
+- Checkout button requires login: unauthenticated users see login modal first
+- After login, `POST /art-store/checkout` with cart items + total; displays order confirmation with order ID (MW-XXXXXXXX), shipping estimate, email echo
+- Logout clears token + cart
+- Backend: `art_store_blueprint.py` on mw-backend (see Section 7 of research for full spec)
+
+---
+
+## 5. Scope Fences (explicitly excluded)
+
+- No collection page or about/contact pages -- the client wants these but they are pages in the Shopify theme, not features that differentiate the demo; the horizontal gallery + product page + checkout is the working story
+- No bundler -- vanilla JS only, no npm
+- No persistent cart (localStorage only, cleared on session end is fine)
+- No real payment processing -- mock checkout only
+- No mobile-specific breakpoint heavy-lifting beyond the core scroll pattern (the CSS pattern is already mobile-compatible per research)
+- No animations beyond the scroll and toast fade
+
+---
+
+## 6. File List and Actions
+
+| # | File | Action | Notes |
+|---|------|---------|-------|
+| 1 | `../michaelwegter.com/public/demos/art-print-storefront/index.html` | CREATE | Gallery homepage + coaching panel |
+| 2 | `../michaelwegter.com/public/demos/art-print-storefront/product.html` | CREATE | Product detail + size selector |
+| 3 | `../michaelwegter.com/public/demos/art-print-storefront/assets/style.css` | CREATE | All shared styles using CLAUDE.md tokens |
+| 4 | `../michaelwegter.com/public/demos/art-print-storefront/assets/data.js` | CREATE | 12-print catalog, SIZES array, price helper |
+| 5 | `../michaelwegter.com/public/demos/art-print-storefront/assets/gallery.js` | CREATE | Horizontal scroll, drag, arrows, wheel, coaching panel |
+| 6 | `../michaelwegter.com/public/demos/art-print-storefront/assets/product.js` | CREATE | URL param parse, size selector, add-to-cart, cart modal |
+| 7 | `../michaelwegter.com/public/demos/art-print-storefront/assets/cart.js` | CREATE | Shared cart helpers (read/write localStorage), badge update |
+| 8 | `../michaelwegter.com/public/demos/art-print-storefront/assets/checkout.js` | CREATE | Login modal, JWT fetch, checkout POST, confirmation screen |
+| 9 | `../mw-backend/art_store_blueprint.py` | CREATE | Full spec from researcher.out Section 7 |
+| 10 | `../mw-backend/server.py` | EDIT | Add 2 lines after line 268 to register art_store_bp |
+| 11 | `../michaelwegter.com/src/data/workSamples.js` | EDIT | Append id:4 entry (slug art-print-storefront) |
+
+**Total: 11 files. Under the 12-file cap.**
+
+---
+
+## 7. workSamples.js Entry (id: 4)
+
+```js
+{
+  id: 4,
+  slug: "art-print-storefront",
+  title: "Art Print Storefront",
+  description: "A Shopify OS 2.0-style fine-art print store with a horizontal scroll gallery, print detail pages, JWT login, and mock checkout -- built to demo the tutoring workflow the client will learn.",
+  category: "Shopify",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/art-print-storefront/",
+  color: "#e8b820",
+  icon: "🖼️",
+  frameStyle: "walnut",
+  client: "Upwork / Vibe Claude Coding Tutor",
+  postingSummary: "Build and teach a custom editorial Shopify storefront for fine-art print selling, using Claude as a core part of the workflow.",
+  builtFor: "Shopify Liquid tutoring proposal",
+  date: "2026-06-13",
+  proposalDeckUrl: "",
+  proposalPageUrl: "",
+}
+```
+
+---
+
+## 8. Backend Registration Edit (server.py, after line 268)
+
+```python
+# ─── Art Print Storefront demo blueprint ─────────────────────────────────────
+from art_store_blueprint import art_store_bp
+app.register_blueprint(art_store_bp)
+```
+
+---
+
+## 9. Design System Application
+
+All demo pages use CLAUDE.md design tokens directly as inline CSS variables:
+
+```
+--bg-root:        #121118   (page background)
+--bg-surface:     #191720   (header, coaching panel)
+--bg-card:        #1e1c26   (print cards)
+--bg-card-hover:  #24222e   (print card hover state)
+--text-primary:   #f2ede4   (headings, labels)
+--text-secondary: #8a8898   (artist, metadata)
+--accent:         #e8b820   (mustard -- CTAs, active size button, edition badge)
+--cyan-vivid:     #12b4c8   (coaching panel tab active)
+--border-default: #2c2a38   (card border, panel border)
+--font-display:   'Space Grotesk', system-ui, sans-serif
+--font-body:      'Inter', system-ui, sans-serif
+--font-mono:      'JetBrains Mono', monospace  (coaching panel eyebrow, code blocks)
+```
+
+Fonts loaded via Google Fonts CDN in `<head>` of each HTML file.
+
+---
+
+## 10. API Endpoints Summary
+
+```
+Base: https://api.michaelwegter.com
+
+GET  /art-store/prints           Returns { prints: [...] } -- 12 items with sizes[]
+POST /art-store/login            Body: { email, password } -- any creds, returns { token, email }
+POST /art-store/checkout         Bearer: <token> -- Body: { items, total } -- returns { orderId, status, message, ... }
+```
+
+Frontend stores JWT in `sessionStorage.getItem('art_jwt')`. The checkout.js module reads it and passes as `Authorization: Bearer <token>`.
+
+---
+
+## 11. Coaching Panel Content (verbatim, per research section 6)
+
+### Tab 1 -- The Prompt
+
+```
+Write a Shopify OS 2.0 Liquid section for a horizontal-scrolling print gallery.
+Requirements:
+- Section name: "Horizontal Gallery"
+- Each gallery item is a block of type "print" with settings: image_picker, text (title), text (base_price)
+- CSS: display:grid, grid-auto-flow:column, overflow-x:auto, scroll-snap-type:x mandatory
+- JS: drag-to-scroll with mousedown/mousemove tracking, prev/next arrow buttons
+- Add {% schema %} with max_blocks: 20 and a preset named "Horizontal Gallery"
+- Output the complete .liquid file, no external dependencies
+```
+
+### Tab 2 -- What to Review
+
+1. Schema: confirm `"type": "image_picker"` -- NOT `"type": "image"` (common LLM error)
+2. Block attributes: every block `<div>` needs `{{ block.shopify_attributes }}` for theme editor targeting
+3. Image filter: use `| image_url: width: 800 | image_tag` (OS 2.0 syntax), not the old `| img_url`
+4. Preset: the `presets` array must exist for the section to appear in the "Add section" panel
+5. Mobile: test `overflow-x: auto` on Safari iOS -- may need `-webkit-overflow-scrolling: touch`
+
+### Tab 3 -- Common Errors
+
+1. Using `| img_url` instead of `| image_url: width: N | image_tag` (deprecated in OS 2.0, breaks image rendering)
+2. Missing `{{ block.shopify_attributes }}` on block wrapper divs (makes blocks un-selectable in the theme editor)
+3. Placing `{% schema %}` outside the section file or inside an `{% if %}` block (schema must be top-level and appear exactly once)
+
+---
+
+## 12. Requirement-to-Feature Traceability Matrix
+
+| Client Requirement | Demo Feature | Where |
+|---|---|---|
+| Horizontal scroll gallery, drag + arrow navigation | Hero: horizontal scroll with drag, prev/next, wheel remap | index.html + gallery.js |
+| Individual print product pages | Supporting: product.html -- editorial image, size selector, edition info, add-to-cart | product.html + product.js |
+| Size/edition selection | Product page: 4 size radio buttons with price, edition badge | product.js |
+| Clean checkout flow | Supporting: cart modal, login gate, JWT checkout, order confirmation | checkout.js + /art-store/checkout |
+| Real backend with login | mw-backend art_store_blueprint.py: /login (JWT), /checkout (auth) | art_store_blueprint.py |
+| Shopify OS 2.0 education | Coaching panel: Liquid prompt, review checklist, common errors | gallery.js panel |
+| AI workflow fluency demonstrated | The demo itself is Claude-prompt-to-Liquid artifact | Coaching panel content |
+| US freelancer | Stated in cover letter opening sentence | cover letter |
+| Tutor who explains the why | Session structure described, coaching panel IS the why | cover letter + deck |
+| Images from free-to-use site | Picsum Photos (CC0) seeded URLs | data.js |
+
+---
+
+## 13. Hero-Flow for Media Capture
+
+1. Load `/demos/art-print-storefront/` -- gallery renders with 12 print cards
+2. Arrow-click scrolls gallery right (shows scroll is wired)
+3. Click first print card -- product page loads
+4. Select a size (e.g., 16x20) -- price updates
+5. Click "Add to Cart" -- toast appears, nav badge shows 1
+6. Click cart icon -- cart modal opens showing the item
+7. Click "Proceed to Checkout" -- login modal appears
+8. Enter email + password -- login succeeds, checkout POST fires
+9. Order confirmation screen: order ID, email, shipping estimate
+10. Open coaching panel on gallery page -- tab 1 shows Liquid prompt
+
+---
+
+## 14. Self-Test Checklist (for demo-builder to run before declaring done)
+
+- [ ] `index.html` loads at `file://` or local server with no console errors
+- [ ] All 12 print images render (Picsum URLs resolve)
+- [ ] Horizontal scroll: drag works, arrows scroll one card, wheel scrolls
+- [ ] Product page loads from `product.html?id=1` with correct title and image
+- [ ] Size selector updates price
+- [ ] Add to cart stores item, nav badge increments
+- [ ] Login modal fires on checkout attempt when unauthenticated
+- [ ] Login POST to `https://api.michaelwegter.com/art-store/login` returns 200 with token
+- [ ] Checkout POST to `/art-store/checkout` returns 200 with orderId
+- [ ] Order confirmation screen renders correctly
+- [ ] Coaching panel opens and all 3 tabs switch correctly
+- [ ] No em dashes or en dashes in any visible text
+- [ ] workSamples.js has id:4 appended with correct slug
+- [ ] mw-backend blueprint registered and server.py diff is minimal (2 lines only)

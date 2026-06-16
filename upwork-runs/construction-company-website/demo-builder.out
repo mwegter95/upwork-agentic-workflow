@@ -1,0 +1,126 @@
+# Demo Builder — Construction Company Website
+
+**Slug:** `construction-company-website`
+**Demo:** Cornerstone Construction Co.
+**Build status:** COMPLETE
+**Build type:** Full build, self-contained static app (no bundler)
+**Feature richness:** 10/10
+
+---
+
+## What Was Built
+
+A four-page construction company marketing website at:
+`../michaelwegter.com/public/demos/construction-company-website/`
+
+---
+
+## File Manifest
+
+| File | Size | Role |
+|---|---|---|
+| `index.html` | 16 KB | Home: video hero, stats, services teaser, featured projects, testimonials, CTA, footer |
+| `services.html` | 19 KB | Services: 3 service sections with pricing tiers, FAQ accordion, CTA, footer |
+| `projects.html` | 16 KB | Projects: filter bar, 9 project cards, lightbox modal, CTA, footer |
+| `contact.html` | 16 KB | Contact: info panel, validated form, success state, footer |
+| `style.css` | 37 KB | Full design system: tokens, layout, components, page-level, responsive, sr-only utility |
+| `main.js` | 7 KB | Nav transparency/scroll, hamburger drawer, scroll fade-in, stats counter, FAQ accordion (aria-expanded fixed) |
+| `projects.js` | 11 KB | Filter (aria-pressed fixed), lightbox (arrow nav, keyboard ESC/arrows, focus trap) |
+| `contact.js` | 5 KB | Form validation (blur + submit), success state with first name |
+| `assets/hero.mp4` | 6.8 MB | Hero video (local, same-origin, downloaded from Pexels) |
+| `assets/hero-poster.jpg` | 583 KB | Hero poster fallback (local, from Unsplash) |
+
+Total: 8 source files + 2 binary assets. Within 12-file cap.
+
+---
+
+## Requirements Coverage
+
+| Requirement | Implemented | Notes |
+|---|---|---|
+| Video background homepage | YES | `<video autoplay muted loop playsinline>` with `assets/hero.mp4` (same-origin). JS timeout + error fallback to poster. |
+| Services page with pricing | YES | 3 full service sections, each with 3 pricing tiers in a styled card |
+| Contact page with form | YES | Full Name, Email, Phone, Service selector, Description, Contact method radio. Blur + submit validation. Inline errors. Animated success state. |
+| Projects gallery | YES | 9 projects (3 per category), instant filter tabs, lightbox with arrow nav, ESC close, keyboard nav, focus trap |
+| Construction industry theme | YES | Charcoal Black + Safety Amber palette, Oswald + DM Sans + Archivo, inline SVG icons, full-bleed imagery |
+| Professional UX/UI | YES | Sticky transparent-to-solid nav, scroll-fade-in sections, hover states, animated stats counters, hamburger mobile menu |
+| Testimonials | YES | 2 testimonial cards with amber left-border accent and curly-quote styling |
+| Stats counters | YES | easeOutQuad RAF animation on IntersectionObserver trigger |
+| Mobile hamburger | YES | Morph animation (3 lines to X), slide-in drawer, ESC + overlay close |
+| FAQ accordion | YES | 4 questions on services page, smooth max-height slide, aria-expanded toggled on open/close |
+| WCAG / Reduced-motion | YES | prefers-reduced-motion guard in JS and CSS. aria-label, role, aria-current, aria-required throughout. |
+| No em/en dashes | YES | Verified clean with grep across all files including workSamples.js |
+| workSamples.js entry | YES | id: 8, registered with correct schema |
+
+---
+
+## Design System
+
+| Token | Value |
+|---|---|
+| Page background | `#0D0F12` Charcoal Black |
+| Elevated surface | `#161A1F` Dark Graphite |
+| Card surface | `#1E2228` Deep Slate |
+| Border/divider | `#2A2F38` Steel Edge |
+| Accent primary | `#E8991A` Safety Amber |
+| Accent hover | `#F5AE30` Hi-Vis Amber |
+| Text primary | `#F0EDE8` Off-White Warm |
+| Text secondary | `#9C9790` Warm Stone |
+| Headline font | Oswald 700/600 (display, stats) |
+| Body font | DM Sans 400/500 |
+| Sub-head font | Archivo 600/700/800 (buttons, labels) |
+
+---
+
+## Fixes Applied During This Review Pass
+
+1. **`.sr-only` missing** — `projects.html` uses `class="sr-only"` on a visually-hidden h2. Added standard sr-only utility class to `style.css`.
+2. **FAQ `aria-expanded` static** — `main.js` FAQ handler now toggles `aria-expanded` on the button and `aria-hidden` on the answer panel on each click.
+3. **Filter `aria-pressed` static** — `projects.js` filter handler now updates `aria-pressed` on all filter buttons on each click.
+4. **Em dash in `workSamples.js`** — `client: "Upwork — Construction Company Owner"` replaced with comma separator.
+
+---
+
+## Demo URLs
+
+**Local:** `http://localhost:<port>/demos/construction-company-website/`
+**Live (after deploy):** `https://michaelwegter.com/demos/construction-company-website/`
+**Portfolio route:** `https://michaelwegter.com/work-samples/construction-company-website`
+
+---
+
+## workSamples.js Registration
+
+Confirmed at `../michaelwegter.com/src/data/workSamples.js`, id: 8:
+
+```js
+{
+  id: 8,
+  slug: "construction-company-website",
+  title: "Cornerstone Construction Co.",
+  description: "Full marketing site for a regional construction company: video hero homepage, services and pricing page, filterable projects gallery with lightbox, and a validated contact form. Built with a bespoke industrial design system (charcoal + safety amber, Oswald + DM Sans).",
+  category: "Creative",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/construction-company-website/",
+  color: "#E8991A",
+  icon: "🏗️",
+  frameStyle: "walnut",
+  client: "Upwork, Construction Company Owner",
+  date: "2026-06-15",
+}
+```
+
+---
+
+## Notes for Proposal Writer
+
+- **Demo name:** Cornerstone Construction Co. Website Demo
+- **Live URL:** `https://michaelwegter.com/demos/construction-company-website/`
+- **Key differentiators to highlight:**
+  1. Video hero done correctly: same-origin MP4, autoplay/muted/loop, overlay for legibility, JS error fallback to poster
+  2. Pricing transparency on Services page (differentiator in construction market, most firms hide prices)
+  3. Filterable project gallery across all 3 service lines with full lightbox detail view
+  4. Bespoke industrial design: charcoal + safety amber, Oswald headlines, zero template feel
+  5. Mobile-first responsive, WCAG AA baseline, prefers-reduced-motion respected
+- **"Medium rare" brief:** Address this directly in the cover letter. Show you understood: executed with confidence and precision, not raw (placeholder-heavy) and not overdone (animation-heavy).
+- **Proposal design:** Use Oswald for headlines and DM Sans for body in the one-pager and deck. Palette: `#0D0F12` bg, `#E8991A` amber accent, `#F0EDE8` white. Not michaelwegter.com's look.

@@ -1,0 +1,102 @@
+[
+  {
+    "action": "wait",
+    "ms": 1500,
+    "comment": "Initial load"
+  },
+  {
+    "action": "shot",
+    "name": "1-login-form"
+  },
+  {
+    "action": "fill",
+    "selector": "input[type=\"email\"]",
+    "value": "patient@healthstack.demo"
+  },
+  {
+    "action": "fill",
+    "selector": "input[type=\"password\"]",
+    "value": "DemoPatient123!"
+  },
+  {
+    "action": "wait",
+    "ms": 300
+  },
+  {
+    "action": "shot",
+    "name": "2-login-filled"
+  },
+  {
+    "action": "click",
+    "selector": "button[type=\"submit\"]"
+  },
+  {
+    "action": "wait",
+    "ms": 2000,
+    "comment": "Wait for dashboard to load"
+  },
+  {
+    "action": "shot",
+    "name": "3-patient-dashboard"
+  },
+  {
+    "action": "click",
+    "selector": "button:has-text(\"Book another appointment\"), button:has-text(\"Browse providers\")"
+  },
+  {
+    "action": "wait",
+    "ms": 1500,
+    "comment": "Wait for services page"
+  },
+  {
+    "action": "shot",
+    "name": "4-services-list"
+  },
+  {
+    "action": "click",
+    "selector": ".btn-book, button:has-text(\"Book Appointment\")"
+  },
+  {
+    "action": "wait",
+    "ms": 1500,
+    "comment": "Wait for slot picker"
+  },
+  {
+    "action": "shot",
+    "name": "5-slot-picker"
+  },
+  {
+    "action": "click",
+    "selector": ".time-slot, button[data-slot]"
+  },
+  {
+    "action": "wait",
+    "ms": 500
+  },
+  {
+    "action": "click",
+    "selector": "button:has-text(\"Confirm Appointment\")"
+  },
+  {
+    "action": "wait",
+    "ms": 1500,
+    "comment": "Wait for checkout"
+  },
+  {
+    "action": "shot",
+    "name": "6-checkout"
+  },
+  {
+    "action": "click",
+    "selector": "button:has-text(\"Pay\")"
+  },
+  {
+    "action": "wait",
+    "ms": 2000,
+    "comment": "Wait for confirmation"
+  },
+  {
+    "action": "shot",
+    "name": "7-confirmation"
+  }
+]

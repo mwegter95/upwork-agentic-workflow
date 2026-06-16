@@ -1,0 +1,69 @@
+# Deploy Test — CivicQ Landing Page (live verification)
+
+Ran a real Playwright (chromium) session against the live deployment
+(michaelwegter.com + api.michaelwegter.com), plus direct `fetch` calls to the
+API. Script: `upwork-runs/civicq/deploy-test.spec.js`. Playwright 1.61.0,
+chromium downloaded fresh for this check.
+
+## Routes / pages
+
+| Check | Result |
+|---|---|
+| `GET https://michaelwegter.com/work-samples/civicq` | Resolves via GH Pages SPA fallback (initial network request is 404, `404.html` JS-redirects to the React route, final loaded page title = "CivicQ Landing Page — Michael Wegter") |
+| `<iframe>` on that page points at | `https://michaelwegter.com/demos/civicq/` ✓ |
+| `GET https://michaelwegter.com/demos/civicq/` | **200** |
+| `GET https://michaelwegter.com/demos/civicq/methodology.html` | **200** |
+
+**Note on the 404 console line:** the first network request to
+`/work-samples/civicq` does log `Failed to load resource: 404`. This is not a
+civicq-specific bug — it's the universal GH Pages SPA mechanism every
+work-sample on this site uses (`public/404.html` catches the unknown path,
+stores it, then JS-redirects). Verified by loading an existing, already-live
+route (`/work-samples/repsetta-fitness`) with the same script: it produces the
+identical single 404 console line and still resolves correctly. Both pages
+end up fully rendered with correct titles, so this is expected, pre-existing
+site behavior, not a regression introduced by this demo.
+
+## Hero flow / page content (on `/demos/civicq/`)
+
+| Check | Result |
+|---|---|
+| Hero / CivicQ branding visible | ✓ |
+| Sticky nav links present | ✓ (15 nav/header links) |
+| Anchor-link sections found | ✓ `#main #top #why-it-matters #features #scoring #status #org-hub #funding #partners ...` — all 10 spec sections reachable via anchor nav |
+| Custom data viz rendered (SVG) | ✓ 10 `<svg>` elements on the landing page (scoring chart + funds breakdown + org-hub wireframe + decorative) |
+| Methodology page link present | ✓ (3 links to methodology.html) |
+| Methodology page renders | ✓ 200, 3 SVGs present |
+
+## Email capture -> live backend (multi-step workflow)
+
+1. Filled the email input on the live demo page with a unique test address.
+2. Clicked the subscribe/submit control.
+3. Page fired a real network request to `https://api.michaelwegter.com/api/civicq/subscribe`.
+4. API responded **201 Created**, `{"message":"Subscribed.","status":"success"}`.
+
+Confirms the end-to-end flow (browser form -> live API -> SQLite) works on
+the actual production deployment, not just locally.
+
+## Direct API checks
+
+| Endpoint | Result |
+|---|---|
+| `GET https://api.michaelwegter.com/health` | **200** `{"status":"ok","version":"1.0.0"}` |
+| `POST https://api.michaelwegter.com/api/civicq/subscribe` | **201**, success body |
+| `GET https://api.michaelwegter.com/api/civicq/csv-export` | **200**, CSV body with header `email,created_at` and prior test rows (including the row written by the in-browser submission above, confirming the browser flow and the direct API hit the same persisted store) |
+
+## Console errors during all page loads
+
+Only the single, pre-existing, site-wide GH Pages 404-redirect line discussed
+above (also reproduced on an unrelated, already-shipped work-sample route).
+No JS exceptions, no failed asset loads, no React errors, no CORS errors, no
+broken API calls.
+
+## Problems found
+
+None that are specific to this demo or block the gate. The one console line
+investigated is confirmed to be an existing site-wide mechanism, not a defect
+introduced by this run.
+
+VERDICT: pass

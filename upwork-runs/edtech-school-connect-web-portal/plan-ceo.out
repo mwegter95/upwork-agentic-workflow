@@ -1,0 +1,62 @@
+# CEO Review — Plan (EdTech School Connect Web Portal)
+
+Reviewed: planner.out against intake.out (brief) and the real repos. I did not
+assume the backend claims; I verified them.
+
+## Verification performed (against the actual codebase)
+- `mw-backend/spotify_blueprint.py` exists and matches the proposed blueprint
+  pattern (Blueprint + url_prefix). Cloning it is realistic.
+- `bcrypt` and `jwt` (PyJWT) are imported in `server.py` line 37-38, so the
+  plan's auth/JWT approach needs no new dependencies. Confirmed installed.
+- Blueprint registration pattern in `server.py` (lines 259-276) is exactly the
+  one-line `app.register_blueprint(...)` add the plan describes. Several demo
+  blueprints already coexist there, so a new `edtech_blueprint.py` is low-risk.
+- `DB_PATH = DATA_DIR / "mw.db"` (server.py line 52) confirms the SQLite target.
+  Prefixed `edtech_*` tables in that DB is the right, non-invasive approach.
+- CORS allowlist (server.py lines 64-74) already includes
+  `https://michaelwegter.com`, so the iframed demo calling
+  `api.michaelwegter.com` will not be blocked.
+- `src/data/workSamples.js` already exists, so step 12 is an UPDATE (append a
+  registry entry), not a new file. `src/components/AppFrame.jsx` exists and is
+  reusable per CLAUDE.md. Confirmed.
+
+## Assessment against criteria
+
+**Ambition for 10/10: PASS.** One real hero (backend-backed threaded messaging
+with 4s polling and read receipts), two real supporting features (live gradebook
+with Chart.js radar + teacher inline grade edits; activity feed with teacher
+compose), a real Flask blueprint with 4 tables, seeded data, ~10 JWT-gated
+endpoints, dual seeded logins, and a 10-item polish layer. This is a genuine
+full build, not a mockup.
+
+**Faithfulness to brief: PASS.** All 6 explicit requirements are traced in the
+matrix (section 8) to both demo and cover letter. The PHP-stack constraint (req
+5) is handled honestly via the "About this demo" info bar plus the production
+PHP/Laravel mapping table (section 12), which is exactly what intake's critical
+notes demand (do not pretend the demo IS PHP). Real-time is backend-backed
+polling, which the brief explicitly accepts over fake setTimeout shuffles. Both
+roles are experienceable via dual login tiles.
+
+**Design: PASS.** Bespoke EdTech system (Nunito/Inter, blue/green warm palette,
+ClassDojo/ParentSquare/Seesaw inspiration), explicitly excludes
+michaelwegter.com tokens. No em/en dashes in the plan prose.
+
+**Scope/budget: PASS (tight).** 12 files total (10 demo + 1 blueprint + 1
+registry update) sits right at the ~12 cap; the registry edit and blueprint are
+small, so this is acceptable. Hero + 2 supporting respects the cap.
+
+## Minor notes for demo-builder (not blocking)
+1. Endpoint name is inconsistent in the plan: the hero feature section calls it
+   `GET /api/edtech/messages/unread-count` while the endpoint table calls it
+   `GET /api/edtech/messages/unread`. Pick one and keep `api.js` consistent.
+2. Several demo blueprints already exist in `server.py`; make sure the new
+   blueprint variable name and url_prefix (`/api/edtech`) do not collide with an
+   existing one.
+3. Hardcoded `EDTECH_JWT_SECRET` in the blueprint is fine for a demo; just keep
+   it isolated from the real auth secret.
+
+None of these warrant a planner loop or an earlier-step redirect. The plan is
+ambitious, brief-faithful, and technically sound against the real repos. Proceed
+to research/build.
+
+VERDICT: pass

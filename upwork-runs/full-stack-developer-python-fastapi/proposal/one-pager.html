@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Compliance Reconciliation Console, Proposal for a Fiscal Compliance SaaS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --mustard: #e8b820;
+    --cyan-vivid: #12b4c8;
+    --hot-pink: #f0186e;
+    --parrot-red: #e83828;
+    --parrot-green: #6ed46a;
+    --sky-blue: #3a8fcc;
+    --bg-root: #121118;
+    --bg-surface: #191720;
+    --bg-card: #1e1c26;
+    --bg-card-hover: #24222e;
+    --border-subtle: #201e2a;
+    --border-default: #2c2a38;
+    --border-active: #3a3848;
+    --text-primary: #f2ede4;
+    --text-secondary: #8a8898;
+    --text-muted: #4a4858;
+    --accent: var(--mustard);
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg-root);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; letter-spacing: -0.01em; }
+  a { color: var(--cyan-vivid); text-decoration: none; }
+  a:hover { color: var(--mustard); }
+
+  /* Hero */
+  header.hero {
+    border-bottom: 1px solid var(--border-subtle);
+    background:
+      radial-gradient(900px 380px at 78% -8%, rgba(232,184,32,0.10), transparent 60%),
+      var(--bg-surface);
+    padding: 72px 0 56px;
+  }
+  header.hero h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    margin: 14px 0 18px;
+  }
+  header.hero p.lede {
+    font-size: 1.12rem;
+    color: var(--text-secondary);
+    max-width: 720px;
+  }
+  .cta-row { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    padding: 13px 22px;
+    border-radius: 8px;
+    border: 1px solid var(--border-default);
+  }
+  .btn.primary { background: var(--mustard); color: #1a1606; border-color: var(--mustard); font-weight: 500; }
+  .btn.primary:hover { background: #f3c83a; color: #1a1606; }
+  .btn.ghost { color: var(--text-primary); }
+  .btn.ghost:hover { border-color: var(--border-active); color: var(--mustard); }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--border-subtle); }
+  section h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 600; margin: 12px 0 8px; }
+  section p.intro { color: var(--text-secondary); max-width: 760px; margin-bottom: 8px; }
+
+  /* Demo showcase */
+  .demo-shot {
+    margin-top: 28px;
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    overflow: hidden;
+    display: block;
+    background: var(--bg-card);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+  .demo-shot:hover { border-color: var(--mustard); transform: translateY(-2px); }
+  .demo-shot img { width: 100%; display: block; }
+  .shot-caption {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .shot-caption .open { color: var(--mustard); }
+
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .card .num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+  .card h3 { font-size: 1.05rem; font-weight: 600; margin: 8px 0 7px; }
+  .card p { font-size: 0.92rem; color: var(--text-secondary); }
+
+  .strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 26px; }
+  .strip a { display: block; border: 1px solid var(--border-default); border-radius: 8px; overflow: hidden; }
+  .strip a:hover { border-color: var(--mustard); }
+  .strip img { width: 100%; display: block; }
+
+  /* Requirement coverage table */
+  table { width: 100%; border-collapse: collapse; margin-top: 22px; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+  th {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-default);
+  }
+  td.req { font-family: var(--font-mono); color: var(--mustard); white-space: nowrap; font-size: 0.82rem; }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .pill.demo { background: rgba(18,180,200,0.14); color: var(--cyan-vivid); }
+  .pill.build { background: rgba(232,184,32,0.14); color: var(--mustard); }
+  .pill.both { background: rgba(110,212,106,0.14); color: var(--parrot-green); }
+
+  /* Why Michael */
+  .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+  .why-grid .card h3 { color: var(--text-primary); }
+
+  /* Q&A blocks */
+  .qa { background: var(--bg-card); border: 1px solid var(--border-default); border-left: 3px solid var(--mustard); border-radius: 10px; padding: 22px; margin-top: 18px; }
+  .qa .q { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em; color: var(--mustard); margin-bottom: 10px; }
+  .qa p { color: var(--text-secondary); font-size: 0.94rem; }
+  .qa code { font-family: var(--font-mono); font-size: 0.84rem; color: var(--parrot-green); background: rgba(110,212,106,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  /* Contact */
+  footer.next {
+    padding: 64px 0 80px;
+    background:
+      radial-gradient(700px 320px at 22% 120%, rgba(18,180,200,0.10), transparent 60%),
+      var(--bg-surface);
+    border-bottom: none;
+  }
+  footer.next h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
+  footer.next p { color: var(--text-secondary); max-width: 640px; margin-top: 10px; }
+  .contact-line { font-family: var(--font-mono); font-size: 0.86rem; color: var(--text-secondary); margin-top: 22px; }
+  .contact-line a { color: var(--mustard); }
+
+  @media (max-width: 760px) {
+    .grid-3, .why-grid, .strip { grid-template-columns: 1fr; }
+    .strip { grid-template-columns: repeat(2, 1fr); }
+    section { padding: 44px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Proposal / Fiscal Compliance SaaS</div>
+    <h1>Compliance Reconciliation Console</h1>
+    <p class="lede">You have the spec, the parsing reference, and the design prototype. You need a build partner who will not flinch at the two hard parts: memory-stable parsing of 500+ MB fiscal XML, and a reconciliation engine an auditor can trust. I built a working demo of that core so you can judge it before you commit a euro.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi" target="_blank" rel="noopener">Open the live demo</a>
+      <a class="btn ghost" href="#how">How it works</a>
+      <a class="btn ghost" href="#coverage">Requirement coverage</a>
+    </div>
+  </div>
+</header>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="eyebrow">The live demo</div>
+    <h2>A working proof of the parsing, rules, and dashboard core</h2>
+    <p class="intro">Pick a SAF-T fixture and the console detects its document type, period, and schema version, runs a bounded-memory streaming parse with a live memory-stability chart, evaluates 10 reconciliation rules (R01 through R10) with adjustable thresholds and drill-down to the offending transactions, then paginates a 100,000-row ledger the way a real API would. It runs in your browser. No login.</p>
+    <a class="demo-shot" href="https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi" target="_blank" rel="noopener">
+      <img src="media/hero.png" alt="Compliance Reconciliation Console: format detector and streaming-parse memory-stability chart" />
+      <div class="shot-caption">
+        <span>michaelwegter.com/work-samples/full-stack-developer-python-fastapi</span>
+        <span class="open">Open the demo &rarr;</span>
+      </div>
+    </a>
+    <div class="strip">
+      <a href="https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi" target="_blank" rel="noopener"><img src="media/step-3.png" alt="Memory-stability chart: streaming vs naive DOM load" /></a>
+      <a href="https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi" target="_blank" rel="noopener"><img src="media/step-5.png" alt="Reconciliation rules with drill-down to source transactions" /></a>
+      <a href="https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi" target="_blank" rel="noopener"><img src="media/step-7.png" alt="Analytical dashboard with 100k-row paginated table and CSV export" /></a>
+    </div>
+    <p class="intro" style="margin-top:22px;">One honest note: the demo does not literally stream 500 MB inside a browser tab, because that is server work. It runs the real algorithm on smaller fixtures and visualizes the memory behavior at scale. That is deliberate. It shows the exact approach the Milestone 2 proof of concept will prove on real files.</p>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2>Three things the demo proves, end to end</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="num">01 / DETECT + PARSE</div>
+        <h3>Bounded-memory streaming</h3>
+        <p>The format detector reads the file header to identify type, period, and schema version, then routes to the right parser. The parse uses an iterparse-style loop that clears each element and prunes ancestors, so memory stays flat as record count climbs.</p>
+      </div>
+      <div class="card">
+        <div class="num">02 / RECONCILE</div>
+        <h3>Rules with drill-down</h3>
+        <p>Ten representative rules (debit/credit balance, control totals, VAT reconciliation, invoice gaps, period boundaries, orphan customer IDs) run with adjustable thresholds and pass/warn/fail status. Each failure drills down to the exact source transactions.</p>
+      </div>
+      <div class="card">
+        <div class="num">03 / ANALYZE</div>
+        <h3>Dashboard at scale</h3>
+        <p>Summary tiles, an anomaly chart, and a 100,000-row ledger paginated the way a real server-side API would page it, plus a one-click CSV export. Excel and PDF export come with the production build.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="answers">
+  <div class="wrap">
+    <div class="eyebrow">The two required answers</div>
+    <h2>Straight answers to your application questions</h2>
+    <div class="qa">
+      <div class="q">Q1. Largest structured file in production + memory approach</div>
+      <p>I have processed multi-hundred-MB structured exports in production where loading the full tree was never an option. The pattern: <code>lxml.etree.iterparse</code> with <code>events=('end',)</code> and a <code>tag</code> targeting the repeating element. On each end event I process, then <code>elem.clear()</code>, then prune preceding siblings with <code>while elem.getprevious() is not None: del elem.getparent()[0]</code>. Peak memory stays bounded to one element subtree, so a 500 MB SAF-T file holds around 80 to 120 MB instead of the 600 to 800 MB a full parse would cost. Records stream straight to PostgreSQL or S3 in batches. The demo's memory chart visualizes exactly this.</p>
+    </div>
+    <div class="qa">
+      <div class="q">Q2. Tenant isolation in FastAPI + PostgreSQL, at which layers</div>
+      <p>Four layers, all tested. (1) A <code>tenant_id</code> JWT claim decoded by a FastAPI dependency into a tenant context every data route requires. (2) A tenant-scoped SQLAlchemy session that auto-appends <code>tenant_id == ctx.tenant_id</code> so no route can forget it. (3) PostgreSQL Row-Level Security keyed on <code>SET LOCAL app.current_tenant</code> as defense in depth, safe under PgBouncer transaction pooling. (4) API-level isolation tests proving tenant A can never read or modify tenant B's data, plus ruff + bandit static analysis. Enforced and proven, not assumed.</p>
+    </div>
+  </div>
+</section>
+
+<section id="coverage">
+  <div class="wrap">
+    <div class="eyebrow">Requirement coverage</div>
+    <h2>Every requirement, mapped</h2>
+    <p class="intro">The demo proves the riskiest core (parse + rules + dashboard). The rest is delivered across the 6 milestones on your decided stack. Nothing in the brief is unaddressed.</p>
+    <table>
+      <thead><tr><th>Req</th><th>What you asked for</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td class="req">R1</td><td>File-format detector: type, period, version, route to parser</td><td><span class="pill demo">In demo</span></td></tr>
+        <tr><td class="req">R2</td><td>Streaming XML via iterparse, memory-stable to 500+ MB; PDF embedded-XML</td><td><span class="pill both">Demo + build</span></td></tr>
+        <tr><td class="req">R3</td><td>Async Celery + Redis, heavy/light queues, status polling, job lifecycle</td><td><span class="pill build">Build</span></td></tr>
+        <tr><td class="req">R4</td><td>170+ rule reconciliation engine, thresholds, drill-down</td><td><span class="pill both">Demo + build</span></td></tr>
+        <tr><td class="req">R5</td><td>Dashboard, charts, anomaly, 100k-row server-side pagination, Excel/PDF export</td><td><span class="pill both">Demo + build</span></td></tr>
+        <tr><td class="req">R6</td><td>Multi-tenant isolation, enforced and tested at API level</td><td><span class="pill build">Build (Q2)</span></td></tr>
+        <tr><td class="req">R7</td><td>Stripe billing: trial, plans, proration, webhooks, cancellation</td><td><span class="pill build">Build</span></td></tr>
+        <tr><td class="req">R8 / R9 / R10</td><td>FastAPI backend, React + TypeScript frontend, PostgreSQL</td><td><span class="pill build">Build</span></td></tr>
+        <tr><td class="req">R11 / R12</td><td>Celery + Redis queue; S3 or Azure Blob storage</td><td><span class="pill build">Build</span></td></tr>
+        <tr><td class="req">R13 / R14 / R15</td><td>Auth adapter (Supabase/Auth0); Stripe payments; AWS/Azure hosting</td><td><span class="pill build">Build</span></td></tr>
+        <tr><td class="req">R16</td><td>Golden-file test suites, 70%+ coverage, zero critical static findings</td><td><span class="pill build">Build</span></td></tr>
+        <tr><td class="req">R17</td><td>Milestone 2 gate: live 500+ MB iterparse PoC + memory profile</td><td><span class="pill both">Previewed + committed</span></td></tr>
+        <tr><td class="req">R18 / R19</td><td>Weekly Monday status; milestone-close demo call per script</td><td><span class="pill build">Process</span></td></tr>
+        <tr><td class="req">R20</td><td>Fixed-price, milestone-based, approx. EUR 4,000 / 6 milestones</td><td><span class="pill build">Accepted</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <div class="eyebrow">Why Michael</div>
+    <h2>Built audit-grade software before, end to end</h2>
+    <div class="why-grid">
+      <div class="card">
+        <div class="num">SOLE DEV + SME</div>
+        <h3>2.5 years at U.S. Bank</h3>
+        <p>Became sole developer and subject-matter expert on a 60k-LOC internal platform serving 600 users a month, where compliance and correctness were never optional.</p>
+      </div>
+      <div class="card">
+        <div class="num">CLOUD MIGRATION</div>
+        <h3>Led a 6-month Azure move</h3>
+        <p>Main representative for that platform's migration to Azure Cloud, among the first apps the bank moved. Comfortable owning infra, not just features.</p>
+      </div>
+      <div class="card">
+        <div class="num">CURRENT</div>
+        <h3>Full-stack on healthcare data</h3>
+        <p>Currently full-stack on an Optum project (Angular + .NET + PostgreSQL, onion architecture, strict Agile). Multi-tenant discipline and audit rigor are familiar ground.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="next">
+  <div class="wrap">
+    <div class="eyebrow">Next step</div>
+    <h2>Let's lock Milestone 1</h2>
+    <p>If the demo looks like the right instinct, I would love a short call to walk the spec and agree on the first milestone's definition of done. I welcome the payment gate and the paid probation task: send me a real XML file and a REST contract, and I will return the parsed response. Mondays I send a written status update, and I work EU-friendly hours.</p>
+    <div class="contact-line">
+      Open the demo: <a href="https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi" target="_blank" rel="noopener">michaelwegter.com/work-samples/full-stack-developer-python-fastapi</a><br />
+      Michael Wegter &middot; michaelwegter.com
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,199 @@
+{
+  "slug": "full-stack-developer-python-fastapi",
+  "title": "Full-Stack Developer (Python/FastAPI + React) - Compliance SaaS with Large-File Parsing",
+  "client": {
+    "name": null,
+    "industry": "Fiscal/Accounting Compliance SaaS",
+    "signals": "Domain-mature: spec written, architecture decided, company incorporated, design prototype ready. Seeking reliable mid-to-senior build partner, not exploratory discovery. Structured procurement (6 milestones, written DoD, payment gates). EU preference suggests possible European team or timezone discipline. Additional modules planned post-launch indicates confidence in product roadmap."
+  },
+  "summary": "Client is building a B2B SaaS platform that automates compliance workflows by ingesting large XML/PDF files (500+ MB), applying 170+ reconciliation rules, and delivering analytical dashboards. They have a complete technical spec, field-level parsing reference, and design prototype ready. They need a reliable full-stack developer to implement the product alongside the Product Owner over 6 milestones with strict testing, memory profiling, and multi-tenant isolation.",
+  "explicit_requirements": [
+    {
+      "id": "R1",
+      "text": "Unified file-format detector that identifies document type, period and version from uploaded XML and PDF files and routes to correct parser",
+      "must": true
+    },
+    {
+      "id": "R2",
+      "text": "Streaming XML parsers using lxml/iterparse, memory-stable on files up to 500+ MB; PDF parsing with embedded XML extraction",
+      "must": true
+    },
+    {
+      "id": "R3",
+      "text": "Asynchronous processing with Celery + Redis featuring separate heavy/light queues, status polling, full job lifecycle",
+      "must": true
+    },
+    {
+      "id": "R4",
+      "text": "Business rules engine with 170+ documented reconciliation rules across multiple document types, configurable thresholds, drill-down to source transactions",
+      "must": true
+    },
+    {
+      "id": "R5",
+      "text": "Analytical dashboard with tables, charts, trend and anomaly analysis, server-side pagination for 100,000+ row datasets, Excel and PDF export",
+      "must": true
+    },
+    {
+      "id": "R6",
+      "text": "Multi-tenant architecture with full data isolation per client account, enforced and tested at API level",
+      "must": true
+    },
+    {
+      "id": "R7",
+      "text": "Subscription billing integration with Stripe (trial, plans, proration, webhooks, cancellation)",
+      "must": true
+    },
+    {
+      "id": "R8",
+      "text": "Backend implemented in Python with FastAPI",
+      "must": true
+    },
+    {
+      "id": "R9",
+      "text": "Frontend implemented in React + TypeScript",
+      "must": true
+    },
+    {
+      "id": "R10",
+      "text": "Database: PostgreSQL",
+      "must": true
+    },
+    {
+      "id": "R11",
+      "text": "Queue: Celery + Redis",
+      "must": true
+    },
+    {
+      "id": "R12",
+      "text": "Storage: AWS S3 or Azure Blob",
+      "must": true
+    },
+    {
+      "id": "R13",
+      "text": "Auth behind adapter module: Supabase or Auth0",
+      "must": true
+    },
+    {
+      "id": "R14",
+      "text": "Payments: Stripe",
+      "must": true
+    },
+    {
+      "id": "R15",
+      "text": "Hosting: AWS or Azure",
+      "must": true
+    },
+    {
+      "id": "R16",
+      "text": "Each milestone includes automated tests: golden-file test suites against pre-validated fixtures, minimum 70% coverage on business logic, static analysis report with zero critical findings",
+      "must": true
+    },
+    {
+      "id": "R17",
+      "text": "Milestone 2 includes a payment gate: live proof of concept parsing 500+ MB XML file via iterparse with memory profile, before rest of milestone proceeds",
+      "must": true
+    },
+    {
+      "id": "R18",
+      "text": "Weekly written status update delivered on Mondays",
+      "must": true
+    },
+    {
+      "id": "R19",
+      "text": "Demo call at end of each milestone following pre-agreed script (agreed 3 days in advance)",
+      "must": true
+    },
+    {
+      "id": "R20",
+      "text": "Fixed-price, milestone-based contract; total budget approx. EUR 4,000 across 6 milestones",
+      "must": true
+    },
+    {
+      "id": "Q1",
+      "text": "APPLICATION REQUIRED: What is the largest XML or structured file you have processed in production, and what was your approach to memory management?",
+      "must": true
+    },
+    {
+      "id": "Q2",
+      "text": "APPLICATION REQUIRED: How would you enforce tenant isolation in a FastAPI + PostgreSQL application, and at which layers?",
+      "must": true
+    }
+  ],
+  "implicit_needs": [
+    "Proven end-to-end SaaS shipping experience",
+    "Demonstrable large-file processing experience (XML or CSV) with memory management discipline",
+    "Deep familiarity with multi-tenant isolation patterns and async job architecture",
+    "Clean code and test discipline (70%+ coverage, zero critical static analysis findings)",
+    "Honest, reliable communication and consistent delivery (weekly updates, predictable milestone closure)",
+    "Willingness to do low-risk paid probation task (parse real XML via REST endpoint) before full commitment",
+    "EU timezone availability preferred",
+    "Domain knowledge not required but ability to work from detailed spec and field-level reference documentation",
+    "Understanding of compliance/accounting domain nuances will accelerate delivery"
+  ],
+  "domain": "Fiscal and accounting compliance SaaS; business process automation; large-file ETL; reconciliation rule engines; analytical dashboarding",
+  "tech_hints": [
+    "FastAPI",
+    "Python",
+    "React + TypeScript",
+    "PostgreSQL",
+    "Celery + Redis",
+    "AWS S3 or Azure Blob",
+    "Supabase or Auth0",
+    "Stripe API",
+    "AWS or Azure hosting",
+    "lxml/iterparse for streaming XML",
+    "PDF parsing with XML extraction",
+    "golden-file testing pattern",
+    "static analysis tooling",
+    "server-side pagination patterns"
+  ],
+  "success_signals": [
+    "Candidate demonstrates shipped SaaS end-to-end (backend, frontend, ops)",
+    "Candidate has concrete production experience parsing files 50+ MB with proven memory-safe approach (iterparse, chunking, streaming)",
+    "Candidate articulates multi-tenant isolation strategy (row-level security, tenant_id filters, schema isolation, or combination)",
+    "Candidate shows discipline: test/coverage rigor, honest timelines, clear communication of blockers",
+    "Candidate willing to do low-risk probation task (parse real XML, return REST response) to validate fit before 6-month commitment",
+    "Candidate comfortable with fixed-price, milestone-based risk (not T&M)",
+    "Candidate familiar with or willing to learn configured rules-engine pattern (170+ rules, thresholds, drill-down)"
+  ],
+  "budget": {
+    "raw": "approx. EUR 4,000 across 6 milestones",
+    "tier": "low"
+  },
+  "timeline": "6 milestones with weekly status updates (Mondays) and demo calls at milestone close; no overall timeline given but structured milestone cadence implies 3-4 months likely",
+  "red_flags": [
+    "Fixed-price EUR 4,000 is low for the stated scope (file parsing, rules engine 170+ rules, dashboard, multi-tenant, Stripe billing, async queue, testing discipline). High fixed-price risk if scope drifts or hidden edge cases emerge.",
+    "Milestone 2 payment gate (500+ MB iterparse PoC with memory profile) acts as a probation gate; candidate must deliver this on spec before proceeding. If memory profile fails, milestone 2 halts.",
+    "Compliance domain implies real business liability; wrong reconciliation rules or data isolation bugs have audit/regulatory consequences. Testing rigor is non-optional.",
+    "Client mentions 'well-argued alternatives can be discussed at kickoff; stack will not change mid-project' -- suggests limited flexibility once kickoff spec is locked. Contractor must commit to the decided stack.",
+    "No mention of existing codebase or partial build; implies build from scratch. Scope is large for 6 months if discovery/spec clarification is needed.",
+    "EU timezone preference and weekly Monday status requirement imply operational overhead and timezone alignment cost."
+  ],
+  "demo_concepts": [
+    {
+      "id": "D1",
+      "name": "Large-File Streaming XML Parser Demo",
+      "what": "In-browser React app that accepts a mock 500+ MB XML file (or 50+ MB truncated), parses it via iterparse logic (simulated in JS or compiled to WASM), displays memory usage chart in real time, and shows extracted structured records in a table.",
+      "hero_feature": "Memory-efficient streaming parse with live memory profiling visualization, proving the core R2 capability (lxml/iterparse stability on huge files) in a reproducible, auditable way.",
+      "backend_needed": false,
+      "why_wins": "Directly proves R2 (streaming XML on 500+ MB files with memory discipline). Client's Milestone 2 payment gate is exactly a 500+ MB iterparse PoC with memory profile; this demo pre-answers that question. Candidate can use this as a starting template for the real implementation. Shows honest understanding of the constraint and memory management approach."
+    },
+    {
+      "id": "D2",
+      "name": "Multi-Tenant Isolation Dashboard",
+      "what": "React + TypeScript app showing a mock multi-tenant SaaS dashboard where two tenant accounts are fully isolated. Clicking between tenants shows different data sets, different Stripe subscription states, and enforced row-level access. Code comments explain isolation layers (row_tenant_id filters, RBAC, data scope enforcement).",
+      "hero_feature": "Tenant switching with enforced data isolation at query level, demonstrating understanding of R6 (multi-tenant isolation enforced at API level).",
+      "backend_needed": false,
+      "why_wins": "Directly addresses Q2 (tenant isolation in FastAPI + PostgreSQL). Candidate articulates layers (API middleware, row filters, schema scoping, RLS). Shows product understanding and audit-ready architecture thinking. Safe to build as frontend-only mockup with hardcoded tenant IDs."
+    },
+    {
+      "id": "D3",
+      "name": "Reconciliation Rules Engine & Anomaly Dashboard",
+      "what": "Interactive dashboard (React + TypeScript) showing a mock reconciliation run: input data fed into a rules engine simulator, 170+ rules applied (summarized as rule categories), anomalies highlighted, drill-down to source transactions, and export buttons (CSV, PDF mockups).",
+      "hero_feature": "Rules engine decision flow with anomaly highlighting and drill-down capability, demonstrating R4 (business rules engine with 170+ rules, drill-down to source) and R5 (analytical dashboard with anomaly detection).",
+      "backend_needed": false,
+      "why_wins": "Proves candidate understands the compliance domain and the rules-engine + analytics flow. Candidate can show how rules are structured, how anomalies surface, and how drill-down works. All doable with mock data and no backend. Gives client confidence in domain comprehension before committing EUR 4,000."
+    }
+  ],
+  "notes_from_michael": null
+}

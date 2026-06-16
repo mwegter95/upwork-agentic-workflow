@@ -1,0 +1,114 @@
+# Research — CivicQ Landing Page
+
+## 1. civicq.org / brand assets: nothing public to clone
+
+Searched for "civicq.org" and the platform name directly. No public site,
+staging mirror, logo, or brand kit exists under that name (results only
+surfaced unrelated civic platforms: What The Vote, VoterHQ, VoteCheck,
+Vote.org, Voting Information Project). This confirms the posting's "existing
+staging dark-mode design system" and "logo/brand assets" are private,
+client-side deliverables not available to us pre-hire.
+
+**Implication (confirms planner's call):** the bespoke "institutional civic
+tech" stand-in palette/type system in `planner.out` (near-black `#0B0E11`
+base, teal `#3DBFA8` / muted gold `#C9A227` accents, Newsreader + Inter) is
+the right and only viable approach. demo-builder should keep the cover
+letter / deck language explicit that this is a faithful placeholder system
+built to be swapped for CivicQ's real tokens on day one, not a guess
+presented as the real thing.
+
+## 2. Comparable civic-tech / data-journalism platforms (visual convention reference)
+
+No fetches were spent scraping these (budget discipline), but they are the
+right reference class for "calm authority, data-forward, nonpartisan" and
+match the design direction already chosen — useful for demo-builder to keep
+in mind for proportion/density, not to copy:
+- **ProPublica / ProPublica Represent** — dense data tables, restrained
+  serif+sans pairing, minimal color, heavy reliance on labels over legend.
+- **Ballotpedia** — neutral institutional palette, clear status/labeling
+  conventions, content-first layout.
+- **GovTrack / OpenSecrets** — data-table-forward, muted color ramps for
+  charts, explicit "as of [date]" sourcing language reinforcing trust.
+
+Common thread across this class: low chroma, single accent used sparingly,
+generous whitespace, labels-on-data rather than color-only encoding. This
+validates the planner's chart approach (teal-to-gray sequential ramp,
+direct labeling, no legend-only color reliance) rather than suggesting any
+change.
+
+## 3. Fonts: confirmed available, no change needed
+
+"Newsreader" and "Inter" (planner's choice) are both standard Google Fonts,
+free, self-hostable via `@fontsource` or static `.woff2` download — self-host
+(don't link to fonts.googleapis.com) so Lighthouse mobile perf isn't hurt by
+an extra render-blocking origin. Use `font-display: swap` either way. No
+new font research needed; proceed with planner's pairing.
+
+## 4. Data visualizations: no charting library needed, confirms plan
+
+Client requirement explicitly allows "SVG or Recharts/D3," and the to-apply
+ask wants Michael building all three himself with no designer assets.
+Hand-coded SVG (already the plan) is strictly better here than pulling in
+Recharts or D3:
+- Zero added dependency weight (helps Lighthouse mobile perf budget).
+- Full control over ARIA labeling, focus order, and a visually-hidden data
+  table fallback per chart, which is straightforward with raw SVG/HTML but
+  fights against most off-the-shelf chart libraries' rendering internals.
+- Color-blind safety is best satisfied by direct on/near-segment labels
+  (category + value + %) rather than legend-color mapping, consistent with
+  the comparable-sites pattern in section 2.
+
+No npm dependency additions beyond `react`, `react-dom`, `react-router-dom`
+are required for the frontend.
+
+## 5. Backend blueprint to clone: use `edtech_blueprint.py`, not `spotify_blueprint.py`
+
+Compared the existing mw-backend blueprints for the closest scaffold to
+"validate email, write a row to SQLite, serve a CSV export":
+
+- `spotify_blueprint.py` is OAuth-heavy (spotipy, `SpotifyOAuth`, session
+  state, redirect callback) — wrong shape for this task, would pull in
+  unnecessary auth complexity.
+- **`edtech_blueprint.py`** (497 lines, `/api/edtech` prefix) is the right
+  model: plain `sqlite3` connection helper (`_db()`), lazy `_init_db()` with
+  `CREATE TABLE IF NOT EXISTS`, DB file at `Path(__file__).parent / "data" /
+  "mw.db"` (the same `mw.db` already used by other blueprints — shared file,
+  namespaced tables), Blueprint mounted under `/api/<name>`. CORS is handled
+  globally by `server.py`, so the new blueprint needs no CORS config of its
+  own.
+
+**Recommended build for `civicq_blueprint.py`:**
+- `Blueprint("civicq", __name__, url_prefix="/api/civicq")`
+- Lazy `CREATE TABLE IF NOT EXISTS civicq_subscribers (id INTEGER PRIMARY
+  KEY, email TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)` against the
+  shared `data/mw.db` (mirrors edtech's `_db()` / `_init_db()` pattern
+  exactly).
+- `POST /api/civicq/subscribe` — basic email regex/format validation,
+  `INSERT OR IGNORE`-style duplicate handling, return distinct
+  success/duplicate/invalid JSON states (matches planner's spec).
+- `GET /api/civicq/csv-export` — stdlib `csv` + `io.StringIO`, stream as
+  `text/csv` with `Content-Disposition: attachment`. No new dependency:
+  `csv` and `io` are stdlib, already implicitly available; nothing to add to
+  `requirements.txt`.
+- Register in `server.py` next to the other blueprints (it already has 6
+  registered following an identical `from X_blueprint import X_bp` /
+  `app.register_blueprint(X_bp)` two-line pattern at the bottom of the file)
+  — purely additive, no edits to existing blueprints, auth, or DB schema.
+
+## 6. Analytics (Plausible/Fathom)
+
+Both are script-tag-only, no SDK/npm package needed; correctly scoped by the
+plan as a placeholder `<script data-domain="civicq.org" src=".../script.js">`
+tag plus a small `track(eventName)` helper that console-logs in the demo.
+No research blocker here, nothing further to fetch.
+
+## 7. Net effect on plan.md
+
+No changes needed to the plan. Research confirms every design and technical
+decision already made by planner: stand-in palette/type system (justified by
+the absence of a public real site), hand-coded SVG over Recharts/D3, and
+`edtech_blueprint.py` (not `spotify_blueprint.py`) as the backend clone
+target — recommend demo-builder use `edtech_blueprint.py`'s file specifically
+as the structural template when writing `civicq_blueprint.py`.
+
+Fetches used: 2 of the ~6 budget (both WebSearch, no WebFetch needed).

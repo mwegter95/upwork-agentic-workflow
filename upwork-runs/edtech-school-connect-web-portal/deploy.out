@@ -1,0 +1,56 @@
+# Deploy: EdTech School Connect Web Portal
+slug: edtech-school-connect-web-portal
+date: 2026-06-15
+step: deploy
+verdict: pass
+
+---
+
+## What was deployed
+
+### michaelwegter.com (frontend + demo)
+- **Commit:** `098dca7` — "Add EdTech SchoolConnect Portal demo and work sample registry entry"
+- **Files committed:**
+  - `public/demos/edtech-school-connect-web-portal/index.html` (1548 lines, new)
+  - `src/data/workSamples.js` (id:7 entry added)
+- **Push:** `main -> origin/main` (GitHub Pages auto-deploy triggered)
+- **GitHub Actions run:** `27555911357` — completed success in 2m 15s
+
+### mw-backend (API blueprint)
+- `edtech_blueprint.py` was already committed in the prior build step (`a121f12`,
+  committed alongside run-server.ps1 changes). The Surface Pro auto-deploy watcher
+  picks up pushes within ~30s; blueprint is already live. No new push needed for
+  this step.
+
+---
+
+## Live verification
+
+| Check | Result |
+|---|---|
+| `https://api.michaelwegter.com/health` | `{"status":"ok","version":"1.0.0"}` |
+| `https://michaelwegter.com/` | HTTP 200 |
+| `https://michaelwegter.com/demos/edtech-school-connect-web-portal/` | HTTP 200 |
+| `POST /api/edtech/login` (parent@demo.edu / ParentDemo1) | `{"role":"parent","name":"Robert Johnson","token":"..."}` |
+| `POST /api/edtech/login` (teacher@demo.edu / TeachDemo1) | `{"role":"teacher","name":"Mrs. Rivera","token":"..."}` |
+
+Note: `/work-samples/edtech-school-connect-web-portal` returns 404 from the CDN
+(expected SPA behavior -- the `public/404.html` redirect handles deep links in-browser).
+The route is functional.
+
+---
+
+## Demo credentials (for deploy-test)
+
+| Role | Email | Password |
+|---|---|---|
+| Parent | parent@demo.edu | ParentDemo1 |
+| Teacher | teacher@demo.edu | TeachDemo1 |
+
+---
+
+## URLs
+
+- **Live demo:** https://michaelwegter.com/demos/edtech-school-connect-web-portal/
+- **Work sample page:** https://michaelwegter.com/work-samples/edtech-school-connect-web-portal
+- **API base:** https://api.michaelwegter.com/api/edtech

@@ -1,0 +1,109 @@
+# Deploy Test: EdTech School Connect Web Portal
+slug: edtech-school-connect-web-portal
+date: 2026-06-15
+step: deploy-test
+
+---
+
+## Live URLs tested
+
+- Demo: https://michaelwegter.com/demos/edtech-school-connect-web-portal/
+- Work-samples route: https://michaelwegter.com/work-samples/edtech-school-connect-web-portal
+- API base: https://api.michaelwegter.com/api/edtech
+
+---
+
+## API checks (curl)
+
+| Endpoint | Method | Result |
+|---|---|---|
+| `/health` | GET | `{"status":"ok","version":"1.0.0"}` -- 200 |
+| `/api/edtech/login` (parent@demo.edu / ParentDemo1) | POST | JWT returned, role=parent, name=Robert Johnson |
+| `/api/edtech/login` (teacher@demo.edu / TeachDemo1) | POST | JWT returned, role=teacher, name=Mrs. Rivera |
+| `/api/edtech/student` (parent token) | GET | `Alex Johnson, Grade 7, teacher: Mrs. Rivera` |
+| `/api/edtech/grades` (parent token) | GET | 6 grades returned (Math A+, English B+, Science A-, History B, Art A, PE A+) |
+| `/api/edtech/activities` (parent token) | GET | 4 activities returned |
+| `/api/edtech/messages` (parent token) | GET | 2 messages returned |
+| `/api/edtech/messages/unread-count` (parent token) | GET | `{"unread":1}` |
+| `/api/edtech/student` (teacher token) | GET | Alex Johnson returned |
+| `/api/edtech/grades/1` (teacher token, PATCH) | PATCH | Grade updated to A+/99, `updated_at` refreshed |
+| `/api/edtech/activities` (teacher token, POST) | POST | New activity created (id=5, 201 status) |
+| `/api/edtech/messages` (parent token, POST) | POST | New message created (id=3, 201 status) |
+
+All API endpoints returned correct data with no errors.
+
+---
+
+## Playwright test results
+
+### Test 1 -- Load demo at /demos/edtech-school-connect-web-portal/
+- HTTP 200
+- Login form rendered: email input visible, password input visible
+- Heading: "SchoolConnect -- School Parent Portal" + "Sign in to your portal"
+- Demo account fill buttons present (parent + teacher shortcuts)
+- PASS
+
+### Test 2 -- Parent login flow
+- Filled email/password, clicked "Sign In"
+- Dashboard loaded: student name (Alex), welcome/dashboard content visible
+- URL remained at demo path (SPA, no redirect needed)
+- PASS
+
+### Test 3 -- Grades section
+- Clicked "Grades" navigation
+- Grades content rendered: Math, Science, A+, etc.
+- PASS
+
+### Test 4 -- Activities/Feed section
+- Activities content visible in body (Science Fair, Math Midterm, Academic category)
+- PASS
+
+### Test 5 -- Messages section
+- Clicked "Messages" navigation
+- Thread visible (Mrs. Rivera, "Hi!", homeroom content)
+- Sent a message via textarea: "Testing the messaging feature via Playwright"
+- Message appeared in thread immediately after send
+- PASS
+
+### Test 6 -- Logout and teacher login
+- Logout button found and clicked successfully
+- Logged in as teacher@demo.edu / TeachDemo1
+- Teacher dashboard loaded with teacher-role content (Rivera, Alex Johnson)
+- PASS
+
+### Console errors: none
+### Page errors: none
+
+---
+
+## Work-samples SPA route (Playwright)
+
+- Navigated to https://michaelwegter.com/work-samples/edtech-school-connect-web-portal
+- Page content includes EdTech/SchoolConnect content: true
+- AppFrame iframe visible: true, src=/demos/edtech-school-connect-web-portal/
+- The CDN returns a 404 for the SPA deep-link path (documented expected behavior -- `public/404.html` handles the redirect client-side). The page loads and renders correctly in browser.
+- PASS (known 404 for SPA route is expected and documented in deploy.out)
+
+---
+
+## API path alignment check
+
+All fetch calls in index.html use paths that exactly match the blueprint routes:
+- `/login` -> POST /api/edtech/login
+- `/student` -> GET /api/edtech/student
+- `/grades` -> GET /api/edtech/grades
+- `/grades/<id>` -> PATCH /api/edtech/grades/<id>
+- `/activities` -> GET/POST /api/edtech/activities
+- `/messages` -> GET/POST /api/edtech/messages
+- `/messages/read-all` -> PATCH /api/edtech/messages/read-all
+- `/messages/unread-count` -> GET /api/edtech/messages/unread-count
+
+---
+
+## Problems found
+
+None. All checks passed.
+
+---
+
+VERDICT: pass

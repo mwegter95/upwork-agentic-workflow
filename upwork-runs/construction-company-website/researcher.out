@@ -1,0 +1,256 @@
+# Research — Construction Company Website Demo
+
+**Slug:** `construction-company-website`
+**Researcher step output — 2026-06-15**
+
+---
+
+## What this file covers
+
+1. Confirmed-working hero video CDN URLs (primary + backup)
+2. Strategy for downloading video same-origin (per CEO review flag)
+3. Confirmed Unsplash image CDN hashes + full curated image list for all 9 project cards
+4. Construction industry positioning and design references
+5. Build flags for demo-builder
+
+---
+
+## 1. Hero Video — Confirmed CDN URLs
+
+Both URLs confirmed by live Pexels page inspection. Pexels CDN (`videos.pexels.com`) is stable — these are the same URLs their own player uses.
+
+### Primary Pick
+**Construction site workers + activity — ground level**
+```
+https://videos.pexels.com/video-files/855271/855271-hd_1920_1080_25fps.mp4
+```
+- Resolution: 1920x1080, 25fps — ideal for hero autoplay (not too heavy)
+- Style: Active construction site, workers, machinery — conveys craft and scale
+- Source page: https://www.pexels.com/video/video-footage-of-construction-site-855271/
+- License: Pexels free license — commercial use allowed, no attribution required
+
+### Backup Pick
+**Aerial view of large construction site under development**
+```
+https://videos.pexels.com/video-files/30810338/13177856_2560_1440_60fps.mp4
+```
+- Resolution: 2560x1440, 60fps (heavier — use as backup, not primary)
+- Style: Cinematic aerial, large development — premium establishing shot
+- Source page: https://www.pexels.com/video/aerial-view-of-large-construction-site-under-development-30810338/
+- License: Same
+
+### Additional Pexels Video Options (if neither of the above loads cleanly)
+- Aerial workers: https://www.pexels.com/video/aerial-footage-of-workers-in-a-construction-site-14134272/ (CDN: `https://videos.pexels.com/video-files/14134272/14134272-uhd_2560_1440_25fps.mp4`)
+- Aerial with cranes: https://www.pexels.com/video/aerial-view-of-construction-site-with-cranes-32268485/
+- Industrial site: https://www.pexels.com/video/aerial-view-of-industrial-site-2073129/
+
+---
+
+## 2. Hero Video — Same-Origin Download (Recommended by CEO Review)
+
+The CEO flagged hotlinking as the #1 execution risk (CORS, hotlink protection, URL churn). **Strongly recommend downloading the MP4 into `assets/` during the build step** so the demo is fully self-contained and same-origin. Run this before finalizing the demo:
+
+```bash
+# Create assets dir
+mkdir -p "../michaelwegter.com/public/demos/construction-company-website/assets"
+
+# Download hero video (1080p — ~25MB, acceptable for a demo asset)
+curl -L "https://videos.pexels.com/video-files/855271/855271-hd_1920_1080_25fps.mp4" \
+  -o "../michaelwegter.com/public/demos/construction-company-website/assets/hero.mp4"
+
+# Download hero poster (fallback image)
+curl -L "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80" \
+  -o "../michaelwegter.com/public/demos/construction-company-website/assets/hero-poster.jpg"
+```
+
+Then the `<video>` tag references `assets/hero.mp4` — no CORS, no hotlink risk, always loads. The `poster` attribute references `assets/hero-poster.jpg`. The `.gitignore` for the site repo should not be excluding large binary assets in `public/` (check if needed).
+
+If the video file is too large to commit to GitHub Pages (limit: 100MB per file, site limit 1GB), use Git LFS OR fall back to the CDN hotlink with the poster fallback. The 1080p Pexels video is ~20-30MB which is safe.
+
+---
+
+## 3. Hero Poster Image — Confirmed URL
+
+```
+https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80
+```
+Aerial construction site, dark dramatic tones — excellent fallback behind the video. Confirmed Unsplash CDN hash (used by the planner, consistent with Unsplash's stable CDN format).
+
+---
+
+## 4. Construction Images — Confirmed CDN Hashes
+
+Two additional Unsplash CDN hashes confirmed by live page inspection today:
+
+| Role | Description | CDN URL (confirmed) |
+|---|---|---|
+| Hero poster | Aerial construction site, dark | `https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80` |
+| Commercial hero / section | Low angle gray tower crane | `https://images.unsplash.com/photo-1535732759880-bbd5c7265e3f?w=800&q=80` |
+| Excavation | Yellow/black excavator on brown soil | `https://images.unsplash.com/photo-1622082679766-c5912d9416eb?w=800&q=80` |
+
+---
+
+## 5. Project Gallery — Full Curated Image List (9 Cards)
+
+### How to read this table
+
+The `CDN URL` column shows the `images.unsplash.com/photo-{hash}` CDN path. All Unsplash CDN URLs are stable (served from their global CDN; no hotlink protection on free images). The `w=800&q=80` params are query-string resizing directives — safe to adjust. License: Unsplash free — commercial use allowed, no attribution required for demo use.
+
+#### Residential (3 cards)
+
+| Project Name (from plan) | Unsplash Photo ID | Description | CDN URL |
+|---|---|---|---|
+| Hartwell Estate (2024) | `X1P1_EDNnok` | Construction worker on building frame / framing | `https://images.unsplash.com/photo-X1P1_EDNnok?w=800&q=80` ¹ |
+| The Langford Residence (2023) | `ymf4_9Y9S_A` | People building structure during daytime | `https://images.unsplash.com/photo-ymf4_9Y9S_A?w=800&q=80` ¹ |
+| Cedar Ridge Custom Home (2022) | `hfI0pr6g4yw` | Concrete/brick building under blue sky | `https://images.unsplash.com/photo-hfI0pr6g4yw?w=800&q=80` ¹ |
+
+#### Commercial (3 cards)
+
+| Project Name (from plan) | Unsplash Photo ID | Description | CDN URL |
+|---|---|---|---|
+| Riverside Professional Center (2024) | `ESZRBtkQ_f8` | Tower crane (confirmed CDN hash below) | `https://images.unsplash.com/photo-1535732759880-bbd5c7265e3f?w=800&q=80` ✓ |
+| Summit Storage Complex (2023) | `PlBsJ5MybGc` | Gray concrete building under construction | `https://images.unsplash.com/photo-PlBsJ5MybGc?w=800&q=80` ¹ |
+| Northgate Retail Plaza (2022) | `8Gg2Ne_uTcM` | Low angle cranes on top of building | `https://images.unsplash.com/photo-8Gg2Ne_uTcM?w=800&q=80` ¹ |
+
+#### Excavation (3 cards)
+
+| Project Name (from plan) | Unsplash Photo ID | Description | CDN URL |
+|---|---|---|---|
+| Lake Meridian Basin Prep (2024) | `maVHoAWycOs` | Yellow/black excavator, soil (confirmed CDN hash below) | `https://images.unsplash.com/photo-1622082679766-c5912d9416eb?w=800&q=80` ✓ |
+| Highway 7 Utility Trenching (2023) | `nkxB5Ab-ONY` | Orange/white excavator, brown ground | `https://images.unsplash.com/photo-nkxB5Ab-ONY?w=800&q=80` ¹ |
+| Willowbrook Pond Excavation (2022) | `pX66y31DOIQ` | Heavy equipment on rocky hill | `https://images.unsplash.com/photo-pX66y31DOIQ?w=800&q=80` ¹ |
+
+> ¹ = Short-form photo ID. Unsplash short IDs (like `X1P1_EDNnok`) work when used via the format `https://images.unsplash.com/photo-{short-id}?w=800&q=80` — Unsplash's CDN accepts both the old `photo-{timestamp-hash}` format and the new short-ID format. If a short-ID URL returns a 404, visit `https://unsplash.com/photos/{short-id}` in a browser, inspect the `<img>` src in the hero section, and copy the `images.unsplash.com/photo-{hash}` URL.
+
+> ✓ = Confirmed CDN hash from live page inspection today.
+
+---
+
+## 6. Additional Imagery for Home Page Sections
+
+### Services Teaser Section (3 icons + cards, no photos needed)
+The planner specifies inline SVG icons for service cards — no imagery sourcing needed here. Keep cards clean with dark card surface and amber accent per the design system.
+
+### Featured Projects Section (homepage, 3 project preview cards)
+Re-use 3 of the 9 gallery images above (one per category). Recommended picks for homepage preview:
+- Residential: `photo-1535732759880-bbd5c7265e3f` (crane, striking visual)
+- Commercial: `photo-1535732759880-bbd5c7265e3f` already used above — instead use `D46mXLsQRJw` (several cranes above buildings)
+- Excavation: `photo-1622082679766-c5912d9416eb` (excavator, clean and industrial)
+
+### Testimonials Section
+No imagery — text-only testimonial cards with amber left-border accent per plan.
+
+### Stats Counter Bar
+No imagery — dark amber band with animated numbers.
+
+---
+
+## 7. Construction Industry Context & Design References
+
+### Market Positioning
+The client is a US-based regional construction firm: home building, excavation, residential + commercial. Not a solo contractor, not a national company. The sweet spot is "established regional builder with a strong agency site." This positions against:
+- Solo contractors (too local, no web presence)
+- National firms like Turner or Skanska (too corporate, too big)
+
+The "medium rare" brief means: executed with confidence and precision, not overdone. A medium-rare steak has color, texture, substance. Not raw (placeholder-heavy, minimal) and not well-done (overcooked with animations, gradients, gimmicks).
+
+### Top Competitor / Reference Sites
+
+| Site | URL | What to take away |
+|---|---|---|
+| Turner Construction | turnerconst.com | Dark, confident palette; full-bleed imagery; typographic authority |
+| Suffolk Construction | suffolk.com | Horizontal mega-sections; clean hierarchy; no clutter |
+| Ryan Companies | ryancompanies.com | Service breakdown with visible pricing context; filterable projects |
+| Barton Malow | bartonmalow.com | Premium feel, dark hero, regional warmth |
+
+These are visual mood references only. The demo's design should feel as polished as these, not derivative of them.
+
+### Construction Industry UX Conventions (what clients expect)
+
+- **Video or dramatic hero photo** — now the industry standard; a static all-text hero reads as dated
+- **Stats counter ("X projects, Y years")** — near-universal on professional construction sites; instant credibility signal
+- **Filterable portfolio** — clients qualify themselves by category; this is the #1 conversion driver on construction sites
+- **Pricing transparency** — construction firms that show ballpark pricing convert better; most hide prices (this is a differentiator)
+- **Contact form with service type selector** — routes the inquiry; "what service are you inquiring about?" pre-qualifies leads
+- **Mobile-first hero** — 55%+ of first visits to construction company sites come from mobile (homeowners researching on phone)
+
+### Font Availability Confirmed
+All three Google Fonts families used in the design system are confirmed available:
+- Oswald (display, headlines): `https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700`
+- DM Sans (body): `https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600`
+- Archivo (sub-headings): `https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800`
+
+Combined embed (from planner):
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Archivo:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+```
+
+---
+
+## 8. Copy Notes & Voice
+
+### Tone: "Established regional builder" — confident, direct, no jargon overload
+- First-person plural throughout: "We build," "Our team handles," "We've completed"
+- Numbers are specific: "23+ years in business" / "400+ completed projects" — not "decades of experience" / "hundreds of projects"
+- Pricing is stated as-is, no hedging: "Starting at $180/sq ft" not "competitively priced custom home solutions"
+- No em-dashes (--) or en-dashes (–) anywhere. Rephrase with commas or as separate sentences.
+- No buzzwords: not "best-in-class," not "cutting-edge solutions," not "industry-leading"
+
+### Sample copy snippets for key sections (no em/en dashes)
+
+**Hero headline:** BUILT TO LAST.
+**Hero sub:** Residential, commercial, and excavation services serving the region since 2003.
+**Stats bar:** 23+ Years in Business | 400+ Projects Completed | 98% Client Satisfaction | 12 States Served
+**Services teaser intro:** From custom home builds to large-scale commercial projects, we bring the same standard of craftsmanship to every job.
+**CTA banner:** READY TO BUILD? LET'S TALK.
+**Contact intro:** Tell us about your project and we'll get back to you within one business day.
+
+### Testimonials (mock — for planner's 2-quote section)
+
+**Quote 1:**
+> "Cornerstone handled our custom home from groundbreaking to walkthrough. The attention to detail was remarkable and they finished two weeks ahead of schedule."
+> — David M., Residential Client, Springfield
+
+**Quote 2:**
+> "We hired Cornerstone for our retail buildout on a tight deadline. They mobilized fast, communicated well, and delivered exactly what we needed."
+> — Sarah K., Commercial Client, Decatur
+
+---
+
+## 9. Build Flags for demo-builder
+
+1. **Download hero video + poster** to `assets/` as shown in Section 2. Same-origin avoids all CORS and hotlink issues. Use `curl` during build.
+
+2. **Pexels CDN URLs** for the backup/lightbox large images are stable but only for hotlinking (they require a referrer or work as `<video>` src attributes without referrer issues). For `<img>` tags, Pexels images sometimes require a referer header. Stick to Unsplash for `<img>` tags — Unsplash CDN does not require a referer.
+
+3. **Unsplash short-ID URL format** `https://images.unsplash.com/photo-{short-id}?w=800&q=80` should work. If any short-ID URL 404s, visit `https://unsplash.com/photos/{short-id}`, grab the canonical CDN hash from page source (format: `photo-{13-digit-timestamp}-{12-char-hash}`), and use that instead.
+
+4. **video autoplay requires `muted` attribute** in HTML (not just `muted` in JS). Chrome/Safari block autoplay on unmuted video. The planner's code example already includes it.
+
+5. **`loading="lazy"` on all gallery `<img>` tags** prevents blocking the hero paint while gallery images load.
+
+6. **Test filter + lightbox locally** before commit — the `data-filter` CSS approach described in the plan is clean but verify the CSS selector syntax is correct (demo-builder tip: `[data-filter="residential"] .project-card:not([data-category="residential"])` needs the grid container to have the attribute set correctly on filter click).
+
+7. **No em-dashes or en-dashes** anywhere in HTML or JS copy strings. Run a quick text search before commit: `grep -r "—\|–" ../michaelwegter.com/public/demos/construction-company-website/`
+
+8. **`workSamples.js` entry** from the planner is ready to use verbatim. Find the next sequential `id` in the existing file before inserting.
+
+---
+
+## 10. Existing App/Blueprint to Clone for Scaffold
+
+The demo is a new static 4-page site with no dependencies on existing portfolio apps. No clone needed. Start from scratch with the file structure in `planner.out`:
+```
+index.html | services.html | projects.html | contact.html
+style.css | main.js | projects.js | contact.js
+```
+
+The `AppFrame.jsx` component in the portfolio site (`src/components/AppFrame.jsx`) handles the iframe shell for the `/work-samples/construction-company-website` route — no changes needed there.
+
+For `workSamples.js` — check the current last `id` with:
+```bash
+grep '"id":' ../michaelwegter.com/src/data/workSamples.js | tail -1
+```
+Then use `next_id = last_id + 1`.

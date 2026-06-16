@@ -1,0 +1,107 @@
+# Deploy-Test: healthstack-patient-portal
+# Date: 2026-06-14
+# Tool: Playwright 1.60.0 + Chromium (headless)  |  Script: playwright-test-v2.js
+# Slug: for-this-make-sure-to / healthstack-patient-portal
+
+---
+
+## Pre-flight: API state at test start
+
+At the moment this step began, GET /healthstack/services was returning 404 -- the Surface
+auto-deploy watcher had not yet restarted Flask after the mw-backend push (consistent with
+the warning in deploy.out). The watcher completed its restart within approximately 15s of
+this step starting. All /healthstack/* endpoints returned 200 by the time the main Playwright
+run executed.
+
+Verified via curl before Playwright run:
+  https://api.michaelwegter.com/health           -> 200 {"status":"ok","version":"1.0.0"}
+  https://api.michaelwegter.com/healthstack/services -> 200 (4 providers JSON)
+  https://api.michaelwegter.com/healthstack/login (POST patient) -> 200 (JWT + role=patient)
+
+---
+
+## Static URL check (curl)
+
+| URL | Status |
+|-----|--------|
+| https://michaelwegter.com/ | 200 PASS |
+| https://michaelwegter.com/demos/healthstack-patient-portal/ | 200 PASS |
+| https://michaelwegter.com/demos/healthstack-patient-portal/index.html | 200 PASS |
+| https://michaelwegter.com/demos/healthstack-patient-portal/styles.css | 200 PASS |
+| https://michaelwegter.com/demos/healthstack-patient-portal/app.js | 200 PASS |
+| https://michaelwegter.com/demos/healthstack-patient-portal/api.js | 200 PASS |
+| https://api.michaelwegter.com/health | 200 {"status":"ok"} PASS |
+| https://api.michaelwegter.com/healthstack/services | 200 (4 providers) PASS |
+| https://api.michaelwegter.com/healthstack/login (POST) | 200 JWT PASS |
+
+---
+
+## Playwright test run: 12/12 passed
+
+### Selector note (v1 -> v2 correction)
+
+The original playwright-test.js used `button:has-text("Browse")` / `button:has-text("Provider")`
+to find the CTA that navigates from the patient dashboard to the services page.
+The backend seeds one appointment for the patient account (bk_001), so the dashboard renders
+"Appointments (1)" and shows a "+ Book another appointment" button rather than "Browse providers".
+Both CTAs trigger the same navigation; the v2 script accepts either label.
+
+### Test results
+
+| # | Test | Result |
+|---|------|--------|
+| 1 | work-samples SPA route renders (not raw 404) | PASS |
+| 2 | Demo title: "HealthStack Patient Portal" | PASS |
+| 3 | React app renders into #root | PASS |
+| 4 | Login form: email + password inputs present | PASS |
+| 5 | Patient demo-fill credential button present | PASS |
+| 6 | Patient login (POST /healthstack/login) -- JWT returned | PASS |
+| 7 | Services page shows 4 providers (GET /healthstack/services) | PASS |
+| 8 | Slot picker renders after clicking "Book Appointment" | PASS |
+| 9 | Booking confirmed (POST /healthstack/book) -- checkout page reached | PASS |
+| 10 | Payment processed (POST /healthstack/checkout) -- pi_DEMO_... returned | PASS |
+| 11 | Admin login (admin@healthstack.demo) + Admin Dashboard loaded | PASS |
+| 12 | No critical JS console errors on first paint | PASS |
+
+---
+
+## Hero flow verified step by step
+
+1. Loaded https://michaelwegter.com/demos/healthstack-patient-portal/ -- title correct, React rendered.
+2. Filled patient@healthstack.demo / DemoPatient123! -> clicked "Sign in securely".
+3. API POST /healthstack/login returned 200 + JWT. Patient dashboard rendered ("My Dashboard",
+   "Appointments (1)", seeded booking bk_001 shown with status CONFIRMED).
+4. Clicked "+ Book another appointment" -- navigated to ServicesPage ("Find a Doctor").
+5. API GET /healthstack/services returned 4 providers: Dr. Sarah Chen, Dr. Marcus Webb,
+   Dr. Priya Nair, NP Jordan Kim.
+6. Clicked "Book Appointment" on first provider -- slot picker rendered with AM/PM time slots.
+7. Selected first available slot -> clicked "Confirm Appointment".
+8. API POST /healthstack/book returned booking_id -> checkout page rendered with order summary.
+9. Clicked "Pay $XX.00" -> API POST /healthstack/checkout returned pi_DEMO_... mock PaymentIntent.
+10. Confirmation page showed green check + PaymentIntent ID.
+11. Logged out -> logged in as admin@healthstack.demo / DemoAdmin123!.
+12. Admin Dashboard loaded with stat cards, all-bookings table, audit log, and patient roster.
+
+---
+
+## API endpoint confirmation
+
+| Endpoint | Method | Status | Data shape confirmed |
+|----------|--------|--------|---------------------|
+| /healthstack/login | POST | 200 | {token, role:"patient", name} |
+| /healthstack/login | POST | 200 | {token, role:"admin", name} |
+| /healthstack/services | GET | 200 | {providers: [{id,name,price,rating,slots,...}]} x4 |
+| /healthstack/dashboard/patient | GET + JWT | 200 | {bookings: [...]} |
+| /healthstack/dashboard/admin | GET + JWT(admin) | 200 | stats + bookings + audit log |
+| /healthstack/book | POST + JWT | 200 | {booking_id, provider_name, slot, price, specialty} |
+| /healthstack/checkout | POST + JWT | 200 | {payment_intent_id: "pi_DEMO_...", status:"succeeded"} |
+
+---
+
+## Failures
+
+None.
+
+---
+
+VERDICT: pass

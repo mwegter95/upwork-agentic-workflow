@@ -1,0 +1,148 @@
+DEMO BUILDER RUN SUMMARY
+slug: full-stack-developer-python-fastapi
+date: 2026-06-14
+
+---
+
+## STATUS: COMPLETE — all self-tests pass
+
+---
+
+## 1. WHAT WAS BUILT
+
+Demo name: Compliance Reconciliation Console
+Demo URL (local): /demos/full-stack-developer-python-fastapi/
+Demo URL (live): https://michaelwegter.com/demos/full-stack-developer-python-fastapi/
+Work-sample route: https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi
+
+Concept: A self-contained fiscal XML compliance console. The user picks one of two SAF-T
+fixture files, watches a live streaming-parse memory chart animate (iterparse vs naive DOM
+load, projected to 250,000 elements / 500MB-equivalent), sees the format detector output
+schema version, country, accounting basis, and routed parser profile from the first 2KB,
+then steps through 10 named reconciliation rules with adjustable thresholds and click-through
+drill-down to the exact offending records. A second tab paginates a 100,000-row generated
+ledger with sort and CSV export.
+
+---
+
+## 2. FILES WRITTEN / VERIFIED
+
+Demo (all files under public/demos/full-stack-developer-python-fastapi/):
+
+1. index.html             app shell, CDN React/htm, font preconnect, script load order
+2. assets/app.js          React/htm root: layout, view state, animated parse readout, rule cards,
+                          threshold sliders, drill-down, dashboard, memory chart SVG
+3. assets/parser.js       Format detector (xmlns namespace -> schema registry), DOMParser parse,
+                          buildMemoryModel (streaming vs naive curves, Chrome heap overlay)
+4. assets/rules.js        10 reconciliation rules (R01-R10) with configurable thresholds:
+                          R01 Debit/Credit Balance, R02 Control Total vs Lines, R03 VAT Totals,
+                          R04 Invoice Sequence Gaps, R05 Duplicate Invoices, R06 Period Boundary,
+                          R07 DocumentTotals Cross-Check, R08 Credit Note Linkage,
+                          R09 Customer ID Integrity, R10 Ledger Account Completeness
+5. assets/data.js         mulberry32 seeded PRNG, 100k-row ledger generator, getPage (server-side
+                          pagination style), anomaliesByPeriod, CSV download
+6. assets/styles.css      Full site design tokens (dark theme, Space Grotesk/Inter/JetBrains Mono),
+                          all layout, rule cards, memory chart, dashboard tiles, data table, pager
+7. assets/samples/saft-pt-clean.xml      Clean SAF-T PT 1.04_01 fixture: 10 transactions,
+                                         10 invoices, all rules pass
+8. assets/samples/saft-pt-anomalies.xml  SAF-T PT 1.03_01 fixture seeded with 4 real violations:
+                                         R03 (VAT delta 12 EUR), R04 (FT 2023/5 gap), R07 (gross
+                                         mismatch 0.50 EUR on FT 2023/4), R09 (orphan C999)
+
+Site wiring (all pre-existing and verified):
+
+9.  src/data/workSamples.js  Entry id:5 registered (slug, title, description, color #12b4c8,
+                             icon 🧾, frameStyle baroque, date 2026-06-14)
+10. src/pages/WorkSamples.jsx  Page exists and renders the gallery
+11. src/App.jsx               Routes /work-samples and /work-samples/:slug present,
+                              using existing AppFrame.jsx (unchanged)
+12. src/components/Navbar.jsx  "Work Samples" link present in both desktop and mobile nav
+
+Total: 12 files, within the cap.
+
+---
+
+## 3. FEATURES DELIVERED
+
+HERO — Streaming parse + reconciliation rules engine with drill-down
+  - Format detector reads first 2KB, identifies xmlns namespace against a 3-entry schema
+    registry (SAF-T PT 1.04, SAF-T PT 1.03, SAF-T NO), outputs country, variant, version,
+    accounting basis, and routed parser profile
+  - Animated memory chart: two SVG polylines grow in real time over a 2.2s animation.
+    The streaming line holds near constant (~12 MB peak). The naive line climbs linearly to
+    ~10,012 MB at 250,000 projected elements. Honest disclaimer below the chart explains
+    the production vs demo distinction.
+  - 10 rules evaluate against the parsed fixture. Each card shows id, name, what it checks,
+    pass/warn/fail badge, record count, adjustable threshold slider, and (for failures) a
+    click-to-expand drill table showing Locator, Found, Expected, Delta.
+  - Anomalies fixture triggers 4 real failures immediately on load, giving the client
+    something concrete to click before reading a word of the cover letter.
+
+SUPPORTING 1 — Analytical dashboard
+  - 5 summary tiles (documents parsed, source rows, rules passed, warnings, failures)
+  - 12-bar anomaly trend chart (flagged rows by fiscal period from the 100k dataset)
+  - Ledger table: 100,000-row dataset generated on first dashboard visit (deferred to avoid
+    blocking first paint), paginated 50 rows/page (2,000 pages), sortable on 8 columns,
+    CSV export button for current page view
+
+SUPPORTING 2 — File-format detector
+  - Embedded in the file bar section above the streaming panel
+  - Detects document type, schema variant, country, schema version, fiscal period, accounting
+    basis, and routed parser profile from the first 2,048 bytes
+  - Different result shown for clean (1.04_01, F basis, Portugal) vs anomalies (1.03_01, C basis)
+
+---
+
+## 4. SELF-TEST RESULTS
+
+Build: npm run build -> success, 650ms, zero errors, zero warnings
+      dist/ output confirmed to include demos/full-stack-developer-python-fastapi/ with all assets.
+
+JS syntax: node --check passed on all 4 JS files (app.js, parser.js, rules.js, data.js).
+
+Rule logic trace (anomalies fixture):
+  R03 invoice VAT sum = 2391.50, ledger VAT sum (acct 24320000) = 2403.50, delta = 12.00 EUR
+      -> FAIL (default threshold 10 EUR, delta exceeds it). Drill shows reconciliation row.
+  R04 invoice sequence: FT 2023/1 -> FT 2023/2 -> FT 2023/3 -> FT 2023/4 -> FT 2023/6 (gap=1)
+      -> FAIL (default max-gap = 1, gap found = 1, exclusive threshold). Drill shows gap row.
+  R07 FT 2023/4: GrossTotal 1267.40 vs NetTotal 1030.00 + TaxPayable 236.90 = 1266.90, delta 0.50
+      -> FAIL (default tolerance 0.01 EUR). Drill shows offending invoice row.
+  R09 FT 2023/9 CustomerID C999 not in MasterFiles (6 registered: C001-C006)
+      -> FAIL. Drill shows orphan row.
+  All other rules (R01, R02, R05, R06, R08, R10) -> PASS on anomalies fixture.
+
+Clean fixture: All 10 rules PASS. Format detector outputs SAF-T PT 1.04_01, F (invoicing only).
+
+---
+
+## 5. PROTOTYPE VS FULL DECISION
+
+Outcome: LEAN FULL (no fallback rule tripped).
+No backend required. No Vite sub-build required. Self-contained static app.
+
+The one honest stub (per plan.md): the memory chart visualizes the bounded-memory iterparse
+algorithm projected to 250,000 elements / 500MB-equivalent. The browser parses the shipped
+fixture with DOMParser. Production uses lxml.iterparse server-side. The chart and the
+stream-disclaimer text both state this. This matches plan.md section 2 exactly.
+
+---
+
+## 6. FOR THE PROPOSAL WRITER
+
+Demo URL to embed in cover letter and deck:
+  https://michaelwegter.com/demos/full-stack-developer-python-fastapi/
+
+Suggested call-to-action sentence (no em/en dashes):
+  "Load the Compliance Reconciliation Console, pick the anomalies fixture, and click into R03
+  or R09 to see the exact drill-down rows that a 170-rule engine would expose in production."
+
+Rules to call out by name in the cover letter:
+  - R03 (VAT Totals Reconciliation): triggers a 12 EUR delta, maps to client's D3/D2 concern
+  - R09 (Customer ID Integrity): orphan C999, maps to client's C1 referential integrity category
+  Both are immediately visible on first paint (anomalies fixture is the default selection).
+
+The cover letter must answer Q1 and Q2 directly. The demo supports Q1 visually (the memory
+chart makes iterparse tangible). Q2 (tenant isolation layers) is prose-only per plan.md.
+
+proposalDeckUrl and proposalPageUrl in workSamples.js are currently null.
+Update them once the proposal writer produces the deck and one-pager.

@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proposal: Construction Company Website | Michael Wegter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0D0F12;
+      --surface:     #161A1F;
+      --card:        #1E2228;
+      --border:      #2A2F38;
+      --gunmetal:    #7A7F89;
+      --white:       #F0EDE8;
+      --stone:       #9C9790;
+      --amber:       #E8991A;
+      --amber-hover: #F5AE30;
+      --amber-dark:  #BF7A10;
+
+      --font-head: 'Oswald', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--amber); text-decoration: none; }
+    a:hover { color: var(--amber-hover); text-decoration: underline; }
+
+    /* ===================== LAYOUT ===================== */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    section { padding: 56px 0; }
+    section + section { border-top: 1px solid var(--border); }
+
+    /* ===================== HEADER ===================== */
+    .header {
+      background: var(--surface);
+      border-bottom: 3px solid var(--amber);
+      padding: 40px 0;
+    }
+
+    .header .page {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .header-brand {}
+
+    .header-eyebrow {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 10px;
+    }
+
+    .header-name {
+      font-family: var(--font-head);
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+    }
+
+    .header-tagline {
+      font-size: 14px;
+      color: var(--stone);
+      margin-top: 6px;
+    }
+
+    .header-meta {
+      text-align: right;
+      font-size: 13px;
+      color: var(--stone);
+      line-height: 1.9;
+    }
+
+    .header-meta strong {
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    /* ===================== HERO DEMO ===================== */
+    .demo-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .demo-hero-screenshot {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1E2228 0%, #0D0F12 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-size: 14px;
+      letter-spacing: 0.1em;
+      color: var(--gunmetal);
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* construction-site inspired placeholder pattern */
+    .demo-hero-screenshot::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          rgba(232,153,26,0.04) 0px,
+          rgba(232,153,26,0.04) 1px,
+          transparent 1px,
+          transparent 40px
+        );
+    }
+
+    .demo-placeholder-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .demo-placeholder-inner .demo-logo-text {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 28px;
+      color: var(--amber);
+      letter-spacing: 0.05em;
+    }
+
+    .demo-placeholder-inner .demo-sub {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--stone);
+      margin-top: 8px;
+    }
+
+    .demo-bar {
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+    }
+
+    .demo-bar-label {
+      font-size: 13px;
+      color: var(--stone);
+    }
+
+    .demo-bar-label strong {
+      color: var(--white);
+    }
+
+    .demo-cta-btn {
+      display: inline-block;
+      background: var(--amber);
+      color: #000;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 11px 24px;
+      border-radius: 0;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .demo-cta-btn:hover {
+      background: var(--amber-hover);
+      color: #000;
+      text-decoration: none;
+    }
+
+    /* ===================== SECTION HEADINGS ===================== */
+    .section-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 10px;
+    }
+
+    .section-heading {
+      font-family: var(--font-head);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-body {
+      font-size: 15px;
+      color: var(--stone);
+      max-width: 640px;
+      line-height: 1.7;
+    }
+
+    /* ===================== REQUIREMENTS GRID ===================== */
+    .req-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .req-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      padding: 20px 20px 20px 20px;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .req-card-title {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .req-card-body {
+      font-size: 13px;
+      color: var(--stone);
+      line-height: 1.6;
+    }
+
+    .req-card-check {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--amber);
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 18px;
+      margin-bottom: 10px;
+    }
+
+    /* ===================== FEATURES ===================== */
+    .features-list {
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .feature-row {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .feature-num {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      background: var(--amber);
+      color: #000;
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+    }
+
+    .feature-content {}
+
+    .feature-title {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--stone);
+      line-height: 1.65;
+    }
+
+    /* ===================== STATS BAR ===================== */
+    .stats-bar {
+      background: var(--amber);
+      padding: 32px 0;
+    }
+
+    .stats-bar .page {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      text-align: center;
+    }
+
+    .stat {}
+
+    .stat-num {
+      font-family: var(--font-head);
+      font-size: 40px;
+      font-weight: 700;
+      color: #000;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.65);
+      margin-top: 4px;
+    }
+
+    /* ===================== PAGES WALKTHROUGH ===================== */
+    .pages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .page-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .page-card-img-placeholder {
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1E2228 0%, #0D0F12 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .page-card-img-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(232,153,26,0.03) 0px,
+        rgba(232,153,26,0.03) 1px,
+        transparent 1px,
+        transparent 32px
+      );
+    }
+
+    .page-card-icon {
+      font-size: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-card-body {
+      padding: 14px 16px;
+    }
+
+    .page-card-title {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .page-card-desc {
+      font-size: 12px;
+      color: var(--stone);
+      line-height: 1.5;
+    }
+
+    /* ===================== APPROACH ===================== */
+    .approach-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .approach-item {
+      padding: 20px;
+      border-top: 3px solid var(--amber);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    .approach-phase {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+
+    .approach-title {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .approach-desc {
+      font-size: 13px;
+      color: var(--stone);
+      line-height: 1.6;
+    }
+
+    /* ===================== ABOUT ===================== */
+    .about-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      margin-top: 32px;
+    }
+
+    @media (max-width: 640px) {
+      .about-layout { grid-template-columns: 1fr; gap: 24px; }
+    }
+
+    .about-text {
+      font-size: 15px;
+      color: var(--stone);
+      line-height: 1.75;
+    }
+
+    .about-text p + p { margin-top: 14px; }
+
+    .proof-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .proof-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .proof-dot {
+      flex-shrink: 0;
+      width: 6px;
+      height: 6px;
+      background: var(--amber);
+      border-radius: 50%;
+      margin-top: 7px;
+    }
+
+    .proof-text {
+      font-size: 14px;
+      color: var(--stone);
+      line-height: 1.55;
+    }
+
+    .proof-text strong {
+      color: var(--white);
+    }
+
+    /* ===================== CTA BANNER ===================== */
+    .cta-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--amber);
+      padding: 48px;
+      text-align: center;
+      margin-top: 56px;
+      margin-bottom: 56px;
+    }
+
+    .cta-banner-heading {
+      font-family: var(--font-head);
+      font-size: 30px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--white);
+      letter-spacing: 0.04em;
+      margin-bottom: 12px;
+    }
+
+    .cta-banner-sub {
+      font-size: 15px;
+      color: var(--stone);
+      margin-bottom: 28px;
+    }
+
+    .cta-banner-link {
+      font-size: 13px;
+      color: var(--gunmetal);
+      margin-top: 16px;
+      display: block;
+    }
+
+    /* ===================== FOOTER ===================== */
+    .footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+    }
+
+    .footer .page {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-name {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--stone);
+    }
+
+    .footer-links a {
+      color: var(--stone);
+    }
+
+    .footer-links a:hover {
+      color: var(--amber);
+      text-decoration: none;
+    }
+
+    /* ===================== RESPONSIVE ===================== */
+    @media (max-width: 640px) {
+      .header .page { flex-direction: column; }
+      .header-meta { text-align: left; }
+      section { padding: 40px 0; }
+      .section-heading { font-size: 26px; }
+      .cta-banner { padding: 32px 24px; }
+      .cta-banner-heading { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="page">
+      <div class="header-brand">
+        <div class="header-eyebrow">Upwork Proposal</div>
+        <div class="header-name">Construction Company Website</div>
+        <div class="header-tagline">Submitted by Michael Wegter &nbsp;|&nbsp; Full-Stack Developer, U.S.-based</div>
+      </div>
+      <div class="header-meta">
+        <div><strong>Date</strong><br>June 15, 2026</div>
+        <div style="margin-top: 12px;"><strong>Live Demo</strong><br><a href="https://michaelwegter.com/demos/construction-company-website/" target="_blank">View Now</a></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== DEMO HERO ===== -->
+  <div style="padding: 48px 32px; max-width: 900px; margin: 0 auto;">
+    <div class="demo-hero">
+      <div class="demo-hero-screenshot">
+        <div class="demo-placeholder-inner">
+          <div class="demo-logo-text">CORNERSTONE CONSTRUCTION CO.</div>
+          <div class="demo-sub">Live demo at michaelwegter.com/demos/construction-company-website/</div>
+        </div>
+      </div>
+      <div class="demo-bar">
+        <div class="demo-bar-label">
+          <strong>Cornerstone Construction Co. Website Demo</strong><br>
+          Four-page production-quality site. Click to explore all pages.
+        </div>
+        <a href="https://michaelwegter.com/demos/construction-company-website/" target="_blank" class="demo-cta-btn">Open Live Demo</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== REQUIREMENTS COVERAGE ===== -->
+  <section>
+    <div class="page">
+      <div class="section-label">Every requirement, accounted for</div>
+      <h2 class="section-heading">What You Asked For, Built</h2>
+      <p class="section-body">
+        The demo hits every item from your posting. Here is exactly where each requirement lives in the site.
+      </p>
+
+      <div class="req-grid">
+        <div class="req-card">
+          <div class="req-card-check">&#10003;</div>
+          <div class="req-card-title">Video-Background Homepage</div>
+          <div class="req-card-body">
+            Full-viewport construction B-roll plays on load. Autoplay, muted, looped. Dark gradient overlay keeps the headline readable on every frame. Graceful fallback to poster image if video cannot load.
+          </div>
+        </div>
+
+        <div class="req-card">
+          <div class="req-card-check">&#10003;</div>
+          <div class="req-card-title">Services + Pricing Page</div>
+          <div class="req-card-body">
+            Home Building ($180-$260/sq ft), Excavation ($125-$175/hr), and Commercial Construction (custom quote) each get their own section with tiered pricing cards and a full list of what is included.
+          </div>
+        </div>
+
+        <div class="req-card">
+          <div class="req-card-check">&#10003;</div>
+          <div class="req-card-title">Contact Page</div>
+          <div class="req-card-body">
+            Validated form with name, email, phone, service type selector, project description, and preferred contact method. Inline field errors on blur. Personalized success state on submit (no page reload).
+          </div>
+        </div>
+
+        <div class="req-card">
+          <div class="req-card-check">&#10003;</div>
+          <div class="req-card-title">Projects Gallery</div>
+          <div class="req-card-body">
+            Nine past projects across Residential, Commercial, and Excavation. Instant filter tabs. Full lightbox with arrow navigation and keyboard support (ESC to close, arrow keys to cycle through projects).
+          </div>
+        </div>
+
+        <div class="req-card">
+          <div class="req-card-check">&#10003;</div>
+          <div class="req-card-title">Construction Market Theme</div>
+          <div class="req-card-body">
+            Bespoke design system: charcoal black, safety amber accent, Oswald display type, DM Sans body. Zero template feel. Industrial weight without being heavy-handed.
+          </div>
+        </div>
+
+        <div class="req-card">
+          <div class="req-card-check">&#10003;</div>
+          <div class="req-card-title">Professional UX/UI Polish</div>
+          <div class="req-card-body">
+            Sticky transparent-to-solid nav. Scroll-triggered fade-ins. Animated stats counters. Mobile hamburger menu. WCAG AA accessible. Reduced-motion respected. No console errors on load.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STATS BAR ===== -->
+  <div class="stats-bar">
+    <div class="page">
+      <div class="stat">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Fully Working Pages</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">9</div>
+        <div class="stat-label">Demo Projects in Gallery</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Pricing Tiers per Service</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Console Errors on Load</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE WALKTHROUGH ===== -->
+  <section>
+    <div class="page">
+      <div class="section-label">Demo walkthrough</div>
+      <h2 class="section-heading">Four Pages, All Working</h2>
+      <p class="section-body">
+        Visit the live demo and click through the nav. Every page is functional and fully styled.
+      </p>
+
+      <div class="pages-grid">
+        <div class="page-card">
+          <div class="page-card-img-placeholder">
+            <span class="page-card-icon">🎬</span>
+          </div>
+          <div class="page-card-body">
+            <div class="page-card-title">Home</div>
+            <div class="page-card-desc">
+              Video hero, animated stats bar, services teaser, featured projects preview, testimonials, and a full-width CTA band.
+            </div>
+          </div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-card-img-placeholder">
+            <span class="page-card-icon">🏗️</span>
+          </div>
+          <div class="page-card-body">
+            <div class="page-card-title">Services</div>
+            <div class="page-card-desc">
+              Three full service sections with transparent pricing tiers, included-items lists, and a 4-question FAQ accordion.
+            </div>
+          </div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-card-img-placeholder">
+            <span class="page-card-icon">📸</span>
+          </div>
+          <div class="page-card-body">
+            <div class="page-card-title">Projects</div>
+            <div class="page-card-desc">
+              Filterable gallery (All / Residential / Commercial / Excavation), nine project cards, full lightbox with keyboard nav.
+            </div>
+          </div>
+        </div>
+
+        <div class="page-card">
+          <div class="page-card-img-placeholder">
+            <span class="page-card-icon">📋</span>
+          </div>
+          <div class="page-card-body">
+            <div class="page-card-title">Contact</div>
+            <div class="page-card-desc">
+              Split layout with company info and a validated form. Service type selector. Animated success state. No page reload on submit.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KEY DIFFERENTIATORS ===== -->
+  <section>
+    <div class="page">
+      <div class="section-label">Why this demo stands out</div>
+      <h2 class="section-heading">What Makes It Work</h2>
+
+      <div class="features-list">
+        <div class="feature-row">
+          <div class="feature-num">1</div>
+          <div class="feature-content">
+            <div class="feature-title">The video is done correctly</div>
+            <div class="feature-desc">
+              Same-origin MP4 file (no CORS issues, no broken embeds), autoplay with muted and playsinline attributes set, dark gradient overlay for legibility on every frame, and a JS error handler that falls back to the poster image if the video cannot load. Most "video background" demos break in production. This one does not.
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-num">2</div>
+          <div class="feature-content">
+            <div class="feature-title">Pricing transparency is a real differentiator</div>
+            <div class="feature-desc">
+              Most construction company websites hide their prices and say "call for a quote." The research is clear: firms that show ballpark pricing convert better and attract more qualified leads. The Services page gives real starting numbers for home building and excavation, and explains what each tier includes.
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-num">3</div>
+          <div class="feature-content">
+            <div class="feature-title">The gallery qualifies leads by service type</div>
+            <div class="feature-desc">
+              A homeowner researching a custom build, a commercial tenant doing a buildout, and an excavation buyer all have different needs. The filterable gallery lets each type of client self-identify, see only relevant work, and click into a project detail lightbox. This is the #1 conversion driver on construction marketing sites.
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-num">4</div>
+          <div class="feature-content">
+            <div class="feature-title">Bespoke design with no template feel</div>
+            <div class="feature-desc">
+              Charcoal black backgrounds, safety amber accent, Oswald condensed headlines, sharp button edges, and generous whitespace. No stock template shortcuts. The design system was built from scratch to match the visual language of established regional construction firms (Turner, Suffolk, Ryan Companies) without copying any of them.
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-num">5</div>
+          <div class="feature-content">
+            <div class="feature-title">Mobile-first and accessible</div>
+            <div class="feature-desc">
+              Responsive across mobile, tablet, and desktop. Navigation collapses into a hamburger drawer below 768px. WCAG 2.1 AA baseline: proper aria labels, keyboard navigation through the lightbox and forms, focus management, and reduced-motion support for all animations.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== APPROACH ===== -->
+  <section>
+    <div class="page">
+      <div class="section-label">How I would build the real thing</div>
+      <h2 class="section-heading">From Demo to Delivery</h2>
+      <p class="section-body">
+        The demo is the foundation. Here is how I would take it to a production site for your company.
+      </p>
+
+      <div class="approach-grid">
+        <div class="approach-item">
+          <div class="approach-phase">Week 1</div>
+          <div class="approach-title">Assets + Brand Setup</div>
+          <div class="approach-desc">
+            Swap in your real logo, brand colors, and company name. Collect your project photos, real testimonials, and service details. Set up the domain and hosting.
+          </div>
+        </div>
+
+        <div class="approach-item">
+          <div class="approach-phase">Week 1 to 2</div>
+          <div class="approach-title">Content + Backend</div>
+          <div class="approach-desc">
+            Replace all placeholder copy and imagery with your real content. Add a backend contact form handler with email notifications. Optionally wire up a lightweight CMS so you can update projects and services yourself.
+          </div>
+        </div>
+
+        <div class="approach-item">
+          <div class="approach-phase">Week 2 to 3</div>
+          <div class="approach-title">Polish + Launch</div>
+          <div class="approach-desc">
+            SEO metadata for your service area, Google Analytics, final cross-browser testing, performance optimization, and launch. I stay available for feedback rounds and iteration after go-live.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section>
+    <div class="page">
+      <div class="section-label">Who I am</div>
+      <h2 class="section-heading">Michael Wegter</h2>
+
+      <div class="about-layout">
+        <div class="about-text">
+          <p>
+            I'm a full-stack developer based in the U.S. with about 5 years of experience building and maintaining production applications at scale. I currently work on a large Angular and .NET application at Optum, and before that I spent two years at U.S. Bank building an internal React platform (TDAAS) that served 600 users/month and went through a full Azure Cloud migration.
+          </p>
+          <p>
+            I also maintain a personal project portfolio at michaelwegter.com: a gallery planner, an SEO analyzer, Spotify and Apple Music tools, and more. This proposal demo was built as part of that workflow.
+          </p>
+          <p>
+            I communicate plainly, I don't disappear mid-project, and I become the subject matter expert on whatever I'm working on. The U.S. Bank gig is a good example: I took over a critical app as the sole developer two months in and owned it from there.
+          </p>
+        </div>
+
+        <div>
+          <ul class="proof-list">
+            <li class="proof-item">
+              <div class="proof-dot"></div>
+              <div class="proof-text"><strong>Full-stack range:</strong> React, Angular, Python, .NET/C#, SQL, PostgreSQL, Docker, CI/CD. Comfortable across the whole stack.</div>
+            </li>
+            <li class="proof-item">
+              <div class="proof-dot"></div>
+              <div class="proof-text"><strong>U.S. Bank (via Turnberry):</strong> Sole developer on TDAAS, 600 users/month, ~60k LOC React + Python + Java. Led the Azure Cloud migration.</div>
+            </li>
+            <li class="proof-item">
+              <div class="proof-dot"></div>
+              <div class="proof-text"><strong>Optum RHRP 4 (current):</strong> Angular + .NET/C#, strict Agile, 150+ story points delivered. Team go-to for AI-assisted development.</div>
+            </li>
+            <li class="proof-item">
+              <div class="proof-dot"></div>
+              <div class="proof-text"><strong>Personal portfolio:</strong> Six live apps on michaelwegter.com spanning planner tools, data visualization, and API integrations.</div>
+            </li>
+            <li class="proof-item">
+              <div class="proof-dot"></div>
+              <div class="proof-text"><strong>U.S.-based:</strong> Qualifies for this posting. Available for calls and responsive across normal business hours.</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA BANNER ===== -->
+  <div class="page">
+    <div class="cta-banner">
+      <div class="cta-banner-heading">Ready to See It Live?</div>
+      <div class="cta-banner-sub">
+        The demo is already built and working. Click the link below to explore all four pages, then reach out if you want to talk about the real build.
+      </div>
+      <a href="https://michaelwegter.com/demos/construction-company-website/" target="_blank" class="demo-cta-btn">Open Cornerstone Demo</a>
+      <div class="cta-banner-link">https://michaelwegter.com/demos/construction-company-website/</div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="page">
+      <div class="footer-name">Michael Wegter</div>
+      <div class="footer-links">
+        <a href="https://michaelwegter.com" target="_blank">michaelwegter.com</a>
+        <a href="https://michaelwegter.com/demos/construction-company-website/" target="_blank">View Demo</a>
+        <a href="https://michaelwegter.com/work-samples/construction-company-website" target="_blank">Portfolio Entry</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

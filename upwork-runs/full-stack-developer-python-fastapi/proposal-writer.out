@@ -1,0 +1,203 @@
+PROPOSAL WRITER RUN SUMMARY
+slug: full-stack-developer-python-fastapi
+date: 2026-06-14
+
+---
+
+## STATUS: COMPLETE — all three deliverables written and verified
+
+---
+
+## 1. DELIVERABLES PRODUCED
+
+Location: /Users/michaelwegter/Desktop/Projects/upwork-agentic-workflow/upwork-runs/full-stack-developer-python-fastapi/proposal/
+
+### Cover letter (cover-letter.md, 7.0 KB)
+
+Written in Michael's voice per brand-voice.md. Five-part structure per the cover letter shape:
+  1. Hook: names the client's two hard problems directly (500+ MB parsing, reconciliation engine)
+  2. Demo: "I built a working demo for you" + URL in sentence 2
+  3. Q1 answer: full lxml.etree.iterparse explanation with elem.clear(), ancestor pruning,
+     concrete memory numbers (80-120 MB vs 600-800 MB), batch streaming to PostgreSQL/S3
+  4. Q2 answer: four concrete isolation layers (JWT tenant context, tenant-scoped SQLAlchemy
+     session, PostgreSQL RLS with SET LOCAL, API-level isolation tests + static analysis)
+  5. Stack coverage: every R1-R20 and Q1-Q2 requirement addressed paragraph by paragraph
+  6. Honest note: explicitly states the browser demo limitation (no literal 500 MB tab stream)
+  7. Why Michael: U.S. Bank 2.5 years / 60k-LOC SME, Azure migration, current Optum engagement
+  8. Commercial acceptance: EUR 4,000 fixed-price, milestone-based, EU hours, Monday updates
+
+Demo link used: https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi
+
+### One-pager (one-pager.html, 17.5 KB)
+
+Full on-brand HTML one-pager using the site's exact design tokens (dark theme, Space Grotesk
+headings, Inter body, JetBrains Mono labels). Seven sections:
+  - Hero: title, lede, three CTAs (Open demo, How it works, Requirement coverage)
+  - Demo showcase: hero screenshot + three supporting screenshots (memory chart, rules, dashboard)
+    with links, plus the honest-note disclaimer
+  - How it works: three-card grid (Detect + Parse, Reconcile, Analyze)
+  - The two required answers: Q1 and Q2 in styled QA blocks with code highlighting
+  - Requirement coverage table: all R1-R20 mapped with Demo / Build / Both pills
+  - Why Michael: three-card grid (2.5yr U.S. Bank SME, Azure migration, current Optum)
+  - Footer: next step, demo link, contact line
+
+Images embedded via relative paths to proposal/media/:
+  - media/hero.png (hero screenshot)
+  - media/step-3.png (memory chart)
+  - media/step-5.png (rules engine drill-down)
+  - media/step-7.png (dashboard / data table)
+
+### Slide deck (deck.pptx, 1.1 MB, 8 slides)
+
+Built by build_deck.py using python-pptx. Eight slides, all on the site's dark palette:
+  Slide 1: Hero / cover — "Compliance Reconciliation Console," demo URL, lede
+  Slide 2: Live demo CTA — primary call to action with full demo URL
+  Slide 3: Demo proof — what the demo shows (detect + parse, rules + drill-down, dashboard)
+  Slide 4: Q1 answer — streaming XML memory management with lxml.iterparse code block
+  Slide 5: Q2 answer — four-layer tenant isolation breakdown
+  Slide 6: Milestone roadmap — 6 milestones with what's in each
+  Slide 7: Why Michael — three proof points (U.S. Bank, Azure, Optum)
+  Slide 8: Closing CTA — next step, demo URL (third appearance in deck)
+
+Demo URL present on slides: 1, 2, 8 (minimum; also referenced in slide 3 and 4 prose).
+
+---
+
+## 2. QUALITY CHECKS
+
+Em/en dash scan (U+2013, U+2014):
+  cover-letter.md    en=0  em=0  PASS
+  one-pager.html     en=0  em=0  PASS
+  deck.pptx (XML)    en=0  em=0  PASS
+
+Demo link present:
+  cover-letter.md    YES (first paragraph of demo section)
+  one-pager.html     YES (hero CTA, demo screenshot, footer contact line)
+  deck.pptx          YES (slides 1, 2, 8)
+
+Required Q1 + Q2 answered:
+  cover-letter.md    Q1=YES  Q2=YES  (full answers in body, each introduced with bold label)
+  one-pager.html     Q1=YES  Q2=YES  (dedicated QA block section with code highlights)
+  deck.pptx          Q1=YES  Q2=YES  (dedicated slides 4 and 5)
+
+Brand tokens used:
+  one-pager.html     Full :root block verbatim (mustard, cyan-vivid, hot-pink, parrot-red,
+                     parrot-green, sky-blue; all surface/border/text tokens; Space Grotesk,
+                     Inter, JetBrains Mono via Google Fonts preconnect)
+  deck.pptx          Dark #121118 background, mustard #e8b820 accents, cyan-vivid #12b4c8
+                     on secondary elements, Space Grotesk font throughout
+
+---
+
+## 3. REQUIREMENT COVERAGE IN PROSE
+
+Every explicit requirement from brief.json is addressed in at least one deliverable:
+
+R1  (file-format detector)          Demo (supporting feature 2) + cover letter
+R2  (streaming XML, PDF parsing)    Demo (hero) + cover letter + Q1 answer + deck slide 4
+R3  (Celery + Redis async)          Cover letter body + deck slide 3 architecture description
+R4  (170+ rule engine, drill-down)  Demo (hero) + cover letter + one-pager section 2
+R5  (dashboard, pagination, export) Demo (supporting 1) + cover letter + one-pager
+R6  (multi-tenant isolation)        Cover letter Q2 answer (4 layers) + deck slide 5
+R7  (Stripe billing)                Cover letter body + requirement coverage table (both)
+R8-R10 (FastAPI, React+TS, PG)     Cover letter (explicit stack commitment) + table
+R11-R12 (Celery+Redis, S3/Azure)   Cover letter + table
+R13-R15 (auth adapter, Stripe, AWS) Cover letter + table
+R16 (golden-file tests, 70% cov)   Cover letter (milestone delivery paragraph) + table
+R17 (Milestone 2 gate)             Cover letter ("I welcome it") + demo (streaming preview)
+R18 (Monday status updates)        Cover letter ("Mondays I send a written status update")
+R19 (milestone-close demo calls)   Cover letter (committed, per-script)
+R20 (EUR 4,000 fixed-price)        Cover letter (explicitly accepted, fixed-price comfort)
+Q1  (largest file + memory)        Cover letter (full technical answer) + deck slide 4
+Q2  (tenant isolation + layers)    Cover letter (4-layer answer) + deck slide 5
+
+---
+
+## 4. HONEST STUBS AND DISCLOSURES
+
+Per plan.md, the cover letter and one-pager both include an explicit disclosure that
+the demo does not literally stream a 500 MB file in a browser tab (server-side work,
+not safe in a browser). The exact phrasing:
+
+  "One honest note on the demo: it does not literally stream 500 MB inside a browser
+  tab, because that is server work and a browser cannot do it safely. It runs the real
+  algorithm on smaller SAF-T fixtures and visualizes the memory behavior at scale. That
+  is deliberate. It shows you the exact approach the Milestone 2 proof of concept will
+  prove on real files, before you have spent a euro."
+
+This is a brand-voice signal (honest, candid, "Story with stakes") and also a trust
+mechanism: a client who notices the limitation will find it already acknowledged.
+
+---
+
+## 5. WORKSAMPLES.JS STATUS
+
+Current state in src/data/workSamples.js:
+  proposalDeckUrl:  null
+  proposalPageUrl:  null
+
+The deck is a local PPTX file (not yet published to a URL). The one-pager HTML is also
+local. These fields should be updated IF the one-pager is published to the site's
+public/ directory and a persistent URL is assigned. Until then, null is correct. The
+demo URL in href is live and serves the demo; the work-sample card functions correctly
+with proposalDeckUrl and proposalPageUrl as null (they are optional display fields).
+
+---
+
+## 6. EVAL REPORT RESULT (from evaluator phase)
+
+File: /Users/michaelwegter/Desktop/Projects/upwork-agentic-workflow/upwork-runs/full-stack-developer-python-fastapi/eval-report.md
+
+OVERALL: PASS
+  H1 Requirement coverage:  PASS (all 22 items mapped)
+  H2 Demo builds + loads:   PASS (npm run build success, 732ms, zero errors)
+  H3 Demo URL resolves:     PASS (HTTP 200 locally, deploy pending)
+  H4 Demo link present:     PASS (cover letter, deck, one-pager all carry the URL)
+  H5 No em/en dashes:       PASS (zero hits across all files)
+  H6 On-brand:              PASS (full token set in demo and one-pager)
+
+Soft score average: 4.8 / 5.0 (cover letter 5, conciseness 4, demo 5, deck 5, persuasiveness 5)
+Fix list: empty. Package is ready to submit.
+
+---
+
+## 7. SUBMISSION CHECKLIST
+
+To submit this proposal on Upwork:
+
+1. Copy the cover letter text from cover-letter.md into the Upwork proposal field.
+   The letter is Upwork-paste-ready: markdown bold (**...**) may need conversion to
+   plain text if Upwork's input strips markdown. Test paste in preview mode.
+
+2. Attach or link the one-pager:
+   Option A (recommended): paste the URL if one-pager is published to the site.
+   Option B: export one-pager.html to PDF and attach as PDF to the Upwork proposal.
+
+3. Attach deck.pptx if Upwork allows file attachments (or export to PDF first).
+
+4. The demo link https://michaelwegter.com/work-samples/full-stack-developer-python-fastapi
+   appears in the cover letter body (paragraph 2). Confirm it loads in a browser
+   before submitting.
+
+5. Confirm the site has been deployed (push to main triggers GH Pages deploy).
+   The demo URL will 404 until the site build propagates (~1-2 minutes post-push).
+
+---
+
+## 8. NOTES FOR NEXT RUNS
+
+- The lxml.iterparse Q1 answer (elem.clear() + ancestor pruning, 80-120 MB vs 600-800 MB)
+  is factually grounded. Keep this as the standing template for any large-file parsing
+  posting answer.
+- The four-layer tenant isolation Q2 answer (JWT, SQLAlchemy tenant scope, PostgreSQL RLS,
+  API tests) with the PgBouncer SET LOCAL caveat is a reliable technical differentiator.
+  Reuse and adapt for any multi-tenant SaaS posting.
+- The "honest stub" disclosure pattern (acknowledge the demo's limitation proactively)
+  performed well in the evaluator's trust-signal assessment. Use it whenever a demo
+  genuinely cannot replicate a server-side capability.
+- EU timezone preference was addressed ("I work EU-friendly hours") without falsely
+  claiming EU residency. This phrasing is safe to reuse.
+
+---
+
+PROPOSAL WRITER: COMPLETE
