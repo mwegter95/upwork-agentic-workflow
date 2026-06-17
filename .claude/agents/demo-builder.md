@@ -44,11 +44,17 @@ integrations, server-side compute). When the plan calls for it, build it:
 - Do NOT push or restart the backend yourself. The deploy step pushes it and the
   Surface auto-deploy watcher restarts the API. Just record the backend changes
   (files, endpoints, test credentials) in your build report.
-- For a backend bigger than a Flask blueprint (e.g. a Node/Express service), use
-  the Surface runner: `python scripts/surface_run.py --lang bash --file build.sh`
-  installs/builds/starts it on the Surface and returns logs; then add a small
-  Flask bridge blueprint so it is reachable at api.michaelwegter.com. See
-  CLAUDE.md "Surface runner". Record the service + bridge in your build report.
+- For a backend bigger than a Flask blueprint (e.g. a Node/Express service): build
+  the WHOLE thing on the Surface yourself — do not hand any of it back to the user.
+  Use the Surface runner (`python scripts/surface_run.py --lang python ...`) to
+  install the runtime and build the service in the runner workspace. Then START it
+  so it stays up using `scripts/surface_service_template.py` (a plain `node
+  server.js` will NOT persist — see CLAUDE.md "Surface runner"); confirm it prints
+  `LISTENING` and answers on `127.0.0.1:<PORT>`. Finally write the bridge: copy
+  `../mw-backend/bridge_blueprint_template.py` to `<feature>_blueprint.py`, set
+  `PREFIX` + `UPSTREAM=http://127.0.0.1:<PORT>`, and register it in `server.py`.
+  Do NOT push (deploy does that). Record the port, the exact start command, and
+  the bridge prefix in your build report so deploy can verify and re-start it.
 - Frontend-only with realistic mock data is fine for simple demos that gain
   nothing from a server.
 

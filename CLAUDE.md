@@ -153,33 +153,67 @@ never just static images.
 
 ---
 
-## Surface runner — build real backends on the Surface
+## Surface runner — build and deploy real backends end-to-end, on your own
 
-For projects that need a real backend beyond a Flask blueprint (e.g. a Node/Express
-service, a worker, a database), you can run commands and scripts ON the Surface
-(the machine hosting mw-backend) via:
+When a project needs a real backend beyond a Flask blueprint (a Node/Express
+service, a worker, a real database), **you are expected to stand the whole thing
+up yourself and get it live, with no human help.** You can: install runtimes,
+build the service, start it so it stays running, write and register its Flask
+bridge, push it, and verify the public endpoint responds. Do not stop at "the
+backend is built" or leave steps for the user — a project that warrants a real
+backend is not done until that backend is actually answering requests at
+`https://api.michaelwegter.com/<prefix>/...`. (For simpler demos, a single Flask
+blueprint or realistic mock data is still fine — use this when it genuinely helps.)
+
+You run commands ON the Surface (the Windows machine hosting mw-backend) via:
 
 ```
-python scripts/surface_run.py --lang bash --file build.sh     # or --lang python
-echo '<script>' | python scripts/surface_run.py --lang bash   # from stdin
+python scripts/surface_run.py --lang python --file build_step.py   # prefer python on the Surface (Windows)
+echo 'print("hi")' | python scripts/surface_run.py --lang python    # from stdin
 ```
 
 It runs the script on the Surface and returns stdout/stderr + exit code, so you
-get real success/failure and can adjust. It is authenticated (HMAC via `RUN_SECRET`
-in this repo's `.env`); it only works if the Surface has the runner enabled.
+get real success/failure and can iterate. Authenticated via `RUN_SECRET` in this
+repo's `.env`. **Prefer `--lang python`** — the Surface is Windows and `bash` may
+not be present. Scripts run in the runner's workspace dir by default, so build
+everything there and use relative paths; keep scripts idempotent and check exit
+codes.
 
-Use it to install runtimes, build/start a real service, and seed real data, so a
-demo can use a genuine backend instead of mock data. **Expose the new service
-through Flask** (api.michaelwegter.com is the tunneled Flask): add a small bridge
-blueprint in `../mw-backend/` that proxies `/<feature>/*` to the local service,
-then the deploy step pushes it and the Surface auto-deploy restarts Flask. Prefer
-this only when the project genuinely benefits; a Flask blueprint or mock data is
-fine for simpler demos. Keep scripts idempotent and check exit codes.
+### Critical: starting a service that STAYS UP
+The runner waits for your script to finish, so running `node server.js` directly
+just blocks until timeout and is then killed — the service will NOT persist. To
+start a long-running service, use `scripts/surface_service_template.py`: copy it,
+set `CMD` / `CWD` / `PORT` / `HEALTH_PATH`, and send it with
+`python scripts/surface_run.py --lang python --file <your copy>`. It launches the
+service detached (so it survives the call returning), health-checks it, and prints
+the PID. Build first (install deps), then start it with this, then confirm it
+prints `LISTENING`.
 
-For the bridge, copy `../mw-backend/bridge_blueprint_template.py` to
-`<feature>_blueprint.py`, set its `PREFIX` (public path) and `UPSTREAM` (the
-loopback port the service listens on), and register it in `server.py`. It
-reverse-proxies `/<prefix>/*` to the local service — no per-project proxy code.
+### Expose it through Flask (the bridge)
+api.michaelwegter.com is the tunneled Flask app, so a service on a loopback port is
+reached publicly by adding a tiny bridge: copy
+`../mw-backend/bridge_blueprint_template.py` to `<feature>_blueprint.py`, set its
+`PREFIX` (public path) and `UPSTREAM` (`http://127.0.0.1:<PORT>`), and register it
+in `server.py`. It reverse-proxies `/<prefix>/*` to the service — no per-project
+proxy code. The bridge is the ONLY mw-backend change; the service itself lives in
+the runner workspace, not the repo.
+
+### End-to-end ownership (who does what)
+1. **demo-builder** — installs runtimes + builds the service on the Surface (via
+   the runner), starts it with the service template and confirms it answers on
+   `127.0.0.1:<PORT>`, then writes `<feature>_blueprint.py` + registers it in
+   `server.py` (does NOT push). Records the port, start command, and bridge in the
+   build report.
+2. **deploy** — commits & pushes the bridge in `../mw-backend`; the Surface
+   auto-deploy restarts Flask within ~30s, bringing the bridge live. Re-confirms
+   the service is still up (restart it with the template if not), then verifies
+   `https://api.michaelwegter.com/<prefix>/...` returns real data.
+3. **deploy-test** — exercises the live, bridged endpoint as part of the QA flow.
+
+Durability note: a service started this way runs until the Surface reboots (it is
+not yet managed by `run-server.ps1`). That is fine for a live demo now; if a
+project needs it to survive reboots, say so in the build report so it can be added
+to the launcher.
 
 ## Self-improvement (improvements.md + the optimizer step)
 
