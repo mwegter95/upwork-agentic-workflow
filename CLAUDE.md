@@ -179,15 +179,17 @@ not be present. Scripts run in the runner's workspace dir by default, so build
 everything there and use relative paths; keep scripts idempotent and check exit
 codes.
 
-### Critical: starting a service that STAYS UP
+### Critical: start a service so it STAYS UP (and survives reboots)
 The runner waits for your script to finish, so running `node server.js` directly
-just blocks until timeout and is then killed — the service will NOT persist. To
-start a long-running service, use `scripts/surface_service_template.py`: copy it,
-set `CMD` / `CWD` / `PORT` / `HEALTH_PATH`, and send it with
-`python scripts/surface_run.py --lang python --file <your copy>`. It launches the
-service detached (so it survives the call returning), health-checks it, and prints
-the PID. Build first (install deps), then start it with this, then confirm it
-prints `LISTENING`.
+just blocks until timeout and is then killed. Do not start services yourself —
+**register** them and let the Surface launcher own them. Copy
+`scripts/surface_register_service.py`, set `NAME` / `CMD` / `ARGS` / `CWD` /
+`PORT`, and send it with `python scripts/surface_run.py --lang python --file <your
+copy>`. It records the service in `../mw-backend/data/services.json`;
+`run-server.ps1` (always running on the Surface) is the sole launcher, so it
+starts the service within ~10s, restarts it if it crashes, and relaunches it on
+every reboot. The helper then polls the port and prints `LISTENING`. Build the
+service first (install deps, compile) in the runner workspace, then register it.
 
 ### Expose it through Flask (the bridge)
 api.michaelwegter.com is the tunneled Flask app, so a service on a loopback port is
@@ -200,20 +202,20 @@ the runner workspace, not the repo.
 
 ### End-to-end ownership (who does what)
 1. **demo-builder** — installs runtimes + builds the service on the Surface (via
-   the runner), starts it with the service template and confirms it answers on
-   `127.0.0.1:<PORT>`, then writes `<feature>_blueprint.py` + registers it in
-   `server.py` (does NOT push). Records the port, start command, and bridge in the
-   build report.
+   the runner), registers it with `surface_register_service.py` and confirms
+   `LISTENING` on `127.0.0.1:<PORT>`, then writes `<feature>_blueprint.py` +
+   registers it in `server.py` (does NOT push). Records the service name, port,
+   and bridge prefix in the build report.
 2. **deploy** — commits & pushes the bridge in `../mw-backend`; the Surface
    auto-deploy restarts Flask within ~30s, bringing the bridge live. Re-confirms
-   the service is still up (restart it with the template if not), then verifies
-   `https://api.michaelwegter.com/<prefix>/...` returns real data.
+   the service is up (re-send the register helper if not — it is idempotent), then
+   verifies `https://api.michaelwegter.com/<prefix>/...` returns real data.
 3. **deploy-test** — exercises the live, bridged endpoint as part of the QA flow.
 
-Durability note: a service started this way runs until the Surface reboots (it is
-not yet managed by `run-server.ps1`). That is fine for a live demo now; if a
-project needs it to survive reboots, say so in the build report so it can be added
-to the launcher.
+Reboot durability is automatic: because the service lives in
+`data/services.json`, `run-server.ps1` relaunches it after a reboot and restarts
+it if it crashes. The service files live in the runner workspace; the only repo
+change is the bridge blueprint.
 
 ## Self-improvement (improvements.md + the optimizer step)
 

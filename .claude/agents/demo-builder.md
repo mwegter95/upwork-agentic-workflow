@@ -47,10 +47,11 @@ integrations, server-side compute). When the plan calls for it, build it:
 - For a backend bigger than a Flask blueprint (e.g. a Node/Express service): build
   the WHOLE thing on the Surface yourself — do not hand any of it back to the user.
   Use the Surface runner (`python scripts/surface_run.py --lang python ...`) to
-  install the runtime and build the service in the runner workspace. Then START it
-  so it stays up using `scripts/surface_service_template.py` (a plain `node
-  server.js` will NOT persist — see CLAUDE.md "Surface runner"); confirm it prints
-  `LISTENING` and answers on `127.0.0.1:<PORT>`. Finally write the bridge: copy
+  install the runtime and build the service in the runner workspace. Then REGISTER
+  it with `scripts/surface_register_service.py` so the Surface launcher keeps it
+  up and reboot-durable (a plain `node server.js` will NOT persist — see CLAUDE.md
+  "Surface runner"); confirm it prints `LISTENING` on `127.0.0.1:<PORT>`. Finally
+  write the bridge: copy
   `../mw-backend/bridge_blueprint_template.py` to `<feature>_blueprint.py`, set
   `PREFIX` + `UPSTREAM=http://127.0.0.1:<PORT>`, and register it in `server.py`.
   Do NOT push (deploy does that). Record the port, the exact start command, and

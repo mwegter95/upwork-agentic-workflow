@@ -29,9 +29,10 @@ This is fully your job to finish — get it answering publicly, no user help:
    rest of mw-backend. The auto-deploy restart makes the bridge live.
 2. Confirm the underlying service is actually running on the Surface. Health-check
    it on its loopback port via `python scripts/surface_run.py --lang python` (a
-   quick `urllib` GET to `127.0.0.1:<PORT>`). If it is down, restart it with the
-   demo-builder's copy of `scripts/surface_service_template.py` (re-send it via the
-   runner) until it prints `LISTENING`.
+   quick `urllib` GET to `127.0.0.1:<PORT>`). If it is down, re-send the
+   demo-builder's copy of `scripts/surface_register_service.py` (idempotent — it
+   re-registers and waits) until it prints `LISTENING`. The launcher keeps it up
+   and reboot-durable thereafter.
 3. Then verify the PUBLIC bridged endpoint `https://api.michaelwegter.com/<prefix>/`
    returns the real data the demo expects (see "Verify live" below). The deploy is
    not complete until this passes. See CLAUDE.md "Surface runner".
