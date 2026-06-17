@@ -44,6 +44,11 @@ integrations, server-side compute). When the plan calls for it, build it:
 - Do NOT push or restart the backend yourself. The deploy step pushes it and the
   Surface auto-deploy watcher restarts the API. Just record the backend changes
   (files, endpoints, test credentials) in your build report.
+- For a backend bigger than a Flask blueprint (e.g. a Node/Express service), use
+  the Surface runner: `python scripts/surface_run.py --lang bash --file build.sh`
+  installs/builds/starts it on the Surface and returns logs; then add a small
+  Flask bridge blueprint so it is reachable at api.michaelwegter.com. See
+  CLAUDE.md "Surface runner". Record the service + bridge in your build report.
 - Frontend-only with realistic mock data is fine for simple demos that gain
   nothing from a server.
 

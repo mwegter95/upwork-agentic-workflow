@@ -153,6 +153,29 @@ never just static images.
 
 ---
 
+## Surface runner — build real backends on the Surface
+
+For projects that need a real backend beyond a Flask blueprint (e.g. a Node/Express
+service, a worker, a database), you can run commands and scripts ON the Surface
+(the machine hosting mw-backend) via:
+
+```
+python scripts/surface_run.py --lang bash --file build.sh     # or --lang python
+echo '<script>' | python scripts/surface_run.py --lang bash   # from stdin
+```
+
+It runs the script on the Surface and returns stdout/stderr + exit code, so you
+get real success/failure and can adjust. It is authenticated (HMAC via `RUN_SECRET`
+in this repo's `.env`); it only works if the Surface has the runner enabled.
+
+Use it to install runtimes, build/start a real service, and seed real data, so a
+demo can use a genuine backend instead of mock data. **Expose the new service
+through Flask** (api.michaelwegter.com is the tunneled Flask): add a small bridge
+blueprint in `../mw-backend/` that proxies `/<feature>/*` to the local service,
+then the deploy step pushes it and the Surface auto-deploy restarts Flask. Prefer
+this only when the project genuinely benefits; a Flask blueprint or mock data is
+fine for simpler demos. Keep scripts idempotent and check exit codes.
+
 ## Deploy + live test (deploy and deploy-test steps)
 
 - **Deploy = push, both repos.** The `deploy` step commits and pushes

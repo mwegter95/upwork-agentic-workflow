@@ -23,6 +23,12 @@ In `../mw-backend`: commit and push to `main`. The Surface Pro auto-deploy
 watcher pulls and restarts the API (`https://api.michaelwegter.com`) within about
 30 seconds. Do NOT try to restart the Surface yourself; just push.
 
+If the demo runs a real service the demo-builder set up via the Surface runner
+(see CLAUDE.md "Surface runner"), make sure its Flask bridge blueprint is pushed
+(so the service is reachable at api.michaelwegter.com after the restart). You may
+use `python scripts/surface_run.py` to (re)start or health-check that service on
+the Surface. Verify the bridged endpoint responds in the step below.
+
 ## Verify live (required)
 - Poll `https://michaelwegter.com/work-samples/<slug>` and the demo at
   `/demos/<slug>/` until they return 200 with the expected content, or time out
