@@ -237,6 +237,31 @@ nothing worth saying — this must stay cheap. The final `prompt-optimizer` step
 (with-ceo layout) reads `improvements.md` and applies the safe ones back into the
 agent prompts.
 
+## Improve mode (the /upwork-proposal-improve command and the studio "Improve" run)
+
+An improve pass re-runs the SAME run with new requirements instead of starting
+fresh. Everything from the first run is already on disk in `upwork-runs/<slug>/`
+(and the demo + live backend are deployed). The contract for every agent in an
+improve pass:
+
+- **Reuse, don't rebuild.** Read the existing artifact and its `## handoff` block;
+  open the full file only when the change requires it. Never regenerate content
+  that the new requirement doesn't touch.
+- **Smallest possible change.** Edit files in place (use Edit, never rewrite a
+  whole file for a small change). Big changes are allowed when truly required, but
+  do them as surgically and briefly as possible.
+- **Versioned outputs.** Write your output to the next version rather than
+  overwriting: `plan.md` → `plan2.md`, `deploy.out` → `deploy2.out`, `<id>.out` →
+  `<id>2.out` (increment the highest existing). This preserves history and lets
+  later passes diff. (In the studio, the engine assigns these versioned paths for
+  you and feeds each step the latest version of its inputs.)
+- **Minimal blast radius.** Only the phases the change touches should run; an
+  unaffected step writes one line ("unaffected") and passes through. The demo's
+  live site + backend must keep working — redeploy/retest only what changed.
+- **Token discipline is paramount here.** Everything is in place, so a second run
+  should be cheap: no re-exploration, no restating context, no full-file dumps,
+  dense output, and a short `## handoff` block covering only what changed.
+
 ## Deploy + live test (deploy and deploy-test steps)
 
 - **Deploy = push, both repos.** The `deploy` step commits and pushes
