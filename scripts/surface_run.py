@@ -71,7 +71,8 @@ def main():
     sig = hmac.new(secret.encode(), ts.encode() + b"." + body, hashlib.sha256).hexdigest()
     req = urllib.request.Request(
         base + "/run/exec", data=body, method="POST",
-        headers={"Content-Type": "application/json", "X-Run-Timestamp": ts, "X-Run-Signature": sig},
+        headers={"Content-Type": "application/json", "X-Run-Timestamp": ts, "X-Run-Signature": sig,
+                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"},
     )
     try:
         with urllib.request.urlopen(req, timeout=args.timeout + 30) as r:
