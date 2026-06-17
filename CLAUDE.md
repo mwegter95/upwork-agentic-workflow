@@ -176,6 +176,31 @@ then the deploy step pushes it and the Surface auto-deploy restarts Flask. Prefe
 this only when the project genuinely benefits; a Flask blueprint or mock data is
 fine for simpler demos. Keep scripts idempotent and check exit codes.
 
+For the bridge, copy `../mw-backend/bridge_blueprint_template.py` to
+`<feature>_blueprint.py`, set its `PREFIX` (public path) and `UPSTREAM` (the
+loopback port the service listens on), and register it in `server.py`. It
+reverse-proxies `/<prefix>/*` to the local service — no per-project proxy code.
+
+## Self-improvement (improvements.md + the optimizer step)
+
+Every step should briefly watch its own work and, **only when it noticed
+something concrete**, append at most 3 one-line suggestions to
+`improvements.md` in the run directory (next to the output files), under a
+`### <stepId>` heading, each tagged with one of:
+
+- `[adherence]` — where the prompt was unclear, mis-followed, or produced
+  lower-quality output than intended.
+- `[tokens]` — where the step wasted tokens (re-reading files, restating context,
+  verbose output) and how the prompt could prevent it.
+- `[reuse]` — setup that should be cached/declared as a prerequisite instead of
+  redone every run (e.g. "Playwright was installed mid-run — make it a setup
+  step").
+
+Keep each suggestion to one sentence and skip the file entirely if there is
+nothing worth saying — this must stay cheap. The final `prompt-optimizer` step
+(with-ceo layout) reads `improvements.md` and applies the safe ones back into the
+agent prompts.
+
 ## Deploy + live test (deploy and deploy-test steps)
 
 - **Deploy = push, both repos.** The `deploy` step commits and pushes
