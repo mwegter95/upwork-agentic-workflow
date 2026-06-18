@@ -1,0 +1,16 @@
+# Intake (improve pass 2)
+
+Brief from run 1 stands; added `improvePass2` section documenting 4 scoped fixes:
+
+1. **No category abbreviation.** Assets/Revenue/Liability/Equity/Expense rendered in full; drop any truncation ("ass" fix).
+2. **Linked-number contrast.** Blue links on dark bg swapped to accessible accent from existing palette (WCAG AA).
+3. **Ledger 200 entries + scroll.** "Recent 50 entries" becomes scrollable 200-row list with pagination/per-page selector, backed by real backend data.
+4. **Real backend wiring.** Ledger + accounts read only from live Node service via Flask bridge (api.michaelwegter.com); no mock fallbacks.
+
+Feature richness remains 10. All changes are scoped polish + backend integration.
+
+## handoff
+- produced: brief.json updated with improvePass2 requirements (4 fixes: no abbrev, link contrast, ledger 200+scroll, real backend only).
+- decisions: keep run-1 stack/design/slug; reuse existing tokens for contrast fix; ledger must hit live bridged Node endpoint.
+- next needs: demo-builder edits frontend labels/contrast/pagination + backend 200-row query/endpoint; deploy re-confirms service LISTENING; deploy-test exercises live ledger.
+- risks: (1) Node service must be up on Surface; (2) 200-row endpoint must exist server-side; (3) contrast token must pass WCAG AA.

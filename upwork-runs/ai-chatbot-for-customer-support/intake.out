@@ -1,0 +1,57 @@
+# Intake — AI Chatbot for Customer Support
+
+## Parsed from Upwork posting + orchestrator brief
+
+**Project:** AI-powered support chatbot for US online retailer (orders, shipping, returns).
+**Client need:** Deflect repetitive first-layer support via chatbot answering FAQs, pulling order status, escalating to humans during 9am–6pm ET.
+**Constraint:** Zero API token cost, in-browser LLM (WebLLM/WebGPU preferred, Transformers.js fallback).
+**Feature richness target:** 10/10 (production-quality, multiple real features).
+
+### 5 explicit client capabilities (all must be gradable in demo + proposal)
+
+1. **FAQ answering** — bot retrieves from knowledge base and cites sources
+2. **Order status lookup** — bot queries order API (mocked as JSON)
+3. **Human handoff + ET hours routing** — escalation form, ticket confirmation, respects 9am–6pm ET
+4. **Embeddable + Zendesk integration** — demo is iFrame-ready; integration design in deck (no real API call)
+5. **US compliance** — US data norms, US consumer tone, no jargon
+
+### 5 proposal must-includes (all must appear in cover letter + deck)
+
+1. Architecture explanation + rationale (in-browser RAG, why)
+2. Examples of similar bots (portfolio or illustrative, honest)
+3. Timeline + price breakdown
+4. Fixed-vs-hourly recommendation
+5. **Explicit US-based confirmation** (required, easy to miss)
+
+### Hard constraints encoded in brief.json
+
+- **Zero token cost:** In-browser LLM only (WebLLM/WebGPU Llama-3.2-1B/3B, or Transformers.js WASM fallback).
+- **Client-side RAG:** FAQ corpus as JSON asset; retrieval via Transformers.js embeddings or precomputed index.
+- **Mock order API:** Static JSON, no backend integration needed.
+- **Simulated Zendesk:** Form + ticket confirmation, no real API.
+- **Design direction:** Modern SaaS support-tool aesthetic (trust, efficiency). NOT michaelwegter.com's dark theme. No em/en dashes.
+
+### Hero + supporting features (richness 10)
+
+**Hero:** In-browser RAG chatbot (streaming response, source citations, order lookup, graceful escalation fallback).
+**Supporting:** (1) Escalation flow with ET hours logic + simulated Zendesk. (2) Admin panel (KB editor, chat analytics, deflection metrics).
+
+### Test acceptance criteria (deploy-test + evaluator gates)
+
+- All 5 capabilities demonstrated and gradable in live demo
+- All 5 proposal must-includes present
+- Demo loads, no console errors, model download shown with honest progress
+- Chat outputs grounded answers with sources
+- Order lookup works, escalation respects ET hours
+- Admin panel editable + shows analytics
+- WebGPU fallback chain (WebLLM → Transformers.js → RAG-template)
+- Bespoke design (not portfolio), no em/en dashes
+
+---
+
+## handoff
+
+- produced: `brief.json` — fully structured project brief with 5 capabilities, 5 proposal must-includes, hard constraints (zero-token in-browser), hero + supporting features, design direction, and test acceptance criteria.
+- decisions: FULL build (richness 10); WebLLM (Llama-3.2-1B/3B) with Transformers.js WASM fallback; client-side RAG (FAQ JSON + embeddings); mock order data; simulated Zendesk; bespoke support-tool design.
+- next needs: planner must lock demo concept (in-browser RAG chatbot), define hero + supporting scope, design direction (palette + typography), and requirement-to-feature traceability. Must confirm zero-cost approach and fallback chain are feasible.
+- risks: WebGPU unsupported on some browsers/headless → fallback chain is required and must be validated early in deploy-test; large model download UX must be honest (progress bar, "running locally" messaging); examples-of-similar-bots must be truthful (portfolio vs illustrative, no overselling).

@@ -1,0 +1,213 @@
+{
+  "slug": "trucking-freight-factoring-and-banking",
+  "title": "Freight Factoring & Banking Operations Console",
+  "demoRoute": "/work-samples/trucking-freight-factoring-and-banking",
+  "demoUrl": "https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/",
+  "featureRichness": 10,
+  "industry": "Fintech / Freight Logistics / Banking-as-a-Service",
+  "clientContext": "Senior TS/Node engineer position at a Brazilian fintech migrating a mature freight-factoring + banking platform (PHP/Laravel + Flutter) to a modern TypeScript monorepo, running an AI-first engineering process with Claude Code. The demo must showcase proficiency in the exact tech stack they use and understanding of agentic AI workflows.",
+  "mustHaves": [
+    {
+      "id": "mh-1",
+      "requirement": "Backend: NestJS + Drizzle + Postgres (TypeScript monorepo pattern). Exact stack, no substitutions.",
+      "why": "Client hiring for NestJS expertise; demo must prove fluency in their exact tools."
+    },
+    {
+      "id": "mh-2",
+      "requirement": "Frontend: Next.js 15 (App Router, RSC-aware where applicable). Admin/operations web interface.",
+      "why": "Core tech they need for the Next.js 15 admin app."
+    },
+    {
+      "id": "mh-3",
+      "requirement": "Money correctness: integer minor units (cents/centavos) everywhere. No floats on money paths. Zod validation. Discriminated unions for currency types.",
+      "why": "Client is obsessive about correctness with money; this is a hard gate and must be visible in the demo."
+    },
+    {
+      "id": "mh-4",
+      "requirement": "Real-DB integration tests (Postgres, no mocks on money paths). Green CI.",
+      "why": "Client must-have: 'Real integration tests against Postgres and keep CI green.'"
+    },
+    {
+      "id": "mh-5",
+      "requirement": "Authentication & RBAC: real auth flow, role-based access (admin, underwriter, carrier, driver), demo login seeded with recorded credentials.",
+      "why": "Identity & RBAC is a core domain; live deploy-test must be able to log in."
+    },
+    {
+      "id": "mh-6",
+      "requirement": "Bridge mechanism: Flask mw-backend acts as thin gateway/proxy to the real NestJS + Drizzle service. Resolve concrete mechanism (e.g., local Node process on Surface, Flask forwards /api/factoring/* to it).",
+      "why": "Constraint from orchestrator: must interface Node backend with existing Python backend for same-origin deployment via Surface auto-watcher."
+    },
+    {
+      "id": "mh-7",
+      "requirement": "No em/en dashes anywhere in prose (cover letter, deck, one-pager). Michael's voice. Bespoke Brazilian fintech design (NOT michaelwegter.com's look).",
+      "why": "Hard gates from CLAUDE.md definition of done."
+    }
+  ],
+  "niceToHaves": [
+    {
+      "id": "nh-1",
+      "requirement": "PIX-style instant payout / payments integration (nod to Brazilian rails, BaaS flavor)."
+    },
+    {
+      "id": "nh-2",
+      "requirement": "Expo React Native stub or mention (they'll build driver app next; showing awareness = bonus)."
+    },
+    {
+      "id": "nh-3",
+      "requirement": "AI-factory / spec panel: surfaces the 'humans architect, AI builds, humans verify' workflow they run — ties pitch to demo."
+    },
+    {
+      "id": "nh-4",
+      "requirement": "Overlap with Brazil business hours context / Portuguese locale touches (optional)."
+    },
+    {
+      "id": "nh-5",
+      "requirement": "Fintech-grade error handling and validation (Zod deeply integrated, not just on money paths)."
+    }
+  ],
+  "stackRequirements": {
+    "backend": {
+      "runtime": "Node.js",
+      "framework": "NestJS",
+      "orm": "Drizzle",
+      "database": "Postgres",
+      "language": "TypeScript",
+      "testing": "Jest or Vitest (with real Postgres DB, no mocks on money paths)",
+      "validation": "Zod (critical on money paths)"
+    },
+    "frontend": {
+      "framework": "Next.js 15",
+      "router": "App Router",
+      "language": "TypeScript",
+      "styling": "CSS/Tailwind or bespoke (NOT michaelwegter.com palette)"
+    },
+    "bridging": {
+      "existing": "mw-backend (Flask)",
+      "role": "Gateway/reverse-proxy to NestJS service",
+      "deployment": "Surface auto-watcher (same-origin, no cross-origin auth headaches)"
+    },
+    "optional": {
+      "native": "Expo React Native (driver app future work; mention/prep is nice-to-have)"
+    }
+  },
+  "demoFeatures": {
+    "hero": {
+      "name": "Freight Invoice Factoring Flow",
+      "description": "Carrier submits a freight invoice -> system calculates advance rate, fee, and reserve (all in integer cents) -> underwriter approves -> funds are disbursed. FIDC ledger entry. Showcases end-to-end money correctness.",
+      "keyScreens": [
+        "Invoice intake form (carrier-facing)",
+        "Underwriter approval console (admin/underwriter role)",
+        "Ledger view (double-entry factoring ledger, integer cents, monospaced numerals)",
+        "Funding confirmation + history"
+      ],
+      "techHighlight": "Integer-cents math, Zod validation, Postgres ledger, role-based approvals, real auth."
+    },
+    "supporting": [
+      {
+        "name": "Banking Ledger & Account Balances",
+        "description": "Account balances for carriers and drivers, double-entry ledger, real-time balance tracking. Nod to BaaS flavor. Shows Drizzle relations + money-safe queries.",
+        "keyScreens": [
+          "Account dashboard (balance, recent transactions)",
+          "Ledger entries (double-entry view, integer-cents format)"
+        ]
+      },
+      {
+        "name": "RBAC & Permissions",
+        "description": "Roles (admin, underwriter, carrier, driver) with real auth. Different views/actions per role. Demo login seeded. Shows NestJS Guards + real auth flow.",
+        "keyScreens": [
+          "Login screen (seed creds: e.g., admin@demo.local / password123)",
+          "Role-gated nav + action buttons (underwriter sees approval queue, carrier sees invoices)",
+          "Permission-denied errors gracefully handled"
+        ]
+      }
+    ]
+  },
+  "designDirection": {
+    "aesthetic": "Brazilian fintech / logistics-banking. Trust, money, motion. Clean neobank dashboard (Nubank flavor) crossed with freight ops.",
+    "colorPalette": "Deep ink/navy or near-black base, confident fintech accent (green or violet — researcher to confirm vs. client/competitor). Crisp, data-dense tables.",
+    "typography": "Real font families: Inter or Geist for UI, monospaced numerals for money (Courier New or IBM Plex Mono), tabular figures.",
+    "components": "Data-dense tables with ledger entries, clean form inputs, status badges, role-aware nav, role-gated buttons.",
+    "notIncluded": "michaelwegter.com's dark gallery-wall theme, mustard/cyan palette, Space Grotesk / Inter / JetBrains Mono. This demo lives in its own design system, tailored to fintech."
+  },
+  "proposalToApplyAnswers": {
+    "q1_aiShippedFeature": {
+      "question": "A non-trivial feature or bug you shipped with an AI coding agent — what the agent did, what you had to correct, and how you verified it was right.",
+      "answer": "Cornerstone Construction demo. Claude Code agentic workflow (with-ceo layout in Claude Workflow Studio) built a full frontend from design through develop to test. The agent handled component architecture, routing, and styling autonomously. What I corrected: (1) navbar link visibility issue where links were occluded on smaller viewports; (2) project images were duplicated per category instead of unique per project (a data mapping bug); (3) navigation quirk — clicking a project on the homepage opened the projects listing page but did not auto-open the modal for that specific project. I rewired the navigation state to preserve the project context and open the correct modal on navigation. I verified the fixes by running the app locally, stepping through the full user flow (homepage -> click project -> modal opens), and checking the component state with React DevTools. The workflow shows how agentic AI builds fast and broad, and a skilled engineer verifies, corrects edge cases, and ensures the final product is solid.",
+      "asset": "~/Desktop/Screenshot 2026-06-16 at 10.42.18 AM.png (with-ceo layout screenshot)"
+    },
+    "q2_tsNodeCodebase": {
+      "question": "A TS/Node codebase or PR you're proud of.",
+      "answer": "This demo: the freight-factoring console. A full-stack NestJS + Drizzle + Postgres system with real auth, integer-cents money handling, RBAC, and green integration tests. It showcases deep TypeScript (discriminated unions for currency types, Zod schemas for validation, strict mode throughout), NestJS patterns (Guards, decorators, dependency injection), Drizzle relations, and real Postgres ledger logic. The frontend is Next.js 15 App Router with server components where appropriate. It's production-grade in a demo timeframe, which is the point."
+    },
+    "q3_teamsWrong": {
+      "question": "One thing teams get wrong about AI-assisted development.",
+      "answer": "They fear AI gets too much wrong or assume it's not a capable partner. With strong prompting, well-designed workflows (like the agentic CEO-supervised pattern), and a skilled engineer reviewing, guiding, and catching edge cases, AI-assisted development is extremely powerful and produces production-ready features. The engineer becomes a multiplier: the AI handles breadth and velocity, the human handles correctness, architecture, and edge cases. The demo is evidence that this works at production quality."
+    }
+  },
+  "deploymentModel": {
+    "demoHost": "https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/",
+    "hostMethod": "Same-origin static files in michaelwegter.com/public/demos/<slug>/; iframed by /work-samples/<slug> via AppFrame.",
+    "backendHost": "Thin mw-backend Flask blueprint (gateway) + real NestJS service on Surface (auto-deployed via watcher).",
+    "authModel": "Real JWT auth (seeded demo login). Same-origin, no cross-origin headaches.",
+    "liveTest": "Playwright against LIVE deployment post-deploy: login + full factoring funding flow + ledger verification."
+  },
+  "hardGates": [
+    "Every explicit requirement in brief.json addressed in cover letter AND demo/deck.",
+    "Demo builds, loads, zero console errors on first paint.",
+    "Demo URL resolves locally; post-deploy /work-samples/<slug> returns 200.",
+    "Demo link in BOTH cover letter and deck.",
+    "Bespoke fintech design (NOT michaelwegter.com look); no em/en dashes anywhere.",
+    "NestJS + Drizzle + Postgres backend. Next.js 15 frontend. Integer-cents money. Real auth + seeded login.",
+    "Real-DB integration tests (no mocks on money paths); CI green.",
+    "eval-report.md exists with passing score."
+  ],
+  "constraintsSummary": [
+    "Use EXACT stack (NestJS+Drizzle+Postgres / Next.js 15). No Python reimplementation of Node logic.",
+    "Bridge Node service to Flask mw-backend (resolve mechanism: local Node process on Surface + Flask proxy, or equivalent).",
+    "Integer-cents money everywhere. Zod validation. Discriminated unions. No floats.",
+    "Real auth + seeded demo account. Record credentials for deploy-test.",
+    "Richness 10: full, production-quality, multi-feature app.",
+    "Bespoke Brazilian fintech design. Michael's voice. No em/en dashes."
+  ],
+  "recommendedPipeline": [
+    "intake (you are here)",
+    "planner",
+    "ceo (supervisor pass on feature spec + architecture)",
+    "researcher (client context + fintech domain + bridging mechanism)",
+    "demo-builder",
+    "deploy (push michaelwegter.com + mw-backend blueprint + Node service)",
+    "deploy-test (live Playwright test: login + factoring flow)",
+    "media-capture",
+    "proposal-writer",
+    "evaluator"
+  ],
+  "studioLayouts": ["with-ceo", "with-deploy"],
+  "tokenBudgetCaps": {
+    "heroFeatures": 1,
+    "supportingFeatures": 2,
+    "filesAffected": 12,
+    "buildTimeoutSeconds": 180,
+    "webResearchFetches": 6
+  },
+  "improvePass2": {
+    "reason": "Polish + real-backend wiring after live run 1 feedback.",
+    "requirements": [
+      {
+        "id": "ip2-1",
+        "requirement": "No category abbreviation. Accounts area must render full words: Asset(s), Revenue, Liability, Equity, Expense — not truncated/abbreviated to 'ass', 'rev', etc. Fix any CSS text-overflow, slice logic, or truncation causing abbreviation."
+      },
+      {
+        "id": "ip2-2",
+        "requirement": "Linked-number contrast. Numeric text with anchor/link styling currently uses blue that is hard to read on dark bg. Swap to an accessible accent from existing design tokens (WCAG AA on dark surface); do not introduce michaelwegter.com colors."
+      },
+      {
+        "id": "ip2-3",
+        "requirement": "Ledger 200 entries + scroll/paginate. 'Recent 50 entries' must become a scrollable list with real 200 entries from backend. Offer pagination or 'per-page' selector for legitimate 200-row history (not hardcoded 50-row slice)."
+      },
+      {
+        "id": "ip2-4",
+        "requirement": "Wire to REAL backend on Surface. Ledger and accounts must read from live Node service via Flask bridge at api.michaelwegter.com — no mock fallbacks. deploy must re-confirm service is LISTENING and endpoints return real data; deploy-test exercises ledger pagination + account labels against live deployment."
+      }
+    ]
+  }
+}

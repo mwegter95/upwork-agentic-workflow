@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/accounts/page": "/accounts",
+  "/dashboard/page": "/dashboard",
+  "/invoices/new/page": "/invoices/new",
+  "/login/page": "/login",
+  "/invoices/page": "/invoices",
+  "/ledger/page": "/ledger",
+  "/underwriter/queue/page": "/underwriter/queue",
+  "/page": "/",
+  "/underwriter/page": "/underwriter",
+  "/accounts/[id]/page": "/accounts/[id]",
+  "/invoices/[id]/page": "/invoices/[id]"
+}

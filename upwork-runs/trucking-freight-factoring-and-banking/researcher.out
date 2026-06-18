@@ -1,0 +1,666 @@
+# Research — Build-Prep for demo-builder
+# Freight Factoring & Banking Operations Console
+# Slug: trucking-freight-factoring-and-banking
+
+Plan status: LOCKED (plan-ceo.out VERDICT: pass). This file is pure build-prep — no unknowns remain.
+
+---
+
+## 1. Paths (absolute, confirmed)
+
+| Purpose | Path |
+|---|---|
+| Demo source (monorepo) | `~/Desktop/Projects/upwork-agentic-workflow/upwork-runs/trucking-freight-factoring-and-banking/demo-src/` |
+| Demo static deploy target | `~/Desktop/Projects/michaelwegter.com/public/demos/trucking-freight-factoring-and-banking/` |
+| Flask proxy blueprint | `~/Desktop/Projects/mw-backend/factoring_gateway_blueprint.py` (new file) |
+| server.py registration | `~/Desktop/Projects/mw-backend/server.py` line ~285 (after civicq, id 9 entry) |
+| run-server.ps1 | `~/Desktop/Projects/mw-backend/run-server.ps1` (additive only) |
+| workSamples.js | `~/Desktop/Projects/michaelwegter.com/src/data/workSamples.js` |
+| Q1 screenshot | `~/Desktop/Screenshot 2026-06-16 at 10.42.18 AM.png` |
+
+Flask listens on port `5050` (default, `server.py:53`). Use NestJS port `3001`.
+
+---
+
+## 2. Demo architecture
+
+Next.js 15 App Router with `output: 'export'` + `basePath: '/demos/trucking-freight-factoring-and-banking'` + `trailingSlash: true` → static export copied to the public/demos/ deploy target. All API calls go to `https://api.michaelwegter.com/api/factoring/*` (the Flask proxy), never to localhost. NestJS runs separately (on Surface or external host), Flask proxy bridges.
+
+Build command from `demo-src/` root:
+```
+corepack enable && corepack prepare pnpm@latest --activate
+pnpm install
+pnpm turbo run build          # builds apps/api (nest build) AND apps/web (next build)
+cp -r apps/web/out/* ../../../michaelwegter.com/public/demos/trucking-freight-factoring-and-banking/
+```
+
+---
+
+## 3. Monorepo scaffold (exact structure to write by hand — do NOT run nest new or create-next-app interactively)
+
+```
+demo-src/
+  package.json              # root, pnpm workspaces
+  pnpm-workspace.yaml
+  turbo.json
+  .env.example              # DATABASE_URL, JWT_SECRET, NEST_PORT=3001
+  apps/
+    api/                    # NestJS
+      package.json
+      tsconfig.json         # strict: true, paths: { "@db/*": ["../../packages/db/src/*"] }
+      nest-cli.json
+      src/
+        main.ts
+        app.module.ts
+        auth/               # AuthModule: JwtStrategy, LocalStrategy, AuthController, AuthService
+          auth.module.ts
+          auth.controller.ts
+          auth.service.ts
+          jwt.strategy.ts
+          roles.guard.ts
+          roles.decorator.ts
+        factoring/          # FactoringModule: InvoicesController, InvoicesService, ApprovalService
+          factoring.module.ts
+          factoring.controller.ts
+          factoring.service.ts
+          dto/
+            create-invoice.dto.ts   # Zod-validated, integer cents
+            approve-invoice.dto.ts
+        ledger/             # LedgerModule: AccountsController, LedgerService
+          ledger.module.ts
+          ledger.controller.ts
+          ledger.service.ts
+      test/
+        factoring.e2e-spec.ts  # real-DB money-path tests (advance calc + ledger posting)
+        jest-e2e.json
+    web/                    # Next.js 15
+      package.json
+      next.config.js        # output: 'export', basePath, trailingSlash
+      tsconfig.json
+      app/
+        layout.tsx
+        page.tsx            # redirect to /dashboard
+        login/page.tsx
+        dashboard/page.tsx
+        invoices/
+          new/page.tsx
+        underwriter/
+          queue/page.tsx
+        ledger/page.tsx
+        accounts/
+          [id]/page.tsx
+      components/
+        Sidebar.tsx          # role-aware nav
+        MoneyDisplay.tsx     # IBM Plex Mono, tabular-nums, integer-cents -> decimal formatter
+        StatusBadge.tsx
+        InvoiceTable.tsx
+        LedgerTable.tsx
+      lib/
+        api.ts              # fetch wrapper pointing to api.michaelwegter.com/api/factoring
+        auth.ts             # JWT decode, role checks
+        money.ts            # minorUnits <-> display, currency discriminated union
+  packages/
+    db/
+      package.json
+      src/
+        schema.ts           # 4 tables (hand-written, see below)
+        client.ts           # drizzle(neon(...), { schema })
+        migrate.ts          # drizzle-kit push / apply at boot
+      drizzle.config.ts
+```
+
+---
+
+## 4. Exact package.json snippets
+
+### `demo-src/package.json` (root)
+```json
+{
+  "name": "factoring-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "dev": "turbo run dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  }
+}
+```
+
+### `pnpm-workspace.yaml`
+```yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+```
+
+### `turbo.json`
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": { "dependsOn": ["^build"], "outputs": ["dist/**", "out/**", ".next/**"] },
+    "test": { "dependsOn": ["^build"] },
+    "dev": { "cache": false, "persistent": true }
+  }
+}
+```
+
+### `apps/api/package.json`
+```json
+{
+  "name": "@factoring/api",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "dev": "nest start --watch",
+    "test": "jest --config test/jest-e2e.json"
+  },
+  "dependencies": {
+    "@factoring/db": "workspace:*",
+    "@nestjs/common": "^10.4.15",
+    "@nestjs/core": "^10.4.15",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/passport": "^10.0.3",
+    "@nestjs/platform-express": "^10.4.15",
+    "@nestjs/testing": "^10.4.15",
+    "bcryptjs": "^2.4.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.9",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.7",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38",
+    "@types/pg": "^8.11.10",
+    "jest": "^29.7.0",
+    "pg": "^8.13.1",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2"
+  }
+}
+```
+
+### `apps/web/package.json`
+```json
+{
+  "name": "@factoring/web",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^15.1.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.7.2"
+  }
+}
+```
+
+### `packages/db/package.json`
+```json
+{
+  "name": "@factoring/db",
+  "version": "1.0.0",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "drizzle-orm": "^0.38.3",
+    "@neondatabase/serverless": "^0.10.4"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.1",
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.2"
+  }
+}
+```
+
+---
+
+## 5. Drizzle schema (hand-write this exactly — integer cents throughout)
+
+`packages/db/src/schema.ts`:
+```typescript
+import { pgTable, serial, text, integer, timestamp, pgEnum, boolean } from 'drizzle-orm/pg-core';
+
+export const roleEnum = pgEnum('role', ['admin', 'underwriter', 'carrier', 'driver']);
+export const currencyEnum = pgEnum('currency', ['USD', 'BRL']);
+export const invoiceStatusEnum = pgEnum('invoice_status', ['pending', 'approved', 'rejected', 'disbursed', 'collected']);
+export const entryTypeEnum = pgEnum('entry_type', ['debit', 'credit']);
+export const accountTypeEnum = pgEnum('account_type', ['asset', 'liability', 'revenue', 'expense']);
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  name: text('name').notNull(),
+  role: roleEnum('role').notNull().default('carrier'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const accounts = pgTable('accounts', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  code: text('code').notNull().unique(),        // e.g. 'FACTORING_REC', 'CASH_BANK'
+  type: accountTypeEnum('type').notNull(),
+  currency: currencyEnum('currency').notNull().default('USD'),
+  balanceMinorUnits: integer('balance_minor_units').notNull().default(0),  // integer cents
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const invoices = pgTable('invoices', {
+  id: serial('id').primaryKey(),
+  invoiceNumber: text('invoice_number').notNull().unique(),
+  carrierId: integer('carrier_id').notNull().references(() => users.id),
+  underwriterId: integer('underwriter_id').references(() => users.id),
+  payerName: text('payer_name').notNull(),
+  payerDaysToPay: integer('payer_days_to_pay').notNull().default(30),
+  faceValueMinorUnits: integer('face_value_minor_units').notNull(),   // e.g. 1250000 = $12,500.00
+  advanceRateBps: integer('advance_rate_bps').notNull(),              // basis points: 9000 = 90%
+  feeRateBps: integer('fee_rate_bps').notNull(),                      // basis points: 200 = 2%
+  advanceMinorUnits: integer('advance_minor_units'),                  // computed at approval
+  feeMinorUnits: integer('fee_minor_units'),
+  reserveMinorUnits: integer('reserve_minor_units'),
+  currency: currencyEnum('currency').notNull().default('USD'),
+  status: invoiceStatusEnum('status').notNull().default('pending'),
+  notes: text('notes'),
+  submittedAt: timestamp('submitted_at').defaultNow().notNull(),
+  approvedAt: timestamp('approved_at'),
+  disbursedAt: timestamp('disbursed_at'),
+  collectedAt: timestamp('collected_at'),
+});
+
+export const ledgerEntries = pgTable('ledger_entries', {
+  id: serial('id').primaryKey(),
+  invoiceId: integer('invoice_id').references(() => invoices.id),
+  accountId: integer('account_id').notNull().references(() => accounts.id),
+  entryType: entryTypeEnum('entry_type').notNull(),
+  amountMinorUnits: integer('amount_minor_units').notNull(),         // always positive
+  currency: currencyEnum('currency').notNull().default('USD'),
+  description: text('description').notNull(),
+  postedAt: timestamp('posted_at').defaultNow().notNull(),
+});
+```
+
+---
+
+## 6. Seed data (exact — record these credentials in build output for deploy-test)
+
+| Role | Email | Password | Name |
+|---|---|---|---|
+| admin | admin@factoringdemo.com | Admin@12345 | Alex Rivera |
+| underwriter | underwriter@factoringdemo.com | Under@12345 | Jordan Lee |
+| carrier | carrier@factoringdemo.com | Carrier@12345 | Sam Trucking LLC |
+
+Seeded accounts (for the ledger):
+| Code | Name | Type | Starting Balance |
+|---|---|---|---|
+| FACTORING_REC | Factoring Receivable | asset | 0 |
+| CASH_BANK | Cash / Bank | asset | 5000000000 (=$50,000,000.00) |
+| FEE_REVENUE | Fee Revenue | revenue | 0 |
+| CARRIER_RESERVE | Carrier Reserve Holdback | liability | 0 |
+
+Seeded invoices (all in minor units / cents, USD):
+
+| # | Face Value | Payer | Days | Advance Rate | Fee Rate | Status |
+|---|---|---|---|---|---|---|
+| INV-001 | 1250000 ($12,500) | Swift Logistics Inc. | 30 | 9000bps (90%) | 200bps (2%) | pending |
+| INV-002 | 875000 ($8,750) | Northern Freight Co. | 45 | 8500bps (85%) | 300bps (3%) | approved |
+| INV-003 | 2300000 ($23,000) | Prime Haul Partners | 21 | 9200bps (92%) | 150bps (1.5%) | disbursed |
+| INV-004 | 560000 ($5,600) | Westbound Cargo LLC | 60 | 8000bps (80%) | 400bps (4%) | rejected |
+| INV-005 | 1875000 ($18,750) | Eagle Transport | 30 | 9000bps (90%) | 200bps (2%) | collected |
+
+Money calc utility (integer arithmetic only, NO floats):
+```typescript
+// money.ts
+export type Money = { currency: 'USD' | 'BRL'; minorUnits: number };
+
+export function calcAdvance(faceValueMinorUnits: number, advanceRateBps: number): number {
+  return Math.floor((faceValueMinorUnits * advanceRateBps) / 10000);
+}
+export function calcFee(faceValueMinorUnits: number, feeRateBps: number): number {
+  return Math.floor((faceValueMinorUnits * feeRateBps) / 10000);
+}
+export function calcReserve(faceValueMinorUnits: number, advanceMinorUnits: number): number {
+  return faceValueMinorUnits - advanceMinorUnits;
+}
+export function formatMoney(minorUnits: number, currency: 'USD' | 'BRL' = 'USD'): string {
+  const symbols: Record<string, string> = { USD: '$', BRL: 'R$' };
+  const major = (minorUnits / 100).toFixed(2);
+  return `${symbols[currency]}${Number(major).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+}
+```
+
+---
+
+## 7. Flask proxy blueprint (write this file verbatim)
+
+`mw-backend/factoring_gateway_blueprint.py`:
+```python
+"""
+Freight Factoring Gateway — Flask Blueprint
+Reverse-proxies /api/factoring/* -> NestJS at http://localhost:3001/*
+Uses stdlib urllib.request only (zero new deps).
+"""
+import urllib.request as _req
+import urllib.error
+from flask import Blueprint, request, Response
+
+factoring_gw_bp = Blueprint("factoring_gw", __name__, url_prefix="/api/factoring")
+
+NEST_BASE = "http://localhost:3001"
+FORWARD_HEADERS = {"authorization", "content-type", "accept", "cookie", "x-request-id"}
+
+def _proxy(path=""):
+    url = f"{NEST_BASE}/{path}"
+    qs = request.query_string.decode("utf-8")
+    if qs:
+        url = f"{url}?{qs}"
+    headers = {k: v for k, v in request.headers if k.lower() in FORWARD_HEADERS}
+    body = request.get_data() or None
+    upstream = _req.Request(url, data=body, headers=headers, method=request.method)
+    try:
+        with _req.urlopen(upstream, timeout=30) as resp:
+            ct = resp.headers.get("Content-Type", "application/json")
+            return Response(resp.read(), status=resp.status, content_type=ct)
+    except urllib.error.HTTPError as exc:
+        ct = exc.headers.get("Content-Type", "application/json")
+        return Response(exc.read(), status=exc.code, content_type=ct)
+    except Exception as exc:
+        return Response(f"Gateway error: {exc}", status=502, content_type="text/plain")
+
+@factoring_gw_bp.route("/", methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"])
+@factoring_gw_bp.route("/<path:path>", methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"])
+def proxy(path=""):
+    return _proxy(path)
+```
+
+`server.py` registration (add after civicq lines ~283-284):
+```python
+from factoring_gateway_blueprint import factoring_gw_bp
+app.register_blueprint(factoring_gw_bp)
+```
+
+---
+
+## 8. run-server.ps1 additive block
+
+Add function after line 90 (after `Start-Tunnel` closing brace, before `$script:flaskProc = $null`):
+
+```powershell
+$NestDir = Join-Path $ScriptDir "..\upwork-agentic-workflow\upwork-runs\trucking-freight-factoring-and-banking\demo-src"
+
+function Start-Node {
+    $psi = [System.Diagnostics.ProcessStartInfo]::new('node', 'apps/api/dist/main.js')
+    $psi.WorkingDirectory = $NestDir
+    $psi.UseShellExecute  = $false
+    $p = [System.Diagnostics.Process]::Start($psi)
+    Write-Host "$(Get-Date -f 'HH:mm:ss')  NestJS started (PID $($p.Id))" -ForegroundColor Green
+    return $p
+}
+```
+
+Also add alongside existing null assignments:
+```powershell
+$script:nodeProc = $null
+```
+
+Add to Stop-All `foreach` array: `$script:flaskProc, $script:tunnelProc, $script:nodeProc`
+
+Add after line 128 (`$script:tunnelProc = Start-Tunnel`):
+```powershell
+Write-Host "-> NestJS (Freight Factoring API on port 3001)..."
+$script:nodeProc = Start-Node
+```
+
+Add to monitor loop (after line 180, the `$script:tunnelProc = Start-Tunnel` restart block):
+```powershell
+    if ($script:nodeProc.HasExited) {
+        Write-Host "$(Get-Date -f 'HH:mm:ss')  NestJS exited (code $($script:nodeProc.ExitCode)) -- restarting..." -ForegroundColor Yellow
+        $script:nodeProc = Start-Node
+    }
+```
+
+---
+
+## 9. workSamples.js entry (append before the closing `];`)
+
+```js
+  {
+    id: 10,
+    slug: "trucking-freight-factoring-and-banking",
+    title: "Freight Factoring & Banking Console",
+    description:
+      "Full-stack freight factoring and banking operations platform: invoice submission, advance calculation, underwriter approval queue, double-entry FIDC ledger, and role-based access control. Built with NestJS + Drizzle + Postgres, integer-cents money discipline throughout.",
+    category: "Data",
+    status: "live",
+    href: import.meta.env.BASE_URL + "demos/trucking-freight-factoring-and-banking/",
+    color: "#10B981",
+    icon: "🚛",
+    frameStyle: "walnut",
+    client: "Upwork / Freight Fintech",
+    postingSummary:
+      "Migrate a mature freight factoring + banking platform (PHP/Laravel + Flutter) to a TypeScript NestJS + Drizzle monorepo; build factoring/FIDC, banking/BaaS, payments, identity & RBAC domains with real-DB integration tests and a Next.js 15 admin console.",
+    builtFor: "JS Senior Expert for Claude Code Refactor (Upwork)",
+    date: "2026-06-16",
+    proposalDeckUrl: null,
+    proposalPageUrl: null,
+  },
+```
+
+---
+
+## 10. Next.js config
+
+`apps/web/next.config.js`:
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  basePath: '/demos/trucking-freight-factoring-and-banking',
+  trailingSlash: true,
+  images: { unoptimized: true },
+};
+
+module.exports = nextConfig;
+```
+
+`apps/web/lib/api.ts` base URL:
+```typescript
+export const API_BASE = 'https://api.michaelwegter.com/api/factoring';
+// local dev: http://localhost:5050/api/factoring (Flask proxies to Nest)
+```
+
+---
+
+## 11. Design system (bespoke Brazilian fintech / freight-ops — NOT michaelwegter.com colors)
+
+### CSS custom properties for Next.js app global CSS
+```css
+:root {
+  /* Backgrounds */
+  --bg-base:        #0B1220;   /* ink navy — primary page bg */
+  --bg-surface:     #111827;   /* card / panel bg */
+  --bg-surface-2:   #1A2332;   /* nested card / hover bg */
+  --bg-border:      #1F2937;   /* subtle borders */
+
+  /* Accent: emerald — signals cash-flow, liquidity, BaaS */
+  --accent:         #10B981;   /* emerald-500 */
+  --accent-dark:    #059669;   /* emerald-600, button active */
+  --accent-light:   #34D399;   /* emerald-400, hover highlight */
+  --accent-muted:   #064E3B;   /* emerald-950, badge bg */
+
+  /* Text */
+  --text-primary:   #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-muted:     #6B7280;
+
+  /* Status badges */
+  --status-pending:   #F59E0B;   /* amber */
+  --status-approved:  #10B981;   /* emerald */
+  --status-rejected:  #EF4444;   /* red */
+  --status-disbursed: #6366F1;   /* indigo */
+  --status-collected: #3B82F6;   /* blue */
+
+  /* Typography */
+  --font-ui:     'Inter', sans-serif;           /* all UI text */
+  --font-mono:   'IBM Plex Mono', monospace;    /* ALL money figures */
+}
+```
+
+### Google Fonts import (add to layout.tsx `<head>`)
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+```
+
+### MoneyDisplay component pattern
+```tsx
+// Always IBM Plex Mono, tabular-nums — NEVER render raw minorUnits
+export function MoneyDisplay({ minorUnits, currency = 'USD', size = 'md' }: MoneyDisplayProps) {
+  const formatted = formatMoney(minorUnits, currency);
+  return (
+    <span
+      style={{
+        fontFamily: 'var(--font-mono)',
+        fontVariantNumeric: 'tabular-nums',
+        fontSize: size === 'lg' ? '1.5rem' : size === 'sm' ? '0.85rem' : '1rem',
+        color: minorUnits < 0 ? 'var(--status-rejected)' : 'var(--text-primary)',
+      }}
+    >
+      {formatted}
+    </span>
+  );
+}
+```
+
+### Layout structure
+- Left sidebar (240px): logo + role-aware nav links + user badge at bottom
+- Main content area: full height, scrollable
+- Nav links by role:
+  - ALL: Dashboard, Accounts, Ledger
+  - carrier: Submit Invoice, My Invoices
+  - underwriter: Approval Queue, All Invoices
+  - admin: All of the above + user management placeholder
+
+### Status badge CSS pattern
+```css
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-pending   { background: #78350F22; color: var(--status-pending); border: 1px solid #78350F44; }
+.badge-approved  { background: #064E3B22; color: var(--status-approved); border: 1px solid #064E3B44; }
+.badge-rejected  { background: #7F1D1D22; color: var(--status-rejected); border: 1px solid #7F1D1D44; }
+.badge-disbursed { background: #1E1B4B22; color: var(--status-disbursed); border: 1px solid #1E1B4B44; }
+.badge-collected { background: #1E3A5F22; color: var(--status-collected); border: 1px solid #1E3A5F44; }
+```
+
+---
+
+## 12. NestJS key implementation notes
+
+**Auth:**
+- `POST /auth/login` → returns `{ access_token: string }` (JWT, 24h expiry)
+- JWT payload: `{ sub: userId, email, role }`
+- `JwtAuthGuard` on all protected routes; `@Roles('admin','underwriter')` decorator + `RolesGuard`
+
+**Factoring endpoints:**
+- `POST /invoices` (carrier) — create invoice, compute advance/fee/reserve in integer cents server-side, status=pending
+- `GET /invoices` — filtered by role: carriers see own; underwriters/admins see all
+- `PATCH /invoices/:id/approve` (underwriter) — set status=approved, record underwriterId, approvedAt
+- `PATCH /invoices/:id/reject` (underwriter) — set status=rejected
+- `PATCH /invoices/:id/disburse` (underwriter/admin) — set status=disbursed, post ledger entries (advance leg: Debit FACTORING_REC, Credit CASH_BANK), disbursedAt
+- `PATCH /invoices/:id/collect` (admin) — set status=collected, post collection ledger entries (Debit CASH_BANK, Credit FACTORING_REC + Fee Revenue + reserve release), collectedAt
+
+**Ledger endpoints:**
+- `GET /accounts` — list all accounts with current balanceMinorUnits
+- `GET /accounts/:id/entries` — ledger entries for account, sorted by postedAt desc
+- `GET /ledger` — recent entries across all accounts (limit 50)
+
+**Money constraint (hard gate):** All amounts in DB, DTOs, and service layer are integer minor units. The only floating point operation anywhere is in `formatMoney()` at display time. Zod schemas on all money fields: `z.number().int().positive()`.
+
+**Real-DB integration tests (`test/factoring.e2e-spec.ts`):**
+```typescript
+// Use pg directly against the real test DB (TEST_DATABASE_URL or fallback to DATABASE_URL)
+// Test 1: create invoice with known face value -> verify advance/fee/reserve calc (integer math)
+// Test 2: approve + disburse -> verify 2 ledger entries posted, account balances updated
+// These are the "no mocks on money paths" tests the client grades on
+```
+
+`test/jest-e2e.json`:
+```json
+{
+  "moduleFileExtensions": ["js","json","ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": { "^.+\\.(t|j)s$": "ts-jest" },
+  "testTimeout": 30000
+}
+```
+
+Turbo test command: `turbo run test` (from monorepo root) runs both `apps/api test` tasks.
+
+---
+
+## 13. Proposal answer assets
+
+**Q1 screenshot path:** `/Users/michaelwegter/Desktop/Screenshot 2026-06-16 at 10.42.18 AM.png`
+- Describe: Claude workflow studio set to with-ceo layout. The AI agent built the full Cornerstone Construction frontend (design through dev through testing). Corrections made: navbar link visibility bug, category images duplicated instead of unique, homepage project-click-to-modal navigation quirk (fixed to open the correct modal directly). These corrections demonstrate the human review role in AI-assisted development.
+
+**Q2:** This demo (NestJS + Drizzle + Postgres monorepo with integer-cents money discipline, RBAC, and real-DB integration tests).
+
+**Q3:** Teams fear AI's mistake rate too much, or assume it can't be a capable partner. With the right prompting, a CEO-supervised agentic workflow, and a skilled engineer reviewing outputs critically, AI-assisted dev is extremely powerful and produces production-ready features.
+
+---
+
+## 14. `.env.example` for demo-src
+
+```
+# Required for NestJS runtime
+DATABASE_URL=postgresql://user:pass@host/db     # Use Neon free tier for live
+JWT_SECRET=change-me-in-production-32chars+
+NEST_PORT=3001
+
+# For integration tests (can reuse DATABASE_URL or point to a separate test DB)
+TEST_DATABASE_URL=postgresql://user:pass@localhost:5432/factoring_test
+```
+
+---
+
+## handoff
+- produced: researcher.out — exact scaffold paths, full package.json snippets, hand-written Drizzle schema (4 tables, integer cents), seed credentials, 5 seeded invoices, money calc utility, Flask proxy blueprint verbatim, run-server.ps1 additive block, workSamples.js entry (id: 10), design tokens with exact hex values + fonts, NestJS endpoint spec, real-DB test spec, Next.js export config.
+- decisions: NestJS port=3001; Flask port=5050; Next.js `output: 'export'` + `basePath=/demos/trucking-freight-factoring-and-banking`; ALL API calls from web to `api.michaelwegter.com/api/factoring/*` (not localhost); workSamples id=10; emerald accent (#10B981); IBM Plex Mono for all money; integer cents everywhere; seed creds are admin@/Under@/Carrier@ with suffix `12345`.
+- next needs: demo-builder to write files verbatim from this spec, seed all 3 users + 4 accounts + 5 invoices, wire `turbo run test` to run real-DB money-path tests, record seeded creds in output, verify no floats on any money path, copy Next.js `out/` to the public/demos deploy target.
+- risks: Node-on-Surface unverified (fallback: external Node host, Flask proxies to its public URL); `run-server.ps1` must be manually started on the Surface after demo-builder edits it; Neon free-tier DATABASE_URL must be provisioned before deploy (demo-builder should note this clearly as a human step).

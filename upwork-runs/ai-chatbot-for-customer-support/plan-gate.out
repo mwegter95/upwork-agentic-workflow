@@ -1,0 +1,33 @@
+# Plan Gate Review — ai-chatbot-for-customer-support
+
+## Evaluation
+
+**Completeness check:**
+- All 5 client requirements mapped to concrete demo features with file-level traceability. ✅
+- Architecture specifies exact CDN URLs, model IDs, and package versions (no "TBD" gaps). ✅
+  - WebLLM: `https://esm.run/@mlc-ai/web-llm` v0.2.84, model `Llama-3.2-1B-Instruct-q4f16_1-MLC` confirmed.
+  - Transformers.js: `https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm`, `onnx-community/Qwen2.5-0.5B-Instruct` q4/wasm, `Xenova/all-MiniLM-L6-v2` fp32/wasm confirmed.
+  - Package rename noted: `@xenova/transformers` is frozen/EOL — do NOT use.
+- LLM fallback chain fully defined: WebLLM → Transformers.js WASM → template-RAG. ✅
+- CI/Playwright constraint explicitly handled: WASM path confirmed as primary tested path. ✅
+- Research questions all marked answered (✅ on all 5); FAQ corpus sourced verbatim from pre-researcher.out. ✅
+- Design system fully specified (hex values, fonts, spacing, bubble styles). ✅
+- 12-file manifest at the 12-file cap. ✅
+- Timeline, pricing, and fixed-vs-hourly recommendation present. ✅
+- Plan explicitly self-declares READY: "Plan status: READY — all research integrated, build can proceed." ✅
+
+**Flagged unknowns check:**
+- Transformers.js v4 pipeline API difference: flagged as a builder risk with directive to test against confirmed snippet. Actionable, not blocking. ✅
+- WASM latency (3-8s): mitigated by typing indicator directive. ✅
+- WebGPU 600-900 MB download: mitigated by progress bar + IndexedDB caching UX directive. ✅
+- No unresolved unknowns requiring additional research.
+
+**Problems found:** None.
+
+VERDICT: pass
+
+## handoff
+- produced: Gate check confirming plan is complete, all research integrated, no blocking unknowns.
+- decisions: Plan passes as-is; no rework needed before demo-builder.
+- next needs: demo-builder proceeds with exact model IDs/CDN URLs from plan; must NOT use `@xenova/transformers`; WASM path must return real answers; typing indicator required for 3-8s latency; FAQ corpus copied verbatim from pre-researcher.out.
+- risks: Same as planner's handoff — Transformers.js v4 API nuances; builder must validate pipeline call against confirmed snippet.

@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "slug": "ai-chatbot-for-customer-support",
+    "posting_date": "2026-06-17T00:00:00Z",
+    "feature_richness": 10,
+    "client_type": "US online retailer",
+    "build_type": "full"
+  },
+  "client_context": {
+    "business": "Online retail (orders, shipping, returns)",
+    "current_process": "Small team manually answers repetitive FAQs during 9am–6pm ET",
+    "goal": "Automate first layer of customer support via AI chatbot",
+    "market": "US consumer-facing, must respect US data norms and communication style"
+  },
+  "explicit_capabilities": [
+    {
+      "id": "faq_kb",
+      "title": "Answer FAQs using existing knowledge base / help docs",
+      "gradable": "Demo retrieves and cites FAQ answers from a knowledge base"
+    },
+    {
+      "id": "order_status",
+      "title": "Pull basic order status info",
+      "gradable": "Demo shows a simulated order lookup (mock API or static data) that bot can query"
+    },
+    {
+      "id": "human_handoff",
+      "title": "Smooth handoff to human agent when bot can't resolve",
+      "gradable": "Demo includes escalation flow; routes to working hours (9am–6pm ET); ticket confirmation shown"
+    },
+    {
+      "id": "embeddable_integration",
+      "title": "Embeddable on website; connects to help desk (Zendesk or open to alternatives)",
+      "gradable": "Demo is embeddable iFrame; Zendesk integration design shown in proposal deck"
+    },
+    {
+      "id": "us_compliance",
+      "title": "US data-handling norms and US consumer communication style",
+      "gradable": "No international jargon; respectful US retail tone; no data leakage concerns in demo flow"
+    }
+  ],
+  "proposal_deliverables": [
+    {
+      "id": "proposal_architecture",
+      "title": "Architecture explanation + rationale",
+      "gradable": "Proposal (cover letter + deck) explains in-browser RAG design and why it suits this use case"
+    },
+    {
+      "id": "proposal_examples",
+      "title": "Examples of similar chatbots/agents with links (portfolio or illustrative)",
+      "gradable": "Proposal includes 1–2 reference projects; honest about what's built vs illustrative"
+    },
+    {
+      "id": "proposal_timeline_price",
+      "title": "Rough timeline and price breakdown",
+      "gradable": "Cover letter or deck states estimated delivery time and cost structure"
+    },
+    {
+      "id": "proposal_billing_model",
+      "title": "Recommendation: fixed price or hourly for this project",
+      "gradable": "Proposal explicitly advises fixed-price or hourly model with reasoning"
+    },
+    {
+      "id": "proposal_us_confirmation",
+      "title": "Explicit confirmation: 'Michael is currently based in the United States'",
+      "gradable": "Cover letter or deck states this clearly"
+    }
+  ],
+  "hard_constraints": [
+    {
+      "constraint": "zero_token_cost",
+      "description": "AI must run FREE with ZERO paid API tokens. Use in-browser LLM (WebLLM/WebGPU with Llama-3.2-1B/3B or Phi-3.5-mini) or Transformers.js WASM fallback.",
+      "rationale": "Client wants no recurring fees; in-browser is the selling point."
+    },
+    {
+      "constraint": "in_browser_rag",
+      "description": "RAG (knowledge base retrieval) must also run client-side. Embed FAQ corpus as JSON asset or use Transformers.js for embeddings.",
+      "rationale": "Demonstrates 'no external dependencies, easy to maintain' story."
+    },
+    {
+      "constraint": "mock_order_api",
+      "description": "Order status lookup uses mock data (static JSON queried client-side). No real backend integration needed.",
+      "rationale": "Keeps demo fully self-contained and honest about scope."
+    },
+    {
+      "constraint": "simulated_zendesk",
+      "description": "Handoff and escalation are simulated in-demo (form + confirmation). Real Zendesk API call out of scope for demo; integration design shown in deck.",
+      "rationale": "Demonstrates the flow without requiring client credentials."
+    }
+  ],
+  "design_direction": {
+    "aesthetic": "Modern SaaS support-tool UI — clean, trustworthy, professional. Suited to US consumer support (not michaelwegter.com's dark gallery-wall theme).",
+    "palette": "TBD by researcher/planner; should evoke trust and efficiency (consider soft blues, grays, accent green for positive actions).",
+    "tone": "Friendly but professional; US retail customer service voice (no formal jargon, clear and direct).",
+    "avoid": "michaelwegter.com's dark theme, mustard/cyan palette, Space Grotesk; em-dashes or en-dashes anywhere"
+  },
+  "hero_feature": {
+    "title": "In-browser RAG support chatbot",
+    "scope": "User asks a question → bot retrieves relevant FAQ chunks from knowledge base (client-side) → grounds answer in retrieved sources → cites sources → streams response. Handles order lookups via mock API. Gracefully escalates to human when uncertain.",
+    "technical_approach": "WebLLM (Llama-3.2-1B/3B-Instruct) via WebGPU if available; Transformers.js WASM as fallback; client-side vector retrieval (Transformers.js embeddings or precomputed JSON index); mock order data as JSON asset.",
+    "browser_fallback": "WebGPU detection → if absent, try Transformers.js; if still unsupported, RAG-only template responder (no generation, just retrieval + templates). Always show honest 'running locally' status + model-download progress."
+  },
+  "supporting_features": [
+    {
+      "title": "Human handoff + escalation with ET business-hours routing",
+      "scope": "Escalation form; checks current time in ET; routes to queue if outside 9am–6pm; ticket confirmation screen. Simulates Zendesk integration (no real API)."
+    },
+    {
+      "title": "Admin panel: Knowledge-base editor + chat analytics",
+      "scope": "Shows maintainability. Admin can add/edit FAQ entries (stored in browser localStorage or demo-config JSON). Analytics dashboard shows chat deflection metrics, top questions, sources cited. Demonstrates the product is easy to own after handoff."
+    }
+  ],
+  "demo_deliverables": {
+    "output_path": "../michaelwegter.com/public/demos/ai-chatbot-for-customer-support/",
+    "form": "Self-contained static app (index.html + assets/, no build step OR small Vite app with base: '/demos/<slug>/'). CDN: WebLLM, Transformers.js. No Flask blueprint needed unless a mock backend strengthens the story.",
+    "routes": "Main chat interface, admin panel toggle, settings (model choice, debug mode).",
+    "required_assets": "FAQ corpus (JSON), mock orders (JSON), model weights (CDN-hosted or bundled), demo design CSS (bespoke, not portfolio)."
+  },
+  "proposal_deliverables_detailed": {
+    "cover_letter": "Addresses client's 5 capabilities, proposes in-browser architecture, links to live demo, includes timeline, price, and US-based confirmation.",
+    "one_pager": "Visual summary of the chatbot (screenshots from demo), architecture diagram, feature checklist, business value (no recurring token cost, privacy, easy to maintain), demo link.",
+    "pptx_deck": "Title, problem → solution flow, architecture + tech stack, demo screenshots, Zendesk integration design (how it connects), timeline, pricing, team/credentials, CTA. All styled to match the support-tool design language, NOT the portfolio."
+  },
+  "test_plan": {
+    "deploy_test": "Playwright on live site (Chromium supports WebGPU flags). Test: chat with grounded FAQ answer, order lookup, escalation form, admin panel. Account for model-download latency and headless WebGPU support.",
+    "acceptance_criteria": [
+      "Demo loads with no console errors",
+      "Chat responds with grounded FAQ answers and cited sources",
+      "Order lookup returns mock data",
+      "Escalation form appears, honors ET hours, shows ticket confirmation",
+      "Admin panel loads and allows KB edits",
+      "WebGPU fallback works if WebGPU unavailable",
+      "All 5 capabilities demonstrated and gradable",
+      "All 5 proposal must-includes present in deliverables",
+      "Design is bespoke to support tool, no portfolio styling",
+      "No em/en dashes in any text"
+    ]
+  },
+  "token_discipline": {
+    "reuse_pattern": "Clone michaelwegter.com's app chrome (src/data/apps.js, Apps.jsx, AppFrame.jsx) for site integration. Write demo logic (chat, RAG, escalation) fresh.",
+    "self_contained": "Ship FAQ + orders as JSON assets in /demos/<slug>/assets/. No backend calls (except optional mock blueprint for 'API integration' storytelling).",
+    "pass_paths": "Between steps, reference files by path, not full contents. Read handoffs first; open full files only when detail is needed."
+  }
+}

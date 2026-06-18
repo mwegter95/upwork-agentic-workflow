@@ -1,0 +1,87 @@
+# Proposal Writer — FreightFactor Operations Console
+# slug: trucking-freight-factoring-and-banking
+# run date: 2026-06-16
+
+## Deliverables produced
+
+### 1. Cover Letter
+Path: `upwork-runs/trucking-freight-factoring-and-banking/cover-letter.md`
+
+Structure (per brand-voice.md shape):
+1. Hook — names their migration challenge + states the outcome I'll deliver
+2. Demo link — leads with the live URL immediately
+3. Concrete build approach — endpoint-by-endpoint parity, real-DB tests, NestJS domain structure
+4. Why me — U.S. Bank 60k-LOC SME, Optum AI lead, 5+ yrs TS/Node production
+5. Three posting questions — answered directly and in full
+6. Close — availability, Brazil hours overlap, low-pressure
+
+No em dashes, no en dashes. First person, warm + direct. Michael's voice.
+
+### 2. HTML One-Pager
+Path: `upwork-runs/trucking-freight-factoring-and-banking/one-pager.html`
+
+Standalone HTML, self-contained (Google Fonts CDN + inline CSS). Brazilian fintech dark theme (navy/ink bg, green accent, IBM Plex Mono for money/code, Inter for UI). NOT michaelwegter.com's look.
+
+Sections:
+- Header with demo CTA button
+- What I Built (summary)
+- Stack badges (NestJS, Drizzle, Postgres, Next.js 15, Zod, JWT+RBAC, Discriminated Unions)
+- Core Features (3-col card grid)
+- Money Correctness (integer-cent calculation table with minor-unit annotations)
+- FIDC Ledger (double-entry table with debit/credit pairs)
+- RBAC Matrix (4 roles x 4 permissions)
+- Demo Screenshots (4 key screenshots from ./media/)
+- Q&A (all 3 posting questions answered)
+- Claude Workflow Studio screenshot
+- About Michael (6-cell grid)
+- CTA footer
+
+References screenshots from `./media/` relative path.
+References Claude Workflow Studio screenshot at `./media/claude-workflow-studio.png` (copied from Desktop).
+
+### 3. HTML Deck (12 slides)
+Path: `upwork-runs/trucking-freight-factoring-and-banking/deck.html`
+
+Full-screen scroll-through presentation (CSS-only, no JS framework). Same fintech dark design language as one-pager. 12 slides:
+
+1. Title + demo link + stack badges
+2. What I Built (3-feature card grid)
+3. Tech Stack (backend + frontend + bridge detail)
+4. Invoice Factoring Lifecycle (flow pipeline + 2 screenshots)
+5. Money Correctness (integer-cent calc + Zod/discriminated union code sample)
+6. FIDC Double-Entry Ledger (ledger table + screenshot)
+7. Identity and RBAC (matrix + seeded credentials + screenshot)
+8. Demo Gallery (4 screenshots in 2x2 grid)
+9. AI-first Workflow (Claude Workflow Studio screenshot + 3 AI/human/ship cards)
+10. About Michael (6-cell grid)
+11. Q&A (all 3 posting questions answered in full)
+12. CTA (demo link + portfolio link + contact)
+
+### Assets
+- `./media/claude-workflow-studio.png` — copied from Desktop screenshot (with-ceo layout)
+- `./media/01-01_carrier_dashboard.png` through `./media/11-13_ledger_detail.png` — referenced in deck + one-pager
+- Demo URL: https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/
+
+---
+
+## Checklist against hard gates
+
+- [x] Every brief.json requirement addressed in cover letter and demo
+- [x] Demo link in both cover letter and deck (slides 1 and 12)
+- [x] Bespoke fintech design (NOT michaelwegter.com look) on one-pager and deck
+- [x] No em dashes, no en dashes anywhere in any document
+- [x] Michael's voice throughout — first person, service-first, concrete proof points
+- [x] Three posting questions answered concretely with real examples
+- [x] NestJS + Drizzle + Postgres + Next.js 15 stack featured prominently
+- [x] Integer-cents money correctness documented with actual numbers from the demo
+- [x] RBAC matrix and seeded credentials shown
+- [x] Claude Workflow Studio screenshot embedded (Q1 asset)
+- [x] Screenshots reference real captured media from ./media/
+
+---
+
+## handoff
+- produced: cover-letter.md (Michael's voice, 3 Q answers, demo link, no em/en dashes), one-pager.html (bespoke fintech dark design, 10 sections, screenshots embedded, all 3 Q&A), deck.html (12-slide scroll presentation, same design, full coverage)
+- decisions: Claude Workflow Studio screenshot copied to ./media/claude-workflow-studio.png (Unicode narrow no-break space in original filename required Python copy); deck delivered as HTML (not PPTX) due to no native PPTX generator; all media paths are relative (./media/) so files must be opened from the run directory or rehosted
+- next needs: evaluator — check all 3 deliverables against brief.json hard gates; verify no em/en dashes; verify demo link appears in both cover letter and deck; verify bespoke design (not michaelwegter.com look); check media paths resolve if opened from run directory
+- risks: HTML media paths assume files opened from upwork-runs/<slug>/ directory; if shared standalone, screenshots will not render unless media/ folder is included or images are base64-encoded; deck.html is scroll-style HTML not a true PPTX (evaluator should accept this or flag for conversion)

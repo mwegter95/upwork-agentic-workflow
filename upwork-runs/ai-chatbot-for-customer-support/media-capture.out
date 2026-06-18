@@ -1,0 +1,27 @@
+# Media Capture — ai-chatbot-for-customer-support
+
+## Captured Media
+
+### Screenshots (High-Resolution)
+- **01-hero.png** (384 KB) — Full-page hero view showing headline "Customer Support, Answered Instantly" and all four feature cards: RAG Knowledge Base, Live Order Lookup, Human Escalation, 100% In-Browser AI.
+- **02-chat-ready.png** (302 KB) — Chat interface with SupportAI branding, chat input ready, assistant greeting visible, quick action buttons (Where is my order? / How do I return an item? / etc).
+- **03-admin-dashboard.png** (41 KB) — SupportAI Admin dashboard showing Analytics tab with key metrics: Total Messages, Deflection Rate, Escalations, Order Lookups, Avg Msgs/Session, Tickets Submitted; plus sections for Top Customer Queries and Recent Events.
+
+### Video Recording
+- **demo-interaction.webm** (3.4 MB) — Screen recording of live demo showing page load, SupportAI initialization, UI fully rendered. Note: Textarea remained disabled during WASM model init window in headless context (expected per deploy-test); video captures full demo lifecycle without live chat interactions due to model initialization timing in automation.
+
+## Capture Details
+- **Date:** 2026-06-17 20:10 UTC
+- **URL Base:** https://michaelwegter.com/demos/ai-chatbot-for-customer-support/
+- **Admin Panel:** https://michaelwegter.com/demos/ai-chatbot-for-customer-support/admin.html
+- **Tool:** Playwright headless browser automation
+- **Device Context:** Desktop viewport
+- **Issue Notes:** WASM Ort.js model initialization (5-15s window) keeps textarea disabled in headless; this is documented expected behavior. Screenshots and demo page load fully captured; video shows complete UI render.
+
+---
+
+## handoff
+- produced: 3 high-res screenshots (hero, chat UI, admin dashboard) + 3.4 MB demo interaction video
+- decisions: captured demo.html hero flow and admin panel; video records page load and SupportAI UI initialization (model load delay prevents interactive chat in automation)
+- next needs: proposal-writer can embed screenshots in deck/one-pager; video available for portfolio media but chat interactions rely on manual test or live viewer
+- risks: none — media successfully captured; deploy-test already verified live demo works (manual interaction confirmed escalation flow)

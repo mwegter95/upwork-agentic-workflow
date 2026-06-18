@@ -1,0 +1,60 @@
+# Research — answers to planner.out's 6 questions
+
+## 1. [CRITICAL] Bridge mechanism: Flask <-> persistent NestJS, same-origin
+
+Verified by reading mw-backend's actual deploy machinery (`run-server.ps1`, `README.md`, `DEPLOYMENT.md`):
+- Surface is a **Windows** box. The only thing kept alive/auto-restarted today is the Flask process (`Start-Flask`) + a Cloudflare named tunnel (`Start-Tunnel`), via a `while($true)` monitor loop in `run-server.ps1`. There is NO existing process manager (no pm2, no systemd — it's Windows) and NO existing pattern for a second persistent service.
+- Confirmed locally: `pnpm` and `pm2` are NOT installed; `node` (v22.14.0) and `npm` ARE. Node ships **corepack**, so `corepack enable && corepack prepare pnpm@latest --activate` gets pnpm without a separate install step — use this instead of assuming pnpm is preinstalled on the Surface.
+- `spotify_blueprint.py` confirms the Flask blueprint shape to mirror (`Blueprint(name, __name__, url_prefix=...)`, registered in `server.py`), but it's a pure in-process Python blueprint, not a proxy — there is no existing reverse-proxy code to copy.
+- `requirements.txt` has no `requests`; `server.py` already imports `urllib.request` stdlib, so a proxy blueprint should use stdlib `urllib.request` (zero new deps, zero requirements.txt touch) to forward `/api/factoring/*` -> `http://localhost:<NEST_PORT>/*`, copying method/body/headers (incl. `Authorization`/cookies) through and relaying the response verbatim.
+
+**Recommended concrete plan (2 small touches, no infra rewrite):**
+1. New `factoring_gateway_blueprint.py` in mw-backend: stdlib-urllib reverse proxy, registered in `server.py` (1 line). Passes auth headers/cookies through untouched.
+2. Add ONE more `Start-Node`-style block to `run-server.ps1` (mirrors `Start-Flask`/`Start-Tunnel` exactly: `ProcessStartInfo` -> `node dist/main.js` in the Nest app dir, added to the monitor loop's restart-on-exit check). This is a surgical, additive edit (same pattern already used twice in that file), not a rewrite — keeps within "do not touch existing blueprints/auth" guidance since it touches only the launcher, not Flask internals.
+- **Risk, must be flagged to CEO:** this assumes Node is/will be installed on the physical Surface and that `run-server.ps1` can be edited and will actually be run there. Demo-builder/deploy cannot verify the Surface's real Node install from this dev machine — record exact `node`/`npm` version requirement in a NOTE for the human (Michael) to confirm on the Surface before/at deploy time. If Node turns out unavailable on the Surface, fallback is below (Postgres section) — same fallback removes the requirement to run Nest on the Surface at all.
+
+## 2. [CRITICAL] Postgres availability
+
+Confirmed locally: `psql 14.17` (Homebrew) AND `docker 20.10.24` both installed on this dev machine. Real-DB integration tests (Drizzle against Postgres, "no mocks on money paths") can run in the build step here using either a local Postgres or `docker run postgres:16-alpine` — both viable within the 180s build cap if kept to schema push + a handful of factoring/ledger tests (no heavy seed data).
+
+For the **live deployed demo's runtime database** (separate concern from build-time tests), do NOT assume Postgres is installed on the Windows Surface — unverified and risky to depend on for this run. **Recommendation: use a free managed Postgres (Neon or Supabase free tier) for the live demo's `DATABASE_URL`.** This decouples the live app from needing any DB installed on the Surface — the Nest process just needs outbound network + a connection string in `.env`. This also sidesteps the Node-on-Surface risk in #1 somewhat: even if Nest can't run on the Surface, the same managed-Postgres approach means a fallback "Nest app deployed as its own lightweight always-on process elsewhere (e.g. a small free-tier Node host) with Flask proxying to its public URL instead of localhost" stays viable without re-architecting the DB layer.
+- Decision for planner/CEO: keep integration tests on local/docker Postgres at build time (cheap, fast, satisfies the money-path test gate); use Neon free tier for the live runtime DB regardless of where the Nest process itself ends up running.
+
+## 3. Spotify blueprint mirror — confirmed (see #1). Blueprint registration pattern is simple and reusable; proxy logic itself has no existing precedent in this repo, build it via stdlib urllib as described.
+
+## 4. Lean NestJS + Drizzle + Turborepo starter shape
+
+Standard minimal layout (clone this structure, do not `nest new` interactively):
+```
+apps/api/        - NestJS (Fastify or Express adapter; Express is lower-friction)
+  src/auth/ src/factoring/ src/ledger/ src/main.ts src/app.module.ts
+apps/web/        - Next.js 15 App Router admin console
+packages/db/     - drizzle schema.ts, drizzle.config.ts, client.ts (shared by api + scripts)
+turbo.json, pnpm-workspace.yaml, package.json (root)
+```
+- Skip `drizzle-kit`'s interactive prompts: write `schema.ts` by hand (4 tables per plan.md), run `drizzle-kit generate` once non-interactively, apply via a small `migrate.ts` run at boot/test-setup — avoids any GUI/prompt step that could blow the build timeout.
+- Use Nest's Express adapter (lighter install than Fastify+plugins for a 3-module app) and Nest CLI only for `nest build`, not `nest new`.
+- Use `corepack` (see #1) instead of a separate pnpm install step.
+
+## 5. Visual references — Brazilian fintech/neobank conventions (general knowledge, no fetch needed)
+- Nubank: deep purple (#8A05BE) + white, clean geometric sans, very rounded UI. Distinctive enough that copying it reads as derivative.
+- Stark Bank / similar BaaS players: dark navy/near-black bases with a single neon/lime accent, monospace figures in statements.
+- Pattern across the category: dark ink base, ONE confident accent (not purple, to avoid reading as a Nubank knockoff), heavy use of tabular monospace numerals for money, status-badge-heavy dense tables, generous whitespace despite density.
+- **Recommendation:** deep ink-navy base (`#0B1220`-ish), confident **emerald/teal accent** (not purple) signaling cash-flow/liquidity, Inter or Geist for UI text, IBM Plex Mono for all money figures — matches plan.md's direction, accent choice now decided (emerald/teal over violet) to remove the "TBD" in plan.md.
+
+## 6. Factoring domain terms/formulas (for authentic copy + ledger entries)
+- **Advance rate:** % of invoice face value paid to carrier upfront, typically 80-95% in freight factoring.
+- **Factoring fee:** 1-4% of invoice face value, often tiered by payer days-to-pay.
+- **Reserve / holdback:** `invoice_amount - advance_paid`, held until the payer (shipper/broker) actually pays the invoice; released to carrier minus the factoring fee once collected, or absorbed as loss if uncollectible.
+- **Double-entry sketch for the FIDC ledger (integer cents):**
+  - On advance: Debit `Factoring Receivable` (asset), Credit `Cash/Bank` (asset) — cash out to carrier.
+  - On invoice collection from payer: Debit `Cash/Bank`, Credit `Factoring Receivable` (clears the receivable); recognize `Fee Revenue` and release remaining `Reserve` to carrier's account.
+  - This 3-step lifecycle (advance -> collection -> reserve release) is the authentic shape for the hero flow's ledger postings, lines up with plan.md's hero feature (carrier submits -> calc -> approve -> disburse -> ledger entry) — just needs a second ledger event for collection/reserve-release if time allows, otherwise note it as a documented-but-not-built next step in the UI copy.
+
+## handoff
+- produced: concrete answers to all 6 of planner's research questions; resolved both CRITICAL blockers with specific, low-risk implementation paths.
+- decisions: (a) bridge = stdlib-urllib proxy blueprint in mw-backend + one additive `Start-Node` block in `run-server.ps1` mirroring existing `Start-Flask`/`Start-Tunnel` pattern, no new Python deps; (b) DB split — local/docker Postgres for build-time integration tests, managed free-tier Postgres (Neon/Supabase) for the live demo's runtime `DATABASE_URL` so the Surface needs no local Postgres install; (c) accent color decided as emerald/teal over violet (avoids Nubank-purple lookalike); (d) use corepack to get pnpm, skip interactive `nest new`/`drizzle-kit` prompts, write schema.ts by hand.
+- next needs: planner should fold these decisions into plan.md (replace the two CRITICAL open-unknowns with the resolved approach above), confirm scope fence still holds, and pass to CEO for the file-cap interpretation sign-off already flagged in planner.out.
+- risks: (1) unverified whether Node is actually installed on the physical Windows Surface — flag for Michael to confirm before/at deploy; if absent, fallback is hosting the Nest app on a small external always-on Node host and having the Flask proxy target its public URL instead of localhost (same managed-Postgres approach still applies, no other change needed). (2) editing `run-server.ps1` is outside the "don't touch existing files beyond blueprint+registration" framing in plan.md — CEO should explicitly bless this one extra touch since it's required for the bridge to exist at all.
+
+VERDICT: pass

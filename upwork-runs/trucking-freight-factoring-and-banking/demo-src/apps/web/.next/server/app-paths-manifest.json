@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/accounts/page": "app/accounts/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/invoices/new/page": "app/invoices/new/page.js",
+  "/login/page": "app/login/page.js",
+  "/invoices/page": "app/invoices/page.js",
+  "/ledger/page": "app/ledger/page.js",
+  "/underwriter/queue/page": "app/underwriter/queue/page.js",
+  "/page": "app/page.js",
+  "/underwriter/page": "app/underwriter/page.js",
+  "/accounts/[id]/page": "app/accounts/[id]/page.js",
+  "/invoices/[id]/page": "app/invoices/[id]/page.js"
+}

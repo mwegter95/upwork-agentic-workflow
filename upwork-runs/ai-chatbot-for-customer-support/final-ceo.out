@@ -1,0 +1,24 @@
+# CEO Final Sign-off — ai-chatbot-for-customer-support
+
+Verified independently (not assumed):
+
+- Demo live: `https://michaelwegter.com/demos/ai-chatbot-for-customer-support/` returns 200. Source present (index/chat/order-api/escalation/admin/model-loader/analytics + KB+orders JSON). Registered in workSamples.js.
+- deploy-test: VERDICT pass (live Playwright run).
+- All 3 deliverables present: cover-letter.md (2.6 KB), one-pager.html (21 KB, 3 screenshots), deck.pptx (742 KB, confirmed 9 slides), media PNGs present.
+- Dash gate: cover letter + one-pager clean; deck scanned via python-pptx, 0 em/en dashes (enforced by `no_dashes()` guard).
+- Demo link in cover letter (para 2) AND deck (build_deck.py references demo URL).
+- Brief coverage confirmed: architecture explanation, examples (the demo itself), timeline (7-8 days) + price ($2,500-$4,500), fixed-vs-hourly (fixed, with rationale), US-based confirmation explicit in all 3 deliverables.
+- Client's special ask (free/no-token AI) honored: in-browser Transformers.js WASM model, no API cost — called out as a differentiator in cover letter + deck.
+
+Notes (non-blocking):
+- `curl /work-samples/<slug>` returns 404 status — this is normal GH Pages SPA behavior (404.html fallback renders the route client-side); deploy-test confirmed the route works live in-browser. Not a defect.
+
+Quality: cover letter is in-voice, specific, front-loads the demo, names real proof points (U.S. Bank, Optum), and concretely addresses Zendesk Web Widget SDK + real order API swap-in. Package is cohesive (bespoke slate/blue SaaS design, not portfolio theme) and wins the brief at 10/10 scope. No polish loop needed.
+
+## handoff
+- produced: final CEO sign-off; all hard gates independently verified passing
+- decisions: pass as-is, no writer loop, no REDIRECT — package is complete and cohesive
+- next needs: prompt-optimizer may apply improvements.md suggestions; no content changes required
+- risks: /work-samples deep-link returns 404 status by GH Pages design (SPA fallback works); cosmetic only
+
+VERDICT: pass

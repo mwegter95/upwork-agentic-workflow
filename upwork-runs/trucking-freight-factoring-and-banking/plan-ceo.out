@@ -1,0 +1,36 @@
+# CEO Review (Plan) — Freight Factoring & Banking Operations Console
+
+Reviewed plan.md (planner.out) + plan-eval.out against the brief and target richness 10. Verified load-bearing technical claims directly rather than trusting the eval.
+
+## Verification performed
+- `mw-backend/run-server.ps1`: confirmed `Start-Flask`/`Start-Tunnel` built on `[ProcessStartInfo]` with a restart-on-exit monitor loop (lines 74-180). The proposed additive `Start-Node` block mirrors an existing, twice-used pattern. Low risk, surgical. ✓
+- `mw-backend/server.py`: confirmed `register_blueprint` pattern across 7 existing blueprints. Adding `factoring_gateway_blueprint.py` + 1 registration line fits the convention exactly. ✓
+- Bridge architecture (stdlib `urllib.request` reverse proxy, zero new deps) is sound and same-origin, satisfying CLAUDE.md's "use the backend whenever it benefits" and the client's exact-tech requirement (real NestJS service behind the proxy).
+
+## Decisions blessed (the two sign-offs the planner requested)
+1. **File-cap interpretation APPROVED.** The 12-file cap applies to touches on EXISTING repos (michaelwegter.com, mw-backend) — estimated 4-6 touches. The fresh NestJS+Next.js app under `upwork-runs/<slug>/demo-src/` is new scaffolding governed by the 180s build-timeout cap, not the file count. This is the correct reading for a richness-10 full build.
+2. **`run-server.ps1` touch APPROVED.** One additive `Start-Node` block is required for the bridge to exist and is consistent with the existing pattern. Constraint: additive only — do not alter `Start-Flask`/`Start-Tunnel` or the existing monitor logic.
+
+## Assessment against richness 10
+Genuinely full build: real NestJS DI modules, Drizzle/Postgres, real-DB money-path tests, JWT auth + RBAC guards, money-correct double-entry ledger, integer-cents end to end. Hero (factoring flow) + 2 supporting (ledger, RBAC) at the 1+2 cap. Exact client technologies. Bespoke Brazilian-fintech design, explicitly not the portfolio look. This wins on the client's own terms (they grade on TS rigor, money correctness, and agentic workflow — all addressed).
+
+## Directives carried to demo-builder (must-do)
+- Name + wire **Jest** (`@nestjs/testing` + `pg`) and expose a single `turbo run test` command that runs the money-path integration tests clean end to end — evaluator must be able to run it in one command.
+- **Record exact seeded login credentials** (admin / underwriter / carrier) in build output for deploy-test.
+- Hold **integer-cents discipline** across DB columns, Zod-validated payloads, and API; format to decimal ONLY at render. A single float on a money path is a hard-gate fail.
+- If build budget allows, add the collection/reserve-release ledger leg (3-step lifecycle); otherwise document it honestly in UI copy as planned-next.
+- Keep the BRL branch of the currency discriminated union live (nods to PIX/Brazil nice-to-have without building real PIX).
+
+## Human-in-loop flag (non-blocking for plan; raise at deploy)
+Node install on the physical Surface is unverified from this dev machine. Fallback is pre-specified (host Nest on an external always-on Node host; Flask proxies to its public URL; managed Neon/Supabase `DATABASE_URL` already decouples the DB). No architecture change needed if the fallback triggers. Confirm at the `deploy` step.
+
+## Problems
+None blocking. The two eval-flagged minor items (test framework unnamed, CI command not wired) are resolved above as explicit demo-builder directives, not plan defects.
+
+## handoff
+- produced: plan-ceo.out — CEO sign-off on plan.md; both requested blessings granted (file-cap interpretation, run-server.ps1 additive touch); technical claims independently verified.
+- decisions: PASS. Plan locked. Advance to researcher -> demo-builder. File-cap = existing-repo touches only; new app sized by 180s cap. run-server.ps1 touch is additive-only.
+- next needs: demo-builder to wire `turbo run test` (Jest + real Postgres), record seeded creds, enforce integer-cents, keep BRL branch live; deploy step to confirm Node-on-Surface and use fallback if absent.
+- risks: Node-on-Surface unverified (fallback ready); integer-cents must hold every layer; collection-leg is time-boxed (document if not built).
+
+VERDICT: pass

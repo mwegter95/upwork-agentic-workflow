@@ -1,0 +1,33 @@
+# Final CEO — sign-off review
+
+## Verified (passing)
+- Live demo `https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/` -> 200.
+- `api.michaelwegter.com/health` -> 200.
+- deploy-test VERDICT: pass (full factoring lifecycle exercised live).
+- Registry entry present in `michaelwegter.com/src/data/workSamples.js` (2 hits).
+- Demo link present in cover-letter (1), deck (2), one-pager (2) — gate #4 met.
+- No en dashes anywhere (0/0/0).
+- `/work-samples/<slug>` returns HTTP 404 status but serves the SPA via 404.html and renders the route in-browser — standard GH Pages behavior, not a failure.
+- All 11 demo screenshots + claude-workflow-studio.png present in media/.
+
+## Blocker (hard gate failure)
+Em dashes present in all three prose deliverables — violates brief mh-7 and DoD #5 ("No em dashes anywhere"). Exact locations:
+- cover-letter.md:1 — `# Cover Letter — JS Senior Expert for Claude Code Refactor`
+- one-pager.html:6 (`<title> … — Michael Wegter`), :578 (`Q1 — …`), :585 (`Q2 — …`), :592 (`Q3 — …`), :615 (`Optum RHRP 4 — …`), :619 (`U.S. Bank (via Turnberry) — …`)
+- deck.html:6 (`<title>Proposal Deck — FreightFactor — Michael Wegter`), :640 (`michaelwegter.com</a> — gallery planner …`)
+
+Count: cover 1, one-pager 6, deck 3.
+
+## Action
+Loop the writer (partner step). Replace every `—` with a colon, comma, or rewritten phrasing per the writing rules. Do not touch the demo, media, or registry — they pass.
+
+REDIRECT: proposal-writer
+NOTE: Remove all em dashes (U+2014) from cover-letter.md, one-pager.html, and deck.html. Specific spots: cover-letter.md line 1 heading; one-pager.html lines 6, 578, 585, 592, 615, 619; deck.html lines 6, 640. Replace with a colon for "Label — value" patterns (e.g. "Q1: Non-trivial feature…", "Optum RHRP 4: Angular…", "michaelwegter.com: gallery planner…") and for the titles use a comma or pipe ("FreightFactor Operations Console, Michael Wegter"). Verify zero `—` and zero `–` remain in all three files before handing off. Change only the affected lines; do not rewrite files or alter the demo.
+
+## handoff
+- produced: final sign-off review; one hard-gate blocker (em dashes) identified with exact line locations.
+- decisions: loop proposal-writer for em-dash cleanup; everything else (live demo, deploy-test, registry, demo links, screenshots, design) verified passing.
+- next needs: proposal-writer strips em dashes from the 3 docs, then re-run final-ceo for sign-off.
+- risks: none beyond the em-dash gate; demo + deployment are solid.
+
+VERDICT: fail

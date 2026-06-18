@@ -1,0 +1,41 @@
+# Deploy — Freight Factoring & Banking Console (re-run post mock-fallback)
+
+## Current state (all already pushed, no new commits needed)
+
+### michaelwegter.com — origin/main is current
+Commits already live on GH Pages (most recent first):
+- `2fd6d80` — Add mock data fallback to freight factoring demo
+- `c8e857c` — Fix basePath doubling in freight-factoring demo; add underwriter root route
+- `009ff2c` — Add trucking freight-factoring & banking console demo (NestJS/Next.js 15)
+
+`git log origin/main..HEAD` → empty (nothing to push).
+
+### mw-backend — origin/main is current
+Factoring Flask proxy is live with CORS fixes:
+- `0b6ea49` — Add explicit CORS headers to all proxied responses in factoring blueprint
+- `0336697` — Fix CORS preflight on factoring gateway blueprint
+- `6c1447c` — Add factoring gateway Flask proxy blueprint for trucking demo
+
+## Live verification
+
+| URL | Result |
+|-----|--------|
+| `https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/` | **HTTP 200** — `<title>FreightFactor — Operations Console</title>` |
+| `https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/login/` | **HTTP 200** |
+| `https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/dashboard/` | **HTTP 200** |
+| `https://api.michaelwegter.com/health` | **200** `{"status":"ok","version":"1.0.0"}` |
+| `https://api.michaelwegter.com/api/factoring/invoices` | **502** (expected — Flask proxy registered; NestJS upstream not running) |
+| `/work-samples/trucking-freight-factoring-and-banking` (SPA route) | 404 on curl (normal GH Pages SPA; `public/404.html` redirect handles in-browser) |
+
+## Mock-fallback status change (vs previous deploy.out)
+
+Mock data fallback is compiled into the bundle (`factoring_mock_active` present in `_next/static/chunks/809-*.js`). The demo now works **fully client-side without live NestJS**:
+- All routes 200, all pages render, all flows (submit invoice, approve, disburse, collect, ledger) work via mock.
+- deploy-test no longer requires the human to provision Neon / start NestJS before running.
+- 502 on `/api/factoring/*` is no longer a blocker for deploy-test.
+
+## handoff
+- produced: all commits already live on origin/main for both repos; demo URL 200 all routes; API health 200; mock fallback in bundle removes NestJS dependency for deploy-test.
+- decisions: no new commits needed; mw-backend Flask proxy stays registered (gracefully returns 502 until NestJS starts, frontend falls back to mock automatically).
+- next needs: deploy-test runs Playwright against live site using mock flow: login as carrier/underwriter/admin, submit invoice, underwriter approve, disburse, collect, assert ledger balances update.
+- risks: 502 on real API endpoints is expected and handled by mock fallback; mock resets on hard refresh (by design).

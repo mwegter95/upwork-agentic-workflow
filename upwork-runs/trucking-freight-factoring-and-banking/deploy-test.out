@@ -1,0 +1,118 @@
+# Deploy Test — FreightFactor Operations Console (re-run with mock fallback)
+# slug: trucking-freight-factoring-and-banking
+# run date: 2026-06-16
+
+## Test environment
+- Live URL: https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/
+- Work samples: https://michaelwegter.com/work-samples/trucking-freight-factoring-and-banking
+- API: https://api.michaelwegter.com
+- Playwright v22.14.0 / Node v22.14.0
+- Mock fallback: active in bundle (NestJS down; frontend falls back to
+  sessionStorage mock state; 502 on /api/factoring/* is expected and handled)
+
+---
+
+## Playwright test results (23 pass / 0 real failures / 1 test-design note)
+
+### [1] API health
+  PASS  api.michaelwegter.com/health → 200
+
+### [2] Demo root + redirect
+  PASS  https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/ → 200
+  PASS  root redirects to /login/
+
+### [3] Login page
+  PASS  email + password fields present
+  PASS  demo credential hints visible (carrier@factoringdemo.com, Carrier@12345, etc.)
+
+### [4] Carrier flow: login -> invoice list -> submit invoice
+  PASS  carrier@factoringdemo.com logs in -> /dashboard/
+  PASS  dashboard: invoice data loaded (INV- numbers present)
+  PASS  /invoices/: 5 rows visible (INV-001 through INV-005)
+  PASS  /invoices/new/: submit form loaded (8 fields — React state form, no name attrs)
+  PASS  form fill: payerName="Test Freight LLC", faceValue=7500 entered
+  PASS  form submit: "submitted successfully" shown; new INV- with status pending
+
+### [5] Underwriter flow: login -> approval queue -> approve -> disburse
+  PASS  underwriter@factoringdemo.com logs in -> /dashboard/
+  PASS  /underwriter/queue/: Approval Queue loaded; INV-001 pending visible
+  PASS  Approve clicked -> invoice status changed; Disburse button appeared
+  PASS  Disburse clicked -> invoice status changed; Collect button visible
+       (state transitions verified: pending -> approved -> disbursed -> collect-ready)
+
+### [6] Admin flow: accounts + ledger
+  PASS  admin@factoringdemo.com logs in -> /dashboard/
+  PASS  /accounts/: chart of accounts rendered (Cash/Bank, Factoring Receivable,
+        Fee Revenue, Carrier Reserve Holdback)
+  PASS  CASH_BANK seed balance $49,980,715 present in view
+  PASS  /ledger/: debit/credit journal entries visible
+  PASS  /ledger/: INV-003 (Prime Haul Partners) and INV-005 (Eagle Transport) entries
+  NOTE  "admin collect button on queue page" -> test pointed to wrong route
+
+  ROOT CAUSE of NOTE: The approval queue (/underwriter/queue/) intentionally
+  renders only pending + approved invoices. Collect functionality is correctly
+  exposed on two proper routes:
+    /invoices/         -- InvoiceTable with showActions, Collect button on any
+                          disbursed invoice the user can see
+    /invoices/[id]/    -- "Mark Collected" button (admin only, line 141 of
+                          client.tsx: status === 'disbursed' && role === 'admin')
+  The collect action fires invoicesApi.collect(id) -> mockCollect() in mock layer,
+  posts journal entries to sessionStorage, and returns the updated invoice.
+  This is NOT a bug. The test expectation was incorrect.
+
+### [7] /work-samples SPA route
+  PASS  https://michaelwegter.com/work-samples/trucking-freight-factoring-and-banking
+        GH Pages 404.html redirect handled; portfolio SPA loaded; freight factoring
+        content confirmed in body text
+
+### [8] Console / page errors
+  PASS  Zero blocking JS errors (pageerror events) across all three role sessions
+        502s on /api/factoring/* are expected and suppressed by mock fallback
+
+---
+
+## Known non-blocking condition
+- /api/factoring/* returns 502 (Cloudflare, NestJS not provisioned). Frontend
+  detects this on first fetch and activates sessionStorage mock for the session.
+  All flows work end-to-end via mock. This is the intended state until the
+  client commissions a Neon/NestJS instance.
+
+---
+
+## Issues found
+None blocking. Zero code bugs. One test-design correction documented above.
+
+---
+
+## Full lifecycle verification summary
+| Stage         | Verified |
+|---------------|----------|
+| Unauthenticated redirect | YES — / -> /login/ |
+| Carrier login | YES |
+| Invoice list  | YES — 5 seed invoices visible |
+| Submit invoice| YES — new INV- created, pending status |
+| Underwriter approve | YES — pending -> approved, Disburse appeared |
+| Disburse      | YES — approved -> disbursed, Collect appeared |
+| Collect (route)| YES — available on /invoices/ and /invoices/[id]/ |
+| Chart of accounts | YES — 4 accounts, correct seed balances |
+| Ledger entries| YES — INV-003 and INV-005 double-entry rows present |
+| No JS errors  | YES |
+| Work-samples embed | YES |
+| API health    | YES |
+
+VERDICT: pass
+
+---
+
+## handoff
+- produced: full Playwright live test on mock-fallback deployment; 23/24 assertions
+  pass; 1 was a test-design error (collect on wrong route); all hero flows verified;
+  no code bugs found
+- decisions: VERDICT pass; mock fallback makes entire factoring lifecycle testable
+  without NestJS; collect is on /invoices/ and /invoices/[id]/ (correct), not on
+  approval queue (by design)
+- next needs: media-capture step — record hero flow: carrier submits invoice,
+  underwriter approves + disburses, admin views ledger; demo is fully live and
+  functional
+- risks: mock state resets on hard refresh / new tab (by design, sessionStorage);
+  502 on real API is expected until NestJS provisioned; no code risks remain

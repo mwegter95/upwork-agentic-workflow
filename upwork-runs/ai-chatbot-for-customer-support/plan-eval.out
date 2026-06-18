@@ -1,0 +1,58 @@
+# Plan Eval (Rubric) — ai-chatbot-for-customer-support
+
+## Rubric scores
+
+### 1. ALL client requirements covered?
+| Requirement | Plan coverage | Verdict |
+|---|---|---|
+| FAQ answering with knowledge base | rag.js + chat.js + knowledge-base.json (20-entry corpus verbatim), cosine-sim retrieval, source citations | PASS |
+| Order status lookup | order-api.js + orders.json (10 mock orders), inline `lookupOrder()` call | PASS |
+| Human handoff + ET hours routing | escalation.js: `Intl.DateTimeFormat` America/New_York, 9-6 Mon-Fri gate, handoff form, ticket confirmation | PASS |
+| Embeddable on website | iframe-ready index.html, same-origin, no CORS issues | PASS |
+| Zendesk integration | Simulated ticket card (Zendesk-styled UI, `source: chatbot` tag) — conceptual, not live API. Acceptable for demo; proposal must note real integration is phase 2. | PASS (demo scope) |
+| US data handling norms | All processing client-side, "no data leaves browser" UX message in progress bar | PASS |
+| Zero token cost | WebLLM in-browser, no API calls | PASS |
+
+All 7 mapped requirements covered. No gaps.
+
+### 2. Right technologies chosen?
+- **WebLLM** (Llama-3.2-1B, WebGPU) → Transformers.js WASM (Qwen2.5-0.5B q4) → template-RAG: exactly what user specified (browser AI, zero tokens, Surface Pro fallback logic mapped to WASM). PASS.
+- Correct package: `@huggingface/transformers@4.2.0` (not deprecated `@xenova`). CDN + model IDs confirmed in pre-researcher.out. PASS.
+- Vanilla JS + JSON, no bundler: appropriate for self-contained static demo at 12-file cap. PASS.
+- Cosine similarity RAG: appropriate for FAQ retrieval at this scale. PASS.
+
+### 3. Testing approach defined?
+- Playwright headless Chromium = WASM path (no WebGPU in CI — correctly noted and mitigated). PASS.
+- Explicit directive: WASM must return real coherent answers, not a stub. PASS.
+- WebGPU = progressive enhancement only; CI tests WASM. PASS.
+- Typing indicator mandate for 3-8s WASM latency prevents hung-UI failures. PASS.
+
+### 4. Scope feasible at richness 10?
+- Hero + 2 supporting features (escalation + admin panel with analytics/KB editor/session viewer): ambitious, appropriate for 10/10.
+- 12-file cap: exactly at limit, no overflow.
+- Timeline: 7.5 days — reasonable for a full-featured client-side app at this complexity.
+- All features achievable client-side (confirmed by research). No backend needed.
+- PASS.
+
+### 5. Design direction fit for industry?
+- Intercom/Zendesk-meets-modern-SaaS aesthetic — directly on-brief for a B2B customer support tool. PASS.
+- Explicit NOT portfolio look: PASS.
+- Hex tokens: blue `#1D6AE5`, slate `#0F172A`, teal `#0D9488`, amber `#D97706` — standard SaaS trust palette. PASS.
+- Inter font throughout — SaaS standard. PASS.
+- Chat bubble specs (size, radius, left/right alignment, colors) fully defined. PASS.
+
+## Problems found
+
+**Minor (non-blocking):**
+1. Zendesk integration is simulated, not live API. Client asked for real Zendesk connectivity. Demo correctly notes this as conceptual, but the proposal cover letter must explicitly state: demo shows UI/UX of Zendesk handoff; real Zendesk API integration is a follow-on scope item with documented webhook/API approach.
+2. 600-900 MB WebGPU model download is a real UX risk for the live demo during proposal review. Progress bar + IndexedDB caching directive is in the plan, but builder must prioritize WASM path as first-class (not degraded) experience.
+
+**Blocking issues:** None.
+
+VERDICT: pass
+
+## handoff
+- produced: Rubric eval confirming all 5 criteria pass; 2 non-blocking notes flagged for proposal and builder.
+- decisions: Plan passes to CEO; no replanning needed.
+- next needs: CEO reviews plan quality; demo-builder must (a) treat WASM as first-class, not fallback, for CI and demo reliability, and (b) ensure proposal writer notes Zendesk as conceptual in the cover letter.
+- risks: WASM answer quality under 3-8s latency is the single largest live-demo risk — builder must validate before deploy.

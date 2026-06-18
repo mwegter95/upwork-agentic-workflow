@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SupportAI Chatbot Proposal | Michael Wegter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F8FAFC;
+    --bg-dark: #0F172A;
+    --surface: #FFFFFF;
+    --surface-2: #F1F5F9;
+    --border: #E2E8F0;
+    --blue-600: #2563EB;
+    --blue-700: #1D4ED8;
+    --blue-50: #EFF6FF;
+    --blue-100: #DBEAFE;
+    --green-500: #10B981;
+    --green-50: #ECFDF5;
+    --slate-900: #0F172A;
+    --slate-700: #334155;
+    --slate-500: #64748B;
+    --slate-400: #94A3B8;
+    --slate-300: #CBD5E1;
+    --text: #0F172A;
+    --text-muted: #64748B;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    --shadow-lg: 0 4px 6px rgba(0,0,0,.07), 0 10px 40px rgba(0,0,0,.1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--blue-600); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+  /* Header */
+  header {
+    background: var(--bg-dark);
+    color: #F8FAFC;
+    padding: 56px 0 52px;
+  }
+  .header-inner { max-width: 1000px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #10B981;
+    margin-bottom: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  header h1 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
+  }
+  .header-sub { color: #94A3B8; font-size: 15px; margin: 0; max-width: 520px; }
+  .demo-badge {
+    flex-shrink: 0;
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 220px;
+  }
+  .demo-badge .badge-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #64748B; margin-bottom: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; }
+  .demo-badge a { color: #38BDF8; font-size: 13px; font-weight: 500; word-break: break-all; }
+  .demo-badge .try-btn {
+    display: inline-block;
+    margin-top: 12px;
+    background: #2563EB;
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+  }
+  .demo-badge .try-btn:hover { background: #1D4ED8; text-decoration: none; }
+
+  /* Main content */
+  main { padding: 56px 0; }
+
+  .section { margin-bottom: 52px; }
+  .section-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue-600);
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .section-intro { color: var(--text-muted); margin: 0 0 24px; max-width: 680px; }
+
+  /* Screenshots */
+  .screenshots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 36px; }
+  @media (max-width: 720px) { .screenshots { grid-template-columns: 1fr; } }
+  .screenshot-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .screenshot-card img { width: 100%; display: block; }
+  .screenshot-card .caption { padding: 10px 14px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--surface-2); }
+
+  /* Feature grid */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+  }
+  .feature-card .icon { font-size: 22px; margin-bottom: 10px; }
+  .feature-card h3 { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+  .feature-card p { font-size: 13.5px; color: var(--text-muted); margin: 0; line-height: 1.55; }
+
+  /* Architecture */
+  .arch-box {
+    background: var(--bg-dark);
+    color: #E2E8F0;
+    border-radius: var(--radius);
+    padding: 32px 36px;
+    box-shadow: var(--shadow-lg);
+  }
+  .arch-box h3 { font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #F8FAFC; }
+  .arch-row { display: flex; gap: 16px; align-items: stretch; flex-wrap: wrap; margin-bottom: 16px; }
+  .arch-node {
+    flex: 1;
+    min-width: 160px;
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+  }
+  .arch-node .node-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #64748B; margin-bottom: 6px; font-family: 'DM Sans', sans-serif; }
+  .arch-node .node-title { font-size: 14px; font-weight: 600; color: #E2E8F0; margin-bottom: 4px; font-family: 'DM Sans', sans-serif; }
+  .arch-node .node-detail { font-size: 12px; color: #94A3B8; line-height: 1.5; }
+  .arch-arrow { align-self: center; color: #334155; font-size: 22px; flex-shrink: 0; }
+  .arch-note { font-size: 12.5px; color: #94A3B8; margin-top: 16px; padding-top: 16px; border-top: 1px solid #1E293B; }
+  .arch-note strong { color: #10B981; }
+
+  /* Checklist */
+  .checklist { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 600px) { .checklist { grid-template-columns: 1fr; } }
+  .checklist li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; }
+  .check-icon { flex-shrink: 0; width: 20px; height: 20px; background: var(--green-50); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; margin-top: 1px; }
+  .checklist li span { color: var(--text); line-height: 1.5; }
+
+  /* Zendesk section */
+  .zendesk-flow { display: flex; gap: 0; flex-wrap: wrap; margin-top: 20px; }
+  .zflow-step { flex: 1; min-width: 140px; background: var(--surface); border: 1px solid var(--border); padding: 16px; position: relative; }
+  .zflow-step:not(:first-child) { border-left: none; }
+  .zflow-step:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .zflow-step:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .zflow-step .step-num { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--blue-600); margin-bottom: 6px; font-family: 'DM Sans', sans-serif; text-transform: uppercase; }
+  .zflow-step .step-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  /* Pricing */
+  .pricing-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .pricing-row { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow); }
+  .pricing-card.featured { background: var(--blue-50); border-color: var(--blue-600); }
+  .pricing-card .price-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-family: 'DM Sans', sans-serif; margin-bottom: 8px; }
+  .pricing-card .price-value { font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .pricing-card.featured .price-value { color: var(--blue-700); }
+  .pricing-card .price-note { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+  .timeline-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .timeline-table th { background: var(--surface-2); text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); font-family: 'DM Sans', sans-serif; border-bottom: 1px solid var(--border); }
+  .timeline-table td { padding: 11px 16px; font-size: 13.5px; border-bottom: 1px solid var(--border); }
+  .timeline-table tr:last-child td { border-bottom: none; font-weight: 600; }
+  .timeline-table tr:last-child td:first-child { color: var(--blue-700); }
+
+  /* About */
+  .about-card { display: flex; gap: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); flex-wrap: wrap; }
+  .about-main { flex: 1; min-width: 260px; }
+  .about-main h3 { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+  .about-main .about-location { font-size: 13px; color: var(--green-500); font-weight: 600; margin-bottom: 12px; }
+  .about-main p { font-size: 13.5px; color: var(--text-muted); margin: 0 0 12px; line-height: 1.6; }
+  .proof-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .proof-list li { font-size: 13px; color: var(--text); }
+  .proof-list li::before { content: ""; display: inline-block; width: 6px; height: 6px; background: var(--blue-600); border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+
+  /* Footer */
+  footer {
+    background: var(--bg-dark);
+    color: #64748B;
+    padding: 28px 0;
+    text-align: center;
+    font-size: 13px;
+  }
+  footer a { color: #38BDF8; }
+  .footer-name { color: #F8FAFC; font-weight: 600; font-family: 'DM Sans', sans-serif; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="eyebrow">Proposal for Upwork</div>
+      <h1>AI Customer Support Chatbot</h1>
+      <p class="header-sub">In-browser RAG chatbot with FAQ knowledge base, order lookup, human escalation, and admin dashboard. Zero recurring AI token cost.</p>
+    </div>
+    <div class="demo-badge">
+      <div class="badge-label">Live Demo</div>
+      <a href="https://michaelwegter.com/demos/ai-chatbot-for-customer-support/" target="_blank">michaelwegter.com/demos/<br>ai-chatbot-for-customer-support</a>
+      <br>
+      <a class="try-btn" href="https://michaelwegter.com/demos/ai-chatbot-for-customer-support/" target="_blank">Try the Demo</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="container">
+
+  <!-- Demo Screenshots -->
+  <div class="section">
+    <div class="section-label">Demo Screenshots</div>
+    <div class="screenshots">
+      <div class="screenshot-card">
+        <img src="media/01-hero.png" alt="SupportAI hero view showing 4 feature cards" />
+        <div class="caption">Hero: 4 live features highlighted on first paint</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="media/02-chat-ready.png" alt="Chat interface with greeting and quick actions" />
+        <div class="caption">Chat UI with in-browser AI, quick actions, and source citations</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="media/03-admin-dashboard.png" alt="Admin analytics dashboard" />
+        <div class="caption">Admin dashboard: analytics, KB editor, recent events</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="section">
+    <div class="section-label">What the Demo Covers</div>
+    <h2>Every requirement, working in the browser</h2>
+    <p class="section-intro">Click the demo and ask "where is my order ORD-1001," "how do I return an item," or "I need to talk to a person" to see each flow.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="icon">📚</div>
+        <h3>RAG Knowledge Base</h3>
+        <p>20 real FAQ entries chunked and retrieved client-side. Bot cites sources. No hallucination on out-of-scope questions, just an honest "I'm not sure, want me to connect you?"</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📦</div>
+        <h3>Live Order Lookup</h3>
+        <p>Parses order numbers from natural language, queries mock order data, returns status, carrier, and estimated delivery. Wired to a real API endpoint in production via a drop-in swap.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🙋</div>
+        <h3>Human Escalation</h3>
+        <p>Smooth handoff with ET business-hours routing (9am to 6pm). If outside hours, shows the next available window. Ticket confirmation screen with ID mirrors a real Zendesk ticket creation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">⚙️</div>
+        <h3>Admin Panel + Analytics</h3>
+        <p>Add or edit FAQ entries, see deflection rate, top queries, escalations, and order lookups. Demonstrates that your team can own the bot after handoff with no developer help.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Architecture -->
+  <div class="section">
+    <div class="section-label">Architecture</div>
+    <h2>How it works</h2>
+    <p class="section-intro">The AI runs entirely in the visitor's browser. No API calls, no tokens, no monthly bill.</p>
+    <div class="arch-box">
+      <h3>In-Browser RAG Pipeline</h3>
+      <div class="arch-row">
+        <div class="arch-node">
+          <div class="node-label">User Input</div>
+          <div class="node-title">Chat message</div>
+          <div class="node-detail">Natural language query typed by the customer</div>
+        </div>
+        <div class="arch-arrow">&#8594;</div>
+        <div class="arch-node">
+          <div class="node-label">Retrieval</div>
+          <div class="node-title">FAQ vector search</div>
+          <div class="node-detail">Transformers.js embeddings, cosine similarity, top-3 FAQ chunks selected client-side</div>
+        </div>
+        <div class="arch-arrow">&#8594;</div>
+        <div class="arch-node">
+          <div class="node-label">Generation</div>
+          <div class="node-title">In-browser LLM</div>
+          <div class="node-detail">Qwen2.5-0.5B WASM (Transformers.js) grounded on retrieved context, streams response</div>
+        </div>
+        <div class="arch-arrow">&#8594;</div>
+        <div class="arch-node">
+          <div class="node-label">Response</div>
+          <div class="node-title">Cited answer</div>
+          <div class="node-detail">Answer shown with source citations; order lookup and escalation handled in parallel</div>
+        </div>
+      </div>
+      <div class="arch-note">
+        <strong>Zero recurring cost:</strong> The model runs in the browser using WebAssembly. No OpenAI, no Anthropic, no cloud inference bill. The knowledge base is a plain JSON file your team can update. Order status calls your existing API. Zendesk escalation uses the Zendesk Web Widget SDK.
+      </div>
+    </div>
+  </div>
+
+  <!-- Requirement checklist -->
+  <div class="section">
+    <div class="section-label">Requirements Coverage</div>
+    <h2>All five client requirements addressed</h2>
+    <ul class="checklist">
+      <li><span class="check-icon">&#10003;</span><span>Answer FAQs using existing knowledge base (RAG retrieval, source citations)</span></li>
+      <li><span class="check-icon">&#10003;</span><span>Order status lookup (mock API in demo, real API endpoint in production)</span></li>
+      <li><span class="check-icon">&#10003;</span><span>Human handoff with ET business-hours routing and ticket confirmation</span></li>
+      <li><span class="check-icon">&#10003;</span><span>Embeddable on website (single script tag or iFrame, any CMS)</span></li>
+      <li><span class="check-icon">&#10003;</span><span>US consumer communication style (friendly, direct, no jargon)</span></li>
+    </ul>
+  </div>
+
+  <!-- Zendesk Integration -->
+  <div class="section">
+    <div class="section-label">Zendesk Integration Design</div>
+    <h2>How the handoff to Zendesk works</h2>
+    <p class="section-intro">The demo simulates this flow. In production, step 3 is a real Zendesk Web Widget SDK call.</p>
+    <div class="zendesk-flow">
+      <div class="zflow-step">
+        <div class="step-num">Step 1</div>
+        <div class="step-text">Bot detects escalation trigger ("talk to a person," repeated confusion, or explicit request)</div>
+      </div>
+      <div class="zflow-step">
+        <div class="step-num">Step 2</div>
+        <div class="step-text">Check current time in ET. If 9am-6pm, offer live chat. If outside hours, show next window and offer async ticket.</div>
+      </div>
+      <div class="zflow-step">
+        <div class="step-num">Step 3</div>
+        <div class="step-text">Zendesk Web Widget opens pre-filled with conversation transcript and customer context. Or create ticket via REST API with full chat history attached.</div>
+      </div>
+      <div class="zflow-step">
+        <div class="step-num">Step 4</div>
+        <div class="step-text">Ticket ID shown to customer. Bot stays open for follow-up questions while agent reviews the case.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline + Pricing -->
+  <div class="section">
+    <div class="section-label">Timeline + Pricing</div>
+    <h2>Scope and cost breakdown</h2>
+    <p class="section-intro">Fixed price is the right model for this project. Scope is well-defined, deliverables are concrete.</p>
+    <div class="pricing-row">
+      <div class="pricing-card featured">
+        <div class="price-label">Base Build</div>
+        <div class="price-value">$2,500</div>
+        <div class="price-note">In-browser chatbot, FAQ KB, order lookup, escalation form, admin panel, embed code, documentation.</div>
+      </div>
+      <div class="pricing-card">
+        <div class="price-label">With Live Zendesk API</div>
+        <div class="price-value">$3,500</div>
+        <div class="price-note">Everything above plus real Zendesk ticket creation, live chat handoff, and Zendesk setup guide.</div>
+      </div>
+      <div class="pricing-card">
+        <div class="price-label">Full Production</div>
+        <div class="price-value">$4,500</div>
+        <div class="price-note">Everything above plus multi-language KB, Zendesk app config, custom branding, and post-launch support.</div>
+      </div>
+    </div>
+    <table class="timeline-table">
+      <thead>
+        <tr><th>Phase</th><th>Days</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Architecture + knowledge base setup</td><td>1</td></tr>
+        <tr><td>Core chatbot + RAG + in-browser LLM</td><td>3</td></tr>
+        <tr><td>Order lookup + escalation flow</td><td>1</td></tr>
+        <tr><td>Admin panel + analytics</td><td>1</td></tr>
+        <tr><td>Zendesk integration design + docs</td><td>0.5</td></tr>
+        <tr><td>QA + polish + embed package</td><td>1</td></tr>
+        <tr><td>Total</td><td>7 to 8 business days</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- About -->
+  <div class="section">
+    <div class="section-label">About</div>
+    <div class="about-card">
+      <div class="about-main">
+        <h3>Michael Wegter</h3>
+        <div class="about-location">Currently based in the United States</div>
+        <p>Full-stack developer specializing in React, Python, and AI-assisted delivery. 2.5 years at U.S. Bank building a React and Python internal platform for 600 users per month. Currently on a large Angular and .NET project at Optum. Build and ship AI tools daily.</p>
+        <p>The demo for this proposal was built in a single session using the same stack I would use on your project.</p>
+      </div>
+      <div>
+        <ul class="proof-list">
+          <li>React, Angular, Python, .NET, SQL, PostgreSQL</li>
+          <li>Became sole developer and SME of a 60,000 LOC platform within months</li>
+          <li>Led a 6-month Azure Cloud migration as primary rep</li>
+          <li>AI-assisted delivery daily (Copilot, Transformers.js, Claude API)</li>
+          <li>Live portfolio: michaelwegter.com</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<footer>
+  <div class="container">
+    <span class="footer-name">Michael Wegter</span> &nbsp;|&nbsp; Full-Stack Developer, United States &nbsp;|&nbsp;
+    <a href="https://michaelwegter.com">michaelwegter.com</a> &nbsp;|&nbsp;
+    <a href="https://michaelwegter.com/demos/ai-chatbot-for-customer-support/">Live Demo</a>
+  </div>
+</footer>
+
+</body>
+</html>

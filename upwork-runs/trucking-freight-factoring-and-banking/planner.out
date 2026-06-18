@@ -1,0 +1,60 @@
+# Plan — Freight Factoring & Banking Operations Console
+
+STATUS: READY. All research questions answered (pre-researcher.out); no remaining unknowns block build.
+
+## Demo concept (locked)
+Single Next.js 15 (App Router) admin/ops console backed by a real NestJS + Drizzle + Postgres service, fronted same-origin via mw-backend (Flask) reverse-proxy gateway. Richness 10 -> full functional build.
+
+## Prototype vs full decision
+FULL. No CLAUDE.md fallback trigger applies. File-cap interpretation (confirmed, CEO to bless): the 12-file cap covers touches on EXISTING repos only (michaelwegter.com, mw-backend) — estimate 4-6 touches (workSamples.js entry, `factoring_gateway_blueprint.py`, its `server.py` registration line, one additive `Start-Node` block in `run-server.ps1`). The new NestJS+Next.js app is fresh scaffolding under `upwork-runs/<slug>/demo-src/`, sized by the 180s build-timeout cap, not the file-count cap.
+
+## Bridge mechanism (resolved, no longer an unknown)
+- New `factoring_gateway_blueprint.py` in mw-backend: stdlib `urllib.request` reverse proxy (zero new deps), registered in `server.py` (1 line), forwards `/api/factoring/*` -> `http://localhost:<NEST_PORT>/*`, passes method/body/headers (Authorization, cookies) through verbatim, relays response verbatim.
+- One additive `Start-Node` block in `run-server.ps1`, mirroring the existing `Start-Flask`/`Start-Tunnel` `ProcessStartInfo` pattern exactly, added to the monitor loop's restart-on-exit check. Surgical, additive, matches an existing pattern used twice already.
+- Use corepack (`corepack enable && corepack prepare pnpm@latest --activate`) to get pnpm on the Surface — do not assume pnpm preinstalled.
+- Risk flagged for Michael (human-in-loop, not blocking the plan): confirm Node is actually installed on the physical Surface before/at deploy. Fallback if absent: host the Nest app on a small external always-on Node host, Flask proxies to its public URL instead of localhost — no other architecture change needed.
+
+## Database (resolved)
+- Build-time real-DB integration tests: local/Docker Postgres (both confirmed installed on dev machine) — `docker run postgres:16-alpine`, schema push, factoring + ledger tests only. Satisfies "no mocks on money paths" gate within the 180s cap.
+- Live deployed runtime DB: managed free-tier Postgres (Neon or Supabase) via `DATABASE_URL` env var. Decouples the live app from needing Postgres installed on the Windows Surface; also de-risks the bridge fallback (works whether Nest runs on the Surface or an external host).
+
+## Reference structure to clone (resolved, no `nest new`/interactive scaffolds)
+```
+apps/api/        - NestJS, Express adapter (lighter than Fastify for 3 modules)
+  src/auth/ src/factoring/ src/ledger/ src/main.ts src/app.module.ts
+apps/web/        - Next.js 15 App Router admin console
+packages/db/     - drizzle schema.ts (hand-written), drizzle.config.ts, client.ts
+turbo.json, pnpm-workspace.yaml, package.json (root)
+```
+Write `schema.ts` by hand (4 tables below), run `drizzle-kit generate` once non-interactively, apply via a small `migrate.ts` at boot/test-setup. Nest CLI used only for `nest build`.
+
+## Hero + supporting features (locked, 1+2 cap)
+- **Hero:** Freight Invoice Factoring Flow — carrier submits invoice -> integer-cents advance/fee/reserve calc -> underwriter approves -> disbursement -> FIDC ledger entry (advance leg). Money-correctness showcase.
+- **Supporting 1:** Banking Ledger & Account Balances — double-entry ledger, real-time balances, Drizzle relations. If time allows, add the collection/reserve-release ledger event as a second posting (3-step lifecycle: advance -> collection -> reserve release); otherwise document it in UI copy as a planned next step rather than building it.
+- **Supporting 2:** RBAC & Permissions — admin/underwriter/carrier/driver roles, NestJS Guards, seeded logins, role-gated nav/actions, graceful permission-denied states.
+
+## Scope fence
+- NestJS modules: `auth`, `factoring` (invoices + approval + disbursement), `ledger` (accounts + entries). 3 max.
+- Drizzle schema: `users`, `accounts`, `invoices`, `ledger_entries`. 4 tables max.
+- Next.js routes: `/login`, `/dashboard`, `/invoices/new`, `/underwriter/queue`, `/ledger`, `/accounts/:id`. 6 max.
+- Money: integer minor units end to end (DB columns, Zod-validated API payloads); formatted to decimal only at render time. Currency as discriminated union `{ currency: 'USD'|'BRL', minorUnits: number }` — nods to PIX/BRL nice-to-have without building real PIX.
+- Seeded demo accounts: admin, underwriter, carrier — record exact credentials in demo-builder's output for deploy-test login.
+- Real Postgres integration tests scoped to factoring calc + ledger posting only (money paths), not full CRUD.
+
+## Design direction (finalized, no TBDs)
+Brazilian fintech / neobank-meets-freight-ops. Deep ink-navy base (~`#0B1220`). Accent: **emerald/teal** (decided over violet — avoids reading as a Nubank-purple knockoff; signals cash-flow/liquidity, fits BaaS category convention of one confident accent on dark ink). Inter or Geist for UI text. IBM Plex Mono for all money figures, tabular numerals. Data-dense tables, status badges, role-aware nav. Explicitly NOT michaelwegter.com's palette/fonts/theme.
+
+## Domain authenticity (for copy + ledger entries)
+- Advance rate 80-95% of invoice face value; factoring fee 1-4%, tiered by payer days-to-pay; reserve = invoice amount minus advance, released to carrier (minus fee) on collection or absorbed as loss if uncollectible.
+- Double-entry on advance: Debit Factoring Receivable, Credit Cash/Bank. (Collection leg, if built: Debit Cash/Bank, Credit Factoring Receivable + recognize Fee Revenue + release Reserve.)
+
+## Proposal-answer assets (from brief.json, carry forward as-is)
+- Q1: Cornerstone Construction demo + with-ceo studio screenshot (`~/Desktop/Screenshot 2026-06-16 at 10.42.18 AM.png`); navbar visibility fix, duplicated category images fix, homepage-click-to-modal navigation fix.
+- Q2: this demo (NestJS + Drizzle + Postgres + Next.js 15, integer-cents, RBAC, real tests).
+- Q3: teams fear AI competence unnecessarily; right prompting + CEO-supervised workflow + skilled review makes AI-assisted dev production-grade.
+
+## handoff
+- produced: plan.md, READY — full feature set, scope fence, resolved bridge/DB/starter-structure/design/domain unknowns, no open research questions remain.
+- decisions: full build (not prototype); file-cap = existing-repo touches only (~4-6), new app sized by 180s build cap; hero=factoring flow, supporting=ledger+RBAC; bridge=stdlib-urllib Flask proxy blueprint + additive `Start-Node` block in `run-server.ps1`; DB=Docker/local Postgres for build tests, Neon/Supabase free tier for live runtime; accent color=emerald/teal (locked, no longer TBD).
+- next needs: CEO to bless (a) the file-cap interpretation, (b) the one extra touch to `run-server.ps1` (outside the original "blueprint + registration only" framing, required for the bridge to exist), then hand to demo-builder with this plan.md.
+- risks: Node-on-Surface install is unverified from this dev machine — Michael must confirm before/at deploy; fallback (external Node host, Flask proxies to its public URL) is pre-specified and requires no architecture change if needed. Integer-cents discipline must hold across every layer (DB, API, UI formatting boundary only) — single float slip fails the hard gate.

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposal Deck — FreightFactor — Michael Wegter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #080d1a;
+    --surface:  #0f1629;
+    --surface2: #162038;
+    --border:   #1e2d4d;
+    --accent:   #22c55e;
+    --accent2:  #16a34a;
+    --violet:   #a78bfa;
+    --text:     #e8edf8;
+    --muted:    #7a8db0;
+    --money:    #4ade80;
+    --orange:   #f59e0b;
+    --purple:   #a855f7;
+    --red:      #ef4444;
+    --mono:     'IBM Plex Mono', monospace;
+    --sans:     'Inter', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Slide shell ── */
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 72px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  @media (max-width: 720px) { .slide { padding: 48px 24px; } }
+
+  .slide-num {
+    position: absolute;
+    top: 28px; right: 32px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .slide-label {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--mono);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* ── Typography scale ── */
+  .display {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    line-height: 1.08;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .display .accent { color: var(--accent); }
+  .display .violet { color: var(--violet); }
+
+  .headline {
+    font-size: clamp(26px, 3.5vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    line-height: 1.12;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .body-lg { font-size: 17px; line-height: 1.7; color: var(--muted); }
+  .body-lg + .body-lg { margin-top: 12px; }
+  .body-sm { font-size: 14px; line-height: 1.65; color: var(--muted); }
+
+  /* ── Helpers ── */
+  .row { display: flex; gap: 32px; align-items: flex-start; }
+  .col { flex: 1; min-width: 0; }
+  @media (max-width: 680px) { .row { flex-direction: column; gap: 20px; } }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .card.accent-left { border-left: 3px solid var(--accent); }
+  .card.violet-left { border-left: 3px solid var(--violet); }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .card-body { font-size: 13px; color: var(--muted); line-height: 1.65; }
+  .card-icon { font-size: 24px; margin-bottom: 10px; }
+
+  /* ── Badge row ── */
+  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--text);
+  }
+  .badge.green { border-color: var(--accent); color: var(--accent); }
+  .badge.violet { border-color: var(--violet); color: var(--violet); }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── Status badge ── */
+  .status {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    letter-spacing: 0.5px;
+  }
+  .status.pending   { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .status.approved  { background: rgba(34,197,94,0.15);  color: var(--accent); }
+  .status.disbursed { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .status.collected { background: rgba(34,211,238,0.12); color: #22d3ee; }
+
+  /* ── CTA button ── */
+  .btn {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px 28px;
+    border-radius: 7px;
+    margin-top: 28px;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: var(--accent2); text-decoration: none; }
+
+  /* ── Screenshot ── */
+  .screenshot {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: block;
+  }
+  .screenshot-caption {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-top: 8px;
+  }
+
+  /* ── Flow pipeline ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .flow-step.active { border-color: var(--accent); color: var(--accent); background: rgba(34,197,94,0.06); }
+  .flow-arrow { color: var(--muted); font-size: 14px; }
+
+  /* ── Ledger table ── */
+  .ledger-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .ledger-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
+  .ledger-table th { text-align: left; padding: 8px 14px; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .ledger-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .ledger-table tr:last-child td { border-bottom: none; }
+  .debit  { color: #f87171; font-weight: 600; }
+  .credit { color: #60a5fa; font-weight: 600; }
+  .money  { color: var(--money); font-family: var(--mono); font-weight: 600; }
+
+  /* ── Money calc ── */
+  .money-calc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 18px 22px;
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  .calc-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .calc-row:last-child { border-bottom: none; }
+  .calc-row .label { color: var(--muted); }
+  .calc-row .val { color: var(--money); font-weight: 600; }
+  .calc-row .note { color: var(--muted); font-size: 11px; }
+
+  /* ── RBAC table ── */
+  .role-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .role-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .role-table th { background: var(--surface2); padding: 8px 14px; text-align: left; font-size: 11px; font-weight: 700; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); }
+  .role-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .role-table tr:last-child td { border-bottom: none; }
+  .role-name { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+  .check { color: var(--accent); font-weight: 700; }
+  .cross { color: var(--muted); }
+
+  /* ── Divider ── */
+  .spacer { margin-top: 28px; }
+  .spacer-sm { margin-top: 16px; }
+
+  /* ── Nav dots (optional cosmetic) ── */
+  .nav { position: fixed; right: 16px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+  @media (max-width: 800px) { .nav { display: none; } }
+  .nav a { width: 8px; height: 8px; border-radius: 50%; background: var(--border); display: block; transition: background 0.15s; }
+  .nav a:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- Slide nav -->
+<nav class="nav">
+  <a href="#s1" title="Title"></a>
+  <a href="#s2" title="The Demo"></a>
+  <a href="#s3" title="Stack"></a>
+  <a href="#s4" title="Factoring Flow"></a>
+  <a href="#s5" title="Money Correctness"></a>
+  <a href="#s6" title="Ledger"></a>
+  <a href="#s7" title="RBAC"></a>
+  <a href="#s8" title="Screenshots"></a>
+  <a href="#s9" title="AI Workflow"></a>
+  <a href="#s10" title="About"></a>
+  <a href="#s11" title="Q&amp;A"></a>
+  <a href="#s12" title="CTA"></a>
+</nav>
+
+<!-- ── Slide 1: Title ── -->
+<div class="slide" id="s1">
+  <span class="slide-num">01 / 12</span>
+  <div class="slide-label">Proposal for JS Senior Expert (Claude Code Refactor)</div>
+  <div class="display">
+    Freight<span class="accent">Factor</span><br>
+    Operations Console
+  </div>
+  <div class="body-lg" style="max-width:580px;">
+    A full-stack freight-factoring and banking platform built on your exact stack: NestJS + Drizzle + Postgres, Next.js 15 App Router, real JWT auth, RBAC, and integer-cents money throughout.
+  </div>
+  <div class="badge-row">
+    <span class="badge green"><span class="badge-dot"></span>NestJS</span>
+    <span class="badge green"><span class="badge-dot"></span>Drizzle + Postgres</span>
+    <span class="badge green"><span class="badge-dot"></span>TypeScript (strict)</span>
+    <span class="badge green"><span class="badge-dot"></span>Next.js 15</span>
+    <span class="badge violet"><span class="badge-dot"></span>Zod Validation</span>
+    <span class="badge violet"><span class="badge-dot"></span>JWT + RBAC</span>
+  </div>
+  <a href="https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/" target="_blank" class="btn">Open Live Demo</a>
+  <div class="body-sm" style="margin-top:14px;">Michael Wegter &nbsp;|&nbsp; michaelwegter.com &nbsp;|&nbsp; Available immediately</div>
+</div>
+
+<!-- ── Slide 2: What I Built ── -->
+<div class="slide" id="s2">
+  <span class="slide-num">02 / 12</span>
+  <div class="slide-label">The Demo</div>
+  <div class="headline">I built this for you before applying.</div>
+  <div class="body-lg" style="max-width:640px;">
+    Rather than describe what I could build, I went and built it. The FreightFactor Operations Console is a live, clickable app covering the core domains from your posting: factoring/receivables, identity/RBAC, and banking ledger. Running now at the link above.
+  </div>
+  <div class="grid-3 spacer">
+    <div class="card accent-left">
+      <div class="card-icon">📄</div>
+      <div class="card-title">Invoice Factoring Lifecycle</div>
+      <div class="card-body">Carrier submits invoice. Underwriter approves, system computes advance, fee, and reserve in integer cents. Disbursement posted. Full state machine with audit trail.</div>
+    </div>
+    <div class="card accent-left">
+      <div class="card-icon">🏦</div>
+      <div class="card-title">FIDC Double-Entry Ledger</div>
+      <div class="card-body">Every factoring event posts debit/credit pairs to Postgres. Chart of accounts tracks real balances across CASH_BANK, FACTORING_RECEIVABLE, FEE_REVENUE, and CARRIER_RESERVE_HOLDBACK.</div>
+    </div>
+    <div class="card accent-left">
+      <div class="card-icon">🔐</div>
+      <div class="card-title">Identity and RBAC</div>
+      <div class="card-body">JWT auth with four seeded roles: admin, underwriter, carrier, driver. NestJS Guards on every protected route. Role-aware nav and action gating. Demo credentials seeded.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 3: Stack ── -->
+<div class="slide" id="s3">
+  <span class="slide-num">03 / 12</span>
+  <div class="slide-label">Technology</div>
+  <div class="headline">Your exact stack. No substitutions.</div>
+  <div class="row spacer">
+    <div class="col">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="color:var(--accent);font-family:var(--mono);margin-bottom:12px;">BACKEND</div>
+        <div class="body-sm" style="font-family:var(--mono);line-height:2;">
+          Runtime: Node.js (TypeScript strict mode)<br>
+          Framework: NestJS (Guards, Decorators, DI)<br>
+          ORM: Drizzle + Drizzle relations<br>
+          DB: PostgreSQL (integer minor units)<br>
+          Validation: Zod (every schema, every boundary)<br>
+          Auth: JWT (PyJWT-compatible, bcrypt)<br>
+          Tests: Jest / real Postgres, no mock on money paths
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--violet);font-family:var(--mono);margin-bottom:12px;">BRIDGE</div>
+        <div class="body-sm" style="font-family:var(--mono);line-height:2;">
+          Flask (mw-backend) proxies /api/factoring/*<br>
+          to the NestJS service on same origin.<br>
+          No cross-origin auth headaches.<br>
+          Same pattern for your migration.
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="color:var(--accent);font-family:var(--mono);margin-bottom:12px;">FRONTEND</div>
+        <div class="body-sm" style="font-family:var(--mono);line-height:2;">
+          Framework: Next.js 15 (App Router)<br>
+          Rendering: RSC where beneficial, client-side for interactive flows<br>
+          Language: TypeScript (strict)<br>
+          Styling: Bespoke CSS (fintech / logistics design system)<br>
+          State: sessionStorage + API layer with mock fallback
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--muted);font-family:var(--mono);margin-bottom:12px;">TYPE SAFETY HIGHLIGHTS</div>
+        <div class="body-sm" style="font-family:var(--mono);line-height:2;">
+          Discriminated unions for currency types<br>
+          Zod inferred types end-to-end<br>
+          Drizzle inferred schema types<br>
+          No `any`, no implicit `any`, strict null checks
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 4: Factoring Flow ── -->
+<div class="slide" id="s4">
+  <span class="slide-num">04 / 12</span>
+  <div class="slide-label">Hero Feature</div>
+  <div class="headline">Invoice Factoring Lifecycle</div>
+  <div class="flow">
+    <div class="flow-step">Carrier submits invoice</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Zod validates schema</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">Underwriter approves</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Advance computed (int cents)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Disbursed + ledger posted</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Collected, reserve released</div>
+  </div>
+  <div class="row spacer-sm">
+    <div class="col">
+      <img src="./media/05-07_approval_queue.png" alt="Underwriter approval queue" class="screenshot">
+      <div class="screenshot-caption">Underwriter Approval Queue: computed advance, fee, and reserve in integer cents</div>
+    </div>
+    <div class="col">
+      <img src="./media/07-09_invoice_disbursed.png" alt="Invoice disbursed state" class="screenshot">
+      <div class="screenshot-caption">Invoice status after disbursal: DISBURSED badge + Collect action visible</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 5: Money Correctness ── -->
+<div class="slide" id="s5">
+  <span class="slide-num">05 / 12</span>
+  <div class="slide-label">Money Correctness</div>
+  <div class="headline">Obsessive about money. Integer cents throughout.</div>
+  <div class="body-lg" style="max-width:580px;margin-bottom:28px;">
+    No floats on any money path. Every amount is stored, computed, and transmitted as integer minor units (cents/centavos). Zod enforces this at every API boundary. Discriminated union types carry the currency context.
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="money-calc">
+        <div class="calc-row">
+          <span class="label">Face Value</span>
+          <span class="val">$8,750.00</span>
+          <span class="note">875000 cents</span>
+        </div>
+        <div class="calc-row">
+          <span class="label">Advance (85%)</span>
+          <span class="val">$7,437.50</span>
+          <span class="note">743750 cents</span>
+        </div>
+        <div class="calc-row">
+          <span class="label">Fee (3%)</span>
+          <span class="val">$262.50</span>
+          <span class="note">26250 cents</span>
+        </div>
+        <div class="calc-row">
+          <span class="label">Reserve holdback</span>
+          <span class="val">$1,050.00</span>
+          <span class="note">105000 cents</span>
+        </div>
+      </div>
+      <div class="body-sm" style="margin-top:12px;font-family:var(--mono);font-size:12px;">INV-002 Northern Freight Co. Computed in integer arithmetic only.</div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <div class="card-title" style="font-family:var(--mono);color:var(--accent);margin-bottom:12px;">Type definitions</div>
+        <div class="body-sm" style="font-family:var(--mono);line-height:1.9;font-size:12px;">
+          // Discriminated union for currency<br>
+          type USD = { currency: 'USD'; amount: number };<br>
+          type BRL = { currency: 'BRL'; amount: number };<br>
+          type Money = USD | BRL;<br><br>
+          // Zod schema (all amounts integer)<br>
+          const InvoiceSchema = z.object({<br>
+          &nbsp;&nbsp;faceValueCents: z.number().int().positive(),<br>
+          &nbsp;&nbsp;advanceCents:   z.number().int().nonnegative(),<br>
+          &nbsp;&nbsp;feeCents:       z.number().int().nonnegative(),<br>
+          &nbsp;&nbsp;reserveCents:   z.number().int().nonnegative(),<br>
+          });
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 6: Ledger ── -->
+<div class="slide" id="s6">
+  <span class="slide-num">06 / 12</span>
+  <div class="slide-label">Accounting</div>
+  <div class="headline">FIDC Double-Entry Ledger</div>
+  <div class="body-lg" style="margin-bottom:24px;">Every factoring event posts correct debit/credit pairs. Balances are derived from the ledger, never stored as a single mutable field. Auditable to the cent.</div>
+  <div class="row">
+    <div class="col" style="flex:1.4;">
+      <div class="ledger-wrap">
+        <table class="ledger-table">
+          <thead>
+            <tr><th>Description</th><th>Type</th><th>Amount</th><th>Account</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Advance disbursed - INV-003 Prime Haul Partners</td>
+              <td><span class="debit">DEBIT</span></td>
+              <td class="money">$15,300.00</td>
+              <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">FACTORING_RECEIVABLE</td>
+            </tr>
+            <tr>
+              <td>Advance disbursed - INV-003 Prime Haul Partners</td>
+              <td><span class="credit">CREDIT</span></td>
+              <td class="money">$15,300.00</td>
+              <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">CASH_BANK</td>
+            </tr>
+            <tr>
+              <td>Fee recognized - INV-005 Eagle Transport</td>
+              <td><span class="credit">CREDIT</span></td>
+              <td class="money">$540.00</td>
+              <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">FEE_REVENUE</td>
+            </tr>
+            <tr>
+              <td>Reserve holdback - INV-005 Eagle Transport</td>
+              <td><span class="debit">DEBIT</span></td>
+              <td class="money">$1,800.00</td>
+              <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">CARRIER_RESERVE_HOLDBACK</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col">
+      <img src="./media/10-12_ledger_entries.png" alt="Admin ledger view" class="screenshot">
+      <div class="screenshot-caption">Admin Ledger: full double-entry accounting trail with running totals</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 7: RBAC ── -->
+<div class="slide" id="s7">
+  <span class="slide-num">07 / 12</span>
+  <div class="slide-label">Identity and Access</div>
+  <div class="headline">Real auth. Real RBAC. Four roles seeded.</div>
+  <div class="body-lg" style="margin-bottom:28px;">JWT auth with NestJS Guards on every protected route. Role-aware nav hides irrelevant actions. Demo credentials seeded for each role so the live test can verify every flow.</div>
+  <div class="row">
+    <div class="col">
+      <div class="role-wrap">
+        <table class="role-table">
+          <thead>
+            <tr><th>Role</th><th>Submit Invoice</th><th>Approve / Disburse</th><th>Admin Ledger</th><th>Accounts</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="role-name">admin</span></td>
+              <td class="check">Yes</td><td class="check">Yes</td><td class="check">Yes</td><td class="check">Yes</td>
+            </tr>
+            <tr>
+              <td><span class="role-name">underwriter</span></td>
+              <td class="cross">No</td><td class="check">Yes</td><td class="cross">No</td><td class="cross">No</td>
+            </tr>
+            <tr>
+              <td><span class="role-name">carrier</span></td>
+              <td class="check">Yes</td><td class="cross">No</td><td class="cross">No</td><td class="cross">No</td>
+            </tr>
+            <tr>
+              <td><span class="role-name">driver</span></td>
+              <td class="cross">No</td><td class="cross">No</td><td class="cross">No</td><td class="cross">No</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title" style="font-family:var(--mono);color:var(--accent);margin-bottom:10px;">Demo credentials (seeded)</div>
+        <div class="body-sm" style="font-family:var(--mono);line-height:2;font-size:12px;">
+          admin@demo.local / Admin123!<br>
+          underwriter@demo.local / Under123!<br>
+          carrier@demo.local / Carrier123!
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <img src="./media/04-06_underwriter_dashboard.png" alt="Underwriter role dashboard" class="screenshot">
+      <div class="screenshot-caption">Role-aware dashboard: Jordan Lee, Underwriter role. Approval Queue nav visible; carrier invoice submission hidden.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 8: Screenshots ── -->
+<div class="slide" id="s8">
+  <span class="slide-num">08 / 12</span>
+  <div class="slide-label">Demo Gallery</div>
+  <div class="headline">See it working.</div>
+  <div class="grid-2 spacer-sm">
+    <div>
+      <img src="./media/01-01_carrier_dashboard.png" alt="Carrier dashboard" class="screenshot">
+      <div class="screenshot-caption">Carrier dashboard: Sam Trucking LLC, 5 seeded invoices in various states</div>
+    </div>
+    <div>
+      <img src="./media/02-02_invoice_list.png" alt="Invoice list" class="screenshot">
+      <div class="screenshot-caption">Invoice list: PENDING, APPROVED, DISBURSED, REJECTED, COLLECTED badges</div>
+    </div>
+    <div>
+      <img src="./media/09-11_chart_of_accounts.png" alt="Chart of accounts" class="screenshot">
+      <div class="screenshot-caption">Chart of Accounts: CASH_BANK $49.98M, FACTORING_RECEIVABLE, FEE_REVENUE balances</div>
+    </div>
+    <div>
+      <img src="./media/08-10_admin_dashboard.png" alt="Admin dashboard" class="screenshot">
+      <div class="screenshot-caption">Admin operations dashboard: full visibility across all roles and accounts</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 9: AI Workflow ── -->
+<div class="slide" id="s9">
+  <span class="slide-num">09 / 12</span>
+  <div class="slide-label">Agentic Workflow</div>
+  <div class="headline">AI-first engineering. Same process you run.</div>
+  <div class="body-lg" style="max-width:620px;margin-bottom:24px;">
+    This demo was itself built using the agentic workflow studio below: parallel Claude Code agents for each pipeline phase (plan, research, build, deploy, test, media, proposal), supervised by a CEO agent that enforces quality gates. The engineer sets direction, reviews output skeptically, and fixes what agents get subtly wrong.
+  </div>
+  <img src="./media/claude-workflow-studio.png" alt="Claude Workflow Studio with-ceo layout" class="screenshot" style="max-width:680px;">
+  <div class="screenshot-caption" style="margin-top:8px;">Claude Workflow Studio, with-ceo layout. Parallel build agents + CEO supervisor. The same pattern used to build the Cornerstone Construction site.</div>
+  <div class="grid-3 spacer">
+    <div class="card">
+      <div class="card-title">AI builds</div>
+      <div class="card-body">Component architecture, routing, styling, initial domain logic. Fast and broad.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Human verifies</div>
+      <div class="card-body">Correctness review, edge case identification, architectural decisions. Catches what agents miss.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Both ship</div>
+      <div class="card-body">Production-ready code at AI velocity. Verified by the engineer who owns it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 10: About ── -->
+<div class="slide" id="s10">
+  <span class="slide-num">10 / 12</span>
+  <div class="slide-label">About</div>
+  <div class="headline">Michael Wegter</div>
+  <div class="grid-2 spacer-sm">
+    <div class="card accent-left">
+      <div class="card-title">Optum RHRP 4 (current)</div>
+      <div class="card-body">Angular + .NET/C# + PostgreSQL, onion architecture, strict Agile. 150+ story points delivered. Team's go-to for AI-assisted development. Contract started April 2026.</div>
+    </div>
+    <div class="card accent-left">
+      <div class="card-title">U.S. Bank via Turnberry</div>
+      <div class="card-body">React + Python + SQL + Java internal platform (TDAAS), 60k LOC, 600 users/month. Sole developer and SME within months. Led 6-month Azure migration as project's main engineer.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Stack depth</div>
+      <div class="card-body">TypeScript/JavaScript (5+ yrs production), PostgreSQL, NestJS, Next.js 15, React, Python, .NET/C#, Docker, CI/CD, Kubernetes.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">AI tooling</div>
+      <div class="card-body">Claude Code daily in production. Custom agentic workflow studio with CEO supervisor pattern. AI-first delivery across multiple contracts.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Availability</div>
+      <div class="card-body">Immediate start. US-based, can cover Brazil business hours (BRT/UTC-3) overlap. Async, outcome-focused.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Portfolio</div>
+      <div class="card-body"><a href="https://michaelwegter.com" target="_blank">michaelwegter.com</a> — gallery planner, SEO analyzer, Spotify/Apple music tools, and more.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 11: Q&A ── -->
+<div class="slide" id="s11">
+  <span class="slide-num">11 / 12</span>
+  <div class="slide-label">Your Three Questions</div>
+  <div class="headline">Answered directly.</div>
+  <div class="spacer-sm">
+    <div class="card accent-left" style="margin-bottom:16px;">
+      <div class="card-title" style="font-family:var(--mono);color:var(--accent);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Q1: Non-trivial feature shipped with an AI coding agent</div>
+      <div class="card-body">
+        Cornerstone Construction portfolio site. Ran through Claude Workflow Studio (with-ceo layout). Agent built full frontend from component architecture through routing and styling. I corrected: (1) navbar links invisible on smaller viewports (CSS specificity miss); (2) project images duplicated per category instead of unique per project (data-mapping bug in seed logic); (3) navigation quirk where clicking a project from the homepage opened the listing but not the modal for that specific project. I rewired navigation state, verified with React DevTools and a full manual walkthrough. See the studio screenshot on the previous slide. Same process: AI builds fast and broad, engineer verifies and fixes the edge cases.
+      </div>
+    </div>
+    <div class="card accent-left" style="margin-bottom:16px;">
+      <div class="card-title" style="font-family:var(--mono);color:var(--accent);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Q2: A TS/Node codebase I am proud of</div>
+      <div class="card-body">
+        This demo. Discriminated unions for currency types, Zod schemas on every boundary, NestJS Guards and decorators, Drizzle relations, real double-entry ledger logic in Postgres. Next.js 15 App Router frontend. Strict mode throughout, zero `any`. Production-grade in a proposal timeframe. That is the point.
+      </div>
+    </div>
+    <div class="card violet-left">
+      <div class="card-title" style="font-family:var(--mono);color:var(--violet);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Q3: One thing teams get wrong about AI-assisted development</div>
+      <div class="card-body">
+        They assume AI gets too much wrong to be a real partner, so they avoid it or hand it over with no oversight. With well-designed workflows and an engineer who reviews output skeptically and catches the subtle errors, AI-assisted development is genuinely powerful and produces production-ready work. The engineer becomes a force multiplier: AI handles breadth and velocity, the human handles correctness, architecture, and edge cases. This demo proves it.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Slide 12: CTA ── -->
+<div class="slide" id="s12" style="text-align:center;align-items:center;">
+  <span class="slide-num">12 / 12</span>
+  <div class="slide-label" style="text-align:center;">Ready to Ship</div>
+  <div class="display" style="text-align:center;">
+    Try the<br><span class="accent">live demo.</span>
+  </div>
+  <div class="body-lg" style="max-width:520px;margin:0 auto 8px;">
+    Full-stack NestJS + Postgres + Next.js 15 freight-factoring console. Carrier, underwriter, and admin flows working end-to-end. Integer-cents money. Real auth.
+  </div>
+  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:28px;">
+    <a href="https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/" target="_blank" class="btn" style="margin-top:0;">Open Demo</a>
+    <a href="https://michaelwegter.com" target="_blank" class="btn" style="margin-top:0;background:var(--surface2);color:var(--text);border:1px solid var(--border);">Full Portfolio</a>
+  </div>
+  <div class="body-sm" style="margin-top:24px;color:var(--muted);">
+    Michael Wegter &nbsp;|&nbsp; zweetztuph@gmail.com &nbsp;|&nbsp; Available immediately
+  </div>
+</div>
+
+</body>
+</html>

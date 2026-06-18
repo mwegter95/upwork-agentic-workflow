@@ -1,0 +1,29 @@
+# Deploy — ai-chatbot-for-customer-support
+
+## Actions taken
+
+1. **Build verified** — `npm run build` clean, 0 errors, 44 modules transformed.
+2. **Files staged & committed** — 12 demo files + `workSamples.js` update.
+   Commit: `12afe7c` "Add AI customer support chatbot demo (in-browser WebLLM/WASM, no API costs)"
+3. **Pushed** — `git push origin main` → GitHub Actions deploy workflow triggered.
+4. **No mw-backend changes** — demo is fully client-side; no Flask blueprint needed.
+
+## Live verification
+
+| Check | Result |
+|---|---|
+| `https://michaelwegter.com/` | 200 ✓ |
+| `https://api.michaelwegter.com/health` | 200 ✓ |
+| `https://michaelwegter.com/demos/ai-chatbot-for-customer-support/` | 200 ✓ (confirmed ~45s after push) |
+| `/work-samples/ai-chatbot-for-customer-support` | SPA route (expected 404 from GH Pages raw; resolves client-side via 404.html redirect) |
+
+## Demo URL
+**https://michaelwegter.com/demos/ai-chatbot-for-customer-support/**
+
+Portfolio route: **https://michaelwegter.com/work-samples/ai-chatbot-for-customer-support**
+
+## handoff
+- produced: committed + pushed 12 demo files + workSamples.js entry; demo live at https://michaelwegter.com/demos/ai-chatbot-for-customer-support/
+- decisions: no backend deploy needed (100% in-browser); pushed michaelwegter.com only
+- next needs: deploy-test should load the demo URL directly, allow template-RAG tier as pass condition (WASM/WebLLM model downloads may stall in headless); test FAQ query, order lookup (try ORD-1001), and escalation trigger ("talk to a human")
+- risks: WebLLM/WASM model download (~300-500MB) will not complete in headless CI — template-RAG fallback must be accepted as pass; admin panel at /admin.html, password "admin123" (demo-only)

@@ -1,0 +1,40 @@
+# Orchestrator (improve pass 2)
+
+Foundation unchanged (slug, concept, stack, design direction all stand from run 1).
+This pass is 4 small, scoped fixes — all live in the existing demo + its backend.
+No re-research, no replan of concept.
+
+## Improve scope (route to demo-builder, then deploy + deploy-test)
+1. **No category abbreviation.** Accounts area truncates "Assets" -> "ass"; render
+   full words for every account category: Asset(s), Revenue, Liability, Equity,
+   Expense. Fix the truncation/`slice`/CSS `text-overflow` causing it; do not
+   abbreviate.
+2. **Linked-number contrast.** Anchored/linked numeric text uses a blue that fails
+   on the dark bg. Swap to an accessible accent from the demo's existing token set
+   (target WCAG AA on the dark surface); don't introduce michaelwegter.com tokens.
+3. **Ledger 200 entries + scroll/paginate.** "recent 50 entries" panel must hold a
+   real 200 entries, be scrollable, and offer pagination or a "per page" selector.
+   Back it with real backend data (200 rows), not a hardcoded 50 slice.
+4. **Wire to the REAL backend on the Surface.** Everything ledger/accounts must read
+   from the live Node service via the Flask bridge at api.michaelwegter.com — no mock
+   fallbacks for these surfaces. deploy must re-confirm the service is LISTENING and
+   the bridged endpoints return real data; deploy-test exercises ledger pagination +
+   account labels against the live deployment.
+
+## Caps / discipline
+- Versioned outputs (orchestrator2.out, plan2.md, <id>2.out). Edit in place.
+- Minimal blast radius: only demo-builder (frontend labels/contrast/pagination +
+  backend 200-row seed/query/endpoint), deploy, deploy-test run meaningfully.
+  intake/researcher/planner = "unaffected" unless they must record the new reqs.
+- Richness stays 10; these are polish + real-data fixes, not scope cuts.
+
+## handoff
+- produced: scoped improve plan for 4 fixes (no abbrev, link contrast, ledger 200 +
+  scroll/paginate, full real-backend wiring); routing to demo-builder->deploy->deploy-test.
+- decisions: keep run-1 stack/design/slug; reuse existing demo tokens for the new
+  accent; ledger must hit live bridged endpoint with 200 real rows (no mock slice).
+- next needs: brief/planner just log these 4 reqs (especially "no category abbrev"
+  and "live backend only"); demo-builder does the actual edits.
+- risks: (1) Surface Node service must be up — deploy re-registers if not; (2) 200-row
+  pagination endpoint must exist server-side; (3) contrast pick must pass AA without
+  drifting the palette.

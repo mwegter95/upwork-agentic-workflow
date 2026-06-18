@@ -1,0 +1,159 @@
+# Plan — AI Chatbot for Customer Support
+slug: ai-chatbot-for-customer-support | richness: 10/10 | build: FULL
+
+---
+
+## Demo concept
+
+**"SupportAI" — In-browser AI chatbot embedded on a mock e-commerce support page.**
+
+A production-quality support widget running a real LLM (Llama-3.2-1B via WebLLM/WebGPU) entirely in the browser — zero backend, zero token cost. Demonstrates all 5 client capabilities in a single live URL. Two entry points: the customer-facing chat widget (index.html) and the admin panel (admin.html).
+
+Prototype vs full decision: **FULL.** All features are achievable client-side with WebLLM + Transformers.js. No prototype trigger fires.
+
+---
+
+## Architecture
+
+```
+Browser
+├── model-loader.js  ← WebLLM (Llama-3.2-1B, WebGPU) → Transformers.js WASM → template-RAG fallback
+├── rag.js           ← FAQ JSON corpus + cosine similarity retrieval (embeddings precomputed or runtime)
+├── chat.js          ← orchestrates: retrieve context → LLM prompt → stream response → cite sources
+├── order-api.js     ← mock orders.json lookup by order# or email
+├── escalation.js    ← ET hours check (Date in America/New_York) + handoff form + simulated ticket#
+└── admin.js         ← KB editor, deflection analytics, session log viewer
+```
+
+LLM chain (in order of availability):
+1. **WebLLM** — `https://esm.run/@mlc-ai/web-llm` (v0.2.84), model `Llama-3.2-1B-Instruct-q4f16_1-MLC` (WebGPU required, ~879 MB download, cached in IndexedDB)
+2. **Transformers.js WASM** — `https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm` (**NOT `@xenova/transformers`** — renamed in v3, frozen/EOL), instruction model `onnx-community/Qwen2.5-0.5B-Instruct` (`dtype:"q4", device:"wasm"`), embedding model `Xenova/all-MiniLM-L6-v2` (`dtype:"fp32", device:"wasm"`)
+3. **Template fallback** — deterministic RAG-only: top-1 retrieved FAQ displayed verbatim + escalate if no match
+
+**Critical deploy-test note:** Playwright headless Chromium has NO WebGPU — WASM path is what CI exercises. WASM must produce real coherent answers, not a skeleton. WebGPU is progressive enhancement only.
+
+---
+
+## Hero feature
+
+**In-browser streaming chatbot with RAG + order lookup**
+
+- Chat widget opens as floating bubble on any page (iFrame-embeddable via `<iframe src="...">`)
+- Model load flow: progress bar, "AI loading... (running locally on your device, no data sent)", % done
+- User types query → RAG retrieves top-3 FAQ chunks (cosine sim) → injected into LLM system prompt → streamed response
+- Each response includes cited FAQ sources ("Based on our returns policy...")
+- Order lookup: user says "where is my order 12345" → bot calls `lookupOrder('12345')` → injects status into prompt
+- Graceful: if confidence low → escalation suggestion appears inline
+
+## Supporting feature 1: Escalation + ET hours routing
+
+- "Talk to a human" button always visible
+- ET hours check on click: `Intl.DateTimeFormat` in `America/New_York`
+  - Within 9am-6pm ET Mon-Fri: "Our team is available now — we'll respond within a few minutes." → handoff form
+  - Outside hours: "Our team is offline until [next open time]." → leave-a-message form
+- Form submits → animated "Ticket #[random 5-digit] created — you'll hear back at [email]" confirmation
+- Simulated Zendesk: UI shows the ticket card in Zendesk-esque styling with tag `source: chatbot`
+
+## Supporting feature 2: Admin panel (admin.html)
+
+- **KB editor:** table of FAQ entries (question + answer + category); add/edit/delete; saved to localStorage
+- **Analytics dashboard:** deflection rate (% conversations resolved without escalation), top 5 queries by frequency, handoff count, avg messages per session — all computed from sessionStorage log
+- **Session viewer:** scrollable list of past chat sessions with transcript
+
+---
+
+## Design system — bespoke SaaS support-tool aesthetic
+
+Target feel: Intercom/Zendesk-meets-modern-SaaS. Clean, trustworthy, efficient. NOT the dark gallery-wall portfolio look.
+
+| Token | Value |
+|---|---|
+| Brand blue | `#1D6AE5` (primary CTA, bot bubble) |
+| Brand dark | `#0F172A` (headings, nav) |
+| Surface | `#F8FAFC` (page bg) |
+| Card | `#FFFFFF` with `box-shadow: 0 1px 3px rgba(0,0,0,.08)` |
+| Accent teal | `#0D9488` (online status, success states) |
+| Warn amber | `#D97706` (offline/wait states) |
+| Text primary | `#1E293B` |
+| Text muted | `#64748B` |
+| Font headings | **Inter** (700/600) — Google Fonts |
+| Font body | **Inter** (400/500) |
+| Border radius | 12px cards, 20px chat bubbles, 8px inputs |
+| Chat bubble — user | `#1D6AE5` bg, white text, right-aligned |
+| Chat bubble — bot | `#F1F5F9` bg, `#1E293B` text, left-aligned |
+
+---
+
+## File manifest (12 files)
+
+```
+public/demos/ai-chatbot-for-customer-support/
+├── index.html          ← widget + chat UI (customer view)
+├── admin.html          ← admin panel
+├── style.css           ← shared design system
+├── chat.js             ← main chat orchestrator
+├── model-loader.js     ← WebLLM → Transformers.js → template fallback chain
+├── rag.js              ← FAQ retrieval (embeddings or keyword fallback)
+├── order-api.js        ← mock order lookup
+├── escalation.js       ← ET hours + handoff flow
+├── admin.js            ← KB editor + analytics + session viewer
+├── analytics.js        ← event tracking (deflection, query log)
+├── knowledge-base.json ← FAQ corpus (20+ entries: orders, shipping, returns, account)
+└── orders.json         ← 10 mock orders with realistic status data
+```
+
+---
+
+## Requirement-to-feature traceability
+
+| Client requirement | Demo feature | File(s) |
+|---|---|---|
+| FAQ answering with knowledge base | RAG retrieval + LLM response + source citations | rag.js, chat.js, knowledge-base.json |
+| Order status lookup | `lookupOrder()` called inline during chat | order-api.js, orders.json |
+| Human handoff + ET hours routing | Escalation button, hours check, ticket confirmation | escalation.js |
+| Embeddable on website | iframe-ready index.html, no CORS issues (same-origin) | index.html |
+| Zendesk integration (conceptual) | Simulated ticket card styled as Zendesk UI | escalation.js, style.css |
+| US data handling norms | All processing client-side, no data leaves browser | model-loader.js (shown in UI) |
+| Zero token cost | WebLLM in-browser; no API calls | model-loader.js |
+
+---
+
+## Research integration (pre-researcher confirmed)
+
+All 5 research questions answered. Key builder directives from research:
+
+1. **WebLLM:** `import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm"` — model `Llama-3.2-1B-Instruct-q4f16_1-MLC` (879 MB VRAM, ~600-900 MB one-time download, cached in IndexedDB). ✅
+2. **Transformers.js WASM:** Package RENAMED — use `https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm`; instruction `onnx-community/Qwen2.5-0.5B-Instruct` q4/wasm; embedding `Xenova/all-MiniLM-L6-v2` fp32/wasm. `@xenova/transformers` is frozen/EOL — do NOT use. ✅
+3. **Zendesk widget UI:** 380x520px panel, brand-color header, bot bubbles left (light gray), user bubbles right (brand blue), typing indicator (3-dot pulse), escalation card (amber), ticket confirmation card (green). ✅
+4. **FAQ corpus:** 20-entry authentic corpus provided in pre-researcher.out — use verbatim in knowledge-base.json. ✅
+5. **Widget UI patterns:** Launcher 56px circle bottom-right, `role="dialog"` on panel, `aria-live="polite"` on feed, mobile full-screen below 480px. ✅
+
+**WASM inference is slow (~3-8s):** show streaming/typing indicator; never let the UI appear hung.
+
+**Plan status: READY — all research integrated, build can proceed.**
+
+---
+
+## Timeline + pricing (for proposal)
+
+| Phase | Days |
+|---|---|
+| Architecture + knowledge base setup | 1 |
+| Core chatbot + RAG + LLM chain | 3 |
+| Order lookup + escalation flow | 1 |
+| Admin panel | 1 |
+| Zendesk integration design + docs | 0.5 |
+| QA + polish | 1 |
+| **Total** | **~7.5 business days** |
+
+**Recommendation: Fixed price.** Scope is well-defined, deliverables are concrete. Hourly favors open-ended R&D; this is a bounded build.
+
+**Rough pricing range (for deck):** $2,500-$4,500 fixed (scales with real Zendesk integration scope if client wants live API vs simulation).
+
+---
+
+## handoff
+- produced: Final build plan — demo concept, confirmed architecture with exact CDN URLs + model IDs, hero + 2 supporting features, bespoke design system, 12-file manifest, requirement-to-feature traceability, timeline/pricing, all research integrated.
+- decisions: FULL build (richness 10); WebLLM `Llama-3.2-1B-Instruct-q4f16_1-MLC` → `@huggingface/transformers@4.2.0` WASM (`onnx-community/Qwen2.5-0.5B-Instruct` q4) → template-RAG; WASM is primary CI-tested path; 20-entry FAQ corpus from pre-researcher.out used verbatim; admin panel with analytics; bespoke blue/slate SaaS aesthetic.
+- next needs: Builder uses exact model IDs/CDN URLs above; must NOT use `@xenova/transformers`; WASM path must return real answers (not stub); show typing indicator for 3-8s WASM latency; copy FAQ corpus verbatim from pre-researcher.out into knowledge-base.json.
+- risks: Qwen2.5-0.5B WASM slow in CI (~3-8s) — typing indicator required; `@huggingface/transformers` v4 pipeline API may differ slightly from v3 docs — builder should test pipeline call against confirmed snippet in pre-researcher.out; 600-900 MB WebGPU model download requires honest progress UX.

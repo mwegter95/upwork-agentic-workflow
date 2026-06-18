@@ -1,0 +1,27 @@
+# CEO Review (Plan) — ai-chatbot-for-customer-support
+
+## Verdict rationale
+Plan is genuinely build-ready at richness 10. Verified against brief.json and plan-eval.out (passed).
+
+**Strengths (approve):**
+- All 5 explicit capabilities + 4 hard constraints traced to concrete files (rag.js/chat.js/knowledge-base.json, order-api.js/orders.json, escalation.js, iframe index.html, client-side processing). No gaps.
+- Honors user's core directive: zero-token in-browser AI. Correct 3-tier chain (WebLLM/WebGPU → `@huggingface/transformers@4.2.0` WASM → template-RAG), with exact, research-confirmed model IDs/CDN URLs. Avoids the EOL `@xenova/transformers` trap.
+- WASM correctly designated the first-class, CI-tested path (headless Chromium has no WebGPU) — this is the single most important correctness call in the plan and it's right.
+- Scope = hero + 2 supporting (escalation, admin panel w/ analytics+KB editor+session viewer). Ambitious and appropriate for 10/10; 12-file manifest at cap, no overflow.
+- Bespoke SaaS support-tool design (blue/slate/teal, Inter), explicitly not the portfolio look. Em/en-dash rule noted.
+
+## Notes carried forward (non-blocking — for builder/proposal, not replanning)
+1. Zendesk is simulated UI, not live API. Builder: keep the Zendesk-styled ticket card convincing. Proposal-writer: must state plainly that the demo shows the Zendesk handoff UX and real API integration is a documented phase-2 scope item.
+2. WASM answer quality at 3-8s latency is the top live-demo risk. Builder MUST validate that Qwen2.5-0.5B WASM returns real, coherent grounded answers (not a stub) BEFORE deploy, and ship the typing indicator so the UI never appears hung.
+3. WebGPU model download (~600-900 MB) needs honest progress UX + IndexedDB caching, but WASM must stand alone as a complete experience so first-paint review never blocks on the large download.
+4. Proposal deliverable `proposal_us_confirmation` ("Michael is currently based in the United States") is the client's hard ask — proposal-writer must include it verbatim and clearly.
+
+No replanning needed. No REDIRECT.
+
+VERDICT: pass
+
+## handoff
+- produced: CEO approval of the build plan; 4 non-blocking directives forwarded to builder/proposal-writer.
+- decisions: Plan passes as-is; FULL build at richness 10; WASM is the first-class CI path; no earlier step re-run.
+- next needs: researcher/demo-builder proceed on plan.md as written; builder must validate real WASM answers + typing indicator pre-deploy; proposal must flag Zendesk-as-conceptual and include US-based confirmation.
+- risks: WASM coherence/latency is the dominant live-demo risk; large WebGPU download must not gate first paint.

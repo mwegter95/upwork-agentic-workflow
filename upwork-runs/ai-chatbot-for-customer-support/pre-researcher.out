@@ -1,0 +1,140 @@
+# Pre-Researcher — ai-chatbot-for-customer-support
+
+## Critical Research Items (Plan Gate: 2 blockers)
+
+---
+
+### 1. WebLLM CDN URL + Llama-3.2-1B Model ID — CONFIRMED
+
+| Item | Value |
+|------|-------|
+| ESM CDN (unpinned) | `import * as webllm from "https://esm.run/@mlc-ai/web-llm"` |
+| ESM CDN (pinned, safer) | `https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.84/+esm` |
+| Latest version | `0.2.84` (also 0.2.83 on GitHub — both stable as of June 2026) |
+| Model ID | `Llama-3.2-1B-Instruct-q4f16_1-MLC` |
+| VRAM required | 879 MB (q4f16_1); 1129 MB (q4f32_1 — skip this one) |
+| Model source | `https://huggingface.co/mlc-ai/Llama-3.2-1B-Instruct-q4f16_1-MLC` |
+| Context window | 4096 tokens |
+
+**Usage:**
+```js
+import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
+const engine = await CreateMLCEngine("Llama-3.2-1B-Instruct-q4f16_1-MLC", {
+  initProgressCallback: (p) => updateLoadingUI(p)
+});
+```
+
+Models are downloaded on first use and cached in IndexedDB (~600-900 MB one-time download). Subsequent loads are instant from cache.
+
+---
+
+### 2. Transformers.js WASM Fallback — CONFIRMED + CRITICAL PACKAGE NAME CHANGE
+
+**BLOCKER FOR PLAN:** The plan references `@xenova/transformers`. This is stale. The package was renamed starting v3.
+
+| Item | Value |
+|------|-------|
+| **Correct package** | `@huggingface/transformers` (not `@xenova/transformers`) |
+| `@xenova/transformers` status | Frozen at v2.17.2; no new updates; still works but EOL trajectory |
+| Latest `@huggingface/transformers` | v4.2.0 |
+| ESM CDN (unpinned) | `https://cdn.jsdelivr.net/npm/@huggingface/transformers` |
+| ESM CDN (pinned) | `https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm` |
+| Instruction model | `onnx-community/Qwen2.5-0.5B-Instruct` |
+| Instruction model dtype for WASM | `{ dtype: "q4", device: "wasm" }` |
+| Embedding model (cosine sim) | `Xenova/all-MiniLM-L6-v2` (Xenova-namespaced models still work in the new package) |
+| Alt embedding (smaller, faster) | `mixedbread-ai/mxbai-embed-xsmall-v1` |
+
+**WASM inference usage:**
+```js
+import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm";
+// Instruction (chat):
+const chat = await pipeline("text-generation", "onnx-community/Qwen2.5-0.5B-Instruct",
+  { dtype: "q4", device: "wasm" });
+// Embeddings (RAG cosine similarity):
+const embed = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2",
+  { dtype: "fp32", device: "wasm" });
+```
+
+---
+
+### 3. Deploy-Test (Playwright) — WASM Path Is The Only Tested Path
+
+Playwright headless Chromium has NO WebGPU. This means:
+- WebLLM (WebGPU path) will silently fail / skip in deploy-test
+- The Transformers.js WASM path is **the primary path exercised by CI/deploy-test**
+- Builder must treat WASM path as the real path, not a skeleton fallback
+- Recommend: detect WebGPU support at runtime (`navigator.gpu`), fall to WASM immediately if absent; WASM path must produce real coherent answers, not just "I don't know"
+
+---
+
+## Nice-to-Have Items (non-critical, fidelity)
+
+### 4. Zendesk Chat Widget UI Patterns
+
+Standard Zendesk/Intercom widget anatomy for the builder to reference:
+- **Launcher:** fixed bottom-right circle button (56x56px), brand color, chat bubble icon; badge for unread count
+- **Panel:** 380px wide x 520px tall card (responsive), positioned above launcher with 16px gap; `box-shadow: 0 8px 32px rgba(0,0,0,0.18)`
+- **Header:** avatar/bot icon left, name + status dot ("Online"), minimize/close icons right; brand color background
+- **Message feed:** scrollable; user bubbles right-aligned (brand accent), bot bubbles left-aligned (light gray); timestamps below each group
+- **Input area:** textarea + send button; attach/emoji icons optional; "Powered by [agent name]" footer
+- **Typing indicator:** three-dot pulse animation in bot bubble
+- **Escalation card:** distinct yellow/orange card inside feed, agent avatar placeholder, "Connecting you to a human..." state
+- **Zendesk ticket created card:** green checkmark icon, "Ticket #XXXX created", expected response time
+
+### 5. Authentic 20-Entry FAQ Corpus (e-commerce support)
+
+```json
+[
+  { "q": "Where is my order?", "a": "You can track your order using the tracking link sent to your email. Orders typically ship within 1-2 business days." },
+  { "q": "How do I track my shipment?", "a": "Check your confirmation email for a tracking number. Click the link or enter it at our carrier's site." },
+  { "q": "When will my order arrive?", "a": "Standard shipping is 5-7 business days. Expedited options are available at checkout." },
+  { "q": "How do I return an item?", "a": "We accept returns within 30 days of delivery. Items must be unused and in original packaging. Start a return from your order history." },
+  { "q": "How do I get a refund?", "a": "Refunds are issued to your original payment method within 5-7 business days of receiving your return." },
+  { "q": "Can I exchange an item?", "a": "Yes, exchanges are processed like a return + new order. Contact support to expedite the process." },
+  { "q": "My item arrived damaged. What do I do?", "a": "Sorry about that! Email us a photo and your order number at support@[store].com. We will send a replacement right away." },
+  { "q": "I received the wrong item.", "a": "We apologize for the mix-up. Please email a photo of what you received and we will ship the correct item immediately." },
+  { "q": "Can I cancel my order?", "a": "Orders can be cancelled within 1 hour of placement. After that, the order enters fulfillment and cannot be cancelled." },
+  { "q": "Can I change my shipping address?", "a": "Address changes are possible within 1 hour of ordering. Contact us immediately and we will try to update before shipment." },
+  { "q": "Do you ship internationally?", "a": "We currently ship to the US, Canada, and UK. International orders may incur customs fees, which are the buyer's responsibility." },
+  { "q": "How much does shipping cost?", "a": "Standard shipping is free on orders over $50. Orders under $50 have a flat $5.99 shipping fee." },
+  { "q": "What payment methods do you accept?", "a": "We accept Visa, Mastercard, Amex, Discover, PayPal, Apple Pay, and Google Pay." },
+  { "q": "Is my payment information secure?", "a": "Yes. All transactions are encrypted using SSL/TLS. We never store your full card number." },
+  { "q": "I was charged twice. What happened?", "a": "This is usually a temporary authorization hold. If both charges appear on your statement after 24 hours, contact us immediately." },
+  { "q": "Do you offer promo codes?", "a": "Yes! Sign up for our newsletter to receive exclusive discount codes. You can apply them at checkout." },
+  { "q": "How do I apply a discount code?", "a": "Enter your promo code in the 'Discount Code' field at checkout, then click Apply." },
+  { "q": "Why was my promo code rejected?", "a": "Codes may be expired, single-use already redeemed, or have minimum order requirements. Check the terms of your offer." },
+  { "q": "How do I contact a human agent?", "a": "Type 'agent' or 'human' at any time and I will connect you with our support team. Available 9am-6pm ET, Monday-Friday." },
+  { "q": "What are your support hours?", "a": "Our team is available Monday-Friday, 9am-6pm Eastern Time. Outside those hours, I can still help or take your message." }
+]
+```
+
+### 6. Chat Widget UI Style Reference
+
+Modern patterns (Intercom/Zendesk/Crisp circa 2025-2026):
+- Bot name examples: "Aria", "Max", "Support Bot" — always with avatar (solid circle + letter or icon)
+- Status dot: green `#22c55e` for "Online", gray for "Away"
+- Escalation flow UX: bot says "I'm connecting you with a human agent. This usually takes 2-3 minutes." Then shows agent card when accepted
+- Ticket creation confirmation: inline card, not a new page
+- Mobile: full-screen panel below 480px; launcher bottom: 16px, right: 16px
+- Accessibility: `role="dialog"` on panel, `aria-live="polite"` on message feed, keyboard-navigable send
+
+---
+
+## Summary of Builder Directives
+
+1. **Replace `@xenova/transformers` with `@huggingface/transformers@4.2.0`** in all import URLs
+2. **Use exact model IDs:**
+   - WebLLM (WebGPU): `Llama-3.2-1B-Instruct-q4f16_1-MLC` via `https://esm.run/@mlc-ai/web-llm`
+   - WASM instruction: `onnx-community/Qwen2.5-0.5B-Instruct` with `dtype:"q4", device:"wasm"`
+   - WASM embedding: `Xenova/all-MiniLM-L6-v2` with `dtype:"fp32", device:"wasm"`
+3. **WASM path must be fully functional** (Playwright headless = no WebGPU, WASM is what CI exercises)
+4. Seed the FAQ corpus with the 20 entries above — they match the client's domain (orders/shipping/returns)
+5. Widget UI follows Zendesk/Intercom patterns described above
+
+---
+
+## handoff
+- produced: Confirmed (1) WebLLM CDN `esm.run/@mlc-ai/web-llm` v0.2.84, model `Llama-3.2-1B-Instruct-q4f16_1-MLC` (879 MB VRAM); (2) Transformers.js v4.2.0 as `@huggingface/transformers` (RENAMED from @xenova), instruction model `onnx-community/Qwen2.5-0.5B-Instruct` dtype q4 wasm, embedding `Xenova/all-MiniLM-L6-v2`; also 20-entry FAQ corpus, Zendesk/Intercom widget UI patterns
+- decisions: Package `@xenova/transformers` is stale/frozen — builder MUST use `@huggingface/transformers@4.2.0`; WASM path is the only path Playwright deploy-test can exercise, so it must be fully functional not a skeleton
+- next needs: Builder to wire exact import URLs into demo files; WASM path must produce real answers from the FAQ corpus; WebGPU path is progressive enhancement only
+- risks: Qwen2.5-0.5B WASM inference is slow (~3-8s per response in headless) — builder should show a streaming/typing indicator and not let users think the app hung; `@huggingface/transformers` v4 may have minor API differences vs v3 docs online — check pipeline API if anything breaks

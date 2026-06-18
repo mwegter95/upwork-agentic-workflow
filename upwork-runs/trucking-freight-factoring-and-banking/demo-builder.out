@@ -1,0 +1,93 @@
+# Demo Builder (re-run) — Freight Factoring & Banking Console
+
+## Context
+
+Previous demo-builder run produced a fully built NestJS monorepo + Next.js static export. Build-CEO passed.
+Deploy-test returned VERDICT: fail because NestJS is not running on the Surface (no Neon DB provisioned).
+This run adds a **mock data fallback** so the frontend works fully without a live backend.
+
+---
+
+## What changed this run
+
+### New: `apps/web/lib/mockData.ts`
+Complete in-browser mock layer:
+- Mirrors all 5 seeded invoices, 4 seeded accounts, 7 seeded ledger entries exactly (integer-cents, matching seed.ts).
+- Session state in `sessionStorage` (`factoring_mock_state`) — mutations persist within a browser tab.
+- Implements every API operation: login (validates against seeded credentials), list/get/create invoice, approve/reject/disburse/collect with correct double-entry balance updates, list accounts, account entries, recent ledger.
+- `isMockMode()` / `enableMockMode()` via `sessionStorage` key `factoring_mock_active`.
+- `mockRequest<T>(path, options)` central router parses path+method and dispatches to correct mock op.
+
+### Updated: `apps/web/lib/api.ts`
+- Fast path: if `isMockMode()` is set, skips `fetch()` entirely and calls `mockRequest` directly.
+- On real 502/503/504 response: calls `enableMockMode()` then returns `mockRequest` result.
+- On network/CORS error (TypeError from failed fetch): enables mock mode and returns `mockRequest` result.
+- 401 from real API: still redirects to login (not mock-intercepted).
+- All API surface unchanged — zero page changes required.
+
+### Updated: `apps/web/components/Sidebar.tsx`
+- Imports `isMockMode` and shows subtle amber `DEMO MODE - mock data` badge below logo when active.
+
+---
+
+## Demo flow in mock mode
+
+1. Visit `/login/` -> click "Carrier" quick-fill -> submit -> real API 502 -> mock enabled -> `mockLogin()` validates credentials -> stores token + user -> redirect to `/dashboard/`.
+2. Dashboard calls `invoicesApi.list()` + `ledgerApi.accounts()` -> both hit `mockRequest` -> seeded data rendered (KPIs, invoice table, account balances).
+3. Login as "Underwriter" -> Approval Queue -> INV-001 (pending) -> Approve -> `mockApproveInvoice(1)` computes advance/fee/reserve (integer math only) -> state updates -> table shows approved with correct figures.
+4. Disburse approved invoice -> two ledger entries posted (DR FACTORING_REC, CR CASH_BANK) -> Ledger page shows entries + updated balances.
+5. Admin login -> Collect disbursed invoice -> three entries (DR CASH_BANK face, CR FACTORING_REC adv, CR FEE_REVENUE fee) -> all balances update correctly.
+
+---
+
+## Build
+
+```
+cd demo-src/apps/web && npm run build   # 30 static pages, 0 type errors, 0 lint warnings
+cp -r out/. ../../../michaelwegter.com/public/demos/trucking-freight-factoring-and-banking/
+```
+
+Committed and pushed to `michaelwegter.com` main (`2fd6d80`). GH Pages auto-deploy triggered.
+
+---
+
+## Demo URL
+
+`https://michaelwegter.com/demos/trucking-freight-factoring-and-banking/`
+Work sample: `/work-samples/trucking-freight-factoring-and-banking`
+
+---
+
+## Demo credentials (all work in mock mode without NestJS)
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@factoringdemo.com | Admin@12345 |
+| Underwriter | underwriter@factoringdemo.com | Under@12345 |
+| Carrier | carrier@factoringdemo.com | Carrier@12345 |
+
+---
+
+## Q1 screenshot reference
+
+Path: `/Users/michaelwegter/Desktop/Screenshot 2026-06-16 at 10.42.18 AM.png`
+Describe as: Claude Workflow Studio set to with-ceo layout. AI built the full Cornerstone Construction frontend (design through dev through testing). Human corrections made: navbar link visibility bug, category images duplicated instead of unique per category, homepage project-click-to-modal navigation quirk (fixed to open the correct project modal directly). Demonstrates the critical review-and-correct role in AI-assisted development.
+
+---
+
+## Human action (optional, not required for demo)
+
+If you want the real NestJS backend to respond (real DB):
+1. Provision Neon Postgres, set `DATABASE_URL` + `JWT_SECRET` in environment.
+2. `pnpm --filter @factoring/api run seed` (seeds 3 users, 4 accounts, 5 invoices).
+3. Start NestJS: `node demo-src/apps/api/dist/apps/api/src/main.js`.
+4. Restart Flask so `factoring_gateway_blueprint` is loaded.
+5. When real API responds, mock mode is never activated and all ops hit the real DB.
+
+---
+
+## handoff
+- produced: mock data fallback (`mockData.ts`) + updated `api.ts` + Sidebar demo-mode badge; Next.js rebuilt (30 pages, 0 errors); synced to `public/demos/trucking-freight-factoring-and-banking/`; committed + pushed to GH Pages (`2fd6d80`).
+- decisions: mock activates on 502/503/504 or network/CORS fetch error; persists for browser session via sessionStorage; 401 still redirects to login; seeded credentials work identically in mock vs real; integer-cents arithmetic uses same `calcAdvance/Fee/Reserve` functions as backend.
+- next needs: deploy-test re-run against live site -- login flows, approve/disburse/collect operations, and ledger updates should all pass now via mock mode without NestJS running.
+- risks: mock state resets on hard refresh (sessionStorage, not localStorage) -- intentional for demo cleanliness; if real API comes up mid-session, session stays in mock until tab refresh.

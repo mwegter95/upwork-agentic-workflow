@@ -1,0 +1,80 @@
+# Plan Eval — Freight Factoring & Banking Operations Console
+
+Rubric: all requirements covered / right technologies / testing approach defined / scope feasible for richness 10 / design fit for industry.
+
+---
+
+## Rubric Scores
+
+### 1. ALL Requirements Covered
+
+| ID | Requirement | Covered? | Notes |
+|----|-------------|----------|-------|
+| mh-1 | NestJS + Drizzle + Postgres TypeScript monorepo | PASS | 3 modules, 4 tables, Turborepo/pnpm via corepack, Express adapter |
+| mh-2 | Next.js 15 App Router admin frontend | PASS | 6 routes: /login /dashboard /invoices/new /underwriter/queue /ledger /accounts/:id |
+| mh-3 | Integer minor units, Zod validation, discriminated unions | PASS | `{ currency: 'USD'|'BRL', minorUnits: number }` end-to-end; Zod on all money payloads; float is a hard gate fail |
+| mh-4 | Real-DB integration tests, no mocks on money paths | PASS | Docker Postgres, factoring calc + ledger posting tests at build time; managed Neon/Supabase for live |
+| mh-5 | Auth + RBAC (admin/underwriter/carrier/driver), seeded logins | PASS | Supporting Feature 2; NestJS Guards; seeded creds to be recorded by demo-builder |
+| mh-6 | Flask-to-NestJS bridge mechanism | PASS | `factoring_gateway_blueprint.py` stdlib urllib.request proxy; additive `Start-Node` block in `run-server.ps1`; fallback specified |
+| mh-7 | No em/en dashes, Michael's voice, bespoke Brazilian fintech design | PASS | Design locked: ink-navy #0B1220 + emerald/teal, Inter/Geist + IBM Plex Mono tabular, NOT michaelwegter.com |
+
+All 7 must-haves covered. **7/7.**
+
+Nice-to-haves:
+- nh-1 (PIX): Partial — BRL in discriminated union nods at it; no real PIX, acceptable for scope.
+- nh-2 (Expo stub): Not planned in demo; acceptable (proposal-writer can mention in cover letter).
+- nh-3 (AI-factory panel): Not in demo scope; Q3 answer in brief.json covers it for the proposal.
+- nh-4 (Portuguese locale): Not planned; acceptable.
+- nh-5 (Zod deeply integrated): Partially planned (money paths explicit; broader Zod usage implied by demo-builder).
+
+### 2. Right Technologies
+
+Exact match to client must-haves:
+- Backend: NestJS (Express adapter) + Drizzle + Postgres + TypeScript strict mode. ✓
+- Monorepo: Turborepo + pnpm (via corepack). ✓
+- Frontend: Next.js 15 App Router. ✓
+- Validation: Zod (money paths explicitly, broader usage expected). ✓
+- Bridge: Flask stdlib proxy — no new deps, additive-only. ✓
+- DB tiers: Docker Postgres for build-time tests; Neon/Supabase free tier for live runtime. ✓
+
+One gap: test framework not named (Jest vs Vitest). NestJS scaffolds Jest by default and that is the right choice here (real-DB tests, `@nestjs/testing`). Demo-builder will resolve trivially. Not a blocker.
+
+### 3. Testing Approach
+
+- Scope: factoring calc + ledger posting (money paths only). Correct — avoids scope creep while satisfying "no mocks on money paths."
+- Mechanism: local/Docker Postgres, schema push, `migrate.ts` at test-setup. ✓
+- CI: not explicitly named (no GitHub Actions file referenced). At richness 10 this is a minor gap — a working test run command is sufficient for the demo's purposes (client wants to see the *approach*, not a deployed CI pipeline). Demo-builder should add a `turbo run test` script that runs clean end-to-end so it can be verified. Flag for demo-builder, not a plan fail.
+
+### 4. Scope Feasibility (Richness 10)
+
+- 3 NestJS modules, 4 Drizzle tables, 6 Next.js routes — tightly fenced, achievable inside 180s build cap.
+- 1 hero (factoring flow) + 2 supporting (ledger + RBAC) — correctly at the 1+2 cap.
+- File-cap interpretation (12 = existing repos only; new app uncapped by build timeout) — awaiting CEO sign-off as planned; no plan gap.
+- Double-entry ledger with advance/collection/reserve lifecycle partially scoped (advance leg built; collection leg documented in UI if time allows) — correct risk management for 180s cap.
+- Richness 10 judgment: FULL build with real auth, real DB, real tests, role-gating, money-correct ledger. Meets the bar.
+
+### 5. Design Fit for Industry
+
+- Ink-navy base + emerald/teal accent: fintech-appropriate, neobank-adjacent, avoids Nubank-purple clone. ✓
+- Inter/Geist for UI + IBM Plex Mono tabular for money: industry-standard fintech typography. ✓
+- Data-dense tables, status badges, role-aware nav: correct for freight ops admin console. ✓
+- Explicitly not michaelwegter.com's palette/fonts/theme. ✓
+
+---
+
+## Issues Found
+
+1. **Test framework unnamed** — minor; NestJS default (Jest) is correct. Flag to demo-builder: use `@nestjs/testing` + `jest` + `pg` (or `@neondatabase/serverless` for test isolation). Not a plan fail.
+2. **CI script not referenced** — `turbo run test` should be runnable as a single command for verifiability. Demo-builder must wire this. Not a plan fail.
+3. **Expo stub absent** — nh-2; acceptable for richness 10 scope; proposal-writer to mention driver app future roadmap in cover letter.
+4. **Node-on-Surface unverified** — correctly flagged as a deploy-time human-confirm item with pre-specified fallback. Not a plan gap.
+
+---
+
+## handoff
+- produced: plan-eval.out — rubric review of plan.md against brief.json; 7/7 must-haves covered, tech exact-match, testing defined, scope feasible, design fit.
+- decisions: PASS; advance to CEO with plan.md locked. CEO to bless file-cap interpretation + run-server.ps1 touch, then hand to demo-builder.
+- next needs: demo-builder must (a) name and wire Jest for integration tests with a `turbo run test` command, (b) record seeded login credentials in output for deploy-test, (c) if time, add collection/reserve-release ledger leg; otherwise document in UI copy.
+- risks: Node-on-Surface unverified (human confirm before deploy; fallback pre-specified); integer-cents discipline must hold end-to-end (single float = hard gate fail); CI script must be runnable in a single command for evaluator to verify.
+
+VERDICT: pass

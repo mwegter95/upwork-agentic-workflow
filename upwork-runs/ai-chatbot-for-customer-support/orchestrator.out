@@ -1,0 +1,57 @@
+# Orchestrator — AI Chatbot for Customer Support
+
+## Run identity
+- slug: `ai-chatbot-for-customer-support`
+- run dir: `upwork-runs/ai-chatbot-for-customer-support/`
+- demo path: `../michaelwegter.com/public/demos/ai-chatbot-for-customer-support/`
+- live demo URL: `https://michaelwegter.com/demos/ai-chatbot-for-customer-support/`
+- work-sample route: `/work-samples/ai-chatbot-for-customer-support`
+- feature richness: 10/10 (production-quality, several real working features)
+
+## Startup brief (what the client wants)
+US online retailer wants an AI support chatbot to deflect the first layer of repetitive order/shipping/returns questions (currently handled manually 9am–6pm ET). Required capabilities:
+1. Answer FAQs from their knowledge base / help docs.
+2. Pull basic order status (they'll provide API docs or a mock endpoint).
+3. Smooth handoff to a human when the bot can't resolve, with escalations routed to support working hours.
+4. Embeddable on their website; ideally connects to a help desk (Zendesk, open to alternatives).
+5. US data-handling norms + US consumer communication style.
+Proposal must include: architecture explanation + rationale, examples/links of similar bots built, rough timeline + price breakdown, fixed-vs-hourly recommendation, and an explicit "based in the United States" confirmation.
+
+## Critical build constraint (Michael's directive — overrides default backend approach)
+**The AI must run for FREE with zero API tokens.** Implement the chatbot intelligence either via Ollama tiny model on the Surface Pro 3, OR — **preferred** — fully **in-browser using the browser's own resources** (no server inference). This is the single most important technical decision and shapes the whole demo.
+
+- Preferred path: **in-browser LLM** via WebLLM (`@mlc-ai/web-llm`, WebGPU) running a small instruct model (e.g. Llama-3.2-1B/3B-Instruct or Phi-3.5-mini), OR Transformers.js as a fallback. Runs entirely client-side, no tokens, no cost, no API keys, great "no recurring cost" story for the client.
+- RAG must also be client-side: embed the FAQ/help-doc corpus in the browser (Transformers.js embeddings or a prebuilt vector index shipped as JSON) and retrieve top-k chunks to ground answers. This directly satisfies "answer FAQs using our knowledge base" with no backend.
+- Order-status lookup = a **mock order API**. Cheapest faithful option: ship mock order data as a static JSON the demo queries client-side (a tool/function the agent calls). A Flask blueprint mock endpoint on mw-backend is OPTIONAL and only if it strengthens the "API integration" story — but it must NOT introduce paid inference. Default: client-side mock to honor the zero-cost mandate.
+- Human handoff + Zendesk: simulate in-demo (escalation form, ticket-created confirmation, business-hours routing logic that checks current ET time). A real Zendesk call is out of scope for a demo; show the integration design in the deck.
+
+### WebGPU / fallback risk to plan for
+WebLLM needs WebGPU (Chrome/Edge desktop, recent Safari). Plan a graceful fallback so the demo never looks broken on unsupported browsers: detect WebGPU, and if absent fall back to (a) Transformers.js WASM with a tiny model, or (b) a deterministic RAG-only retrieval+template responder. Show a clear "running locally in your browser" status/loader since model download is large (warn + progress bar). deploy-test will run in Chromium (Playwright) which supports WebGPU flags, but confirm headless WebGPU early; if flaky, the RAG-template fallback must carry the live test.
+
+## Plan of attack (pipeline phases + per-phase guidance)
+1. **intake** → `brief.json`. Capture every explicit requirement (5 capabilities + 5 proposal must-includes) as gradable items, including the US-based confirmation. Tag the zero-cost/in-browser constraint as a hard build requirement.
+2. **planner** → `plan.md`. Lock demo concept = in-browser RAG support chatbot. Decide: **full build** (richness 10). Hero feature = grounded RAG chat answering FAQ + order status with an in-browser LLM. Supporting = (a) human-handoff/escalation flow with ET business-hours routing, (b) admin/knowledge-base + analytics view (deflection metrics, sources) to show maintainability. Define bespoke design direction (modern SaaS support-tool aesthetic — clean, trustworthy, US-consumer; NOT michaelwegter.com's look). Build requirement-→-feature traceability matrix. Confirm zero-token approach and fallback chain.
+3. **ceo** (after planner) — verify scope hits richness 10 and honors the zero-cost mandate before expensive build.
+4. **researcher** → `research.md`. Confirm exact WebLLM/Transformers.js API + model ids + CDN usage, WebGPU support matrix, a small embedding model for client-side RAG, Zendesk integration shape (for the deck), and the exact existing app/blueprint to clone (study `src/data/apps.js`, `Apps.jsx`, `AppFrame.jsx`). Gather 1–2 real "similar chatbot" reference points for the proposal's examples section (be honest about what's portfolio vs illustrative).
+5. **demo-builder** → demo in `public/demos/<slug>/`, register in `workSamples.js`. Self-contained app (CDN WebLLM/Transformers.js, vanilla or React-via-CDN). Ship the FAQ corpus + mock orders as local assets. Implement: chat UI w/ streaming, RAG retrieval w/ cited sources, order-status tool, escalation flow w/ ET hours logic, admin/KB + analytics panel, WebGPU detection + fallback + model-download progress. No paid inference anywhere.
+6. **ceo** (after demo-builder).
+7. **deploy** → push michaelwegter.com (GH Pages). Backend only if a mock blueprint was added.
+8. **deploy-test** → Playwright against live site; exercise chat (grounded answer), order lookup, escalation. VERDICT pass/fail. Account for model-download time + WebGPU in headless.
+9. **media-capture** → screenshots + short recording of hero flow.
+10. **proposal-writer** → cover letter + HTML one-pager + PPTX deck, styled to the client's support-tool design language. Must: explain in-browser RAG architecture + why (no recurring token cost, privacy, easy to maintain), include demo link, give timeline + price breakdown, recommend fixed-vs-hourly, and **explicitly state Michael is US-based**. No em/en dashes.
+11. **evaluator** → `eval-report.md` against hard gates.
+12. **prompt-optimizer** → apply improvements.
+
+## Quality guidance / non-negotiables
+- Honor the **zero-token, in-browser-first** mandate everywhere. Selling point in the proposal: "no per-message API fees, runs in the user's browser." Do not quietly swap in a paid API.
+- Demo must build + load with no console errors on first paint; show an honest loading state for model download.
+- Address ALL 5 capabilities + ALL 5 proposal must-includes; the US-based confirmation is mandatory and easy to miss.
+- Bespoke design fit for a US consumer-facing support tool; NOT the portfolio palette. No em/en dashes anywhere.
+- Demo link in BOTH cover letter and deck.
+- Token discipline: clone existing app structure for the site chrome; write demo logic fresh. Pass paths, not file contents, between steps.
+
+## handoff
+- produced: orchestrator.out — run identity, startup brief, full plan-of-attack, and quality gates for the AI customer-support chatbot run (richness 10).
+- decisions: slug `ai-chatbot-for-customer-support`; FULL build; hero = in-browser RAG chatbot (WebLLM/WebGPU, Transformers.js fallback, RAG-template last-resort); order status + Zendesk handoff simulated client-side; ZERO paid tokens is a hard mandate.
+- next needs: intake must encode all 5 capabilities + 5 proposal must-includes (esp. US-based confirmation) and the zero-cost/in-browser constraint as gradable items.
+- risks: WebGPU unsupported on some browsers/headless → fallback chain required; large model download UX; "examples of similar bots" must be honest (portfolio vs illustrative).

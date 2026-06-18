@@ -1,0 +1,81 @@
+# Intake — Parsed Brief
+
+## Client & Opportunity
+
+Fintech (Brazilian) hiring a senior TS/Node engineer for a multi-year engagement migrating a mature freight-factoring + banking platform (PHP/Laravel + Flutter legacy) to a **TypeScript monorepo** running an AI-first engineering process (Claude Code). They value correctness with money, skeptical review of AI-generated PRs, real-DB integration tests, and async collaboration.
+
+**Position:** long-term (20–40 hrs/week) contract, starting ASAP.
+
+## Demo Purpose
+
+Prove fluency in **their exact stack** (NestJS + Drizzle + Postgres backend; Next.js 15 App Router frontend) and demonstrate understanding of **agentic AI workflows** by answering three specific questions in the cover letter + deck (detailed below).
+
+## Must-Haves (Hard Constraints)
+
+1. **Stack exactness:** NestJS + Drizzle + Postgres (TypeScript monorepo). Next.js 15 (App Router). No substitutions or Python fallbacks. This is the signal they're hiring for.
+2. **Money correctness:** Integer minor units (cents/centavos). No floats anywhere on money paths. Zod validation. Discriminated unions for currency types. This must be visible in the UI (monospaced numerals, ledger format).
+3. **Real auth + RBAC:** Seeded demo login (record credentials for live test). Roles: admin, underwriter, carrier, driver. Role-gated navigation + actions.
+4. **Real-DB integration tests:** Postgres (no mocks on money paths). Green CI.
+5. **Bridge mechanism:** Flask mw-backend acts as gateway/proxy to a real NestJS + Drizzle service on the Surface. Researcher must nail the concrete implementation (e.g., local Node process + Flask forwards `/api/factoring/*`).
+6. **No em/en dashes anywhere.** Michael's voice. Bespoke Brazilian fintech design (NOT michaelwegter.com's dark/mustard/cyan palette).
+
+## Demo Concept
+
+**Freight-Factoring & Banking Operations Console** — a full-featured fintech dashboard for the trucking industry.
+
+**Hero feature:** Invoice/receivable factoring flow. Carrier submits freight invoice -> system calculates advance rate, fee, reserve (integer cents) -> underwriter approves -> funds disbursed -> FIDC ledger entry. End-to-end money correctness.
+
+**Supporting features:**
+- Banking ledger + account balances (double-entry, real Drizzle relations).
+- RBAC + auth (real login, role-gated screens).
+- (Optional) AI-factory panel (surfaces the "humans architect, AI builds, humans verify" workflow).
+
+**Feature richness: 10/10.** Full, production-quality app with multiple working features, not a minimal prototype.
+
+## Design
+
+Brazilian fintech / logistics-banking aesthetic. Clean neobank dashboard (Nubank) crossed with freight ops. Deep ink/navy base, confident accent (green or violet — researcher to finalize). Data-dense tables, monospaced numerals for money. Inter/Geist for UI, Courier/IBM Plex Mono for ledgers. Bespoke, not portfolio-like.
+
+## "To Apply" Answers (for Proposal)
+
+1. **Non-trivial AI feature shipped:**
+   - **Project:** Cornerstone Construction demo.
+   - **What the agent did:** Claude Code (with-ceo layout) built full frontend: design -> develop -> test autonomously.
+   - **What Michael corrected:** (a) navbar link visibility on mobile; (b) project images duplicated per-category (data mapping bug); (c) navigation quirk (clicking project on homepage didn't open its modal — rewired state to preserve context).
+   - **How verified:** Local run, full user flow (homepage -> project -> modal), React DevTools state inspection.
+   - **Signal:** Agentic AI is fast and broad; skilled engineer catches edge cases and ships solid product.
+   - **Asset:** Studio screenshot (with-ceo layout) at `~/Desktop/Screenshot 2026-06-16 at 10.42.18 AM.png`.
+
+2. **TS/Node codebase proud of:**
+   - *This demo.* Full-stack NestJS + Drizzle + Postgres with real auth, integer-cents money, RBAC, green tests. Deep TS (discriminated unions, Zod, strict mode), NestJS patterns (Guards, decorators, DI), Drizzle relations, real ledger logic. Next.js 15 App Router. Production-grade in a demo timeframe.
+
+3. **One thing teams get wrong about AI-assisted dev:**
+   - Teams fear AI gets too much wrong / assume it's not a capable partner. With strong prompting, good workflows (agentic CEO-supervised pattern), and skilled human review/guidance, AI-assisted dev is extremely powerful and ships production-ready features. Engineer becomes a multiplier: AI handles breadth/velocity, human handles correctness/architecture/edge cases. This demo is proof.
+
+## Deployment Model
+
+- **Frontend:** Next.js 15 app built into `michaelwegter.com/public/demos/<slug>/`, served at same-origin, iframed by `/work-samples/<slug>` via AppFrame.
+- **Backend:** Thin Flask mw-backend blueprint (gateway) + real NestJS+Drizzle service on Surface (deployed via auto-watcher). Seeded demo login. Real JWT auth.
+- **Live test:** Playwright against LIVE deployment post-deploy: login + full factoring funding flow + ledger verification.
+
+## Quality Gates
+
+- Exact stack used (NestJS+Drizzle / Next.js 15). Integer-cents money. Real auth. Bespoke design. No em/en dashes.
+- Demo builds, loads, zero console errors.
+- Real-DB tests, green CI.
+- Demo link in cover letter AND deck.
+- eval-report.md passes all hard gates.
+
+## Risks
+
+1. **Node<->Flask bridge is the main unknown.** Researcher must pin down the concrete mechanism (local Node on Surface + Flask proxy, or equivalent). If the mechanism doesn't work, rich features can't deploy.
+2. **Richness-10 scope vs. 12-file / 3-min caps.** Planner must pick a tight, full feature set and scope strictly.
+3. **Integer-cents money math is pervasive.** Every calculation, every DB query, every API contract must be integer-cents. One float bug kills the hard gate. Demo-builder must be obsessive.
+4. **Same-origin model is critical.** Demo must not break out of the iframe or cross origins, or auth fails and live test breaks.
+
+## handoff
+
+- **produced:** brief.json (complete, structured spec capturing all must-haves, nice-to-haves, stack requirements, demo features, design direction, and the three proposal answers).
+- **decisions:** hero feature = factoring flow (showcases money correctness). Supporting = ledger + RBAC. Integer-cents pervasive. NestJS + Flask bridge non-negotiable. Richness 10 = full, multi-feature app, production-grade.
+- **next needs:** planner must (1) nail the Python<->Node bridge mechanism (researcher's key task); (2) finalize design direction (palette + fonts) by consulting fintech / Brazilian neobank / competitor references; (3) scope hero + 2 supporting strictly to 12 files / 3 min build; (4) define exact NestJS route structure + Drizzle schema (ledger, invoice, account) to confirm money-safety upfront.
+- **risks:** bridge mechanism is the critical unknown — if not solvable, demo cannot deploy. Integer-cents pervasive throughout; one float is a hard-gate fail. Scope creep vs. file/time caps.

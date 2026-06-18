@@ -1,0 +1,121 @@
+# Orchestrator — Run Foundation
+
+## Slug
+`trucking-freight-factoring-and-banking`
+- Demo: `/demos/trucking-freight-factoring-and-banking/`
+- Work-sample route: `/work-samples/trucking-freight-factoring-and-banking`
+- Run dir: `upwork-runs/trucking-freight-factoring-and-banking/`
+
+## What the client is hiring for
+Senior TS/Node engineer to help migrate a mature freight-factoring + banking
+(BaaS) platform for the trucking/logistics industry from PHP/Laravel+Flutter to a
+modern **TypeScript monorepo**, inside an **AI-first (Claude Code) engineering
+process**. Domains: factoring/receivables (FIDC), banking (BaaS), payments,
+identity & RBAC. Brazilian fintech (PIX, BRT timezone) flavor. They value:
+correctness with money (never floats for currency), real-DB integration tests,
+skeptical review of AI-generated PRs.
+
+## Non-negotiable constraints (from Michael's notes — honor exactly)
+1. **Use their exact stack in the demo.** Backend must be **NestJS + Drizzle +
+   Postgres** (TypeScript), frontend **Next.js 15 (App Router)**. This is the
+   point of the proposal: prove fluency in the requested tools, not adjacent ones.
+2. **Bridge the new Node backend to the existing Python backend.** mw-backend
+   (Flask) cannot natively run NestJS. Plan a way to interface: the live demo
+   should run a real NestJS+Drizzle service, with mw-backend (Flask) acting as a
+   thin reverse-proxy / gateway in front so it deploys via the existing Surface
+   auto-deploy watcher and same-origin model. **researcher + planner must resolve
+   the concrete bridging mechanism** (e.g. Flask proxies `/api/factoring/*` to a
+   locally-run Node process on the Surface, or Node service runs alongside and
+   Flask forwards). Do NOT silently fall back to a Python reimplementation — the
+   client specifically wants Node/NestJS/Drizzle.
+3. **Money correctness:** integer minor units (cents/centavos) everywhere, never
+   floats. Discriminated unions, strict TS, Zod validation on money paths. Make
+   this visible in the demo (the client is "obsessive about correctness with
+   money").
+4. **Feature richness = 10/10.** Full, production-quality multi-feature app.
+
+## Demo concept (direction for planner — refine, don't blindly accept)
+A **freight-factoring + banking operations console** for a trucking fintech.
+Candidate hero + supporting features (planner finalizes 1 hero + ≤2 supporting
+per caps, but richness 10 means each is genuinely functional):
+- **Invoice/receivable factoring flow (HERO):** carrier submits a freight invoice
+  -> advance-rate + fee + reserve calc (integer cents) -> approval -> funded.
+  FIDC ledger. This showcases money-correctness end to end.
+- **Banking/BaaS ledger + PIX-style instant payout:** account balances, double-
+  entry ledger, payout to driver. Brazilian rails nod.
+- **Identity & RBAC:** roles (admin / underwriter / carrier / driver), real auth,
+  permission-gated actions. Seed a demo login and record creds.
+- **AI-factory / spec panel (optional flavor):** surfaces the "humans architect,
+  AI builds, humans verify" workflow the client runs — ties demo to the pitch.
+
+Real integration-test angle: include a small Postgres-backed test suite (no mocks
+on money paths) and mention green CI — directly answers their must-have.
+
+## Backend decision (greenlit — needs a blueprint AND a Node service)
+This run SHOULD use a backend (auth, ledger, real DB). Two-tier:
+- Real **NestJS + Drizzle + Postgres** service = the substance.
+- **mw-backend Flask blueprint** = gateway/proxy so it deploys + serves same-origin
+  per CLAUDE.md. Keep it thin; do not touch auth/DB schema of mw-backend.
+- Seed a demo account; record credentials in the run dir for deploy-test login.
+deploy-test will exercise the LIVE flow incl. login + a factoring funding run.
+
+## Proposal "To apply" answers (proposal-writer must include verbatim-in-spirit)
+The posting asks three questions. Michael's substance:
+1. **Non-trivial AI-shipped feature:** the **Cornerstone Construction** demo (a
+   prior work-sample). The Claude-Code agentic workflow built a full frontend
+   from design -> develop -> test. Show **screenshots of Michael's Claude Workflow
+   Studio set to the `with-ceo` layout** — the most recent desktop screenshot is
+   `~/Desktop/Screenshot 2026-06-16 at 10.42.18 AM.png` (use this). What Michael
+   had to correct: (a) a navbar link visibility issue, (b) project images
+   duplicated per-category instead of unique per project, (c) a navigation quirk —
+   clicking a project on the homepage opened the projects page but not the modal
+   for that specific project; he rewired it to open the correct project modal.
+   Explain the agentic workflow + how he verified.
+2. **TS/Node codebase proud of:** *this* demo (the NestJS+Drizzle factoring app).
+   Reinforces why coding the demo in their exact stack matters — it IS the answer.
+3. **One thing teams get wrong about AI-assisted dev:** they fear AI gets too much
+   wrong / isn't a capable partner. With strong prompting, good workflows, and a
+   skilled engineer checking and guiding outputs, AI-assisted dev is extremely
+   powerful and ships production-ready features.
+
+## Design guidance (bespoke — NOT michaelwegter.com's look)
+Brazilian fintech / logistics-banking aesthetic. Trust + money + motion. Think
+clean neobank dashboard (Nubank/cluster of BaaS dashboards) crossed with freight
+ops: deep ink/navy or near-black base, a confident fintech accent (consider a
+green or violet — researcher to check client/competitor palettes and PIX
+conventions), crisp data-dense tables, monospaced numerals for money, tabular
+figures. Real font families (e.g. Inter/Geist for UI, a mono for ledgers).
+planner defines exact palette+type. Deck + one-pager echo the demo's language.
+
+## Pipeline + layout
+Recommended graph (backend + live deploy matter):
+intake -> planner -> ceo -> researcher -> demo-builder -> deploy -> deploy-test ->
+media-capture -> proposal-writer -> evaluator.
+Load **`with-ceo`** + **`with-deploy`** studio layouts. CEO pairs after planner
+and after demo-builder (richness 10, money-correctness, and the Python<->Node
+bridge are the things most worth a supervisor pass).
+
+## Quality gates to enforce downstream
+- Exact stack used (NestJS+Drizzle+Postgres / Next.js 15). No substituting Python
+  logic for the Node service the client asked about.
+- Integer-cents money math; no floats on money paths; Zod-validated.
+- Real auth + seeded demo login recorded; live route returns 200 post-deploy.
+- Demo link in BOTH cover letter and deck; three "To apply" answers present.
+- No em/en dashes anywhere; Michael's voice; bespoke fintech design.
+- eval-report.md passes all hard gates.
+
+## handoff
+- produced: run foundation — slug, demo concept (factoring+BaaS console), backend
+  greenlight, design direction, the 3 application answers, pipeline+layout.
+- decisions: build in client's EXACT stack (NestJS+Drizzle+Postgres / Next.js 15);
+  Flask mw-backend = thin gateway proxying to a real Node service (resolve concrete
+  bridge in researcher/planner); integer-cents money; richness 10; with-ceo +
+  with-deploy.
+- next needs: intake -> brief.json capturing every must-have/nice-to-have +
+  the 3 To-apply answers + the Python<->Node bridge constraint as explicit reqs.
+- risks: (1) NestJS deploy on the Surface via Flask proxy is the main unknown —
+  researcher must nail the mechanism; (2) richness-10 scope vs ~12-file/3-min caps,
+  planner must pick a tight but full feature set; (3) keep demo same-origin so
+  AppFrame iframe + auth work.
+- assets: studio screenshot at `~/Desktop/Screenshot 2026-06-16 at 10.42.18 AM.png`
+  (with-ceo layout) for proposal answer #1.

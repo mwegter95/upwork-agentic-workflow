@@ -1,0 +1,58 @@
+# Proposal Writer — ai-chatbot-for-customer-support
+
+## Deliverables Produced
+
+All three proposal artifacts written and built to:
+`upwork-runs/ai-chatbot-for-customer-support/proposal/`
+
+### cover-letter.md (2.5 KB)
+- Hook: names the repetitive-support problem directly
+- Demo link front-loaded (second paragraph): https://michaelwegter.com/demos/ai-chatbot-for-customer-support/
+- Describes what the demo does (FAQ KB, order lookup ORD-1001, escalation, admin panel, in-browser AI)
+- Real-build architecture explained concisely (Transformers.js RAG, Zendesk Web Widget SDK, real order API swap-in)
+- Proof points: U.S. Bank (2.5yr, 600 users/mo, 60k LOC), Optum (current, Angular/.NET)
+- Timeline: 7 to 8 business days
+- Pricing: $2,500 to $4,500 fixed price with rationale
+- US confirmation: "I am currently based in the United States" stated explicitly
+- No em/en dashes
+
+### one-pager.html (20 KB)
+- Bespoke SaaS support-tool design: DM Sans + Inter, slate-900 dark header, blue-600 accent, green-500 highlights
+- Sections: hero with demo badge, 3 screenshots, 4 feature cards, in-browser RAG architecture diagram, requirements checklist, Zendesk 4-step flow, 3-tier pricing table, timeline table, about card with US confirmation, footer
+- Screenshots embedded from media/: 01-hero.png, 02-chat-ready.png, 03-admin-dashboard.png
+- No portfolio theme (no mustard/cyan/Space Grotesk)
+- No em/en dashes
+
+### build_deck.py + deck.pptx (742 KB, 9 slides)
+- Palette: slate-900 BG, blue-400 accent, green-500 eyebrows, Inter + DM Sans
+- Slide 1: Title + demo badge
+- Slide 2: The Problem (4 pain-point cards)
+- Slide 3: The Solution (4 feature cards)
+- Slide 4: Demo screenshots (all 3 media files embedded)
+- Slide 5: Architecture (4-node RAG pipeline + zero-cost callout)
+- Slide 6: Zendesk integration design (4-step flow)
+- Slide 7: Timeline + 3-tier pricing
+- Slide 8: About Michael (4 proof-point cards + US confirmation)
+- Slide 9: CTA with demo URL
+- No em/en dashes (assert_no_dashes enforced on every text call)
+
+## Requirement Traceability
+
+| Requirement | Addressed |
+|---|---|
+| Architecture explanation | Cover letter para 3, deck slide 5, one-pager architecture section |
+| Examples of similar work | Cover letter (demo = the example), one-pager demo screenshots |
+| Timeline + price breakdown | Cover letter, deck slide 7, one-pager pricing/timeline section |
+| Fixed vs hourly recommendation | Fixed price recommended with rationale in all three deliverables |
+| US confirmation | Cover letter explicit statement, deck slide 1 + 8, one-pager about card |
+| Demo link in cover letter | Yes, second paragraph |
+| Demo link in deck | Slides 1, 4, 9 |
+| No em/en dashes | Enforced via assert_no_dashes in deck; verified in cover letter and one-pager |
+
+---
+
+## handoff
+- produced: cover-letter.md, one-pager.html, build_deck.py, deck.pptx (742 KB, 9 slides); all in proposal/ subdir
+- decisions: bespoke SaaS slate/blue design (DM Sans + Inter), not portfolio theme; fixed-price recommendation $2,500-$4,500; all 5 brief requirements addressed; US confirmation explicit in all 3 deliverables
+- next needs: evaluator checks all 5 brief requirements covered + 5 proposal must-includes + no em/en dashes + demo link in both cover letter and deck
+- risks: deck screenshots depend on media/ PNG files being present (confirmed 3 PNGs copied); one-pager screenshot paths are relative (media/), so it must be opened from the proposal/ directory or a server

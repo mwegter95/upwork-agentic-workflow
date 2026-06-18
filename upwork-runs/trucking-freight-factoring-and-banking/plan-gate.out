@@ -1,0 +1,50 @@
+# Plan Ready? — Gate Review (re-check, post-research)
+
+Reviewed: planner.out (plan.md, STATUS: READY) + pre-researcher.out (VERDICT: pass) for
+trucking-freight-factoring-and-banking. Supersedes a prior gate-fail recorded in this same
+file, which reviewed an earlier pre-research version of planner.out; that version no longer
+exists, the research it was waiting on has since landed.
+
+## Findings
+1. pre-researcher.out resolves all 6 questions planner.out originally flagged, including
+   both items previously marked CRITICAL:
+   - Bridge mechanism: stdlib `urllib.request` reverse-proxy blueprint in mw-backend +
+     additive `Start-Node` block in `run-server.ps1` (mirrors existing Start-Flask/
+     Start-Tunnel pattern). Fallback specified if Node isn't on the Surface (external
+     Node host, Flask proxies to its public URL).
+   - Postgres for real-DB integration tests: local/Docker Postgres confirmed installed
+     on dev machine for build-time tests; managed free-tier Postgres (Neon/Supabase) for
+     live runtime via `DATABASE_URL`.
+2. Reference monorepo structure, visual/design direction (accent locked to emerald/teal,
+   no TBDs left), and factoring domain terminology/ledger formulas are all resolved in
+   pre-researcher.out and folded into plan.md.
+3. Required tech stack from the brief is explicitly addressed: NestJS, Drizzle, Postgres,
+   TypeScript monorepo (Turborepo/pnpm via corepack), Next.js 15 App Router, RBAC, real
+   (non-mocked) Postgres integration tests scoped to money paths, integer-cents currency
+   discipline end-to-end.
+4. Scope fenced appropriately for richness 10: 3 Nest modules, 4 tables, 6 routes, 1 hero
+   + 2 supporting features, seeded demo accounts for login-based deploy-test.
+5. Proposal-answer assets (Q1 cornerstone-construction + workflow-studio screenshot, Q2
+   this demo, Q3 AI-assisted-dev take) carried forward correctly from brief.json.
+6. Remaining open items are correctly scoped to later steps, not research gaps:
+   - File-cap interpretation and the extra `run-server.ps1` touch need explicit CEO
+     sign-off (CEO step's job).
+   - Node-on-Surface install is an unverified physical-environment fact flagged for
+     Michael to confirm before/at deploy, with a pre-specified no-architecture-change
+     fallback — a deploy-time risk, not a plan gap.
+
+## Conclusion
+No unaddressed must-have requirements, no open research unknowns. Plan is well-researched
+and build-ready.
+
+## handoff
+- produced: corrected gate review reflecting the current (post-research) planner.out; prior
+  fail in this file was against a stale pre-research version and is superseded.
+- decisions: pass; advance to CEO/demo-builder with plan.md as locked.
+- next needs: CEO to bless file-cap interpretation + run-server.ps1 touch before demo-builder
+  starts; demo-builder to record seeded login credentials for deploy-test.
+- risks: carried forward unchanged from pre-researcher.out — Node-on-Surface unverified
+  (human confirm before deploy; fallback pre-specified, no architecture change needed);
+  integer-cents discipline must hold across DB/API/UI boundary or it fails the hard gate.
+
+VERDICT: pass

@@ -1,0 +1,415 @@
+# Researcher — ai-chatbot-for-customer-support (build-prep)
+
+Plan locked (CEO: pass). This file consolidates every artifact demo-builder needs: scaffold, exact CDN/model refs, copy-paste data, design tokens, and implementation patterns. Builder reads nothing else.
+
+---
+
+## 1. Scaffold pointer
+
+Output root: `/Users/michaelwegter/Desktop/Projects/michaelwegter.com/public/demos/ai-chatbot-for-customer-support/`
+Site registry: `../michaelwegter.com/src/data/workSamples.js` (add entry after build)
+Form: self-contained static app (no build step — vanilla JS + CDN imports)
+
+```
+ai-chatbot-for-customer-support/
+├── index.html          ← customer chat widget page
+├── admin.html          ← admin panel page
+├── style.css           ← shared design tokens + components
+├── chat.js             ← orchestrates RAG → LLM → stream → cite
+├── model-loader.js     ← 3-tier LLM chain: WebLLM → WASM → template-RAG
+├── rag.js              ← cosine sim retrieval over embedded FAQ corpus
+├── order-api.js        ← orders.json lookup (by order# or email)
+├── escalation.js       ← ET hours check + handoff form + simulated ticket
+├── admin.js            ← KB editor + analytics dashboard + session viewer
+├── analytics.js        ← event bus: log chat events to sessionStorage
+├── knowledge-base.json ← 20-entry FAQ corpus (exact content below)
+└── orders.json         ← 10 mock orders (exact content below)
+```
+
+No Vite, no npm. All modules via native ESM `<script type="module">`.
+
+---
+
+## 2. Exact library imports (copy-paste into HTML `<head>` / JS modules)
+
+### Google Fonts (Inter)
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+```
+
+### model-loader.js — top of file
+```js
+// Tier 1: WebLLM (WebGPU only)
+// import { CreateMLCEngine } from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.84/+esm";
+// Model: "Llama-3.2-1B-Instruct-q4f16_1-MLC"
+// ~879 MB VRAM, ~600-900 MB one-time IndexedDB download
+
+// Tier 2: Transformers.js WASM (Playwright CI path — must be fully functional)
+import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm";
+// DO NOT use @xenova/transformers — frozen/EOL
+// Instruction model:
+//   pipeline("text-generation", "onnx-community/Qwen2.5-0.5B-Instruct", { dtype: "q4", device: "wasm" })
+// Embedding model (for RAG cosine sim):
+//   pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { dtype: "fp32", device: "wasm" })
+```
+
+### Tier detection pattern
+```js
+async function detectTier() {
+  if (navigator.gpu) {
+    try {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (adapter) return "webgpu";
+    } catch {}
+  }
+  return "wasm"; // Playwright headless = always wasm
+}
+```
+
+### Tier 1 init (WebGPU)
+```js
+import { CreateMLCEngine } from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.84/+esm";
+const engine = await CreateMLCEngine("Llama-3.2-1B-Instruct-q4f16_1-MLC", {
+  initProgressCallback: (p) => updateProgress(p.progress, p.text)
+});
+// generate:
+const reply = await engine.chat.completions.create({
+  messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userMsg }],
+  stream: true
+});
+for await (const chunk of reply) {
+  const token = chunk.choices[0]?.delta?.content || "";
+  appendToken(token); // stream into chat bubble
+}
+```
+
+### Tier 2 init (WASM — primary tested path)
+```js
+import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm";
+let chatPipe, embedPipe;
+async function initWasm(onProgress) {
+  chatPipe = await pipeline("text-generation", "onnx-community/Qwen2.5-0.5B-Instruct",
+    { dtype: "q4", device: "wasm", progress_callback: onProgress });
+  embedPipe = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2",
+    { dtype: "fp32", device: "wasm" });
+}
+// generate (WASM — no streaming, ~3-8s, show typing indicator the whole time):
+async function generateWasm(systemPrompt, userMsg) {
+  const messages = [{ role: "system", content: systemPrompt }, { role: "user", content: userMsg }];
+  const out = await chatPipe(messages, { max_new_tokens: 256, do_sample: false });
+  // Extract generated text:
+  return out[0].generated_text.at(-1).content;
+}
+// embed:
+async function embedWasm(text) {
+  const out = await embedPipe(text, { pooling: "mean", normalize: true });
+  return Array.from(out.data); // Float32 vector
+}
+```
+
+### Tier 3 — template-RAG fallback (no LLM at all)
+Return top-1 retrieved FAQ answer verbatim. If confidence < 0.3, trigger escalation suggestion.
+
+---
+
+## 3. RAG implementation pattern
+
+```js
+// rag.js
+// At init: embed all knowledge-base.json answers with embedPipe, store Float32 arrays
+// At query time: embed userQuery, cosine sim against all stored vectors, take top-3
+
+function cosine(a, b) {
+  let dot = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+
+// Returns: [{ entry, score }] sorted desc, top-3
+async function retrieve(queryText, topK = 3) {
+  const qVec = await embedWasm(queryText);
+  return corpusVecs
+    .map((vec, i) => ({ entry: corpus[i], score: cosine(qVec, vec) }))
+    .sort((a,b) => b.score - a.score)
+    .slice(0, topK);
+}
+
+// System prompt injection:
+function buildSystemPrompt(topChunks) {
+  const context = topChunks.map(c => `Q: ${c.entry.q}\nA: ${c.entry.a}`).join("\n\n");
+  return `You are SupportAI, a helpful US customer support assistant for an online retail store.
+Answer ONLY using the context below. If the answer is not in the context, say you're not sure and offer to connect a human agent.
+Be friendly, concise, and in a US retail customer service tone.
+
+CONTEXT:
+${context}`;
+}
+```
+
+**Keyword fallback** (when embedPipe not yet loaded): tokenize query, count word matches against FAQ question text, score = matched_words / total_words. Use as interim until WASM embeddings load.
+
+---
+
+## 4. Order lookup
+
+### orders.json (complete — copy verbatim)
+```json
+[
+  { "id": "ORD-10042", "email": "jane@example.com", "item": "Wireless Noise-Canceling Headphones", "status": "Delivered", "trackingNumber": "1Z999AA10123456784", "carrier": "UPS", "estimatedDelivery": "2026-06-10", "orderDate": "2026-06-04" },
+  { "id": "ORD-10051", "email": "mike@example.com", "item": "Standing Desk Converter", "status": "In Transit", "trackingNumber": "9400111899223487382910", "carrier": "USPS", "estimatedDelivery": "2026-06-19", "orderDate": "2026-06-13" },
+  { "id": "ORD-10067", "email": "sara@example.com", "item": "Yoga Mat (Purple)", "status": "Processing", "trackingNumber": null, "carrier": null, "estimatedDelivery": "2026-06-21", "orderDate": "2026-06-16" },
+  { "id": "ORD-10073", "email": "alex@example.com", "item": "Mechanical Keyboard (TKL)", "status": "Shipped", "trackingNumber": "771234560123", "carrier": "FedEx", "estimatedDelivery": "2026-06-18", "orderDate": "2026-06-14" },
+  { "id": "ORD-10089", "email": "priya@example.com", "item": "Vitamin D3 + K2 (90 ct)", "status": "Delivered", "trackingNumber": "1Z999BB10987654321", "carrier": "UPS", "estimatedDelivery": "2026-06-11", "orderDate": "2026-06-06" },
+  { "id": "ORD-10094", "email": "carlos@example.com", "item": "Portable Espresso Maker", "status": "Return Initiated", "trackingNumber": "9400111899223487390011", "carrier": "USPS", "estimatedDelivery": null, "orderDate": "2026-06-01" },
+  { "id": "ORD-10102", "email": "lisa@example.com", "item": "Bamboo Cutting Board Set (3pc)", "status": "Delivered", "trackingNumber": "771234560456", "carrier": "FedEx", "estimatedDelivery": "2026-06-08", "orderDate": "2026-06-03" },
+  { "id": "ORD-10115", "email": "tom@example.com", "item": "Smart LED Desk Lamp", "status": "In Transit", "trackingNumber": "1Z999CC10555123456", "carrier": "UPS", "estimatedDelivery": "2026-06-20", "orderDate": "2026-06-15" },
+  { "id": "ORD-10128", "email": "amy@example.com", "item": "Resistance Bands Set", "status": "Cancelled", "trackingNumber": null, "carrier": null, "estimatedDelivery": null, "orderDate": "2026-06-12" },
+  { "id": "ORD-10133", "email": "james@example.com", "item": "Reusable Water Bottle (32oz, Slate)", "status": "Shipped", "trackingNumber": "771234560789", "carrier": "FedEx", "estimatedDelivery": "2026-06-18", "orderDate": "2026-06-14" }
+]
+```
+
+### order-api.js lookup
+```js
+let orders = null;
+async function loadOrders() {
+  if (!orders) orders = await fetch("./orders.json").then(r => r.json());
+}
+export async function lookupOrder(query) {
+  await loadOrders();
+  const q = query.trim().toUpperCase();
+  const match = orders.find(o => o.id.toUpperCase() === q || o.email.toLowerCase() === q.toLowerCase());
+  if (!match) return null;
+  const lines = [`Order ${match.id} — ${match.item}`, `Status: ${match.status}`];
+  if (match.carrier && match.trackingNumber) lines.push(`Tracking: ${match.trackingNumber} via ${match.carrier}`);
+  if (match.estimatedDelivery) lines.push(`Est. delivery: ${match.estimatedDelivery}`);
+  return lines.join("\n");
+}
+// In chat.js: detect order # in user message with /\b(ORD-\d{4,6}|\d{4,6})\b/i
+// or email pattern; call lookupOrder; inject result into system prompt context
+```
+
+---
+
+## 5. ET hours check (escalation.js)
+
+```js
+function getETStatus() {
+  const now = new Date();
+  // ET offset: EST = -5, EDT = -4. Use Intl to get exact ET hour.
+  const etHour = parseInt(new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York", hour: "numeric", hour12: false
+  }).format(now));
+  const etDay = parseInt(new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York", weekday: "short"
+  }).format(now).slice(0,3) === "Sun" ? 0 : ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(
+    new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short" }).format(now)
+  ));
+  const isWeekday = etDay >= 1 && etDay <= 5;
+  const isBusinessHours = etHour >= 9 && etHour < 18;
+  if (isWeekday && isBusinessHours) {
+    return { available: true, msg: "Our support team is online now and will respond within a few minutes." };
+  } else {
+    // Next open = next Mon at 9am ET (if weekend) or next weekday 9am ET
+    return { available: false, msg: "Our team is offline right now (available Mon-Fri, 9am-6pm ET). Leave a message and we'll reply first thing when we're back." };
+  }
+}
+```
+
+---
+
+## 6. Typing indicator pattern
+
+Show during WASM inference (3-8s). Never let UI appear hung.
+
+```css
+/* In style.css */
+.typing-indicator { display: flex; gap: 4px; align-items: center; padding: 12px 16px; }
+.typing-indicator span {
+  width: 8px; height: 8px; border-radius: 50%; background: #94A3B8;
+  animation: bounce 1.2s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+```
+
+```js
+// chat.js: show before WASM call, hide after
+function showTyping() {
+  const el = document.createElement("div");
+  el.className = "message bot typing-bubble";
+  el.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+  el.id = "typing-indicator";
+  feed.appendChild(el);
+  feed.scrollTop = feed.scrollHeight;
+}
+function hideTyping() {
+  document.getElementById("typing-indicator")?.remove();
+}
+```
+
+---
+
+## 7. knowledge-base.json (complete — copy verbatim from pre-researcher.out)
+
+```json
+[
+  { "q": "Where is my order?", "a": "You can track your order using the tracking link sent to your email. Orders typically ship within 1-2 business days.", "category": "Orders" },
+  { "q": "How do I track my shipment?", "a": "Check your confirmation email for a tracking number. Click the link or enter it at our carrier's site.", "category": "Shipping" },
+  { "q": "When will my order arrive?", "a": "Standard shipping is 5-7 business days. Expedited options are available at checkout.", "category": "Shipping" },
+  { "q": "How do I return an item?", "a": "We accept returns within 30 days of delivery. Items must be unused and in original packaging. Start a return from your order history.", "category": "Returns" },
+  { "q": "How do I get a refund?", "a": "Refunds are issued to your original payment method within 5-7 business days of receiving your return.", "category": "Returns" },
+  { "q": "Can I exchange an item?", "a": "Yes, exchanges are processed like a return plus a new order. Contact support to expedite the process.", "category": "Returns" },
+  { "q": "My item arrived damaged. What do I do?", "a": "Sorry about that! Email us a photo and your order number at support@store.com. We will send a replacement right away.", "category": "Issues" },
+  { "q": "I received the wrong item.", "a": "We apologize for the mix-up. Please email a photo of what you received and we will ship the correct item immediately.", "category": "Issues" },
+  { "q": "Can I cancel my order?", "a": "Orders can be cancelled within 1 hour of placement. After that, the order enters fulfillment and cannot be cancelled.", "category": "Orders" },
+  { "q": "Can I change my shipping address?", "a": "Address changes are possible within 1 hour of ordering. Contact us immediately and we will try to update before shipment.", "category": "Orders" },
+  { "q": "Do you ship internationally?", "a": "We currently ship to the US, Canada, and UK. International orders may incur customs fees, which are the buyer's responsibility.", "category": "Shipping" },
+  { "q": "How much does shipping cost?", "a": "Standard shipping is free on orders over $50. Orders under $50 have a flat $5.99 shipping fee.", "category": "Shipping" },
+  { "q": "What payment methods do you accept?", "a": "We accept Visa, Mastercard, Amex, Discover, PayPal, Apple Pay, and Google Pay.", "category": "Payments" },
+  { "q": "Is my payment information secure?", "a": "Yes. All transactions are encrypted using SSL/TLS. We never store your full card number.", "category": "Payments" },
+  { "q": "I was charged twice. What happened?", "a": "This is usually a temporary authorization hold. If both charges appear on your statement after 24 hours, contact us immediately.", "category": "Payments" },
+  { "q": "Do you offer promo codes?", "a": "Yes! Sign up for our newsletter to receive exclusive discount codes. You can apply them at checkout.", "category": "Promotions" },
+  { "q": "How do I apply a discount code?", "a": "Enter your promo code in the Discount Code field at checkout, then click Apply.", "category": "Promotions" },
+  { "q": "Why was my promo code rejected?", "a": "Codes may be expired, single-use already redeemed, or have minimum order requirements. Check the terms of your offer.", "category": "Promotions" },
+  { "q": "How do I contact a human agent?", "a": "Type agent or human at any time and I will connect you with our support team. Available 9am-6pm ET, Monday-Friday.", "category": "Support" },
+  { "q": "What are your support hours?", "a": "Our team is available Monday-Friday, 9am-6pm Eastern Time. Outside those hours, I can still help or take your message.", "category": "Support" }
+]
+```
+
+---
+
+## 8. Design system (CSS custom properties — paste into `:root` in style.css)
+
+```css
+:root {
+  /* Palette */
+  --blue:        #1D6AE5;
+  --blue-hover:  #1558C8;
+  --dark:        #0F172A;
+  --surface:     #F8FAFC;
+  --card:        #FFFFFF;
+  --teal:        #0D9488;
+  --amber:       #D97706;
+  --text-p:      #1E293B;
+  --text-m:      #64748B;
+  --border:      #E2E8F0;
+
+  /* Typography */
+  --font:        "Inter", system-ui, sans-serif;
+
+  /* Radii */
+  --r-card:      12px;
+  --r-bubble:    20px;
+  --r-input:     8px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-panel: 0 8px 32px rgba(0,0,0,.18);
+
+  /* Chat bubbles */
+  --bubble-user-bg:  #1D6AE5;
+  --bubble-user-txt: #FFFFFF;
+  --bubble-bot-bg:   #F1F5F9;
+  --bubble-bot-txt:  #1E293B;
+
+  /* Zendesk-style ticket card */
+  --ticket-bg:   #F0FDF4;
+  --ticket-border: #86EFAC;
+  --ticket-txt:  #15803D;
+
+  /* Escalation warning card */
+  --esc-bg:      #FFFBEB;
+  --esc-border:  #FCD34D;
+  --esc-txt:     #92400E;
+}
+body { font-family: var(--font); background: var(--surface); color: var(--text-p); margin: 0; }
+```
+
+---
+
+## 9. Widget UI specs (Zendesk/Intercom pattern)
+
+| Element | Spec |
+|---|---|
+| Launcher button | 56x56px circle, bottom-right, 20px from edges, `background: var(--blue)`, chat-bubble SVG icon (white), `position: fixed; z-index: 9999` |
+| Chat panel | 380px wide x 520px tall, `position: fixed; bottom: 92px; right: 20px`, `border-radius: var(--r-card)`, `box-shadow: var(--shadow-panel)`, `display: flex; flex-direction: column` |
+| Panel header | 56px tall, `background: var(--blue)`, bot avatar (32px circle, white "S" initial), bot name "SupportAI", green status dot (`#22C55E`), minimize + close icons (white SVG) |
+| Message feed | `flex: 1; overflow-y: auto; padding: 16px; gap: 12px` |
+| User bubble | right-aligned, `background: var(--bubble-user-bg)`, white text, `border-radius: 20px 20px 4px 20px`, max-width 75% |
+| Bot bubble | left-aligned, `background: var(--bubble-bot-bg)`, `color: var(--text-p)`, `border-radius: 20px 20px 20px 4px`, max-width 75% |
+| Input bar | 56px, `border-top: 1px solid var(--border)`, textarea (auto-resize), send button (`var(--blue)` fill, paper-plane SVG) |
+| "Talk to a human" | amber/orange chip always visible in input bar area |
+| Mobile (<480px) | panel goes full-screen: `position: fixed; inset: 0; border-radius: 0` |
+
+### Accessibility
+- `role="dialog"` on panel, `aria-label="SupportAI chat"`, `aria-modal="true"`
+- `aria-live="polite"` on message feed div
+- Send button: `aria-label="Send message"`
+- Keyboard: Enter sends, Shift+Enter newline, Escape closes panel
+
+---
+
+## 10. Analytics events (analytics.js)
+
+Store to sessionStorage key `"supportai_events"` as JSON array. Append only.
+
+```js
+export function logEvent(type, data = {}) {
+  const events = JSON.parse(sessionStorage.getItem("supportai_events") || "[]");
+  events.push({ type, ts: Date.now(), ...data });
+  sessionStorage.setItem("supportai_events", JSON.stringify(events));
+}
+// event types: "message_sent", "bot_responded", "order_lookup", "escalation_triggered",
+//              "escalation_submitted", "kb_edited", "session_start"
+// Admin panel reads these to compute: deflection rate, top query strings, handoff count, avg msgs/session
+```
+
+---
+
+## 11. Model load UI (index.html + model-loader.js)
+
+Show during init, before first user message allowed:
+
+```
+[ SupportAI logo / header ]
+[ Progress bar 0-100% ]
+[ "AI is loading... Running entirely on your device. No data is sent to any server." ]
+[ Estimated time: ~30-60 seconds for first load (cached after that) ]
+[ Tier badge: "WebGPU Accelerated" | "Running on WASM" | "Template Mode" ]
+```
+
+After load: hide progress bar, show "Ready" green dot, enable input.
+
+---
+
+## 12. workSamples.js registry entry (add after build)
+
+```js
+{
+  id: <next-id>,
+  slug: "ai-chatbot-for-customer-support",
+  title: "AI Customer Support Chatbot",
+  description: "In-browser AI chatbot with RAG, order lookup, escalation routing, and admin panel. Zero token cost.",
+  category: "Utility",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/ai-chatbot-for-customer-support/",
+  color: "#1D6AE5",
+  icon: "💬",
+  frameStyle: "walnut",
+  client: "US Online Retailer",
+  postingSummary: "AI-powered chatbot for customer support with FAQ knowledge base, order status, and Zendesk integration.",
+  builtFor: "Upwork proposal demo",
+  date: "2026-06-17",
+}
+```
+
+---
+
+## handoff
+- produced: Complete build-prep package: exact scaffold (12-file manifest + paths), confirmed CDN/model imports (WebLLM v0.2.84 + `@huggingface/transformers@4.2.0`), cosine-sim RAG pattern, copy-paste orders.json (10 entries) and knowledge-base.json (20 entries), ET hours snippet, typing indicator CSS+JS, full CSS design token set, widget UI specs, analytics event schema, workSamples.js entry.
+- decisions: WASM is primary (CI) path; `@xenova/transformers` banned; typing indicator required for 3-8s WASM latency; keyword-match fallback for pre-embed warm-up; template-RAG as Tier 3 if WASM fails; no backend needed.
+- next needs: demo-builder creates all 12 files using the exact snippets above; validates WASM Qwen2.5-0.5B returns coherent answers (not stubs); WebGPU is progressive enhancement only; Zendesk ticket card styled per Section 9; proposal-writer must flag Zendesk-as-simulated and include US-based confirmation verbatim.
+- risks: Qwen2.5-0.5B WASM coherence in headless must be validated before deploy; WebGPU 600-900 MB download must not gate first-paint; `@huggingface/transformers` v4 pipeline API — if `out[0].generated_text.at(-1).content` doesn't work, try `out[0].generated_text[out[0].generated_text.length-1].content` or log the shape.
