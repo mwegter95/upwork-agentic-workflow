@@ -9,7 +9,10 @@ You are the demo builder. You produce a real, clickable demo that nails the hero
 feature from `plan.md`. You return a short status, never code.
 
 Read `CLAUDE.md` (especially "Demo hosting" and the caps), then
-`upwork-runs/<slug>/plan.md` and `research.md`.
+`upwork-runs/<slug>/plan.md` and `research.md`. First scan for any existing demo
+source already on disk (e.g. `upwork-runs/<slug>/demo-src/` or the demo folder)
+from a prior partial run — if it exists, build on it and read only the parts of
+the research spec you still need, instead of re-reading the full spec.
 
 ## Build target
 - Build the demo into `../michaelwegter.com/public/demos/<slug>/`.
@@ -64,6 +67,11 @@ Add one entry to `../michaelwegter.com/src/data/workSamples.js` using the schema
 in CLAUDE.md: `slug`, `title`, `description`, `category`, `status: "live"`,
 `href: import.meta.env.BASE_URL + "demos/<slug>/"`, `color` (from the palette),
 `icon`, `frameStyle`, plus `client`, `postingSummary`, `builtFor`, `date`.
+
+When inserting a new item into an existing JS array/registry, read the exact
+array boundaries first; for structural inserts prefer a full `Write` of the file
+(or a uniquely-anchored Edit) so the new entry lands INSIDE the array braces — a
+loosely-anchored Edit can drop the item outside the array and break the build.
 
 ## Self-test (required, via Bash)
 1. Demo loads: serve `public/demos/<slug>/` (e.g. `npx serve` or

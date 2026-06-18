@@ -25,6 +25,10 @@ plan/brief for what the demo is supposed to do.
 
 Actually run the flows (a Playwright script, e.g. via `scripts/capture.mjs`
 flows, or a small node script). Do not assume; click and read real outputs.
+Before writing final selectors, do a quick DOM inspection pass (dump the relevant
+markup) rather than guessing aria-labels/ids — demos often use semantic class
+names (e.g. `.btn-transport`, `.song-chip`); prefer text-content matching as the
+primary fallback so checks survive markup differences.
 
 ## Output
 List each flow you ran with pass/fail and the observed result. On failure, name
