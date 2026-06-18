@@ -1,0 +1,36 @@
+# Media Capture — audio-software-engineer-needed-for
+
+Captured hero flow: Sanctuary Worship Playback Engine
+Live demo: https://michaelwegter.com/demos/audio-software-engineer-needed-for/
+
+## Screenshots
+
+| # | Frame | Description | Asset |
+|---|-------|-------------|-------|
+| 1 | Ready | Song loaded (Endless Grace, A, 72 BPM); transport buttons visible; waveform canvas ready | 01-initial-state.png (125 KB) |
+| 2 | Playing | Playback active; waveform animating; progress line advancing; mixer faders visible | 02-playback-active.png (128 KB) |
+| 3 | Progress | Waveform mid-progression (~25% through track); real-time visual feedback | 03-waveform-progress.png (128 KB) |
+| 4 | Navigation | Jumped to Verse 1 via section chip click; UI shows active section highlight; transport still playing | 04-section-nav.png (131 KB) |
+| 5 | Mixer | Full mixer/stems UI visible (drums, bass, keys, acoustic stems + master); individual mute/solo buttons | 05-mixer-stems.png (130 KB) |
+
+## Video
+
+**Hero flow recording:** `page@955c395e43b6bc7369462b173da83d60.webm` (152 KB)
+- Duration: ~10 seconds
+- Includes: initial load → play click → waveform animation → section navigation → mixer reveal
+- Captures: transport behavior, real-time waveform feedback, stem isolation UI
+
+## Notes
+
+- All 5 screenshots captured at 1280×800 (full UI visible)
+- Web Audio API playback works headless (AudioContext auto-resumed on play click)
+- Waveform canvas renders correctly with animated progress line
+- Mixer stems show real mute/solo state changes in real-time
+- Section navigation shows smooth jump to selected timeline position
+- No console errors; audio playback stable across all interactions
+
+## handoff
+- produced: 5 hero-flow screenshots + 1 video (152 KB webm); all assets in /media/ subdir
+- decisions: captured full playback flow (ready → playing → navigation → mixer); feature richness 10 visually represented (waveform, sections, stems, A/B loop buttons, transport)
+- next needs: proposal-writer embeds `/media/` assets into cover letter, one-pager, and deck; emphasize audio engineering pedigree + live playback reliability focus
+- risks: none; all assets captured cleanly with no render glitches or console errors

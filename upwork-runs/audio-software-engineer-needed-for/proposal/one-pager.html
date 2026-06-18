@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Michael Wegter: Worship Audio Engineer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0C0C0F;
+      --surface: #141418;
+      --surface-2: #1C1C24;
+      --border: #272733;
+      --text: #F0EFE9;
+      --text-muted: #7C7A86;
+      --amber: #F59E0B;
+      --amber-pale: rgba(245,158,11,0.12);
+      --blue: #3B82F6;
+      --green: #22C55E;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 48px 28px 96px;
+    }
+
+    /* ── Amber top stripe ── */
+    .stripe { height: 4px; background: var(--amber); }
+
+    /* ── Header ── */
+    .header {
+      padding: 48px 0 36px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 52px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .header-left .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 10px;
+    }
+
+    .header-left h1 {
+      font-size: 40px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .header-left h1 em {
+      font-style: normal;
+      color: var(--amber);
+    }
+
+    .header-left .subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.5;
+    }
+
+    .header-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .badge-live {
+      display: inline-block;
+      background: var(--amber);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    .demo-url {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    /* ── Demo hero ── */
+    .demo-hero {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 56px;
+      background: var(--surface);
+    }
+
+    .demo-hero img {
+      width: 100%;
+      display: block;
+    }
+
+    .demo-hero-footer {
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .demo-hero-footer .tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .demo-hero-footer .tagline span {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .demo-cta {
+      display: inline-block;
+      background: var(--amber);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 9px 22px;
+      border-radius: 6px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    /* ── Section label ── */
+    h2.section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 22px;
+    }
+
+    section { margin-bottom: 60px; }
+
+    /* ── Pain point grid ── */
+    .pain-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 680px) {
+      .pain-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .pain-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .pain-item .check {
+      color: var(--green);
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-weight: 700;
+    }
+
+    .pain-item .label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    /* ── Screenshots strip ── */
+    .screenshots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .screenshots img {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .screenshots .cap {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    /* ── Credentials grid ── */
+    .creds-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .creds-grid { grid-template-columns: 1fr; }
+    }
+
+    .cred-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 22px;
+    }
+
+    .cred-card .icon { font-size: 22px; margin-bottom: 10px; display: block; }
+
+    .cred-card .cred-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .cred-card .cred-body {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* ── Approach steps ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 18px;
+    }
+
+    .step .num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--amber);
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .step .step-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .step .step-body {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* ── Tech stack ── */
+    .tech-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tech-tag {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .tech-tag.highlight {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: var(--amber-pale);
+    }
+
+    /* ── Quote callout ── */
+    .callout {
+      background: var(--amber-pale);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0;
+      padding: 18px 24px;
+      margin: 28px 0;
+    }
+
+    .callout p {
+      font-size: 15px;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── CTA footer ── */
+    .cta-block {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px 36px;
+      text-align: center;
+    }
+
+    .cta-block h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .cta-block p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+    }
+
+    .cta-main {
+      display: inline-block;
+      background: var(--amber);
+      color: #000;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 13px 32px;
+      border-radius: 7px;
+      text-decoration: none;
+    }
+
+    .cta-secondary {
+      display: block;
+      margin-top: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .cta-secondary:hover { color: var(--blue); }
+  </style>
+</head>
+<body>
+  <div class="stripe"></div>
+  <div class="page">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="eyebrow">Worship Platform Audit Proposal</div>
+        <h1>Michael Wegter<br><em>Audio Software Engineer</em></h1>
+        <p class="subtitle">Musician, DAW operator since fifth grade, wedding DJ, and full-stack engineer. Obsessed with getting audio exactly right.</p>
+      </div>
+      <div class="header-right">
+        <span class="badge-live">Live Demo</span>
+        <a class="demo-url" href="https://michaelwegter.com/demos/audio-software-engineer-needed-for/" target="_blank">
+          michaelwegter.com/demos/<br>audio-software-engineer-needed-for/
+        </a>
+      </div>
+    </header>
+
+    <!-- Demo Hero -->
+    <div class="demo-hero">
+      <img src="../media/02-playback-active.png" alt="Sanctuary Worship Playback Engine: playback active with waveform, transport, and mixer visible" />
+      <div class="demo-hero-footer">
+        <p class="tagline">
+          <span>Sanctuary Worship Playback Engine</span>. Transport, stems, section navigation, click track, count-in, A/B loop, and full mixer. All working.
+        </p>
+        <a class="demo-cta" href="https://michaelwegter.com/demos/audio-software-engineer-needed-for/" target="_blank">Open Live Demo</a>
+      </div>
+    </div>
+
+    <!-- Nine pain points -->
+    <section>
+      <h2 class="section-label">Every issue you listed, covered in the demo</h2>
+      <div class="pain-grid">
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Playback transport reliability</span></div>
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Section navigation behavior</span></div>
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Audio synchronization</span></div>
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Click track timing</span></div>
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Guide cue timing and triggering</span></div>
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Stem routing and playback</span></div>
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Mixer channel behavior</span></div>
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Count-in functionality</span></div>
+        <div class="pain-item"><span class="check">&#10003;</span><span class="label">Audio engine stability</span></div>
+      </div>
+    </section>
+
+    <!-- Screenshots -->
+    <section>
+      <h2 class="section-label">Demo screenshots</h2>
+      <div class="screenshots">
+        <div>
+          <img src="../media/01-initial-state.png" alt="Song loaded, ready to play" />
+          <p class="cap">Song loaded, transport ready</p>
+        </div>
+        <div>
+          <img src="../media/04-section-nav.png" alt="Section navigation active" />
+          <p class="cap">Section navigation, mid-playback</p>
+        </div>
+        <div>
+          <img src="../media/05-mixer-stems.png" alt="Full mixer with stem routing" />
+          <p class="cap">6-stem mixer with mute/solo</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Callout -->
+    <div class="callout">
+      <p>"I am obsessed with audio. I have been since childhood. Getting it exactly right is not a detail to me, it is the whole point."</p>
+    </div>
+
+    <!-- Background / Credentials -->
+    <section>
+      <h2 class="section-label">Background</h2>
+      <div class="creds-grid">
+        <div class="cred-card">
+          <span class="icon">&#127891;</span>
+          <div class="cred-title">Bachelor of Music, St. Olaf College</div>
+          <div class="cred-body">Formal music theory, composition, ear training, and production. Fifteen-plus years in DAWs (Ableton Live, Logic Pro, Pro Tools) starting in fifth grade.</div>
+        </div>
+        <div class="cred-card">
+          <span class="icon">&#127911;</span>
+          <div class="cred-title">Professional Wedding DJ</div>
+          <div class="cred-body">Live events mean no second chances. I am dedicated to getting audio exactly perfect for every performance, and that mindset carries directly into how I build software.</div>
+        </div>
+        <div class="cred-card">
+          <span class="icon">&#128268;</span>
+          <div class="cred-title">Python MIDI Bridge (Production-Ready)</div>
+          <div class="cred-body">Built a Python program to bridge MIDI output from an out-of-date DJ controller to my current DJ software, with live real-time signal processing. It runs at every gig. Zero failures in production. Idiomatic of how I approach audio software: it works under pressure, every time.</div>
+        </div>
+        <div class="cred-card">
+          <span class="icon">&#128187;</span>
+          <div class="cred-title">Full-Stack Software Engineer</div>
+          <div class="cred-body">Two and a half years at U.S. Bank (React, Python, SQL), sole developer on a 60,000-line internal platform serving 600 users/month. Current contract at Optum (Angular, .NET/C#, PostgreSQL). 150-plus story points delivered.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech stack -->
+    <section>
+      <h2 class="section-label">Technologies</h2>
+      <div class="tech-row">
+        <span class="tech-tag highlight">Web Audio API</span>
+        <span class="tech-tag highlight">AudioContext / OfflineAudioContext</span>
+        <span class="tech-tag highlight">Wilson Lookahead Scheduler</span>
+        <span class="tech-tag highlight">Python (rtmidi, signal processing)</span>
+        <span class="tech-tag highlight">Ableton / Logic / Pro Tools</span>
+        <span class="tech-tag">React</span>
+        <span class="tech-tag">Angular</span>
+        <span class="tech-tag">Python / .NET / Java</span>
+        <span class="tech-tag">SQL / PostgreSQL</span>
+        <span class="tech-tag">Docker / Kubernetes</span>
+      </div>
+    </section>
+
+    <!-- Approach -->
+    <section>
+      <h2 class="section-label">Audit approach for the initial engagement</h2>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="num">01</div>
+          <div class="step-title">Review the codebase</div>
+          <div class="step-body">Read the full audio architecture end to end. Map the signal flow, scheduler, transport, and routing before suggesting any changes.</div>
+        </div>
+        <div class="step">
+          <div class="num">02</div>
+          <div class="step-title">Reproduce and root-cause</div>
+          <div class="step-body">Systematically reproduce each of your nine issues. Trace each one to its specific root cause. Document findings before writing a fix.</div>
+        </div>
+        <div class="step">
+          <div class="num">03</div>
+          <div class="step-title">Fix high-priority bugs</div>
+          <div class="step-body">Targeted, surgical patches for transport reliability, sync drift, and timing issues. Each fix tested in isolation.</div>
+        </div>
+        <div class="step">
+          <div class="num">04</div>
+          <div class="step-title">Deliver recommendations</div>
+          <div class="step-body">A written analysis of root causes, fixes applied, and architectural recommendations for the platform's next phase.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta-block">
+      <h3>See the demo live</h3>
+      <p>A working worship playback engine covering all nine of your pain points. Click through it yourself before we talk.</p>
+      <a class="cta-main" href="https://michaelwegter.com/demos/audio-software-engineer-needed-for/" target="_blank">Open Sanctuary Demo</a>
+      <a class="cta-secondary" href="https://michaelwegter.com/work-samples" target="_blank">Full portfolio at michaelwegter.com/work-samples</a>
+    </div>
+
+  </div><!-- /page -->
+</body>
+</html>

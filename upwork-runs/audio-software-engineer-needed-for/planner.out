@@ -1,0 +1,179 @@
+# Plan — Sanctuary: Worship Playback Engine
+
+## Demo Concept
+**"Sanctuary"** — a full-featured, production-quality worship playback engine that maps all 9 client pain points to live, working features. A worship team leads a rehearsal: they load a song, set a count-in, navigate sections, run stems through a mixer, and monitor click + guide cues — all in the browser, all sample-accurate.
+
+## Demo Choice Rationale
+- Prototype vs full: **Full** (richness 10, no trip-wires). Frontend-only Vite + React app; no backend needed. Self-contained, zero deploy friction.
+- Every one of the 9 "areas needing attention" becomes a working, demonstrable UI feature — this is the core pitch: Michael didn't just fix bugs on a similar app, he built the whole stack from scratch in a weekend.
+
+---
+
+## Traceability Matrix — 9 Pain Points → Demo Features
+
+| # | Client Pain Point | Demo Feature | UI Component |
+|---|---|---|---|
+| 1 | Playback transport reliability | Sample-accurate multi-buffer play/pause/stop/seek via AudioContext + lookahead scheduler | `Transport.jsx` + `AudioEngine.js` |
+| 2 | Section navigation behavior | Arrangement markers (Intro/V1/Pre-C/Chorus/Bridge/Outro), click-to-jump, A/B loop | `SectionNav.jsx` |
+| 3 | Audio synchronization | All stems start at exact same `AudioContext.currentTime` via shared buffer start call | `AudioEngine.js` (shared timestamp) |
+| 4 | Click track timing | Dedicated click stem, BPM-locked, beat-1 accent, metronome flash | `Transport.jsx` + `Scheduler.js` |
+| 5 | Guide cue timing and triggering | Beat-quantized cue cards scheduled via `AudioContext.currentTime`, lyrics/section text | `GuideDisplay.jsx` + `Scheduler.js` |
+| 6 | Stem routing and playback | 6 independent stems (Drums/Bass/Keys/Pads/Click/Guide), each through dedicated GainNode chain | `AudioEngine.js` + `Mixer.jsx` |
+| 7 | Mixer channel behavior | Per-stem: volume fader, mute, solo (proper exclusive-solo logic), pan knob | `ChannelStrip.jsx` |
+| 8 | Count-in functionality | Configurable 1/2/4-bar count-in: audio click beeps + animated visual countdown overlay | `Transport.jsx` |
+| 9 | Audio engine stability | Clean AudioContext suspend/resume lifecycle; gain ramping (no clicks/pops); graceful buffer reload | `AudioEngine.js` |
+
+All 9 addressed. Zero gaps.
+
+---
+
+## Feature Set (Richness 10)
+
+### Hero: Sample-Accurate Multitrack Transport + Mixer
+- `AudioEngine.js`: loads all stem buffers via `fetch` + `decodeAudioData`; creates per-stem `AudioBufferSourceNode -> GainNode (volume) -> StereoPannerNode -> GainNode (mute) -> masterGain -> destination`
+- Play: all stems call `.start(audioCtx.currentTime + offset)` with the SAME timestamp — sample-locked
+- Pause: `audioCtx.suspend()` + record `pauseOffset`; Resume: `audioCtx.resume()` + reschedule from offset
+- Stop: disconnect all sources, reset offset to 0
+- Seek: stop → recalculate buffer offset → restart from new position
+- Master clock: `requestAnimationFrame` loop reading `audioCtx.currentTime` for UI sync
+
+### Supporting 1: Section Navigation + Loop
+- Song metadata carries an `sections` array: `[{ name, startSec, color }]`
+- Section nav bar: labeled chips in track order, active section highlighted
+- Click chip: seek to `section.startSec`
+- Loop A/B: set in/out points via section start/end; scheduler loops transport at out-point back to in-point
+
+### Supporting 2: Click Track + Count-In
+- Click stem is a dedicated buffer (sharp transient); always stays in sync via shared start
+- Count-in: before play, schedule N bars of click-only playback with animated beat counter (4...3...2...1...GO)
+- Configurable: 1 or 2 or 4 bars via dropdown in transport
+
+### Per-Channel Mixer (6 channels)
+- Channels: Drums, Bass, Keys, Pads/BGVox, Click, Guide
+- Per channel: labeled strip with color, volume slider (0-100, maps to GainNode.gain), mute button (zero gain), solo button (mutes all others), pan knob (-1 to +1 -> StereoPannerNode)
+- Solo exclusivity: Web Audio "radio solo" pattern — all non-soloed channels muted at master-mute gain
+
+### Waveform Display
+- Canvas element; waveform drawn from decoded AudioBuffer data (downsample to canvas width)
+- Animated playhead (rAF-driven, `audioCtx.currentTime`)
+- Section markers overlaid as colored vertical lines
+- Click-to-seek (map click X to `duration * (x / canvasWidth)`)
+
+### Guide Cue Cards
+- Song metadata carries `cues: [{ beatOffset, text }]`
+- Scheduler pre-schedules `setTimeout` calls synced to `audioCtx.currentTime` (acceptable for display-only)
+- Cue cards appear/fade over the waveform display area
+
+### Song Library (2 songs minimum)
+- Simple song-picker header: song title + key + BPM + time signature
+- At least 2 songs in the registry, each with its own stem set, sections, and cues
+- Switching songs: stops playback, loads new buffers (loading state shown)
+
+---
+
+## Design Direction
+
+**Stage console aesthetic** — what a worship musician sees when they look at Ableton Live or Loop Community Prime at FOH.
+
+| Token | Value |
+|---|---|
+| Background | `#0C0C0F` (near-black) |
+| Surface 1 (panels) | `#161619` |
+| Surface 2 (cards/strips) | `#1E1E24` |
+| Surface 3 (input/hover) | `#28282F` |
+| Accent (active/playing) | `#F0A830` (warm amber — stage light) |
+| Accent 2 (selected/focus) | `#4A9EFF` (electric blue) |
+| Danger/mute | `#E05555` |
+| Solo | `#F0C030` |
+| Text primary | `#F0EFEA` |
+| Text secondary | `#8A8A95` |
+| Font — labels/UI | Inter (Google Fonts) |
+| Font — time/BPM readouts | JetBrains Mono |
+
+Layout: horizontal channel strips across bottom (DAW mixer view), transport bar pinned top, waveform + section nav in middle. Full viewport, no scrolling needed.
+
+**Nothing from michaelwegter.com's design system appears in the demo CSS.**
+
+---
+
+## Build Architecture
+
+Stack: Vite 6 + React 18, plain CSS with custom properties, no Tailwind.
+`base: '/demos/audio-software-engineer-needed-for/'` in vite.config.js.
+Output: `dist/` copied to `../michaelwegter.com/public/demos/audio-software-engineer-needed-for/`.
+
+### Source Files (12 in `src/`)
+```
+src/
+  main.jsx                     React root + AudioContext provider
+  App.jsx                      Layout, song state, context provider
+  engine/
+    AudioEngine.js             AudioContext lifecycle, buffer loading, stem graph
+    Scheduler.js               Lookahead beat scheduler; cue dispatch
+  components/
+    Transport.jsx              Play/Pause/Stop/Seek/Scrubber/Time/BPM/CountIn
+    SectionNav.jsx             Section chips, A/B loop controls
+    Mixer.jsx                  Render 6 ChannelStrips from stem config
+    ChannelStrip.jsx           Volume/Mute/Solo/Pan per stem
+    Waveform.jsx               Canvas waveform + playhead + section markers
+    GuideDisplay.jsx           Cue card overlay, fade-in/out transitions
+    SongSelector.jsx           Song library header picker
+  styles/
+    app.css                    Design tokens + layout (CSS custom properties)
+```
+Config/entry (not counted against src limit): `vite.config.js`, `index.html`, `package.json`.
+Audio assets: `public/audio/<song-slug>/<stem>.mp3` — served as static files, loaded via fetch.
+
+### Audio Source Plan
+**ACTIVATED: Programmatic generation (no external stems).** Researcher confirmed no permissive, no-login worship stem packs exist — all require account signup. This eliminates all licensing risk.
+
+- All stems generated via `OfflineAudioContext` at build time: click (sharp sine transient + beat-1 accent), kick pattern (tuned noise burst), pad (detuned triangle chord, long release), bass (sine oscillator), keys (bright saw + envelope), guide vocal (filtered sawtooth). Render to `AudioBuffer` objects in-memory, no file I/O needed — or render once and store as base64 data URLs in `songs.js`.
+- Two songs: same stem synthesis engine, different metadata (BPM/key/sections/cues). Song 1: 72 BPM worship ballad (A, 4/4). Song 2: 132 BPM upbeat anthem (G, 4/4).
+- Researcher confirmed CONFIRMED: same-frame `.start(audioCtx.currentTime)` = same audio block = sample-locked across Chrome/Safari/Firefox.
+- Scheduler reference: Chris Wilson "A Tale of Two Clocks" (https://web.dev/articles/audio-scheduling) — 25ms setTimeout interval, 100ms lookahead. `Scheduler.js` implements this directly in ~50 lines vanilla JS inside the React module.
+
+---
+
+## Research Integration (from pre-researcher.out)
+
+All 6 questions resolved:
+| Q | Answer |
+|---|---|
+| Q1: Free stems URL | None (all require login). Programmatic fallback activated. |
+| Q2: Second free song | Same — generate programmatically with different metadata. |
+| Q3: MultiTracks UI | Horizontal channel strips, section chips top, transport pinned top, dark DAW. Confirms plan layout. |
+| Q4: Loop Community UI | Same conventions; section markers, per-track mute/solo/volume; dark professional. Confirms. |
+| Q5: Web Audio sample-lock | CONFIRMED. Same-frame `.start(currentTime)` = same 128-sample block = sample-locked all browsers. |
+| Q6: Scheduler reference | Chris Wilson "A Tale of Two Clocks" — 25ms interval / 100ms lookahead. ~50 lines vanilla JS. |
+
+---
+
+## Constraints + Quality Gates
+
+- ≤12 src files (exact count above: 12).
+- Build must complete in <3 min (`npm run build`).
+- No console errors on first paint.
+- All 9 pain points demonstrable in a single user session without explanation.
+- No em/en dashes in any proposal prose.
+- Design coherent, bespoke, not portfolio-look.
+- Demo link in cover letter AND deck.
+- Proposal explicitly answers all 4 application questions.
+
+---
+
+## Plan Status
+
+**READY FOR DEMO-BUILDER.** All research questions resolved. No open unknowns.
+
+- Audio: programmatic OfflineAudioContext generation (all licenses clean, fully self-contained)
+- Layout: stage-console dark aesthetic confirmed by MultiTracks + Loop Community UI research
+- Sample-lock: Web Audio same-frame `.start()` = sample-locked confirmed
+- Scheduler: Wilson 25ms/100ms pattern confirmed as `Scheduler.js` reference
+
+---
+
+## handoff
+- produced: complete, research-integrated build plan for "Sanctuary" — 9-point traceability matrix, 12-file src architecture, stage-console design tokens, hero+2 supporting+3 additional features, programmatic audio generation spec, Wilson scheduler reference
+- decisions: Vite+React, frontend-only, no backend; ALL stems programmatically generated (OfflineAudioContext, zero licensing risk); 2 songs with different BPM/key/metadata; Wilson scheduler (25ms/100ms) for Scheduler.js; `base: '/demos/audio-software-engineer-needed-for/'`
+- next needs: demo-builder → implement AudioEngine.js + Scheduler.js (Wilson pattern); generate stems in-browser with OfflineAudioContext; all 9 pain points must be demo-able in a single session; no console errors on first paint
+- risks: richness 10 means ALL 6 feature areas must actually work (not just render UI shells) — demo-builder must wire the full Web Audio graph, not mock it

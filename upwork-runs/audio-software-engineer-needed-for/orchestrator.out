@@ -1,0 +1,59 @@
+# Orchestrator — Audio Software Engineer / Worship Playback Platform
+
+## Run identity
+- slug: `audio-software-engineer-needed-for` (matches run dir; keep as-is)
+- demo path: `../michaelwegter.com/public/demos/audio-software-engineer-needed-for/`
+- live demo: `https://michaelwegter.com/demos/audio-software-engineer-needed-for/`
+- work-sample route: `/work-samples/audio-software-engineer-needed-for`
+- feature richness: **10/10** — build full, production-quality, multi-feature.
+
+## What the client actually is
+A worship-music **multitrack playback platform** (think Loop Community Prime, MultiTracks Playback, Ableton-for-worship). Desktop app that worship teams use live on stage. The posting is a *bug-fix/audit* engagement on an existing app, but its feature list IS the spec for the domain. The demo should show Michael fluently building exactly the subsystems they listed, proving he understands worship-playback audio workflows end to end.
+
+## Demo concept (for planner — strong recommendation)
+A browser-based **worship multitrack playback engine** built on the **Web Audio API**, loading real free/CC-licensed worship/instrumental stems. Make it look and behave like pro worship playback software (dark stage-console aesthetic, not michaelwegter.com's look). It must demonstrably nail every pain point the client listed, because each one becomes a checkmark in the proposal's traceability matrix:
+
+Map the posting's "Areas Needing Attention" to concrete demo features:
+1. **Playback transport reliability** — rock-solid play/pause/stop/seek with sample-accurate scheduling (Web Audio `AudioContext.currentТ ime` lookahead scheduler, not `setTimeout`).
+2. **Section navigation** — song arrangement markers (Intro/Verse/Chorus/Bridge/Tag), click-to-jump, loop a section, queue next section.
+3. **Audio synchronization** — all stems start sample-locked; sync verified visually (waveform/playhead).
+4. **Click track timing** — generated metronome locked to tempo map, accent on bar 1, sample-accurate.
+5. **Guide cue timing/triggering** — spoken/visual cues ("Big finish", "To the chorus") fired at scheduled beats.
+6. **Stem routing** — per-stem channel (drums/bass/keys/vocals/click/guide) each routed to a mixer strip.
+7. **Mixer channel behavior** — per-channel volume fader, mute, solo, pan, output assignment; master bus.
+8. **Count-in** — configurable bars of count-in before playback.
+9. **Audio engine stability** — clean context lifecycle, no clicks/pops, graceful load.
+
+Hero feature = the **sample-accurate multitrack transport + mixer** (#1,#6,#7). Supporting (cap 2) = **section navigation + loop** (#2) and **click/count-in** (#4,#8). Guide cues (#5) are a nice tertiary if cheap. Planner enforces the 1 hero + 2 supporting cap and folds the rest into the same engine.
+
+### Backend decision (for planner)
+Likely **frontend-only with bundled CC-licensed stem audio** — Web Audio runs entirely client-side; no server needed for the core demo. Bundle small stem files (or short loops) in the demo's `assets/`. Only reach for mw-backend if planner wants a stem-library API; default NO backend to keep within budget. Record decision in plan.md.
+
+### Build form
+Audio-heavy + mixer UI + scheduler is complex → **Vite app** is justified (per CLAUDE.md "complexity warrants a bundler"). Build under `upwork-runs/audio-software-engineer-needed-for/demo-src/`, `base: '/demos/audio-software-engineer-needed-for/'`, copy `dist/*` into the public demos folder. Vanilla JS + Web Audio is fine; React only if it eases the mixer UI. Source stays out of the site repo.
+
+## Design direction (for researcher/planner to refine)
+Pro **stage/console** aesthetic: near-black background, high-contrast meters, accent glow (amber or teal LED), monospace numerics for tempo/time, tactile faders. Reference Ableton Live, Loop Community Prime, MultiTracks Playback UIs. NOT the portfolio's mustard/cyan gallery theme. Researcher pulls real worship-playback product visuals + confirms a CC/free stem source (e.g. cambridge-mt multitracks, free worship loop packs, or self-generated synth stems if licensing is risky).
+
+## Proposal angle (for proposal-writer — Michael's edge)
+Lead hard with credibility — this client wants a real musician-engineer, and Michael is exactly that:
+- **B.A. in Music, St. Olaf College** — formally trained musician.
+- **Using DAWs since 5th grade** — decades of hands-on audio production.
+- **Working wedding DJ** — obsessive about getting live audio *perfect*, real-stakes live playback experience (directly parallels worship-team live use).
+- **Built a production MIDI/audio bridge in Python** that live-bridges his out-of-date DJ controller's MIDI/output to his newer laptop + DJ software, used during real gigs for live signal processing — proves real-time audio systems + desktop integration chops, the exact skill they need.
+- Answer their 4 application questions explicitly (audio software experience / tech & frameworks / role / examples → the live demo).
+- Frame: existing-app audit/fix engagement → Michael's demo proves he can reason about and rebuild every subsystem they flagged, fast.
+- No em/en dashes anywhere.
+
+## Pipeline guidance (quality gates downstream must hit)
+- intake: capture all 9 "areas needing attention" + 4 application questions as explicit requirements in brief.json; note US-only freelancer constraint (Michael is US-based — fine).
+- planner: traceability matrix mapping each of the 9 areas to a demo feature or deck point; lock backend=none unless justified; honor caps (≤12 files, 3min build).
+- demo-builder: real Web Audio scheduling (lookahead, sample-accurate), no `setTimeout` for audio timing; no console errors on first paint; bundle real audio.
+- deploy/deploy-test: Vite `base` correct; `/work-samples/<slug>` 200; Playwright exercises play/seek/mute/solo/section-jump on the LIVE demo.
+- evaluator: enforce 6 hard gates; demo link in cover letter AND deck.
+
+## handoff
+- produced: run foundation — slug confirmed, demo concept (Web Audio worship multitrack playback engine), feature map of all 9 client pain points, backend=none default, Vite build form, design + proposal angle.
+- decisions: feature richness 10; hero = sample-accurate multitrack transport+mixer; 2 supporting = section nav/loop + click/count-in; frontend-only, bundle CC/free stems; stage-console dark design (not portfolio look).
+- next needs: intake → brief.json capturing the 9 areas + 4 application questions + US-only constraint; researcher → confirm free/CC stem source + pro worship-playback visual refs.
+- risks: stem audio licensing (have a synth-generated fallback); Web Audio sample-accuracy must use lookahead scheduler not timers; keep within ≤12 files / 3min build despite richness 10.

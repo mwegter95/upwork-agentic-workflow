@@ -1,0 +1,46 @@
+# Plan Eval — Sanctuary: Worship Playback Engine
+
+## Rubric Scorecard
+
+### 1. All client requirements covered?
+**PASS.**
+- 9 pain points (transport reliability, section nav, sync, click timing, guide cues, stem routing, mixer, count-in, engine stability) each have a named component, Web Audio implementation detail, and a traceability cell. Zero gaps.
+- 4 application questions (audio experience, tech stack, role, examples) noted as proposal deliverables, not demo scope — correct placement.
+- Deliverables 1–4 from the posting (codebase review analog, root cause identification, bug fixes, improvement recommendations) all map to demo features that demonstrate these competencies concretely.
+
+### 2. Right technologies chosen?
+**PASS.**
+- Web Audio API + Wilson scheduler (25ms/100ms lookahead): industry-standard, well-documented, sample-accurate. Correct for a playback-engine demo.
+- Vite 6 + React 18: appropriate for a frontend-only, static-deploy demo. Matches portfolio site stack (no friction).
+- OfflineAudioContext programmatic stem synthesis: resolves the licensing deadlock cleanly; synthesized oscillator stems (click transient, noise kick, triangle pad, sine bass, saw keys) are sufficient to demonstrate all 9 pain points — client is evaluating audio engineering skill, not audio production assets.
+- No backend: justified — nothing in the demo requires server-side compute.
+- One note: client's actual product is a **desktop** app; demo is browser-based. Acceptable — Web Audio API shares the same domain concepts (AudioContext, buffer scheduling, gain routing) and the cover letter must explicitly bridge this gap. Not a plan failure.
+
+### 3. Testing approach defined?
+**PARTIAL — acceptable for this stage.**
+- Quality gates listed: no console errors on first paint, all 9 pain points demonstrable in one session, build <3 min.
+- No unit tests for AudioEngine.js or Scheduler.js specified. For a richness-10 proposal demo, the deploy-test step (Playwright against the live site) covers functional verification. No hard fail here.
+
+### 4. Scope feasible at richness 10?
+**PASS with noted risk.**
+- 12 src files, all Web Audio, no backend = right complexity tier for a 1-session build.
+- OfflineAudioContext synthesis for 2 songs x 6 stems = 12 rendered buffers at runtime. This is the hardest single task: synthesizing convincing pad/keys/bass tones from oscillators. Risk: audio may sound crude. Plan acknowledges this only implicitly ("guide vocal = filtered sawtooth"). Demo-builder must tune envelopes carefully or the pitch will miss. Flagged as risk, not a plan gap.
+- A/B loop, exclusive-solo, seek+resume, count-in overlay, waveform canvas, beat-quantized cue cards: all independently implementable in the allocated files. Scope is tight but not overloaded.
+
+### 5. Design direction fit for the industry?
+**PASS — strong.**
+- Near-black (#0C0C0F) + warm amber (#F0A830) + electric blue (#4A9EFF): exact DAW/FOH console language. Matches MultiTracks and Loop Community Prime references from research.
+- Horizontal channel strips + pinned transport + waveform center: standard live playback layout; client will recognize it immediately.
+- Inter + JetBrains Mono: appropriate (UI labels vs. numeric readouts). No portfolio tokens imported.
+
+## Problems
+
+None blocking. One soft risk: the browser-vs-desktop platform gap should be explicitly addressed in the cover letter (Web Audio API = same primitives as native audio: AudioWorklet ≈ audio thread, AudioContext ≈ CoreAudio session). Plan does not specify this — proposal-writer must handle it.
+
+## handoff
+- produced: rubric evaluation of planner.out confirming all 5 criteria pass; one soft risk flagged for proposal-writer
+- decisions: plan approved as-is; no revision needed; programmatic OfflineAudioContext generation accepted; Wilson scheduler accepted
+- next needs: CEO review or direct handoff to demo-builder; proposal-writer must bridge browser-vs-desktop in cover letter
+- risks: synthesized oscillator stems may sound rudimentary — demo-builder should tune envelopes and use layered waveforms (not bare sine/saw) for realism; cover letter must address Web Audio API = native audio domain knowledge
+
+VERDICT: pass

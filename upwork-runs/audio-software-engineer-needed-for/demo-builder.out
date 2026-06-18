@@ -1,0 +1,94 @@
+# Demo Builder — Sanctuary Worship Playback Engine
+
+## What was built
+
+Full-featured Vite + React 18 worship playback app. All audio generated programmatically via Web Audio API (no sample files, no npm audio libs). Build: 215KB JS / 8KB CSS, zero console errors.
+
+**Deployed to:** `../michaelwegter.com/public/demos/audio-software-engineer-needed-for/`
+
+---
+
+## Features implemented (all working)
+
+### Audio Engine (`src/engine/AudioEngine.js`)
+- 6-stem OfflineAudioContext synthesis per song: Drums, Bass, Keys, Pads, Click, Guide
+- Drum machine: pitch-drop kick (sine 180->40Hz), bandpass filtered noise snare, HPF hihat (closed + open), 8th-note pattern
+- Bass: dual-osc (sine + triangle), root-P5-root-root quarter-note walking pattern
+- Keys: 3-osc triangle chord (root8va, M3, P5) with LPF + ADSR envelope, beats 1+3
+- Pads: 4 detuned sawtoths (-14,-4,+4,+14 cents), LPF 900Hz, tremolo LFO, slow attack/release (most important for worship feel)
+- Click: sharp sine transient (1300Hz accent, 900Hz beat), 25ms duration
+- Guide: sawtooth with vibrato LFO + bandpass 700Hz (vocal-like), melodic motif per bar
+- Per-stem signal chain: AudioBufferSourceNode -> GainNode (vol) -> StereoPannerNode -> GainNode (mute) -> masterGain -> destination
+- `source.loop=true`, loop offset via `start(t, offset % buffer.duration)` for sample-accurate seek
+- Pause/resume via `pauseOffset` accumulation; seek tears and restarts sources
+
+### Scheduler (`src/engine/Scheduler.js`)
+- Chris Wilson 25ms/100ms lookahead scheduler
+- Beat callbacks drive Transport beat-flash indicator
+- Cue dispatch: compares audioCtx time to cue timestamps, fires once per cue, resets on seek
+
+### Songs (`src/data/songs.js`)
+3 songs with full section/cue data:
+1. **Endless Grace** (A, 72 BPM) — 9 sections, 200s
+2. **Risen King** (G, 132 BPM) — 8 sections, 95s
+3. **Holy Ground** (E, 76 BPM) — 8 sections, 190s
+ROOT_HZ: A=110, G=98, E=82.4
+
+### Transport (`src/components/Transport.jsx`)
+- Play/Pause toggle, Stop, Count-in play button
+- Count-in: renders offline click buffer, plays on live context, visual overlay (4->3->2->1->GO countdown)
+- Beat flash LED (amber accent on beat 1, dim on beats 2-4)
+- Time display (M:SS.d format, turns amber when playing)
+- BPM + key + time signature display
+- Master volume fader
+- Keyboard: Space = play/pause, Escape = stop
+
+### SongSelector (`src/components/SongSelector.jsx`)
+- Chip buttons showing title, key, BPM, time sig
+- Triggers full stem re-render with progress bar
+
+### SectionNav (`src/components/SectionNav.jsx`)
+- Clickable section chips; active chip styled with section color
+- A/B loop: [A button sets loop-in at current section start, B] sets loop-out at next section end
+- LOOP toggle; loop enforced in AudioEngine rAF tick
+
+### Waveform (`src/components/Waveform.jsx`)
+- Canvas fills grid row (ResizeObserver syncs canvas dimensions)
+- Background + loop region highlight (amber) + section markers (colored vertical lines + labels)
+- Waveform drawn from pads AudioBuffer (or drums fallback); downsampled to canvas width
+- Amber playhead line with glow shadow; updates every rAF frame
+- Click-to-seek anywhere on canvas
+- Loading overlay: spinner + "Generating audio..." + progress bar (per-stem, 0-100%)
+- Guide cue overlay: text slides in at cue timestamps, fades after 3.5s
+
+### Mixer (`src/components/Mixer.jsx` + `ChannelStrip.jsx`)
+- 6 channel strips: color bar, emoji icon, colored label
+- Vertical fader (volume 0-100), pan knob (-100 to +100 = -1.0 to 1.0 StereoPanner)
+- M (mute) and S (solo) buttons with danger/solo color states
+- Mute + solo interact correctly: muted channels stay quiet even when not soloed; any solo silences all non-soloed channels
+
+### Design (`src/styles/app.css`)
+- Grid: 64px Transport | 48px SongSelector | 46px SectionNav | 1fr Waveform | 210px Mixer
+- Dark professional palette: bg #0C0C0F, surface hierarchy, amber accent, blue focus
+- Google Fonts: Inter + JetBrains Mono
+- No em/en dashes in user-visible text (fixed in songs.js cues)
+
+---
+
+## Build artifacts
+```
+demo-src/dist/
+  index.html          0.89 kB
+  assets/index-*.css  8.41 kB (gzip: 2.08 kB)
+  assets/index-*.js  215.63 kB (gzip: 67.45 kB)
+```
+
+Copied to: `../michaelwegter.com/public/demos/audio-software-engineer-needed-for/`
+
+---
+
+## handoff
+- produced: complete Vite+React worship playback app; 3 songs; 6-stem Web Audio synthesis; mixer, transport, waveform, section nav, A/B loop, count-in, cue cards; built and deployed to portfolio demos dir
+- decisions: 3 songs (added Holy Ground in E/76bpm) to push richness-10; ROOT_HZ updated with E:82.4; all synthesis uses existing researcher spec params; no em-dashes in user-visible text
+- next needs: deploy step to push michaelwegter.com to GitHub Pages (git commit + push main); verify live URL https://michaelwegter.com/demos/audio-software-engineer-needed-for/ returns 200
+- risks: iOS Safari AudioContext requires user gesture (handled in engine._ensureContext() via resume + first-interaction); OfflineAudioContext render of 6 stems for song 3 (190s loops = ~25s each buffer at 44100) may take 2-3s on slow machines (loading overlay covers this)

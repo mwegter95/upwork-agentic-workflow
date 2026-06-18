@@ -1,0 +1,73 @@
+# Pre-Researcher — Sanctuary Worship Playback Engine
+
+## Priority 1: Stem Audio Source
+
+**Verdict: Activate programmatic fallback. No suitable no-login, permissive CC stems found.**
+
+Investigated sources:
+- **Tommy Walker Ministries** (tommywalkerministries.org/multitracksmenu): Free tracks but require cart checkout (account/email). One direct Dropbox URL found for "He Is The Lord (Isaiah 40)" but it contains only click+cues WAV/MP3, not full stem set (drums/bass/keys/pads). Not usable as-is.
+- **WorshipBackingBand**: HTTP 403 — requires login.
+- **Cambridge-MT**: Massive mixing library (fully CC for practice use) but search page returned 403; genre skews pop/rock, no confirmed worship/CCM stem packs with separated drums+bass+keys+pads.
+- **Freesound.org**: No complete multitrack worship packs confirmed — individual samples only.
+- **MxU / LoopCommunity / PraiseCharts**: All require account signup before download.
+
+**Recommendation:** Use the programmatic OfflineAudioContext fallback as specified in plan.md. This eliminates all licensing risk and is fully self-contained. Song 2 can share the same generated stems with different BPM/section/cue metadata. Do NOT block build on external stems.
+
+If a real audio file is desired: the Tommy Walker "He Is The Lord (Isaiah 40)" click+cues Dropbox (`https://www.dropbox.com/scl/fo/0h4l7cvbmyjig05laclqu/h?dl=0&rlkey=ph2mb5zugakzzsxyvdp7ygopn`) can provide a realistic click reference, but other stems must be programmatic.
+
+---
+
+## Priority 2: Visual Design Refs
+
+### MultiTracks Playback (iOS/Mac app)
+- **Mixer**: Per-track volume slider, mute, solo. "Auto Fade" auto-reduces non-click/guide tracks. "Auto Pan" separates click/guide to separate output channels.
+- **Sections**: Named section chips in song order; "Live ReOrder" lets you drag sections during performance (double-tap). "Dynamic Guide Cues" auto-update when arrangement changes.
+- **Transport**: Live Crossfade between songs/pads; transition modes (AutoLink, Overlap, Crossfade); configurable start/end points with optional 5s fade.
+- **Loop**: Live Loop + Infinite Loop with MIDI controller assignment; MIDI mapping to jump to any section.
+- **Key UX pattern**: Section chips are primary navigation; mixer is horizontal strips below timeline; transport pinned top.
+
+### Loop Community Prime (iOS/Mac app)
+- **Mixer**: Unlimited tracks, per-track volume/mute/solo. Audio interface routing (each stem to a separate physical output).
+- **Sections**: Section markers built-in; section looping (loop any section). All purchased split tracks auto-include section markers.
+- **Click/Cue**: Multiple click metronome sounds; cue voices in English, Spanish, Portuguese.
+- **Arrangement**: Drag-and-drop section reorder; setlist management with saved song arrangements.
+- **Key UX pattern**: Dark professional aesthetic; section chips across top of song view; mixer strips below.
+
+**Design synthesis for Sanctuary:** Both apps use dark console aesthetic (confirms plan tokens), horizontal channel strips at bottom, section chips as primary navigation above waveform, transport pinned top. Plan layout is correct.
+
+---
+
+## Priority 3: Technical Confirmation
+
+### Web Audio Sample-Lock (Q5)
+**CONFIRMED.** Multiple `AudioBufferSourceNode.start(t)` calls with the same `t = audioCtx.currentTime` from within the same JavaScript frame are processed in the same audio rendering block (~128 samples / ~2.9ms at 44.1kHz). The audio graph processes in discrete 128-sample blocks; any `.start()` calls scheduled for the same block boundary fire simultaneously to sub-sample precision.
+
+**Caveat:** `audioCtx.currentTime` is quantized — it advances in ~2.9ms steps, always reporting the start of the NEXT block. All `.start()` calls in the same JS frame see the same `currentTime` value and schedule to the same block. Practical effect: guaranteed sample-locked across Chrome, Safari, Firefox on modern hardware. No per-browser caveats beyond the block-quantization behavior (same on all engines).
+
+### Lookahead Scheduler Reference (Q6)
+**Chris Wilson's "A Tale of Two Clocks"** — https://web.dev/articles/audio-scheduling — is the canonical reference. Parameters: **25ms setTimeout interval, 100ms lookahead window**. Pattern: each tick schedules any events within the next 100ms into the audio graph using `audioCtx.currentTime`-based absolute timestamps; `setTimeout` only drives the check loop, never the actual audio timing.
+
+IRCAM WebAudio Tutorials (https://ircam-ismm.github.io/webaudio-tutorials/scheduling/timing-and-scheduling.html) is an updated reference with the same pattern (period 50ms / lookahead 100ms variant) and explicitly cites Wilson's article. No npm package needed — ~50 lines of vanilla JS per the Wilson article; demo-builder should implement `Scheduler.js` following this pattern directly.
+
+---
+
+## Summary for Planner
+
+| Question | Answer |
+|---|---|
+| Q1: Free CC stems URL + license | None found without login. Use programmatic fallback. |
+| Q2: Second free song? | Same answer — generate programmatically, different metadata. |
+| Q3: MultiTracks UI patterns | Horizontal strips, section chips nav, transport top, dark DAW aesthetic — confirms plan layout exactly. |
+| Q4: Loop Community Prime UI | Same layout conventions; section markers + looping; per-track mute/solo/volume; multiple click sounds. |
+| Q5: Web Audio sample-lock? | Yes, confirmed. Same-frame `.start(currentTime)` = same audio block = sample-locked. |
+| Q6: Scheduler reference? | Chris Wilson "A Tale of Two Clocks" https://web.dev/articles/audio-scheduling — 25ms interval / 100ms lookahead. |
+
+**Plan is unblocked. Activate programmatic audio fallback for stems. All 6 research questions answered.**
+
+---
+
+## handoff
+- produced: answers to all 6 planner research questions; stem licensing verdict (programmatic fallback); MultiTracks + LoopCommunity UI patterns; Web Audio sync + scheduler confirmation
+- decisions: no free no-login worship stems found — programmatic OfflineAudioContext fallback is the build path; Wilson scheduler (25ms/100ms) is the Scheduler.js reference
+- next needs: planner integrates findings, marks plan ready for demo-builder; demo-builder implements Scheduler.js per Wilson pattern; Song 2 reuses programmatic stems with different metadata
+- risks: Tommy Walker Dropbox link for click+cues could theoretically be used as one real audio file but license is unconfirmed (site says "free" without explicit CC terms) — safest to generate everything; OfflineAudioContext approach fully eliminates this uncertainty

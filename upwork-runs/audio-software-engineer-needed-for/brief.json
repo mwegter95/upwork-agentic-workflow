@@ -1,0 +1,69 @@
+{
+  "posting": {
+    "title": "Audio Software Engineer Needed for Worship Playback Platform",
+    "platform": "Upwork",
+    "clientContext": "Worship music team seeking audio engineer to audit, fix, and stabilize existing desktop music playback application",
+    "engagementType": "audit + bug-fix (existing app, not greenfield)",
+    "scope": "Initial engagement: review codebase, identify issues, fix high-priority bugs, recommend improvements"
+  },
+  "explicit_requirements": {
+    "nine_pain_points": [
+      "Playback transport reliability",
+      "Section navigation behavior",
+      "Audio synchronization",
+      "Click track timing",
+      "Guide cue timing and triggering",
+      "Stem routing and playback",
+      "Mixer channel behavior",
+      "Count-in functionality",
+      "Audio engine stability"
+    ],
+    "four_application_questions": [
+      "Have you worked on audio software, music applications, playback systems, DAWs, audio plugins, or live performance software?",
+      "What technologies and frameworks were used?",
+      "What was your role on the project?",
+      "Please provide examples or links if available"
+    ]
+  },
+  "michael_credentials_to_emphasize": {
+    "education": "Bachelor's degree in Music from St. Olaf College — formally trained musician",
+    "daw_experience": "Using DAWs since 5th grade — decades of hands-on audio production and musical knowledge",
+    "live_audio_professional": "Working wedding DJ with obsessive attention to live audio quality and perfect sound",
+    "real_time_audio_systems": "Built production-ready Python MIDI/audio bridge for live DJ signal processing: bridges out-of-date DJ controller MIDI/output to newer laptop and DJ software, actively used during live gigs, proves real-time audio system and desktop integration skills",
+    "positioning": "Musician-engineer hybrid: combines formal music training, deep DAW expertise, live performance experience, and production-quality software engineering — exactly what the client needs"
+  },
+  "demo_brief": {
+    "concept": "Browser-based worship multitrack playback engine (Web Audio API) loading real free/CC-licensed worship stems, demonstrating mastery of every pain point the client listed",
+    "hero_feature": "Sample-accurate multitrack transport + mixer: rock-solid play/pause/stop/seek with sample-accurate Web Audio scheduling, per-stem channel routing (drums/bass/keys/vocals/click/guide), per-channel volume/mute/solo/pan/output, master bus",
+    "supporting_features": [
+      "Section navigation: arrangement markers (Intro/Verse/Chorus/Bridge/Tag), click-to-jump, loop a section",
+      "Click track + count-in: generated metronome locked to tempo map, bar-1 accent, configurable count-in bars before playback"
+    ],
+    "tertiary_if_budget_allows": "Guide cues: spoken or visual cues ('Big finish', 'To the chorus') fired at scheduled beats",
+    "design": "Pro stage/console aesthetic (dark near-black background, high-contrast meters, amber/teal LED accent glow, monospace numerics). Reference Ableton Live, Loop Community Prime, MultiTracks Playback. NOT michaelwegter.com portfolio style.",
+    "audio_sources": "Bundle CC-licensed free worship/instrumental stems or generate via synth to avoid licensing risk",
+    "build_form": "Vite app (complexity justified by audio scheduling + mixer UI), source at upwork-runs/audio-software-engineer-needed-for/demo-src/, base='/demos/audio-software-engineer-needed-for/', copy dist/* to public demos folder. Frontend-only (no backend by default).",
+    "feature_richness": 10,
+    "richness_definition": "10/10 = genuinely full-featured, production-quality app with several working features, polished, ready to impress"
+  },
+  "quality_gates": {
+    "gate_1": "Every explicit requirement (9 pain points + 4 application questions) addressed in cover letter AND represented in demo or deck",
+    "gate_2": "Demo builds and loads with no console errors on first paint; sample-accurate Web Audio scheduling (lookahead scheduler, not setTimeout); sync verified visually",
+    "gate_3": "Demo URL /demos/audio-software-engineer-needed-for/ resolves locally and after deploy /work-samples/audio-software-engineer-needed-for returns 200",
+    "gate_4": "Demo link appears in cover letter AND deck",
+    "gate_5": "Cohesive, bespoke design fit for pro worship-playback aesthetic (not portfolio look); no em/en dashes in any copy",
+    "gate_6": "Traceability matrix mapping all 9 pain points to concrete demo features or deck points"
+  },
+  "constraints": {
+    "us_only": "Michael is US-based, OK",
+    "build_caps": "Demo touches at most 12 files; build timeout 3 minutes; stays within feature richness 10 without exceeding scope",
+    "no_dashes": "Never use em-dashes or en-dashes in cover letter, deck, one-pager, or any prose. Use commas, periods, or rewrite."
+  },
+  "deliverables": {
+    "demo": "Live, working worship playback engine at /work-samples/audio-software-engineer-needed-for",
+    "cover_letter": "Address client's 4 application questions explicitly via Michael's credentials and live demo link",
+    "one_pager": "HTML, cohesive design, demo link, feature overview",
+    "deck": "PowerPoint or PDF, Michael's background + demo link + feature traceability to the 9 pain points"
+  },
+  "proposal_narrative": "Michael's proposal is NOT 'I can code' but 'I am a musician-engineer with a decade+ of DAW expertise, live audio professional chops, real-time system experience, and production-software skills—this worship-playback audit is exactly my sweet spot.' The live demo proves he understands the domain deeply: every feature he built addresses one of their 9 pain points, proving he can reason about multitrack playback architecture end to end. The MIDI bridge example shows he ships production audio systems."
+}

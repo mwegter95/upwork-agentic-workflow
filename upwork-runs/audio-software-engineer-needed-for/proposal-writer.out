@@ -1,0 +1,46 @@
+# Proposal Writer — audio-software-engineer-needed-for
+
+Three deliverables written to `proposal/`, styled with the Sanctuary demo's worship stage-console palette (bg #0C0C0F, amber #F59E0B accent, surface hierarchy, Inter + JetBrains Mono). Not michaelwegter.com's look.
+
+## Files written
+
+- `proposal/cover-letter.md` — In Michael's voice per `reference/brand-voice.md`. Leads with the live demo link, then answers all four application questions explicitly and concretely. Structure: hook (their problem + outcome), demo paragraph, engagement approach, then the four Q&A blocks with honest specific answers. No em/en dashes (verified, 0 matches).
+- `proposal/one-pager.html` — Self-contained dark worship-console HTML one-pager (amber/white/muted palette, Inter + JetBrains Mono, Google Fonts CDN). Sections: eyebrow + name header, demo hero with live screenshot and CTA button, 9-pain-point coverage grid (all green checkmarks), three-up screenshot strip, callout quote, four credential cards (music degree, DJ, MIDI bridge, engineering career), tech stack tag cloud (audio-relevant highlighted in amber), four-step audit approach, footer CTA linking both the demo and the work-samples route. No em/en dashes (verified, 0 matches).
+- `proposal/make_deck.py` — python-pptx generator. 8-slide 16:9 deck, same dark/amber palette.
+- `proposal/deck.pptx` — Generated successfully (`python3 make_deck.py`). 8 slides, 661 KB.
+
+## Deck slide summary
+
+| # | Slide |
+|---|-------|
+| 1 | Title: "Sanctuary" + name + demo URL + playback-active screenshot |
+| 2 | Nine pain points grid with green checkmarks (3x3) |
+| 3 | Live demo full-width screenshot + feature list + URL |
+| 4 | Two screenshots side by side (section nav + mixer stems) |
+| 5 | Music background (4 credential cards + waveform screenshot) |
+| 6 | Engineering background 2x2 grid (Optum, US Bank, MIDI bridge, Sanctuary) |
+| 7 | Audit approach (4 numbered steps: Review/Diagnose/Fix/Recommend) |
+| 8 | CTA with demo + portfolio links, name, and playback screenshot |
+
+## Four application questions, explicitly answered
+
+1. **Audio experience (yes):** St. Olaf Music BA, DAWs since 5th grade (15+ yrs), wedding DJ, Python MIDI bridge (production, live gigs). Answer in cover letter paragraph 1 and one-pager credential cards.
+2. **Technologies:** Python (rtmidi), Web Audio API (AudioContext, OfflineAudioContext, Wilson scheduler), Ableton/Logic/Pro Tools, plus engineering stack (React, Angular, .NET, Python, SQL). Answered explicitly in Q2 block.
+3. **Role:** Sole developer and architect on personal audio projects; SME on 60k-line US Bank platform. Answered in Q3 block.
+4. **Links:** demo + portfolio, both in cover letter Q4 block and as CTA in every deliverable.
+
+## Links embedded (consistent across all deliverables)
+
+- Demo: `https://michaelwegter.com/demos/audio-software-engineer-needed-for/`
+- Portfolio: `https://michaelwegter.com/work-samples`
+- Work-sample route: `https://michaelwegter.com/work-samples/audio-software-engineer-needed-for`
+
+## Dash check
+
+`grep -c "—|–"` on all three prose files: 0/0/0. Clean.
+
+## handoff
+- produced: cover-letter.md, one-pager.html, make_deck.py, deck.pptx (8 slides, 661 KB); all in proposal/
+- decisions: worship stage-console dark palette throughout; all 4 application questions answered explicitly; no em/en dashes; Michael's musician-engineer identity centered over generic dev pitch
+- next needs: evaluator checks all 9 pain points covered in cover letter + deck, demo link present in both, design bespoke (not portfolio look), no dashes; also checks gate_6 traceability matrix
+- risks: deck.pptx font rendering depends on host system (Inter/JetBrains Mono may fallback on Windows); visual layout correct but font substitution possible when opened in PowerPoint

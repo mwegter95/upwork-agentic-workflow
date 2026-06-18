@@ -1,0 +1,25 @@
+# Deploy — audio-software-engineer-needed-for
+
+## Actions taken
+
+### michaelwegter.com
+- Staged: `public/demos/audio-software-engineer-needed-for/` (index.html, favicon.svg, icons.svg, assets/index-CZdTz6sh.css, assets/index-DyWHdn_i.js) + `src/data/workSamples.js` (id 12 entry)
+- Committed: `fb27003` "Add Sanctuary Playback Engine demo (worship audio platform)"
+- Pushed: `main` → `origin/main` ✓
+- GH Actions run 27788637069: Build 20s ✓ + Deploy 9s ✓ (completed)
+
+### mw-backend
+No blueprint added. Demo is self-contained (Web Audio API, no backend calls). No mw-backend push required.
+
+## Live verification
+| URL | Status |
+|-----|--------|
+| `https://michaelwegter.com/demos/audio-software-engineer-needed-for/` | 200 ✓ |
+| `https://api.michaelwegter.com/health` | `{"status":"ok"}` ✓ |
+| `https://michaelwegter.com/work-samples/audio-software-engineer-needed-for` | 404 (expected — GH Pages SPA, all `/work-samples/<slug>` routes return 404 to curl; browser SPA redirect via 404.html handles it) ✓ |
+
+## handoff
+- produced: demo live at `https://michaelwegter.com/demos/audio-software-engineer-needed-for/`; registry entry live at `/work-samples/audio-software-engineer-needed-for`; GH Pages deploy confirmed complete.
+- decisions: no mw-backend push — demo is fully self-contained Web Audio API app, no server-side routes needed.
+- next needs: deploy-test — run Playwright against live site: transport play/pause/stop, section nav seek, mixer mute/solo, count-in overlay (4-3-2-1-GO), A/B loop, waveform scrubber click-to-seek; confirm no console errors on first paint; confirm AudioContext gesture-resume works after user click.
+- risks: AudioContext may stay suspended on first paint until user gesture — deploy-test must click play before asserting audio state. Song offline render (~2-3s) covered by loading overlay but verify overlay dismisses before testing playback.

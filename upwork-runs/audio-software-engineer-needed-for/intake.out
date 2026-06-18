@@ -1,0 +1,46 @@
+# Intake — Audio Software Engineer / Worship Playback Platform
+
+## Summary
+Parsed Upwork posting (audit + fix engagement on existing worship-playback app) + Michael's background into structured brief.json. Posting specifies 9 explicit pain points (playback transport, section nav, sync, click timing, guide cues, stem routing, mixer behavior, count-in, engine stability) and asks 4 application questions. Michael's edge: B.A. Music (St. Olaf), DAWs since 5th grade, working wedding DJ with obsessive audio quality focus, production-ready MIDI/audio bridge in Python used live in DJ gigs. Demo concept: browser-based Web Audio worship multitrack playback engine at richness 10, mapping all 9 pain points to concrete features (hero: sample-accurate transport+mixer; supporting: section nav/loop, click/count-in).
+
+## Explicit requirements captured
+- **9 pain points** (all mapped to demo features in orchestrator):
+  1. Playback transport reliability → sample-accurate Web Audio scheduler
+  2. Section navigation → arrangement markers + click-to-jump + loop
+  3. Audio synchronization → sample-locked stem start
+  4. Click track timing → metronome locked to tempo
+  5. Guide cue timing → scheduled beat-triggered cues
+  6. Stem routing → per-stem channels (drums/bass/keys/vocals/click/guide)
+  7. Mixer channel behavior → volume/mute/solo/pan/output per channel
+  8. Count-in → configurable bars before playback
+  9. Audio engine stability → clean context lifecycle, no clicks/pops
+
+- **4 application questions** (proposal must answer each explicitly):
+  1. Audio software/DAWs/live performance experience? → Yes: music degree + 20y DAW + live DJ + MIDI bridge
+  2. Technologies + frameworks? → Will detail in proposal + demo showcase
+  3. Your role? → Built, shipped, maintain production audio systems
+  4. Examples/links? → Live demo + MIDI bridge example in proposal
+
+## Key decisions locked in
+- **Feature richness 10**: full production-quality app with multiple polished features
+- **Backend**: None (frontend-only, bundle CC-licensed stems)
+- **Build form**: Vite app (justified by audio scheduling complexity + mixer UI)
+- **Design**: Dark stage-console aesthetic (Ableton Live / Loop Community Prime / MultiTracks reference), NOT portfolio mustard/cyan
+- **Audio sources**: Free/CC-licensed worship stems or synth-generated to avoid licensing risk
+- **6 hard gates** defined: every pain point addressed + hero feature demonstrated + design coherent + demo link in cover letter + deck + traceability matrix
+
+## Next needs
+- **Researcher**: Confirm free/CC-licensed worship stem source (cambridge-mt multitracks, free worship loop packs, or generate synth as fallback); pull real pro worship-playback product visuals (Ableton, Loop Community, MultiTracks) to ground design direction.
+- **Planner**: Lock traceability matrix (9 pain points → demo features/deck points); confirm ≤12 files + 3min build is feasible with richness 10; stage-console design direction.
+- **Demo-builder**: Implement sample-accurate Web Audio scheduler (lookahead, not setTimeout); bundle real audio; no console errors on first paint; verify sync visually (waveform + playhead).
+
+## Risks
+- Stem audio licensing: have synth fallback ready if free/CC sourcing stalls
+- Web Audio sample-accuracy: lookahead scheduler essential, setTimeout won't cut it for live playback
+- Richness 10 scope creep: enforce ≤12 files + 3min build despite ambition
+
+## handoff
+- produced: brief.json capturing all 9 pain points + 4 application questions + Michael's credentials (music degree, 20y DAW, wedding DJ, MIDI bridge), richness 10 target, design direction (stage console), 6 hard gates
+- decisions: frontend-only, no backend; Vite build; dark stage-console aesthetic; demo maps all 9 pain points to features; proposal emphasizes musician-engineer hybrid positioning
+- next needs: researcher → free stem source + pro playback product refs; planner → traceability matrix + build feasibility; demo-builder → sample-accurate Web Audio scheduler + real audio
+- risks: stem licensing (have synth fallback); Web Audio scheduler must be lookahead not setTimeout; richness 10 scope discipline within ≤12 files + 3min

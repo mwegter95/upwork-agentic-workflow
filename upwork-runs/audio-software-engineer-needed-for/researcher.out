@@ -1,0 +1,559 @@
+# Researcher — Sanctuary Worship Playback Engine (Build-Prep)
+
+Plan is locked (CEO: PASS). This file is scaffold-ready spec for demo-builder: exact commands, library APIs, song data, synthesis params, design tokens. Zero open questions.
+
+---
+
+## 1. Scaffold Commands
+
+```bash
+# Run from upwork-runs/audio-software-engineer-needed-for/
+npm create vite@latest demo-src -- --template react
+cd demo-src
+npm install
+```
+
+No extra audio npm packages. Web Audio API is browser-native. Only deps: `react`, `react-dom`, `vite`, `@vitejs/plugin-react`.
+
+**vite.config.js** (exact):
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+export default defineConfig({
+  plugins: [react()],
+  base: '/demos/audio-software-engineer-needed-for/',
+})
+```
+
+**Build + deploy path:**
+```bash
+npm run build
+# Then copy dist/* to:
+# ../../../michaelwegter.com/public/demos/audio-software-engineer-needed-for/
+```
+
+---
+
+## 2. Web Audio API — Key Patterns
+
+### Sample-locked multistart
+```js
+const t = audioCtx.currentTime + 0.05;  // small scheduling offset
+stems.forEach(s => s.source.start(t, pauseOffset % s.buffer.duration));
+```
+
+### Per-stem signal chain
+```
+AudioBufferSourceNode (loop=true)
+  → GainNode (volume, 0–1)
+  → StereoPannerNode (pan, -1 to +1)
+  → GainNode (muteGain: 1 or 0)
+  → masterGainNode
+  → audioCtx.destination
+```
+
+### Pause/Resume
+```js
+// Pause: record offset, suspend context
+pauseOffset += audioCtx.currentTime - playStartTime;
+audioCtx.suspend();
+
+// Resume: resume context, mark new playStartTime
+audioCtx.resume();
+playStartTime = audioCtx.currentTime;
+```
+
+### Seek (looped buffers)
+```js
+// Stop all sources, recalculate loop offset, restart
+stems.forEach(s => { s.source.stop(); s.source.disconnect(); });
+pauseOffset = seekSec;
+// restart: source.start(t, seekSec % buffer.duration)
+```
+
+### Wilson Scheduler (Scheduler.js, ~50 lines)
+```js
+// Ref: https://web.dev/articles/audio-scheduling
+const SCHEDULE_AHEAD = 0.1;   // 100ms lookahead
+const TICK_INTERVAL = 25;     // 25ms setTimeout
+
+class Scheduler {
+  constructor(audioCtx, bpm, onBeat) { ... }
+  start() { this._nextBeatTime = this.audioCtx.currentTime; this._tick(); }
+  _tick() {
+    while (this._nextBeatTime < this.audioCtx.currentTime + SCHEDULE_AHEAD) {
+      this.onBeat(this._currentBeat, this._nextBeatTime);
+      this._nextBeatTime += 60 / this.bpm;
+      this._currentBeat++;
+    }
+    this._timerId = setTimeout(() => this._tick(), TICK_INTERVAL);
+  }
+  stop() { clearTimeout(this._timerId); }
+}
+// onBeat callback: fires cue card display via scheduler (timeSec match),
+// drives metronome flash in Transport via postMessage or ref callback
+```
+
+### OfflineAudioContext stem generation
+```js
+async function renderStem(type, song, sampleRate = 44100) {
+  const dur = song.loopDuration;  // barDuration * loopBars
+  const offCtx = new OfflineAudioContext(2, Math.ceil(sampleRate * dur), sampleRate);
+  // ... build oscillator graph on offCtx ...
+  return offCtx.startRendering(); // returns Promise<AudioBuffer>
+}
+```
+
+---
+
+## 3. Song Data (ready-to-copy `songs.js`)
+
+```js
+// All section timings derived from bpm: barDur = 60/bpm*4
+// loopDuration = barDur * 8 (8-bar loops, source.loop = true)
+
+export const SONGS = [
+  {
+    id: 1,
+    slug: 'endless-grace',
+    title: 'Endless Grace',
+    key: 'A',
+    bpm: 72,
+    timeSignature: [4, 4],
+    barDuration: 3.333,    // 60/72*4
+    loopDuration: 26.667,  // 8 bars
+    totalDuration: 200,    // 60 bars
+    sections: [
+      { name: 'Intro',    startSec: 0,      color: '#4A9EFF' },
+      { name: 'Verse 1',  startSec: 13.33,  color: '#8A8A95' },
+      { name: 'Pre-C',    startSec: 40.0,   color: '#F0A830' },
+      { name: 'Chorus',   startSec: 53.33,  color: '#F0A830' },
+      { name: 'Verse 2',  startSec: 80.0,   color: '#8A8A95' },
+      { name: 'Pre-C',    startSec: 106.67, color: '#F0A830' },
+      { name: 'Chorus',   startSec: 120.0,  color: '#F0A830' },
+      { name: 'Bridge',   startSec: 146.67, color: '#4A9EFF' },
+      { name: 'Outro',    startSec: 173.33, color: '#8A8A95' },
+    ],
+    cues: [
+      { timeSec: 0,      text: 'Count in...' },
+      { timeSec: 13.33,  text: 'Your grace is endless, your love remains' },
+      { timeSec: 40.0,   text: 'Who am I that you would care?' },
+      { timeSec: 53.33,  text: 'Endless grace, unending love' },
+      { timeSec: 80.0,   text: 'In every season, still you hold' },
+      { timeSec: 106.67, text: 'Who am I that you would care?' },
+      { timeSec: 120.0,  text: 'Endless grace, unending love' },
+      { timeSec: 146.67, text: 'Nothing can separate us now' },
+      { timeSec: 173.33, text: 'Repeat and close...' },
+    ],
+    synthKey: 'A',
+  },
+  {
+    id: 2,
+    slug: 'risen-king',
+    title: 'Risen King',
+    key: 'G',
+    bpm: 132,
+    timeSignature: [4, 4],
+    barDuration: 1.818,    // 60/132*4
+    loopDuration: 14.545,  // 8 bars
+    totalDuration: 95,     // 52 bars
+    sections: [
+      { name: 'Intro',        startSec: 0,     color: '#4A9EFF' },
+      { name: 'Verse 1',      startSec: 7.27,  color: '#8A8A95' },
+      { name: 'Pre-C',        startSec: 21.82, color: '#F0A830' },
+      { name: 'Chorus',       startSec: 29.09, color: '#F0A830' },
+      { name: 'Verse 2',      startSec: 43.64, color: '#8A8A95' },
+      { name: 'Bridge',       startSec: 58.18, color: '#4A9EFF' },
+      { name: 'Final Chorus', startSec: 72.73, color: '#F0C030' },
+      { name: 'Outro',        startSec: 87.27, color: '#8A8A95' },
+    ],
+    cues: [
+      { timeSec: 0,     text: 'Count in...' },
+      { timeSec: 7.27,  text: 'Morning light breaks over every chain' },
+      { timeSec: 21.82, text: 'He is alive...' },
+      { timeSec: 29.09, text: 'Risen King, death is undone!' },
+      { timeSec: 43.64, text: 'Every grave gives up its ground' },
+      { timeSec: 58.18, text: 'Bridge, build it out!' },
+      { timeSec: 72.73, text: 'BIG FINISH, all out!' },
+      { timeSec: 87.27, text: 'Tag it out...' },
+    ],
+    synthKey: 'G',
+  },
+];
+```
+
+---
+
+## 4. Audio Synthesis Params (per stem — CEO requirement: MUST sound musical)
+
+All stems generated with `OfflineAudioContext` for each song at runtime (on first load). 8-bar loop buffers. Rendered in-memory, no files.
+
+### Root frequencies by key
+```js
+const ROOT_HZ = { A: 110, G: 98 };   // A2, G2
+const INTERVALS = {  // multipliers from root
+  M3: 1.2599, P5: 1.4983, M7: 1.8877, oct: 2.0
+};
+// Song 1 A: root=110, M3=138.6, P5=164.8, oct=220
+// Song 2 G: root=98,  M3=123.4, P5=146.8, oct=196
+```
+
+### DRUMS (generate as sequenced events in OfflineAudioContext)
+
+```js
+// Pattern per bar: kick beats 1+3, snare beats 2+4, closed-hat all 8ths
+function schedKick(offCtx, t, accent=1.0) {
+  const osc = offCtx.createOscillator();
+  const gain = offCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(180, t);
+  osc.frequency.exponentialRampToValueAtTime(40, t + 0.28);
+  gain.gain.setValueAtTime(accent * 0.85, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.30);
+  osc.connect(gain); gain.connect(offCtx.destination);
+  osc.start(t); osc.stop(t + 0.32);
+}
+
+function schedSnare(offCtx, t) {
+  const buf = generateNoiseBuffer(offCtx, 0.18);
+  const src = offCtx.createBufferSource();
+  src.buffer = buf;
+  const bpf = offCtx.createBiquadFilter();
+  bpf.type = 'bandpass'; bpf.frequency.value = 1500; bpf.Q.value = 1.8;
+  const gain = offCtx.createGain();
+  gain.gain.setValueAtTime(0.55, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+  src.connect(bpf); bpf.connect(gain); gain.connect(offCtx.destination);
+  src.start(t); src.stop(t + 0.18);
+}
+
+function schedHihat(offCtx, t, open=false) {
+  const buf = generateNoiseBuffer(offCtx, open ? 0.32 : 0.05);
+  const src = offCtx.createBufferSource();
+  src.buffer = buf;
+  const hpf = offCtx.createBiquadFilter();
+  hpf.type = 'highpass'; hpf.frequency.value = open ? 7000 : 9000;
+  const gain = offCtx.createGain();
+  const decayEnd = open ? 0.28 : 0.04;
+  gain.gain.setValueAtTime(open ? 0.18 : 0.22, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + decayEnd);
+  src.connect(hpf); hpf.connect(gain); gain.connect(offCtx.destination);
+  src.start(t); src.stop(t + decayEnd + 0.01);
+}
+
+function generateNoiseBuffer(offCtx, dur) {
+  const frames = Math.ceil(offCtx.sampleRate * dur);
+  const buf = offCtx.createBuffer(1, frames, offCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < frames; i++) data[i] = Math.random() * 2 - 1;
+  return buf;
+}
+// Loop: for each bar, schedule kick+snare+hats per beat pattern
+// Beat-1 kick accent: accent=1.0; beat-3: accent=0.8
+```
+
+### BASS (2 oscillators, melodic root-5th pattern)
+
+```js
+function schedBassNote(offCtx, t, freq, dur) {
+  const osc1 = offCtx.createOscillator(); // sine (warmth)
+  const osc2 = offCtx.createOscillator(); // triangle (body)
+  osc1.type = 'sine';    osc1.frequency.value = freq;
+  osc2.type = 'triangle'; osc2.frequency.value = freq;
+  const g1 = offCtx.createGain(); g1.gain.value = 1.0;
+  const g2 = offCtx.createGain(); g2.gain.value = 0.30;
+  const env = offCtx.createGain();
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(0.72, t + 0.01);   // fast attack
+  env.gain.setValueAtTime(0.72, t + 0.08);
+  env.gain.linearRampToValueAtTime(0.55, t + 0.12);   // decay to sustain
+  env.gain.setValueAtTime(0.55, t + dur - 0.12);
+  env.gain.linearRampToValueAtTime(0, t + dur);        // release
+  osc1.connect(g1); osc2.connect(g2);
+  g1.connect(env); g2.connect(env); env.connect(offCtx.destination);
+  osc1.start(t); osc2.start(t); osc1.stop(t+dur); osc2.stop(t+dur);
+}
+// Pattern per bar (4/4, quarter notes):
+// Song 1 A: [root(110), root(110), P5(164.8), root(110)]  durations: [beatDur*0.9 each]
+// Song 2 G: [root(98),  root(98),  P5(146.8), root(98) ]
+```
+
+### KEYS (3 oscillators per chord, piano-like)
+
+```js
+// Chord hits on beats 1 and 3 of each bar, short decay
+function schedKeys(offCtx, t, rootFreq) {
+  const freqs = [rootFreq*2, rootFreq*2*1.2599, rootFreq*2*1.4983]; // root8va, M3, P5
+  const gains = [1.0, 0.55, 0.42];
+  const lpf = offCtx.createBiquadFilter();
+  lpf.type = 'lowpass'; lpf.frequency.value = 3800; lpf.Q.value = 0.7;
+  const env = offCtx.createGain();
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(0.6, t + 0.015);  // snappy attack
+  env.gain.exponentialRampToValueAtTime(0.35, t + 0.25); // decay
+  env.gain.setValueAtTime(0.35, t + 0.6);
+  env.gain.linearRampToValueAtTime(0, t + 1.1);       // release
+  lpf.connect(env); env.connect(offCtx.destination);
+  freqs.forEach((f, i) => {
+    const osc = offCtx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = f;
+    const g = offCtx.createGain(); g.gain.value = gains[i];
+    osc.connect(g); g.connect(lpf);
+    osc.start(t); osc.stop(t + 1.2);
+  });
+}
+```
+
+### PADS (4 detuned sawtooths, rich and lush — MOST IMPORTANT for worship feel)
+
+```js
+function renderPads(offCtx, song) {
+  const dur = song.loopDuration;
+  const rootFreq = ROOT_HZ[song.synthKey];
+  // Chord voicings: root, M3, P5, octave — one oscillator each
+  const chordFreqs = [
+    rootFreq,
+    rootFreq * 1.2599,
+    rootFreq * 1.4983,
+    rootFreq * 2.0,
+  ];
+  const detuneCents = [-14, -4, +4, +14];  // warm chorus spread
+
+  const lpf = offCtx.createBiquadFilter();
+  lpf.type = 'lowpass'; lpf.frequency.value = 900; lpf.Q.value = 0.5;
+
+  // Tremolo LFO (breathing effect)
+  const lfo = offCtx.createOscillator();
+  const lfoGain = offCtx.createGain();
+  lfo.frequency.value = 0.15; lfoGain.gain.value = 0.04;
+  lfo.connect(lfoGain);
+
+  const env = offCtx.createGain();
+  env.gain.setValueAtTime(0, 0);
+  env.gain.linearRampToValueAtTime(0.55, 1.2);    // slow attack 1.2s
+  env.gain.setValueAtTime(0.55, dur - 2.5);
+  env.gain.linearRampToValueAtTime(0, dur);        // slow release 2.5s
+  lfoGain.connect(env.gain);  // tremolo modulates gain
+  lpf.connect(env); env.connect(offCtx.destination);
+
+  chordFreqs.forEach((f, i) => {
+    const osc = offCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = f;
+    osc.detune.value = detuneCents[i];
+    const g = offCtx.createGain(); g.gain.value = 0.25;
+    osc.connect(g); g.connect(lpf);
+    osc.start(0); osc.stop(dur);
+  });
+  lfo.start(0); lfo.stop(dur);
+}
+```
+
+### CLICK (sharp transient, beat-1 accent)
+
+```js
+function schedClick(offCtx, t, isAccent) {
+  const osc = offCtx.createOscillator();
+  const env = offCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = isAccent ? 1300 : 900;
+  env.gain.setValueAtTime(isAccent ? 0.85 : 0.45, t);
+  env.gain.exponentialRampToValueAtTime(0.001, t + (isAccent ? 0.020 : 0.014));
+  osc.connect(env); env.connect(offCtx.destination);
+  osc.start(t); osc.stop(t + 0.025);
+}
+// Schedule for every beat; isAccent = (beat % 4 === 0)
+```
+
+### GUIDE (filtered sawtooth, voice-like, subtle)
+
+```js
+// Plays a root-M3-P5-root melodic motif per bar, vibrato
+function schedGuideNote(offCtx, t, freq, dur) {
+  const osc = offCtx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.value = freq * 4;  // 2 octaves up from bass root = melody register
+
+  // Vibrato
+  const vibLfo = offCtx.createOscillator();
+  const vibGain = offCtx.createGain();
+  vibLfo.frequency.value = 5.5;
+  vibGain.gain.value = freq * 4 * 0.006;  // ~6 cents depth
+  vibLfo.connect(vibGain); vibGain.connect(osc.frequency);
+
+  // Bandpass filter (nasal, vocal-like)
+  const bpf = offCtx.createBiquadFilter();
+  bpf.type = 'bandpass'; bpf.frequency.value = 700; bpf.Q.value = 8;
+
+  const env = offCtx.createGain();
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(0.38, t + 0.04);
+  env.gain.setValueAtTime(0.38, t + dur - 0.25);
+  env.gain.linearRampToValueAtTime(0, t + dur);
+
+  osc.connect(bpf); bpf.connect(env); env.connect(offCtx.destination);
+  vibLfo.start(t); osc.start(t); osc.stop(t+dur); vibLfo.stop(t+dur);
+}
+// Motif per bar (quarter notes): root4, M3*4, P5*4, root4
+// root*4 = 4x bass root (two octaves up): A2(110) -> A4(440) for Song1
+// Guide overall mix gain: 0.38 (subtle reference, not dominant)
+```
+
+---
+
+## 5. Design Tokens (final — confirmed by CEO)
+
+### Google Fonts (index.html `<head>`)
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+```
+
+### CSS custom properties (`app.css`)
+```css
+:root {
+  --bg:        #0C0C0F;
+  --surface-1: #161619;
+  --surface-2: #1E1E24;
+  --surface-3: #28282F;
+  --border:    #2A2A33;
+  --accent:    #F0A830;   /* warm amber, active/playing */
+  --accent-2:  #4A9EFF;   /* electric blue, selected/focus */
+  --danger:    #E05555;   /* mute indicator */
+  --solo:      #F0C030;   /* solo indicator */
+  --text-1:    #F0EFEA;   /* primary */
+  --text-2:    #8A8A95;   /* secondary */
+  --font-ui:   'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+```
+
+### Layout grid (full viewport, no scroll)
+```css
+.app-shell {
+  display: grid;
+  grid-template-rows: 64px 44px 48px 1fr 220px;
+  height: 100vh;
+  background: var(--bg);
+  font-family: var(--font-ui);
+}
+/* rows: Transport | SongSelector | SectionNav | Waveform+Cues | Mixer */
+```
+
+### Channel strip colors (6 stems)
+```js
+const STEM_CONFIG = [
+  { id: 'drums',  label: 'Drums',  color: '#FF6B6B', icon: '🥁' },
+  { id: 'bass',   label: 'Bass',   color: '#4ECDC4', icon: '🎸' },
+  { id: 'keys',   label: 'Keys',   color: '#45B7D1', icon: '🎹' },
+  { id: 'pads',   label: 'Pads',   color: '#96CEB4', icon: '🎵' },
+  { id: 'click',  label: 'Click',  color: '#F0A830', icon: '🔔' },
+  { id: 'guide',  label: 'Guide',  color: '#DDA0DD', icon: '🎤' },
+];
+```
+
+---
+
+## 6. Mixer Solo Logic
+
+```js
+// "Radio solo": only one channel can be solo-ed; OR multiple if additive preferred
+// When any stem is soloed, all non-soloed stems → muteGain.gain = 0
+function applySolo(stems, soloedId) {
+  const anySoloed = soloedId !== null;
+  stems.forEach(s => {
+    const shouldMute = anySoloed && s.id !== soloedId;
+    s.muteGain.gain.linearRampToValueAtTime(shouldMute ? 0 : 1, audioCtx.currentTime + 0.01);
+  });
+}
+// Mute button: s.muteGain.gain = s.muted ? 0 : 1 (independent of solo)
+// Volume slider: s.volumeGain.gain = value / 100
+// Pan knob: s.pannerNode.pan.value = panValue (-1 to +1)
+```
+
+---
+
+## 7. Count-In Implementation
+
+```js
+// Before play: schedule N bars of click-only (all other stems muted at engine level)
+// Visual overlay: animated beat counter 4→3→2→1→GO on downbeats
+function startWithCountIn(bars, bpm, onComplete) {
+  const beatDur = 60 / bpm;
+  const countBeats = bars * 4;
+  let beat = 0;
+
+  for (let i = 0; i < countBeats; i++) {
+    const t = audioCtx.currentTime + i * beatDur + 0.05;
+    schedClick(audioCtx, t, i % 4 === 0);  // accent on beat 1
+    // Visual flash: use setTimeout matching audio time
+    const delay = (t - audioCtx.currentTime) * 1000;
+    setTimeout(() => updateCountDisplay(countBeats - i), delay);
+  }
+  setTimeout(() => {
+    startPlayback();
+    onComplete();
+  }, (countBeats * beatDur + 0.1) * 1000);
+}
+// Count-in note: all non-click stems remain muted/unstarted during count-in
+// audioCtx IS running during count-in (not suspended)
+```
+
+---
+
+## 8. Waveform Canvas
+
+```js
+// Draw static waveform on AudioBuffer load (downsample to canvas width)
+function drawWaveform(canvas, audioBuffer) {
+  const ctx = canvas.getContext('2d');
+  const data = audioBuffer.getChannelData(0);  // use first stem (pads or drums)
+  const step = Math.floor(data.length / canvas.width);
+  const amp = canvas.height / 2;
+  ctx.strokeStyle = '#4A9EFF';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = 0; x < canvas.width; x++) {
+    const sample = data[x * step];
+    const y = amp + sample * amp * 0.8;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  // Section markers: draw colored vertical lines at section.startSec / totalDuration * canvasWidth
+}
+
+// Playhead: rAF loop, draw line at (audioCtx.currentTime - playStartTime + pauseOffset) / totalDuration * width
+// Click-to-seek: canvas.addEventListener('click', e => seek(e.offsetX / canvas.width * song.totalDuration))
+```
+
+---
+
+## 9. Loading State
+
+On song switch: show loading overlay while all 6 OfflineAudioContext renders complete.
+```js
+// Use Promise.all([renderDrums(song), renderBass(song), renderKeys(song), ...])
+// Show spinner with "Generating audio..." text
+// All 6 renders should complete in <2s even on slow hardware (OfflineAudioContext runs faster than real-time)
+```
+
+---
+
+## 10. A/B Loop
+
+```js
+// Loop state: { active: false, inSec: null, outSec: null }
+// In Scheduler._tick(): if loopActive && currentPlayTime >= loopOut, seek(loopIn)
+// Set A/B via section start/end buttons in SectionNav
+// Visual: highlight the looped region on Waveform canvas in amber
+```
+
+---
+
+## handoff
+- produced: complete build-prep spec — scaffold commands, vite.config.js, exact songs.js data (2 songs, all sections/cues/timing), per-stem synthesis params with code, Wilson scheduler pattern, design tokens, Google Fonts URL, layout grid, mixer/solo/count-in/waveform/loop patterns
+- decisions: 8-bar loop buffers (OfflineAudioContext, no files), `source.loop=true` + offset-mod seek; all synthesis params tuned for musical output per CEO requirement (detuned pads, pitch-drop kick, filtered snare, layered keys); no npm audio libs needed
+- next needs: demo-builder implements `AudioEngine.js` (buffer loading via OfflineAudioContext renders, stem graph, play/pause/stop/seek), `Scheduler.js` (Wilson 25ms/100ms), all 6 stem render functions with the exact params above; pads stem is the most critical for musical feel, build it first and verify in browser
+- risks: OfflineAudioContext render time on very slow machines (mitigate: render one stem at a time with progress, show spinner); iOS Safari requires user-gesture unlock before AudioContext creation (handle in first click/tap handler)
