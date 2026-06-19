@@ -1,0 +1,40 @@
+# Demo Builder (improve pass 2) — Real Stems Integration
+
+## What changed
+
+### songs.js — full replacement
+Replaced 3 synthetic songs (Endless Grace / Risen King / Holy Ground) with 3 real TWM multitracks:
+- He Will Hold Me Fast (96 BPM, key A, 302.47s, 8 stems: drums/bass/guitar/piano/organ+synths/vocals/click/guide)
+- Greater Than Great (97 BPM, key G, 230.72s, 7 stems: drums/bass/guitars/keys/backing/click/guide)
+- What a Generous God (114 BPM, key D, 204.12s, 10 stems: drums/bass/guitar1/guitar2/perc/piano/synths/vocals/click/guide)
+
+Each song object carries a `stems` array (id/label/file/color/icon) + sections + cues. STEM_CONFIG and ROOT_HZ exports removed.
+
+### AudioEngine.js — major rewrite
+- Deleted all synth functions (generateNoiseBuffer, schedKick, schedSnare, schedHihat, schedBassNote, schedKeys, schedGuideNote, renderDrums, renderBass, renderKeys, renderPads, renderClick, renderGuide) — 237 lines removed
+- Kept `schedClickTick` (used by `countIn()`)
+- `loadSong()`: replaces renderer loop with `fetch()` loop over `song.stems`, using `${import.meta.env.BASE_URL}audio/${song.slug}/${stemDef.file}` URLs
+- AbortController added: new load cancels any in-flight fetches from previous song
+- `_createSources()`: `src.loop = false`, offset clamped to `Math.min(offset, buffer.duration - 0.001)` to handle shorter stems (guide, click)
+
+### Mixer.jsx
+- Removed `import { STEM_CONFIG }`
+- Now accepts `song` prop, maps over `song.stems` for per-song stem layout
+
+### App.jsx
+- Added `song={song}` prop to `<Mixer>`
+- Waveform buffer now prefers `drums` stem (exists in all 3 songs) over `pads`
+
+### Audio files
+- Copied 25 MP3 stems (~200MB total) to `demo-src/public/audio/<slug>/` and `michaelwegter.com/public/demos/audio-software-engineer-needed-for/audio/<slug>/`
+
+### Build + commit
+- `npm run build` — clean build in 563ms
+- `dist/` copied to `michaelwegter.com/public/demos/audio-software-engineer-needed-for/`
+- Committed: workflow repo (`master 2cb5a36`), portfolio repo (`main 45eaf8f`)
+
+## handoff
+- produced: real TWM stems wired in; app builds clean; both repos committed; audio at /demos/audio-software-engineer-needed-for/audio/<slug>/
+- decisions: src.loop=false; AbortController cancels mid-load on song switch; waveform uses drums buffer (present in all songs); WAGG has no loopDuration field (not needed, totalDuration controls playback end)
+- next needs: push both repos to deploy live; deploy step handles the push + live URL verify
+- risks: 200MB in git — repo size increase; no streaming decode (full fetch before decode), so initial load on slow connections may be slow for HWHMF (95MB); GTG has no isolated vocals (backing track serves as full-mix reference)

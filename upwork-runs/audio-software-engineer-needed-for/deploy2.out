@@ -1,0 +1,24 @@
+# Deploy — improve pass 2
+
+## Actions
+- Pushed `michaelwegter.com` main → origin (1 commit ahead: "Replace synth stems with real TWM multitracks")
+- mw-backend: already up to date, no push needed (no backend changes in this pass)
+- GH Pages workflow 27801792294: Build 29s + Deploy 23s → success
+
+## Live verification
+| URL | Status |
+|-----|--------|
+| https://michaelwegter.com/ | 200 |
+| https://michaelwegter.com/demos/audio-software-engineer-needed-for/index.html | 200 |
+| /audio/greater-than-great/click.mp3 | 200 (1.8MB) |
+| /audio/he-will-hold-me-fast/click.mp3 | 200 |
+| /audio/what-a-generous-god/click.mp3 | 200 |
+| https://api.michaelwegter.com/health | 200 |
+
+All 3 song directories live. 25 stems confirmed tracked in git and served via Cloudflare/GH Pages.
+
+## handoff
+- produced: deployed real-stems swap to production; all 3 songs (GTG 7 stems, HWHMF 8 stems, WAGG 10 stems) live at michaelwegter.com/demos/audio-software-engineer-needed-for/
+- decisions: mw-backend not touched (pure frontend/static change); no SPA routing issue (work-samples route handled by 404.html redirect as expected)
+- next needs: deploy-test should exercise live playback (load song, verify stems decode); skip media-capture + proposal-writer per user instructions
+- risks: 200MB in git history (permanent bloat); HWHMF 95MB total load may be slow on poor connections — acceptable for demo

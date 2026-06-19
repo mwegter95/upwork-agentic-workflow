@@ -1,0 +1,26 @@
+# CEO (Build) — improve pass 4 review
+
+Scope of this pass: swap 3 synth songs for 3 real TWM multitracks. Verified, not assumed.
+
+## Verification
+- Build: `npm run build` clean (604ms, 25 modules), hashes match deployed dist (index-De1dNRPo.js).
+- Audio deployed: 3 slugs present under /demos/.../audio/ — GTG 7 stems/27M, HWHMF 8/95M, WAGG 10/78M.
+- songs.js ↔ files: per-slug file refs match actual inventory exactly (25 stems total, no missing/extra). Real songs replace synthetic ones; STEM_CONFIG/synth renderers removed.
+- AudioEngine: real fetch loop + decodeAudioData + AbortController (cancels mid-load on switch) + src.loop=false confirmed.
+- Commits: portfolio @45eaf8f, workflow @2cb5a36 — both clean (only run artifact demo-builder2.out untracked, fine).
+
+## Assessment
+Requirements met: real songs with real stems wired in, smallest-change swap (engine reworked only as needed to play MP3s), everything committed. Matches 10/10 feature target (per-song dynamic stem layout, 7–10 isolated stems, click/guide, sections/cues retained). Per user: no media-capture or proposal rerun needed.
+
+## Problems
+- None blocking. Note: 200MB audio now in git (repo bloat); HWHMF 95M initial load may be slow on poor connections (full fetch before decode). Acceptable for demo; flag only if deploy/live test surfaces load timeouts.
+
+Next: deploy pushes both repos; deploy-test exercises live playback.
+
+## handoff
+- produced: build CEO sign-off for real-stems swap
+- decisions: pass — build clean, files/refs match, engine correctly fetch+decode, both repos committed
+- next needs: deploy (push both repos), then deploy-test live playback verify; skip media-capture + proposal per user
+- risks: 200MB git bloat; HWHMF 95M load latency on slow links
+
+VERDICT: pass

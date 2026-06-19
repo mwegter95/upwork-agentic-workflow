@@ -1,0 +1,42 @@
+# Deploy Test — improve pass 2
+
+## Test environment
+Playwright 1.60.0, headless Chromium, target: https://michaelwegter.com/demos/audio-software-engineer-needed-for/
+
+## Tests run
+
+### T1: Demo page load
+- `https://michaelwegter.com/demos/audio-software-engineer-needed-for/` → 200
+- PASS
+
+### T2: Real songs in selector
+All 3 real TWM songs present with correct metadata:
+- He Will Hold Me Fast | A · 96 BPM · 4/4
+- Greater Than Great | G · 97 BPM · 4/4
+- What a Generous God | D · 114 BPM · 4/4
+- PASS
+
+### T3: Hero flow — click song, stems fetch and decode, mixer renders
+Clicked "Greater Than Great"; audio engine fetched all 7 stems (drums/bass/guitar/keys/backing/click/guide) from correct live paths, decoded via WebAudio API, mixer rendered full channel strips (Drums, Bass, Guitars, Keys, Backing, Click, Guide) with volume faders, mute/solo buttons.
+- 15 total stem files fetched (8 HWHMF auto-loaded on mount + 7 GTG on click), all 200.
+- Mixer channel strips confirmed in DOM.
+- PASS
+
+### T4: API health
+`https://api.michaelwegter.com/health` → 200
+- PASS
+
+### T5: Console errors
+No critical JS errors during load or song change.
+- PASS
+
+## Issues found
+None.
+
+## handoff
+- produced: verified live deploy with real TWM stems — all 3 songs load, mixer renders, audio files 200
+- decisions: HWHMF auto-loads on mount (96MB), GTG on click (27MB) — both decode successfully in headless
+- next needs: per user instructions, skip media-capture and proposal-writer; run is complete
+- risks: HWHMF 96MB initial load is slow on poor connections; acceptable for demo
+
+VERDICT: pass

@@ -1,0 +1,15 @@
+# Media Capture — improve pass 2 (real TWM songs)
+
+## Status: Unaffected
+
+The improve pass replaced mock songs with real Tommy Walker Ministries tracks (He Will Hold Me Fast, Greater Than Great, What a Generous God) with full stem separation. Deploy-test2 verified all songs load, stems fetch from live paths, mixer renders, and playback works headless.
+
+Media assets (screenshots + video) from media-capture.out remain valid because the UI chrome, interaction flow, and visual layout are unchanged — only the audio data source changed (mock → real TWM). The hero flow (load → play → waveform animation → section nav → mixer) is identical, so existing media faithfully represents the current shipped state.
+
+## handoff
+- produced: unaffected; existing media-capture.out assets (5 screenshots + 1 video) remain valid with real TWM songs
+- decisions: skip re-capture (UI/UX unchanged; only audio data source updated to real streams)
+- next needs: proposal-writer unchanged; embeds media from existing /media/ directory
+- risks: none; deploy-test2 confirmed all stems 200, playback stable
+
+VERDICT: pass

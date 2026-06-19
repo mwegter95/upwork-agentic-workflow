@@ -82,6 +82,11 @@ loosely-anchored Edit can drop the item outside the array and break the build.
 3. Stay within the caps: at most ~12 files touched, build timeout 3 min.
 
 ## Output
+Do not stop at intermediate artifacts (e.g. downloaded files/assets sitting on
+disk): the step is only complete when the asset is actually wired INTO the app
+(an in-app edit) AND `build-report.md` is written. Both are required before you
+return or hand off to the CEO.
+
 Write `upwork-runs/<slug>/build-report.md`: what you built, the file list, the
 local preview command + URL, backend changes (if any) and that they need a
 redeploy, the registry entry added, and self-test results.
