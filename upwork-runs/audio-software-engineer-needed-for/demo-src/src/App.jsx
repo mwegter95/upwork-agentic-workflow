@@ -54,7 +54,7 @@ export default function App() {
 
     const stems = await engine.loadSong(s, (p) => setLoadProgress(p));
 
-    setWaveformBuffer(stems['pads']?.buffer ?? stems['drums']?.buffer ?? null);
+    setWaveformBuffer(stems['drums']?.buffer ?? stems['pads']?.buffer ?? Object.values(stems)[0]?.buffer ?? null);
 
     // Build initial stemState for UI, set default volumes
     const state = {};
@@ -251,6 +251,7 @@ export default function App() {
       />
 
       <Mixer
+        song={song}
         stemState={stemState}
         onVolume={handleVolume}
         onMute={handleMute}
