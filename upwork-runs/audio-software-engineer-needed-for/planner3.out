@@ -1,0 +1,151 @@
+# Planner (improve pass 3) — Real Stems Integration
+
+## Plan status: READY — all assets on disk, no unknowns
+
+Pre-researcher work is complete. All 25 real MP3 stems are on disk. No further research needed.
+
+---
+
+## Scope
+
+Only two source files change: `songs.js` and `AudioEngine.js`. Everything else (UI, Scheduler, components, Vite config) is untouched. After the edit, demo-builder copies stems to `demo-src/public/audio/<slug>/`, rebuilds, and deploys.
+
+---
+
+## Step 1 — Copy stems to public/audio with clean names
+
+Source → destination under `demo-src/public/audio/`
+
+### he-will-hold-me-fast/ (8 stems, all MP3)
+
+| Clean name | Source file |
+|---|---|
+| `click.mp3` | `He+Will+Hold+Me+Fast.../He Will Hold Me Fast - Click (96bpm)_1.mp3` |
+| `guide.mp3` | `He+Will+Hold+Me+Fast.../He Will Hold Me Fast - Guide (96bpm)_1.mp3` |
+| `drums.mp3` | `He+Will+Hold+Me+Fast.../He Will Hold Me Fast - Drums (96bpm)_1.mp3` |
+| `bass.mp3`  | `He+Will+Hold+Me+Fast.../He Will Hold Me Fast - Bass (96bpm)_1.mp3` |
+| `guitar.mp3`| `He+Will+Hold+Me+Fast.../He Will Hold Me Fast - Guitar (96bpm)_1.mp3` |
+| `keys.mp3`  | `He+Will+Hold+Me+Fast.../He Will Hold Me Fast - Piano (96bpm)_1.mp3` |
+| `pads.mp3`  | `He+Will+Hold+Me+Fast.../He Will Hold Me Fast - Organ&Synths (96bpm)_1.mp3` |
+| `vocals.mp3`| `He+Will+Hold+Me+Fast.../He Will Hold Me Fast - Vocals (96bpm)_1.mp3` |
+
+### greater-than-great/ (7 stems, all MP3 from greater-than-great-mp3/)
+
+| Clean name | Source file |
+|---|---|
+| `click.mp3`  | `Click - GreaterThanGreatTWM.mp3` |
+| `guide.mp3`  | `Guide - GreaterThanGreatTWM.mp3` |
+| `drums.mp3`  | `Drums - GreaterThanGreatTWM.mp3` |
+| `bass.mp3`   | `Bass - GreaterThanGreatTWM.mp3` |
+| `guitar.mp3` | `Guitars - GreaterThanGreatTWM.mp3` |
+| `keys.mp3`   | `Keyboards - GreaterThanGreatTWM.mp3` |
+| `backing.mp3`| `Backing Track-Reference - GreaterThanGreatTWM.mp3` |
+
+### what-a-generous-god/ (10 stems, all MP3 from `What a Generous God (MP3 Stems)/`)
+
+| Clean name | Source file |
+|---|---|
+| `click.mp3`  | `What-A-Generous-God-Click-_114bpm_.mp3` |
+| `guide.mp3`  | `What-A-Generous-God-Guide-_114bpm_.mp3` |
+| `drums.mp3`  | `What-A-Generous-God-Drums-_114bpm_.mp3` |
+| `bass.mp3`   | `What-A-Generous-God-Bass-_114bpm_.mp3` |
+| `guitar1.mp3`| `What-A-Generous-God-Guitar-1-_114bpm_.mp3` |
+| `guitar2.mp3`| `What-A-Generous-God-Guitar-2-_114bpm_.mp3` |
+| `perc.mp3`   | `What-A-Generous-God-Perc-_114bpm_.mp3` |
+| `keys.mp3`   | `What-A-Generous-God-Piano-_114bpm_.mp3` |
+| `pads.mp3`   | `What-A-Generous-God-Synths-_114bpm_.mp3` |
+| `vocals.mp3` | `What-A-Generous-God-Vocals-_114bpm_.mp3` |
+
+Use shell cp with quoted paths. Base source dir: `upwork-runs/audio-software-engineer-needed-for/multitracks-download/`.
+
+---
+
+## Step 2 — Replace songs.js entirely
+
+Replace the 3 fake songs with real metadata. Add a `stems` array per song (each entry: `{ id, label, file, color, icon }`). The `file` field is the clean filename under `audio/<slug>/`. Remove `synthKey`; keep `bpm`, `timeSignature`, `barDuration`. Keep `sections` and `cues` with BPM-derived approximate timestamps (demo quality is fine).
+
+**He Will Hold Me Fast — 96 BPM, key A, barDuration = 2.5s**
+- Estimated duration: 300s (5 min typical worship song)
+- Sections (8-bar blocks = 20s each, rough): Intro 0s, Verse 0→20s, Pre-C ~40s, Chorus ~60s, Verse2 ~100s, Pre-C2 ~140s, Chorus2 ~160s, Bridge ~200s, Tag/Outro ~260s
+- 8 stems
+
+**Greater Than Great — 97 BPM, key G, barDuration = 2.474s**
+- Estimated duration: 280s
+- 7 stems (no vocals stem; use backing for full mix reference)
+
+**What a Generous God — 114 BPM, key D, barDuration = 2.105s**
+- Estimated duration: 320s
+- 10 stems
+
+Replace STEM_CONFIG with a note that it is now per-song (rendered from `song.stems`). The `SONGS` array drives everything; the global STEM_CONFIG is no longer needed (or keep it as a fallback display-order hint).
+
+---
+
+## Step 3 — Refactor AudioEngine.loadSong
+
+Replace the `renderers` array (which calls synthetic render functions) with a fetch loop over `song.stems`:
+
+```js
+// pseudocode — replaces lines ~283-317 of AudioEngine.js
+const BASE = import.meta.env.BASE_URL;  // '/demos/audio-software-engineer-needed-for/'
+
+for (const stemDef of song.stems) {
+  const url = `${BASE}audio/${song.slug}/${stemDef.file}`;
+  const resp = await fetch(url);
+  const arrayBuffer = await resp.arrayBuffer();
+  const buffer = await this.ctx.decodeAudioData(arrayBuffer);
+  this.stems[stemDef.id] = {
+    buffer,
+    volume: 80,
+    muted: false,
+    soloed: false,
+    source: null,
+    volumeGain: ...,   // same GainNode setup as before
+    muteGain: ...,
+    panner: ...,
+  };
+  if (onProgress) onProgress(done++ / song.stems.length);
+}
+```
+
+Keep `schedClickTick` (used by countIn/metronome if present). Remove `renderDrums`, `renderBass`, `renderKeys`, `renderPads`, `renderClick`, `renderGuide` — they are only called from the old `renderers` array and are no longer needed. Keep ROOT_HZ only if still referenced elsewhere; otherwise remove.
+
+The `playSong` / `stopSong` / `setVolume` / `setMute` / `setSolo` methods need zero changes — they operate on `this.stems` which has the same shape.
+
+---
+
+## Step 4 — Update STEM_CONFIG consumer (UI components)
+
+The UI currently renders one fader per entry in STEM_CONFIG. Switch it to render from `currentSong.stems` instead. This is a small change in whichever component maps STEM_CONFIG to fader rows — find it with grep and do a surgical edit.
+
+---
+
+## Step 5 — Build, verify, commit, deploy
+
+1. `npm run build` in demo-src — confirm no errors.
+2. Copy `dist/*` to `public/demos/audio-software-engineer-needed-for/` in michaelwegter.com.
+3. Load the demo locally — confirm stems load (network tab), playback starts, faders work for all stems of all 3 songs.
+4. Commit all changes in michaelwegter.com (audio assets + rebuilt bundle).
+5. Push to main — GH Pages auto-deploys.
+
+No media capture, no proposal writer re-run.
+
+---
+
+## Files changed (exhaustive list)
+
+- `demo-src/src/data/songs.js` — replace all 3 songs + per-song stems (Edit)
+- `demo-src/src/engine/AudioEngine.js` — replace loadSong renderers with fetch loop, remove synth render functions (Edit)
+- `demo-src/src/<UIComponent>` — switch STEM_CONFIG usage to `song.stems` (Edit, 1-2 lines)
+- `demo-src/public/audio/he-will-hold-me-fast/` — 8 new MP3 files (copy)
+- `demo-src/public/audio/greater-than-great/` — 7 new MP3 files (copy)
+- `demo-src/public/audio/what-a-generous-god/` — 10 new MP3 files (copy)
+- `public/demos/audio-software-engineer-needed-for/` — rebuilt bundle + audio assets (rebuild + copy)
+
+---
+
+## handoff
+- produced: planner3.out — complete action plan with exact file mappings, AudioEngine refactor spec, and build/deploy steps; no unknowns remain
+- decisions: use MP3 stems for all 3 songs (GTG uses greater-than-great-mp3/ folder, not WAV); clean filenames with no spaces; per-song `stems` array in songs.js replaces global STEM_CONFIG; fetch/decodeAudioData replaces all synth render functions; keep schedClickTick only
+- next needs: demo-builder executes the 5 steps above — copy stems, edit songs.js, edit AudioEngine.js, edit UI component, rebuild, deploy; commit first as user requested
+- risks: bundle size may be large (25 MP3 files, potentially 50-200MB total) — GH Pages has no hard size limit per file but initial load will be slow; mitigate by loading stems only when song is selected (lazy load); Vite may warn about large assets in public/ (not a build error, just a warning); `Organ&Synths` filename has `&` — must quote shell path correctly

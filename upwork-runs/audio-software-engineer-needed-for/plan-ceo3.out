@@ -1,0 +1,21 @@
+# CEO (Plan) — improve pass 3
+
+## Review
+Verified upstream, did not assume:
+- 3 song source folders present in `multitracks-download/`. Stem counts match plan exactly: HWHMF 8, GTG 7 (`greater-than-great-mp3/`), WAGG 10 (in `What+a+Generous+God+-+114bpm+-+TWM+Multitrack/What a Generous God (MP3 Stems)/`).
+- Plan-eval3 rubric passes all gates; plan is appropriately tiny (swap synth stems → real MP3 stems, 3 file edits + asset copies). Right scope for an improve pass.
+- User's hard constraints captured: commit current state first, then implement, no media-capture / proposal-writer re-run.
+
+## Notes for demo-builder (minor, not blockers)
+- WAGG exact source path is nested: `What+a+Generous+God+-+114bpm+-+TWM+Multitrack/What a Generous God (MP3 Stems)/...`. Avoid the sibling `__MACOSX/` copies.
+- Lazy-load stems per song-select to keep initial bundle/load reasonable (25 MP3s); plan already flags this.
+
+Plan is good enough to ship a winning real-stems demo at richness 10. No redirect needed.
+
+## handoff
+- produced: plan-ceo3.out — approval of planner3/plan-eval3 with verified on-disk stem inventory
+- decisions: pass; demo-builder executes planner3.out steps 1-5 as written, commit before changes, skip media/proposal
+- next needs: demo-builder copy stems (mind nested WAGG path + __MACOSX), edit songs.js + AudioEngine.js + UI fader component, rebuild, copy dist, commit, push
+- risks: large MP3 payload (mitigate via per-song lazy load); GTG has no isolated vocals stem (backing used)
+
+VERDICT: pass

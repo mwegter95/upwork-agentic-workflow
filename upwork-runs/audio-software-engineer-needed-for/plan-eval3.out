@@ -1,0 +1,30 @@
+# Plan Eval (rubric) — improve pass 3
+
+## Rubric assessment
+
+**All requirements covered:** PASS
+- User wants 3 real songs with real stems in the app. Plan covers: copy 25 stems, replace songs.js, refactor AudioEngine, update UI component, rebuild, commit first then deploy. "Commit first" and "no media capture / proposal writer" explicitly addressed.
+
+**Technologies correct:** PASS
+- MP3 + Web Audio API fetch/decodeAudioData is the right approach. No new dependencies. Existing Vite config unchanged. BASE_URL pattern correct for GH Pages subpath.
+
+**Testing approach defined:** PASS
+- Step 5: `npm run build` → local load → network tab confirms stem fetches → playback for all 3 songs → faders work. Sufficient for this targeted content swap.
+
+**Scope feasible (feature richness 10):** PASS
+- Only 2-3 source files edited plus asset copies. The full-featured app is already built; this improves it with real content. Well within run budget.
+
+**Design direction fit for industry:** N/A
+- No design changes. Existing audio workstation UI is already appropriate.
+
+## Problems
+
+None. All 25 stem source paths verified on disk in plan-gate3.out. `Organ&Synths` quoting risk noted and handled. Greater Than Great vocals gap acknowledged. Bundle size risk flagged with mitigation (lazy load on song select).
+
+## handoff
+- produced: plan-eval3.out — rubric check, all gates pass
+- decisions: plan is approved as-is; demo-builder follows planner3.out steps 1-5 exactly
+- next needs: demo-builder executes — commit current state first, then copy stems, edit songs.js + AudioEngine.js + UI component, rebuild, copy dist, commit, push
+- risks: GTG has no vocals stem (backing used instead); large MP3 bundle on initial load (mitigate with per-song lazy loading)
+
+VERDICT: pass

@@ -1,0 +1,28 @@
+# Plan Gate (improve pass 3) — Real Stems Integration
+
+## Review
+
+Plan is complete. Verified:
+- He Will Hold Me Fast: 8 MP3 stems present (click, guide, drums, bass, guitar, piano, organ&synths, vocals)
+- Greater Than Great: 7 MP3 stems present (click, guide, drums, bass, guitars, keyboards, backing)
+- What a Generous God: 10 MP3 stems present (click, guide, drums, bass, guitar1, guitar2, perc, piano, synths, vocals)
+
+All 25 source files match the plan's mapping table exactly. No unknown source paths, no missing files.
+
+Plan covers all required changes:
+- songs.js: full replacement with real metadata + per-song stems arrays
+- AudioEngine.js: fetch/decodeAudioData loop replacing synth renderers
+- UI component: STEM_CONFIG -> song.stems (surgical 1-2 line edit)
+- public/audio/<slug>/ copy steps with clean filenames
+- Build + copy dist to michaelwegter.com/public/demos/
+- Commit + push (no media capture, no proposal writer)
+
+No unknowns flagged. No tech gaps. No research needed.
+
+## handoff
+- produced: plan-gate3.out — VERDICT pass; all 25 stems verified on disk, plan complete
+- decisions: plan passes as-is; demo-builder should follow steps 1-5 in planner3.out exactly
+- next needs: demo-builder executes: copy stems, edit songs.js + AudioEngine.js + UI component, rebuild, copy dist, commit, push
+- risks: Greater Than Great has no vocals stem (only backing track); plan already accounts for this
+
+VERDICT: pass

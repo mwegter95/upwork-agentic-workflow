@@ -1,0 +1,27 @@
+# Intake (improve pass 3)
+
+Brief stands unchanged: 3 real Tommy Walker Ministries worship multitracks with stems, integrated into existing Web Audio player.
+
+## Song selection (ready for integration)
+
+Downloaded to `multitracks-download/`:
+1. **He Will Hold Me Fast (96 BPM)** — Stems: Click, Guide, Drums, Bass, Guitar, Piano, Organ & Synths, Vocals (8 tracks). Format: MP3.
+2. **Greater Than Great (97 BPM)** — Stems: Click, Guide, Drums, Bass, Guitars, Keyboards, Backing Track (7 tracks). Format: WAV + MP3 (in greater-than-great-mp3/).
+3. **What a Generous God (114 BPM)** — Stems: Click, Guide, Drums, Bass, Guitar 1, Guitar 2, Perc, Piano, Synths, Vocals (10 tracks). Format: MP3.
+
+(Also downloaded: Greater Than Great 97bpm WAV version—pick MP3 version for consistency.)
+
+## Instructions to demo-builder
+
+- Use the 3 songs above (stems already on disk, no login/download needed).
+- Transcode stems to compressed format if needed for bundle size (stems already mp3, wav can be converted).
+- Replace placeholder song registry in demo with real metadata + stem paths.
+- Reuse existing Web Audio engine and UI—no player rebuild, surgical asset swap only.
+- Sample alignment verified after transcode.
+- Commit + redeploy michaelwegter.com.
+
+## handoff
+- produced: intake3.out—brief confirmed, 3 real songs identified and ready, stems verified on disk.
+- decisions: use He Will Hold Me Fast (96 BPM), Greater Than Great (97 BPM, MP3), What a Generous God (114 BPM)—variety of tempos, full stem sets, consistent format.
+- next needs: demo-builder swaps assets in song registry, transcodes if needed, rebuilds and deploys.
+- risks: stem file path normalization (special chars in folder names); bundle size if all stems bundled uncompressed (8-10 stems per song).

@@ -1,0 +1,358 @@
+# Researcher (improve pass 3) — Real Stems Integration
+
+## Status: All assets confirmed on disk. Planner3 plan verified correct with one architecture fix required.
+
+---
+
+## Confirmed stem inventory with exact durations (ffprobe)
+
+### He Will Hold Me Fast (HWHMF) — 96 BPM, key A, barDuration=2.5s
+totalDuration: **302.472s** (use this for the song object)
+
+| Clean name | Source file | Duration | Size |
+|---|---|---|---|
+| `click.mp3` | `He Will Hold Me Fast - Click (96bpm)_1.mp3` | 380.064s* | 14.4MB |
+| `guide.mp3` | `He Will Hold Me Fast - Guide (96bpm)_1.mp3` | 297.024s | 11.3MB |
+| `drums.mp3` | `He Will Hold Me Fast - Drums (96bpm)_1.mp3` | 302.472s | 11.5MB |
+| `bass.mp3`  | `He Will Hold Me Fast - Bass (96bpm)_1.mp3`  | 302.472s | 11.5MB |
+| `guitar.mp3`| `He Will Hold Me Fast - Guitar (96bpm)_1.mp3`| 302.472s | 11.5MB |
+| `keys.mp3`  | `He Will Hold Me Fast - Piano (96bpm)_1.mp3` | 302.472s | 11.5MB |
+| `pads.mp3`  | `He Will Hold Me Fast - Organ&Synths (96bpm)_1.mp3` | 302.472s | 11.5MB |
+| `vocals.mp3`| `He Will Hold Me Fast - Vocals (96bpm)_1.mp3`| 302.472s | 11.5MB |
+
+*Click is 380s — extended outro tick. Song playback ends at totalDuration=302.47s regardless.
+*Source dir: `multitracks-download/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/`
+*Quote `Organ&Synths` path carefully in shell (use `$'...'` or double-quote the full path).
+Total: ~95MB
+
+### Greater Than Great (GTG) — 97 BPM, key G, barDuration=2.474s
+totalDuration: **230.721s** (backing track is shortest at 230.72s; use that to avoid any stem cutting off)
+
+| Clean name | Source file | Duration | Size |
+|---|---|---|---|
+| `click.mp3`  | `Click - GreaterThanGreatTWM.mp3`              | 232.577s | 1.7MB |
+| `guide.mp3`  | `Guide - GreaterThanGreatTWM.mp3`              | 232.577s | 1.5MB |
+| `drums.mp3`  | `Drums - GreaterThanGreatTWM.mp3`              | 232.577s | 5.2MB |
+| `bass.mp3`   | `Bass - GreaterThanGreatTWM.mp3`               | 232.577s | 3.7MB |
+| `guitar.mp3` | `Guitars - GreaterThanGreatTWM.mp3`            | 232.577s | 4.7MB |
+| `keys.mp3`   | `Keyboards - GreaterThanGreatTWM.mp3`          | 232.577s | 4.6MB |
+| `backing.mp3`| `Backing Track-Reference - GreaterThanGreatTWM.mp3` | 230.721s | 5.4MB |
+
+*Source dir: `multitracks-download/greater-than-great-mp3/`
+*No isolated vocals stem — backing used as the "full mix reference" channel.
+Total: ~27MB
+
+### What a Generous God (WAGG) — 114 BPM, key D, barDuration=2.105s
+totalDuration: **204.117s** (guitar1 and vocals are shortest at 204.12s)
+
+| Clean name | Source file | Duration | Size |
+|---|---|---|---|
+| `click.mp3`  | `What-A-Generous-God-Click-_114bpm_.mp3`  | 208.421s | 7.9MB |
+| `guide.mp3`  | `What-A-Generous-God-Guide-_114bpm_.mp3`  | 178.859s | 6.8MB |
+| `drums.mp3`  | `What-A-Generous-God-Drums-_114bpm_.mp3`  | 206.848s | 7.8MB |
+| `bass.mp3`   | `What-A-Generous-God-Bass-_114bpm_.mp3`   | 206.848s | 7.8MB |
+| `guitar1.mp3`| `What-A-Generous-God-Guitar-1-_114bpm_.mp3` | 204.117s | 7.7MB |
+| `guitar2.mp3`| `What-A-Generous-God-Guitar-2-_114bpm_.mp3` | 206.848s | 7.8MB |
+| `perc.mp3`   | `What-A-Generous-God-Perc-_114bpm_.mp3`   | 206.848s | 7.8MB |
+| `keys.mp3`   | `What-A-Generous-God-Piano-_114bpm_.mp3`  | 206.848s | 7.8MB |
+| `pads.mp3`   | `What-A-Generous-God-Synths-_114bpm_.mp3` | 206.848s | 7.8MB |
+| `vocals.mp3` | `What-A-Generous-God-Vocals-_114bpm_.mp3` | 204.117s | 7.7MB |
+
+*Source dir: `multitracks-download/What+a+Generous+God+-+114bpm+-+TWM+Multitrack/What a Generous God (MP3 Stems)/`
+Total: ~78MB
+
+**Grand total payload: ~200MB across 3 songs — load lazily per song-select.**
+
+---
+
+## CRITICAL architecture fix: disable stem looping
+
+The current AudioEngine sets `src.loop = true` on every stem. With real MP3s of varying lengths, looping will cause desync. **Set `src.loop = false` in `_createSources`**. The transport stops at `totalDuration` via the RAF loop; stems that end early (guide, click) just go silent naturally — no desync.
+
+Change `_createSources` line ~329:
+```js
+src.loop = false;  // was: true
+// remove src.loopStart / src.loopEnd lines entirely
+```
+
+Also: `seek()` re-creates sources from an offset. With non-looping real files, `src.start(t, offset)` still works correctly — Web Audio plays from the given offset to the end.
+
+---
+
+## Shell copy commands (exact paths)
+
+```bash
+MDLS="upwork-runs/audio-software-engineer-needed-for/multitracks-download"
+DEST="demo-src/public/audio"
+# Run from upwork-agentic-workflow/ root
+
+mkdir -p "$DEST/he-will-hold-me-fast" "$DEST/greater-than-great" "$DEST/what-a-generous-god"
+
+# HWHMF
+cp "$MDLS/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/He Will Hold Me Fast - Click (96bpm)_1.mp3"         "$DEST/he-will-hold-me-fast/click.mp3"
+cp "$MDLS/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/He Will Hold Me Fast - Guide (96bpm)_1.mp3"         "$DEST/he-will-hold-me-fast/guide.mp3"
+cp "$MDLS/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/He Will Hold Me Fast - Drums (96bpm)_1.mp3"         "$DEST/he-will-hold-me-fast/drums.mp3"
+cp "$MDLS/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/He Will Hold Me Fast - Bass (96bpm)_1.mp3"          "$DEST/he-will-hold-me-fast/bass.mp3"
+cp "$MDLS/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/He Will Hold Me Fast - Guitar (96bpm)_1.mp3"        "$DEST/he-will-hold-me-fast/guitar.mp3"
+cp "$MDLS/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/He Will Hold Me Fast - Piano (96bpm)_1.mp3"         "$DEST/he-will-hold-me-fast/keys.mp3"
+cp "$MDLS/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/He Will Hold Me Fast - Organ&Synths (96bpm)_1.mp3"  "$DEST/he-will-hold-me-fast/pads.mp3"
+cp "$MDLS/He+Will+Hold+Me+Fast+-+96bpm+-+TWM+Multitracks/He Will Hold Me Fast - Vocals (96bpm)_1.mp3"        "$DEST/he-will-hold-me-fast/vocals.mp3"
+
+# GTG
+cp "$MDLS/greater-than-great-mp3/Click - GreaterThanGreatTWM.mp3"                         "$DEST/greater-than-great/click.mp3"
+cp "$MDLS/greater-than-great-mp3/Guide - GreaterThanGreatTWM.mp3"                         "$DEST/greater-than-great/guide.mp3"
+cp "$MDLS/greater-than-great-mp3/Drums - GreaterThanGreatTWM.mp3"                         "$DEST/greater-than-great/drums.mp3"
+cp "$MDLS/greater-than-great-mp3/Bass - GreaterThanGreatTWM.mp3"                          "$DEST/greater-than-great/bass.mp3"
+cp "$MDLS/greater-than-great-mp3/Guitars - GreaterThanGreatTWM.mp3"                       "$DEST/greater-than-great/guitar.mp3"
+cp "$MDLS/greater-than-great-mp3/Keyboards - GreaterThanGreatTWM.mp3"                     "$DEST/greater-than-great/keys.mp3"
+cp "$MDLS/greater-than-great-mp3/Backing Track-Reference - GreaterThanGreatTWM.mp3"       "$DEST/greater-than-great/backing.mp3"
+
+# WAGG
+WAGG_SRC="$MDLS/What+a+Generous+God+-+114bpm+-+TWM+Multitrack/What a Generous God (MP3 Stems)"
+cp "$WAGG_SRC/What-A-Generous-God-Click-_114bpm_.mp3"    "$DEST/what-a-generous-god/click.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Guide-_114bpm_.mp3"    "$DEST/what-a-generous-god/guide.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Drums-_114bpm_.mp3"    "$DEST/what-a-generous-god/drums.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Bass-_114bpm_.mp3"     "$DEST/what-a-generous-god/bass.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Guitar-1-_114bpm_.mp3" "$DEST/what-a-generous-god/guitar1.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Guitar-2-_114bpm_.mp3" "$DEST/what-a-generous-god/guitar2.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Perc-_114bpm_.mp3"     "$DEST/what-a-generous-god/perc.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Piano-_114bpm_.mp3"    "$DEST/what-a-generous-god/keys.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Synths-_114bpm_.mp3"   "$DEST/what-a-generous-god/pads.mp3"
+cp "$WAGG_SRC/What-A-Generous-God-Vocals-_114bpm_.mp3"   "$DEST/what-a-generous-god/vocals.mp3"
+```
+
+---
+
+## Replacement songs.js — complete spec
+
+```js
+export const SONGS = [
+  {
+    id: 1,
+    slug: 'he-will-hold-me-fast',
+    title: 'He Will Hold Me Fast',
+    key: 'A',
+    bpm: 96,
+    timeSignature: [4, 4],
+    barDuration: 2.5,       // 60/96*4
+    totalDuration: 302.472,
+    stems: [
+      { id: 'drums',  label: 'Drums',       file: 'drums.mp3',  color: '#FF6B6B', icon: '🥁' },
+      { id: 'bass',   label: 'Bass',        file: 'bass.mp3',   color: '#4ECDC4', icon: '🎸' },
+      { id: 'guitar', label: 'Guitar',      file: 'guitar.mp3', color: '#A8E6CF', icon: '🎸' },
+      { id: 'keys',   label: 'Piano',       file: 'keys.mp3',   color: '#45B7D1', icon: '🎹' },
+      { id: 'pads',   label: 'Organ/Synths',file: 'pads.mp3',   color: '#96CEB4', icon: '🎵' },
+      { id: 'vocals', label: 'Vocals',      file: 'vocals.mp3', color: '#DDA0DD', icon: '🎤' },
+      { id: 'click',  label: 'Click',       file: 'click.mp3',  color: '#F0A830', icon: '🔔' },
+      { id: 'guide',  label: 'Guide',       file: 'guide.mp3',  color: '#FFB347', icon: '🎧' },
+    ],
+    sections: [
+      { name: 'Intro',    startSec: 0,     color: '#4A9EFF' },
+      { name: 'Verse 1',  startSec: 10.0,  color: '#8A8A95' },
+      { name: 'Chorus',   startSec: 40.0,  color: '#F0A830' },
+      { name: 'Verse 2',  startSec: 80.0,  color: '#8A8A95' },
+      { name: 'Pre-C',    startSec: 120.0, color: '#F0A830' },
+      { name: 'Chorus',   startSec: 140.0, color: '#F0A830' },
+      { name: 'Bridge',   startSec: 190.0, color: '#4A9EFF' },
+      { name: 'Tag/Outro',startSec: 250.0, color: '#8A8A95' },
+    ],
+    cues: [
+      { timeSec: 0,     text: 'Count in...' },
+      { timeSec: 10.0,  text: 'When I fear my faith will fail, Christ will hold me fast' },
+      { timeSec: 40.0,  text: 'He will hold me fast, he will hold me fast' },
+      { timeSec: 80.0,  text: 'Those He saves are His delight...' },
+      { timeSec: 120.0, text: 'Build to the big chorus...' },
+      { timeSec: 140.0, text: 'He will hold me fast!' },
+      { timeSec: 190.0, text: 'Bridge — hold it out' },
+      { timeSec: 250.0, text: 'Tag it out, slow it down...' },
+    ],
+  },
+  {
+    id: 2,
+    slug: 'greater-than-great',
+    title: 'Greater Than Great',
+    key: 'G',
+    bpm: 97,
+    timeSignature: [4, 4],
+    barDuration: 2.474,     // 60/97*4
+    totalDuration: 230.721,
+    stems: [
+      { id: 'drums',   label: 'Drums',    file: 'drums.mp3',   color: '#FF6B6B', icon: '🥁' },
+      { id: 'bass',    label: 'Bass',     file: 'bass.mp3',    color: '#4ECDC4', icon: '🎸' },
+      { id: 'guitar',  label: 'Guitars',  file: 'guitar.mp3',  color: '#A8E6CF', icon: '🎸' },
+      { id: 'keys',    label: 'Keys',     file: 'keys.mp3',    color: '#45B7D1', icon: '🎹' },
+      { id: 'backing', label: 'Backing',  file: 'backing.mp3', color: '#96CEB4', icon: '🎵' },
+      { id: 'click',   label: 'Click',    file: 'click.mp3',   color: '#F0A830', icon: '🔔' },
+      { id: 'guide',   label: 'Guide',    file: 'guide.mp3',   color: '#FFB347', icon: '🎧' },
+    ],
+    sections: [
+      { name: 'Intro',    startSec: 0,     color: '#4A9EFF' },
+      { name: 'Verse 1',  startSec: 9.9,   color: '#8A8A95' },
+      { name: 'Pre-C',    startSec: 39.6,  color: '#F0A830' },
+      { name: 'Chorus',   startSec: 59.4,  color: '#F0A830' },
+      { name: 'Verse 2',  startSec: 99.0,  color: '#8A8A95' },
+      { name: 'Chorus',   startSec: 138.5, color: '#F0A830' },
+      { name: 'Bridge',   startSec: 178.1, color: '#4A9EFF' },
+      { name: 'Outro',    startSec: 207.8, color: '#8A8A95' },
+    ],
+    cues: [
+      { timeSec: 0,     text: 'Count in...' },
+      { timeSec: 9.9,   text: 'Greater than great is your name above names...' },
+      { timeSec: 39.6,  text: 'Build to the chorus...' },
+      { timeSec: 59.4,  text: 'Greater than great, greater than great!' },
+      { timeSec: 99.0,  text: 'Verse 2...' },
+      { timeSec: 138.5, text: 'Big chorus, everyone in!' },
+      { timeSec: 178.1, text: 'Bridge — lift it up' },
+      { timeSec: 207.8, text: 'Tag it home...' },
+    ],
+  },
+  {
+    id: 3,
+    slug: 'what-a-generous-god',
+    title: 'What a Generous God',
+    key: 'D',
+    bpm: 114,
+    timeSignature: [4, 4],
+    barDuration: 2.105,     // 60/114*4
+    totalDuration: 204.117,
+    stems: [
+      { id: 'drums',   label: 'Drums',    file: 'drums.mp3',   color: '#FF6B6B', icon: '🥁' },
+      { id: 'bass',    label: 'Bass',     file: 'bass.mp3',    color: '#4ECDC4', icon: '🎸' },
+      { id: 'guitar1', label: 'Guitar 1', file: 'guitar1.mp3', color: '#A8E6CF', icon: '🎸' },
+      { id: 'guitar2', label: 'Guitar 2', file: 'guitar2.mp3', color: '#82C9A0', icon: '🎸' },
+      { id: 'perc',    label: 'Perc',     file: 'perc.mp3',    color: '#FF9F68', icon: '🪘' },
+      { id: 'keys',    label: 'Piano',    file: 'keys.mp3',    color: '#45B7D1', icon: '🎹' },
+      { id: 'pads',    label: 'Synths',   file: 'pads.mp3',    color: '#96CEB4', icon: '🎵' },
+      { id: 'vocals',  label: 'Vocals',   file: 'vocals.mp3',  color: '#DDA0DD', icon: '🎤' },
+      { id: 'click',   label: 'Click',    file: 'click.mp3',   color: '#F0A830', icon: '🔔' },
+      { id: 'guide',   label: 'Guide',    file: 'guide.mp3',   color: '#FFB347', icon: '🎧' },
+    ],
+    sections: [
+      { name: 'Intro',    startSec: 0,     color: '#4A9EFF' },
+      { name: 'Verse 1',  startSec: 8.4,   color: '#8A8A95' },
+      { name: 'Pre-C',    startSec: 33.7,  color: '#F0A830' },
+      { name: 'Chorus',   startSec: 50.5,  color: '#F0A830' },
+      { name: 'Verse 2',  startSec: 84.2,  color: '#8A8A95' },
+      { name: 'Chorus',   startSec: 126.3, color: '#F0A830' },
+      { name: 'Bridge',   startSec: 168.4, color: '#4A9EFF' },
+      { name: 'Outro',    startSec: 193.9, color: '#8A8A95' },
+    ],
+    cues: [
+      { timeSec: 0,     text: 'Count in...' },
+      { timeSec: 8.4,   text: 'What a generous God, what a Father...' },
+      { timeSec: 33.7,  text: 'Building...' },
+      { timeSec: 50.5,  text: 'What a generous God!' },
+      { timeSec: 84.2,  text: 'Verse 2...' },
+      { timeSec: 126.3, text: 'Big chorus, all in!' },
+      { timeSec: 168.4, text: 'Bridge — build it out' },
+      { timeSec: 193.9, text: 'Tag it home...' },
+    ],
+  },
+];
+
+// STEM_CONFIG is now per-song via song.stems — remove global export
+```
+
+---
+
+## songs.js exports — remove ROOT_HZ, remove STEM_CONFIG
+
+Both are only used in AudioEngine.js synth functions that will be deleted.
+
+---
+
+## AudioEngine.js changes
+
+### loadSong: replace renderers array with fetch loop
+
+```js
+// Add at top of AudioEngine.js (after removing ROOT_HZ import):
+const BASE = import.meta.env.BASE_URL; // '/demos/audio-software-engineer-needed-for/'
+
+// Inside loadSong(), replace lines 283-317:
+let done = 0;
+for (const stemDef of song.stems) {
+  const url = `${BASE}audio/${song.slug}/${stemDef.file}`;
+  const resp = await fetch(url);
+  const arrayBuffer = await resp.arrayBuffer();
+  const buffer = await this.ctx.decodeAudioData(arrayBuffer);
+  const volumeGain = this.ctx.createGain();
+  const muteGain   = this.ctx.createGain();
+  const panner     = this.ctx.createStereoPanner();
+  volumeGain.gain.value = 1.0;
+  muteGain.gain.value   = 1.0;
+  panner.pan.value      = 0;
+  volumeGain.connect(panner);
+  panner.connect(muteGain);
+  muteGain.connect(this.masterGain);
+  this.stems[stemDef.id] = { buffer, source: null, volumeGain, muteGain, panner, volume: 80, muted: false, soloed: false, pan: 0 };
+  done++;
+  if (onProgress) onProgress(done / song.stems.length);
+}
+```
+
+### _createSources: disable looping
+
+```js
+src.loop = false;  // remove loopStart/loopEnd lines — real stems play once
+const loopOffset = offset % this.totalDuration;  // still need offset clamping
+src.start(t, loopOffset);
+```
+
+### Delete synth functions (lines 6-242):
+Remove: `generateNoiseBuffer`, `schedKick`, `schedSnare`, `schedHihat`, `schedBassNote`, `schedKeys`, `schedClickTick` (actually KEEP `schedClickTick` — used by countIn()), `schedGuideNote`, `renderDrums`, `renderBass`, `renderKeys`, `renderPads`, `renderClick`, `renderGuide`.
+
+Keep: `schedClickTick` (line 96-105), and the class from line 246 onward.
+
+Remove: `import { ROOT_HZ, STEM_CONFIG } from '../data/songs.js'` — replace with just `import {} from '../data/songs.js'` or remove the import entirely since songs.js no longer exports those.
+
+---
+
+## Mixer.jsx change (Step 4)
+
+Mixer currently `import { STEM_CONFIG } from '../data/songs.js'` and maps over it.
+
+**App.jsx**: Add `song={song}` to `<Mixer>` props (already has stemState, onVolume, onMute, onSolo, onPan).
+
+**Mixer.jsx**: Replace STEM_CONFIG usage:
+```jsx
+// Remove: import { STEM_CONFIG } from '../data/songs.js';
+// Add song to destructured props:
+export default function Mixer({ song, stemState, onVolume, onMute, onSolo, onPan }) {
+  if (!stemState || !song || Object.keys(stemState).length === 0) { ... }
+  return (
+    <div className="mixer">
+      {song.stems.map(config => {
+        const stem = stemState[config.id];
+        if (!stem) return null;
+        return <ChannelStrip key={config.id} config={config} stem={stem} ... />;
+      })}
+    </div>
+  );
+}
+```
+
+---
+
+## Lazy loading note
+
+Add `abortController` support to `loadSong` so switching songs mid-load cancels the in-flight fetches. Simple pattern: store `this._loadAC = new AbortController()` at start of loadSong, pass `{ signal: this._loadAC.signal }` to each `fetch()`, and call `this._loadAC.abort()` at the top of the next `loadSong` call. Prevents 200MB of concurrent fetches if user clicks between songs quickly.
+
+---
+
+## Vite config confirmed
+
+```js
+base: '/demos/audio-software-engineer-needed-for/',
+```
+`import.meta.env.BASE_URL` will correctly be `/demos/audio-software-engineer-needed-for/` in production. Audio URLs will be `/demos/audio-software-engineer-needed-for/audio/<slug>/<file>.mp3` — correct for GH Pages.
+
+Audio files in `demo-src/public/audio/` are served verbatim by Vite (not bundled). Vite may print large-file warnings but these are not build errors.
+
+---
+
+## handoff
+- produced: researcher3.out — exact stem durations/sizes (ffprobe), totalDuration per song, copy commands, replacement songs.js spec, AudioEngine.js diff points, Mixer.jsx/App.jsx change spec
+- decisions: totalDuration=302.472s/230.721s/204.117s (shortest full-arrangement stems); src.loop=false on all real stems; Mixer switches from global STEM_CONFIG to song.stems prop; schedClickTick kept for countIn; lazy-load with AbortController recommended
+- next needs: demo-builder (1) commits current state, (2) runs copy commands, (3) replaces songs.js, (4) edits AudioEngine.js (delete synth fns, swap loadSong, fix _createSources), (5) edits Mixer.jsx + App.jsx, (6) npm run build, (7) copy dist to michaelwegter.com/public/demos/..., (8) push
+- risks: 200MB total payload — lazy load essential; HWHMF click is 77s longer than other stems (plays fine, just keep going silently after song ends); WAGG guide ends at 178s (40s before song end, intentional); GTG has no isolated vocals stem (backing serves as full-mix reference channel)
