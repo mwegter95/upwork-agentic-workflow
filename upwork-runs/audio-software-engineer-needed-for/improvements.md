@@ -9,3 +9,6 @@
 ### demo-builder
 - [adherence] When inserting new array items into existing JS files, always read the exact array boundaries first and use Write (full rewrite) rather than Edit for structural changes -- Edit caused song 3 to land outside the SONGS array.
 - [tokens] The demo-src files were already fully built from a prior partial run; next time, scan for existing source files before re-reading the full researcher spec to avoid reading 560 lines when 50 would suffice.
+
+### build-ceo
+- [adherence] demo-builder twice stopped at the download stage without integrating stems or writing its output; its prompt should require an output file + an in-app edit, not just artifacts on disk, before handing to CEO.

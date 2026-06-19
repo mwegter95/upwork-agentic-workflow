@@ -1,0 +1,143 @@
+# Planner — Improve Pass 2
+
+## Change scope
+
+Audio asset swap only. All UI, Web Audio engine architecture, mixer/solo/mute/pan/loop/seek, section nav, count-in, cue overlay, and Scheduler remain untouched.
+
+Affected files (minimal):
+1. `demo-src/src/engine/AudioEngine.js` — remove 200 lines of synth helpers + render functions; replace `loadSong()` to fetch real stem files and decode via `decodeAudioData()`
+2. `demo-src/src/data/songs.js` — replace 3 fake songs with real Tommy Walker song metadata; remove `ROOT_HZ`; update `STEM_CONFIG` labels/icons to match real stem names
+3. `demo-src/public/audio/<slug>/` (3 new dirs) — 6 compressed MP3 stems each (~128-192 kbps), placed so Vite serves them statically
+4. Rebuild + copy dist to `../michaelwegter.com/public/demos/audio-software-engineer-needed-for/`
+5. Git commit + push (michaelwegter.com only; mw-backend unaffected)
+
+No media capture or proposal writer re-run needed (user's explicit instruction).
+
+---
+
+## AudioEngine.js refactor (key logic change)
+
+Current `loadSong()` calls six async render functions that produce short loop buffers. Replace with:
+
+```js
+async loadSong(song, onProgress) {
+  this._ensureContext();
+  this.stop();
+  this.song = song;
+  this.stems = {};
+  this.pauseOffset = 0;
+
+  const stemEntries = Object.entries(song.stems); // { id: 'filename.mp3' }
+  let done = 0;
+  for (const [id, filename] of stemEntries) {
+    const resp = await fetch(`audio/${song.slug}/${filename}`);
+    const arrayBuf = await resp.arrayBuffer();
+    const buf = await this.ctx.decodeAudioData(arrayBuf);
+    const volumeGain = this.ctx.createGain();
+    const muteGain = this.ctx.createGain();
+    const panner = this.ctx.createStereoPanner();
+    volumeGain.gain.value = 1.0;
+    muteGain.gain.value = 1.0;
+    panner.pan.value = 0;
+    volumeGain.connect(panner);
+    panner.connect(muteGain);
+    muteGain.connect(this.masterGain);
+    this.stems[id] = { buffer: buf, source: null, volumeGain, muteGain, panner,
+                       volume: 80, muted: false, soloed: false, pan: 0 };
+    done++;
+    if (onProgress) onProgress(done / stemEntries.length);
+  }
+  this.totalDuration = Object.values(this.stems)[0].buffer.duration;
+  return this.stems;
+}
+```
+
+Keep `countIn()` (it still uses synth click ticks via OfflineAudioContext — preserve `schedClickTick` only).
+Remove all other synth helpers and render functions.
+
+`_createSources()` stays unchanged — `src.loop = true` with `loopEnd = stem.buffer.duration` means songs auto-repeat if listener leaves it running (fine for demo purposes).
+
+---
+
+## songs.js schema addition
+
+Add `stems` field (map of stem ID to filename) to each song:
+
+```js
+{
+  id: 1,
+  slug: 'song-slug',       // used in fetch path: audio/song-slug/filename.mp3
+  title: 'Real Song Title',
+  artist: 'Tommy Walker',
+  key: 'A',
+  bpm: 75,
+  timeSignature: [4, 4],
+  totalDuration: 245,      // actual seconds from decoded buffer (also update this)
+  sections: [...],         // real section timestamps from chart/liner notes
+  cues: [...],             // real lyric/section cues
+  stems: {
+    drums:  '01_Drums.mp3',
+    bass:   '02_Bass.mp3',
+    keys:   '03_Keys.mp3',
+    pads:   '04_Pads.mp3',
+    click:  '05_Click.mp3',
+    guide:  '06_Guide.mp3',
+  }
+}
+```
+
+Remove `synthKey`, `barDuration`, `loopDuration` from all songs (no longer needed).
+Remove `ROOT_HZ` export.
+Update `STEM_CONFIG` labels/icons to match real stem content (e.g. guide -> "Guide Vox").
+
+---
+
+## File placement
+
+```
+demo-src/public/audio/
+  <slug1>/  01_Drums.mp3  02_Bass.mp3  03_Keys.mp3  04_Pads.mp3  05_Click.mp3  06_Guide.mp3
+  <slug2>/  ...
+  <slug3>/  ...
+```
+
+Vite includes everything in `public/` verbatim in the build. After `npm run build`, these appear at `/demos/audio-software-engineer-needed-for/audio/<slug>/filename.mp3`.
+
+Target total bundle: each stem ~2-4 MB at 128 kbps for a 3-5 min song. 6 stems x 3 songs = 18 files. Goal: keep each song under 20 MB total (transcode to 128 kbps if source is WAV or high-bitrate MP3).
+
+---
+
+## Research questions for pre-researcher
+
+The following must be resolved before demo-builder can act:
+
+1. **Song catalog** — Log in to https://www.tommywalkerministries.org/multitracksmenu (name: michael wegter, email: zweetztuph@gmail.com, uncheck "receive emails"). List all available song titles with stem packages.
+
+2. **Song selection** — Identify 3 songs suitable for a live worship band demo: mix of tempos (one slow ballad, one mid-tempo, one uptempo). For each, report:
+   - Exact title
+   - BPM (from package notes or click track if audible)
+   - Key
+   - Runtime (total seconds)
+   - Available stem file names and formats in the download package
+
+3. **Stem inventory** — For each of the 3 chosen songs, list every file in the download package. Confirm which files map to: drums, bass, keys/piano, pads/atmospheres, click/metronome, guide/reference vocals. Note any stems that don't fit (e.g. acoustic guitar, electric guitar) — we'll decide whether to add them to STEM_CONFIG or omit.
+
+4. **Section timestamps** — For each song, list named sections (intro, verse, pre-chorus, chorus, bridge, outro) with approximate start times in seconds. Source: PDF chart in the package, audio waveform cues, or known Tommy Walker song structure.
+
+5. **Download + transcode** — Download the 3 stem packages. If WAV or high-bitrate, transcode to MP3 128 kbps stereo. Report final file sizes. Place transcoded stems in `demo-src/public/audio/<slug>/` (use kebab-case slug derived from song title).
+
+6. **File path confirmation** — Report the exact relative paths of all 18 audio files placed (so demo-builder can wire `songs.stems` directly).
+
+If any song's stem package is missing a critical stem (drums or guide vocals), pick a different song.
+
+---
+
+## Plan status
+
+**READY FOR PRE-RESEARCHER.** Architecture and change scope are fully defined. Blocked on: song selection, stem file names, BPM/key/duration, section timestamps, and actual downloaded+transcoded files. Pre-researcher resolves all 6 questions above; demo-builder then executes with no remaining unknowns.
+
+## handoff
+- produced: planner2.out — minimal improve plan for real audio asset swap; AudioEngine refactor spec; songs.js schema; 6 research questions for pre-researcher
+- decisions: zero UI changes; synth render functions removed except `schedClickTick` (used by countIn); stems fetched via `fetch()/decodeAudioData()`; files land in `demo-src/public/audio/<slug>/`; no media capture or proposal writer re-run
+- next needs: pre-researcher logs in, picks 3 songs, downloads + transcodes stems, reports exact file names + timestamps + BPM/key; demo-builder then edits AudioEngine.js + songs.js, rebuilds, deploys
+- risks: Tommy Walker site may have no JS-accessible download links (requires real browser login); stem naming varies per package; total bundle size if WAV sources are large; section timestamps may be approximate without a PDF chart

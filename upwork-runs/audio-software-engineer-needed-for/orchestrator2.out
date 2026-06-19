@@ -1,0 +1,28 @@
+# Orchestrator — improve pass 2
+
+Scope: replace the 3 synth/placeholder songs in the worship multitrack demo with 3 REAL songs + real stems sourced from Tommy Walker Ministries. Everything else in the run stays as-is.
+
+## What changed (only this)
+- Source real stems: log in at https://www.tommywalkerministries.org/multitracksmenu
+  - name: `michael wegter` · email: `zweetztuph@gmail.com` · leave "receive emails" UNCHECKED.
+  - Download 3 actual songs, each with its stem set, and swap them in for the current 3.
+- Commit ALL outstanding work first (clean tree) before touching the demo.
+- Do NOT redo media-capture or proposal-writer (user explicit).
+
+## Affected steps
+- demo-builder (primary): fetch login + download stems, replace the demo's bundled audio + track metadata, keep the existing Web Audio engine/UI intact (surgical swap of audio assets + song registry only — do NOT rebuild the player).
+- deploy: re-push michaelwegter.com (real audio assets changed). Backend unaffected (demo is frontend-only).
+- deploy-test: re-run Playwright on live demo to confirm the 3 new songs load + play/seek/mute/solo/section-jump still work with real stems.
+- Unaffected pass-through: intake, planner, researcher, media-capture, proposal-writer, evaluator may re-check gates but proposal prose/media need not regenerate.
+
+## Watch / risks
+- Bundle size: real stems are large WAV/MP3. Convert stems to compressed format (e.g. mp3/aac ~128–192k) and keep total demo bundle reasonable so GH Pages + first-paint load stay sane; lazy-load per song if needed.
+- Stems must stay sample-aligned (same length/offset per song) for the multitrack mixer to sum correctly — verify alignment after transcode.
+- Login may be a gated form (Playwright on the Surface or local fetch). If the menu serves zipped multitracks, unzip and map stem files to track names in the song registry.
+- Licensing: these are real worship multitracks used as a demo per Michael's explicit request; keep it a portfolio demo, not redistribution.
+
+## handoff
+- produced: improve-pass direction — swap demo's 3 placeholder songs for 3 real Tommy Walker Ministries songs with real stems; commit-first; no media/proposal redo.
+- decisions: surgical asset+registry swap only, reuse existing Web Audio engine/UI; transcode stems compressed + keep them sample-aligned; demo stays frontend-only.
+- next needs: demo-builder logs in (creds above, emails unchecked), downloads 3 song stem sets, replaces audio assets + song metadata, rebuilds; then deploy + deploy-test re-run.
+- risks: bundle size/load time from real audio; stem alignment after transcode; gated download form; licensing framing (portfolio demo only).

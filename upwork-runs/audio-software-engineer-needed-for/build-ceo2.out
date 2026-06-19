@@ -1,0 +1,31 @@
+# CEO (Build) review — improve pass: real songs/real stems
+
+Verified on disk. The improvement requirement ("3 real songs with real stems, swapped in for the current 3, committed") is NOT met. demo-builder got partway (downloaded some real stems) but never integrated them.
+
+## What I found
+- demo-builder ran the TWM purchase/download flow (scripts 16:36-16:44). Result in `/tmp/twm_downloads/`:
+  - **He Will Hold Me Fast** (96bpm): 8 real stems extracted ✓ — Bass, Click, Drums, Guide, Guitar, Organ&Synths, Piano, Vocals (~12MB each mp3).
+  - **Greater Than Great** (97bpm): 210MB zip downloaded but **NOT extracted** (`greater-than-great/` is empty).
+  - **Highest Praises**: only a `Download Link.pdf` was saved — **no audio fetched**.
+- **App is unchanged.** `demo-src/src/data/songs.js` still has the 3 fictional synth songs (Endless Grace / Risen King / Holy Ground, synthKey-based). No real audio anywhere in `demo-src/` or the deployed `public/demos/audio-software-engineer-needed-for/` (assets dir = original 15:49 build).
+- **Nothing committed / rebuilt.** michaelwegter.com git is clean; no demo-builder2.out written; the live demo would still play synthesized stems.
+
+## Problems (must fix)
+1. Only 1 of 3 songs has usable real stems. Extract the Greater Than Great zip; for the 3rd song, open `Highest+Praises ... Download Link.pdf` to get the real stem URL and fetch it, OR pick another track whose stems download cleanly. End state: 3 songs × real stems on disk.
+2. Real stems are never wired in. The AudioEngine currently SYNTHESIZES stems (oscillators per synthKey). It must instead fetch+decode the real mp3 stems into AudioBuffers. Rework engine load path; drop/bypass synthesis for these songs.
+3. songs.js must be replaced with the 3 real songs: real title, bpm (HWHMF=96, GTG=97), key, and section/cue timings derived from the actual tracks (not the old fictional 8-bar synth math).
+4. Size/perf gate: 8 stems × ~12MB × 3 ≈ ~290MB is far too heavy for GitHub Pages and will bloat the site repo. Transcode before shipping — mono or low bitrate (~96kbps) and/or trim each stem to a representative ~60-90s clip (loop-aligned). Target total demo audio well under ~40MB. Copy transcoded stems to `public/demos/audio-software-engineer-needed-for/stems/<song>/`.
+5. Reconcile 8 real stems to the existing 6-channel mixer: map Drums/Bass/Guitar/Piano/Organ&Synths/Vocals to channel strips; route Click to the count-in/click feature and Guide to the guide-cue track (or add channels). Keep mixer mute/solo/pan/fader working against real buffers.
+6. Rebuild Vite (base `/demos/audio-software-engineer-needed-for/`), copy dist into the public demo dir, confirm it loads with no console errors. (Commit is deploy's job, but the build must pass first.)
+
+Note: media-capture and proposal-writer do NOT need to rerun (per the request) — only re-verify the demo end to end after the swap.
+
+Looping to the builder (no earlier step needs redoing — plan/research are sufficient; this is execution).
+
+## handoff
+- produced: build review for the real-stem improve pass; verdict fail with a concrete fix list.
+- decisions: loop to demo-builder, not REDIRECT — foundation is fine, only execution incomplete; real stems exist on disk under /tmp/twm_downloads.
+- next needs: demo-builder to finish download (GTG unzip + Highest Praises real audio), rework engine to play real decoded stems, rewrite songs.js with real metadata, transcode/trim stems to keep demo light, rebuild + copy into public demo dir.
+- risks: ~290MB raw stems will bloat the GH Pages repo if shipped untranscoded; full-song decode of 6-8 real stems may be slow on first paint (keep loading overlay; prefer trimmed clips); mixer channel count (6) vs real stem count (8) must be reconciled.
+
+VERDICT: fail

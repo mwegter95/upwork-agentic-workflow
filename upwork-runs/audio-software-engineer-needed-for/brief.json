@@ -41,7 +41,7 @@
     ],
     "tertiary_if_budget_allows": "Guide cues: spoken or visual cues ('Big finish', 'To the chorus') fired at scheduled beats",
     "design": "Pro stage/console aesthetic (dark near-black background, high-contrast meters, amber/teal LED accent glow, monospace numerics). Reference Ableton Live, Loop Community Prime, MultiTracks Playback. NOT michaelwegter.com portfolio style.",
-    "audio_sources": "Bundle CC-licensed free worship/instrumental stems or generate via synth to avoid licensing risk",
+    "audio_sources": "Bundle 3 real worship multitracks from Tommy Walker Ministries (login: michael wegter / zweetztuph@gmail.com at https://www.tommywalkerministries.org/multitracksmenu, uncheck 'receive emails'). Download actual stems per song, transcode to compressed format (mp3/aac 128-192k) for reasonable bundle size, keep sample-aligned.",
     "build_form": "Vite app (complexity justified by audio scheduling + mixer UI), source at upwork-runs/audio-software-engineer-needed-for/demo-src/, base='/demos/audio-software-engineer-needed-for/', copy dist/* to public demos folder. Frontend-only (no backend by default).",
     "feature_richness": 10,
     "richness_definition": "10/10 = genuinely full-featured, production-quality app with several working features, polished, ready to impress"

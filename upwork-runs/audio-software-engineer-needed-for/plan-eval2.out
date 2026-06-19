@@ -1,0 +1,40 @@
+# Plan Eval — Improve Pass 2
+
+## Rubric Assessment
+
+**Requirements coverage**
+- [x] User's stated requirement ("real songs with real stems") is the single change; plan addresses it in full
+- [x] Login credentials (tommywalkerministries.org, michael wegter / zweetztuph@gmail.com, no emails) are passed to pre-researcher
+- [x] 3 songs to be selected, stems downloaded + transcoded to MP3 128 kbps, placed under `demo-src/public/audio/<slug>/`
+- [x] "No media capture or proposal writer re-run" honored explicitly
+
+**Technology choices**
+- [x] Web Audio API `fetch()/decodeAudioData()` — correct; no new dependencies; works in all target browsers
+- [x] Vite `demo-src/public/` passthrough — correct; files served verbatim, no import registration needed
+- [x] AudioEngine.js refactor spec is precise: remove synth-render functions except `schedClickTick`, add per-stem fetch + decode at load time
+- [x] songs.js schema is complete: slug, stems map, key/bpm/duration/sections/cues
+
+**Testing approach**
+- Local: `npm run build` after demo-builder edits; Vite will fail if audio paths are wrong
+- Deploy: verify `/demos/audio-software-engineer-needed-for/` loads; play at least one stem per song
+- Defined in plan; no separate test framework needed for an asset swap
+
+**Scope feasibility**
+- Change touches: AudioEngine.js (stem-load logic), songs.js (3 song objects), `demo-src/public/audio/` (18 audio files)
+- Estimated effort: ~2 h for pre-researcher (login + download + transcode) + ~1 h for demo-builder (code edits + rebuild + deploy)
+- No API, no schema changes, no new UI components — easily within bounds
+
+**Design direction**
+- Not applicable; UI/design untouched per plan; correct
+
+## Problems
+
+None. The plan is minimal, fully specified, and all requirements are covered.
+
+## handoff
+- produced: plan-eval2.out — VERDICT pass; plan correctly scoped for real-audio asset swap
+- decisions: pre-researcher must execute all 6 research questions (login, select 3 songs, download+transcode, report exact file names + BPM/key/duration/sections); demo-builder edits AudioEngine.js + songs.js and rebuilds
+- next needs: pre-researcher is the immediate next step; needs Tommy Walker login and 6 answer questions before demo-builder can touch code
+- risks: Tommy Walker site login behavior unknown; stem naming/format varies per package; total bundle size after adding 18 MP3s (~5–15 MB expected, acceptable)
+
+VERDICT: pass

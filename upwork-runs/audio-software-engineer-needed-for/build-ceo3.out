@@ -1,0 +1,28 @@
+# CEO (Build) review — improve pass v3: real songs/real stems
+
+Verified on disk. Requirement ("3 real songs with real stems swapped in for the synth ones, committed") still NOT met. Progress since v2: all 3 songs are now fully downloaded and extracted to mp3 stems. But the app itself is still untouched — none of the integration happened.
+
+## State (what I confirmed)
+- **Downloads DONE (fix #1 from v2 satisfied).** In `multitracks-download/`, all 3 songs extracted as real mp3 stems:
+  - **He Will Hold Me Fast** (96bpm) — 8 stems: Bass, Click, Drums, Guide, Guitar, Organ&Synths, Piano, Vocals.
+  - **Greater Than Great** (97bpm) — `greater-than-great-mp3/`: Bass, Click, Drums, Guide, Guitars, Keyboards (+Backing Reference). ~2.3-6MB each.
+  - **What a Generous God** (114bpm) — `.../What a Generous God (MP3 Stems)/`: Bass, Click, Drums, Guide, Guitar-1, Guitar-2, Perc, Piano, Synths, Vocals.
+- **App UNCHANGED — integration never ran.** `demo-src/src/data/songs.js` still has the 3 fictional synth songs (Endless Grace / Risen King / Holy Ground, `synthKey`-based). No `stems/` in `public/demos/audio-software-engineer-needed-for/` (only assets/index.html/favicon, dir dated 15:49). `michaelwegter.com` git is clean. No `demo-builder2.out` written.
+
+## Problems (must fix — these are the unfinished v2 items, now unblocked)
+1. **Wire real stems into the engine.** AudioEngine currently SYNTHESIZES per-stem oscillators from `synthKey`. Replace the load path with fetch+`decodeAudioData` of the real mp3 stems into AudioBuffers (drop synthesis for these songs). Keep mixer routing (gain/pan/mute/solo) against the decoded buffers.
+2. **Rewrite `songs.js`** with the 3 real songs: real title/bpm/key, real stem file lists, and section/cue timings that match the actual tracks (not the old 8-bar synth math). Use the Click stem for count-in and Guide for the guide-cue track.
+3. **Reconcile stem count to the 6-channel mixer.** Songs have 6-10 stems; map to the strips consistently (e.g. Drums, Bass, Guitar(s), Keys/Piano, Synths/Organ, Vocals; fold Perc/2nd guitar where needed; Click→count-in, Guide→cue track or its own strip). Keep it identical across songs so the UI is stable.
+4. **Transcode/trim before shipping (size gate).** Raw stems are far too heavy for GitHub Pages (~200MB+). Transcode to ~96kbps mono and/or trim each stem to a loop-aligned ~60-90s clip. Target total demo audio well under ~40MB. Output to `public/demos/audio-software-engineer-needed-for/stems/<song-slug>/`.
+5. **Rebuild + copy.** `npm run build` in `demo-src` (base `/demos/audio-software-engineer-needed-for/`), copy `dist/*` into the public demo dir, confirm it loads with no console errors and real audio plays.
+6. **Write `demo-builder2.out`** with a handoff so deploy + deploy-test can run. Commit is deploy's job, but the build must pass first. Per the request, media-capture and proposal-writer do NOT rerun — only re-verify the demo end to end after the swap.
+
+No earlier step needs redoing — plan/research are fine; this is purely execution that stopped at the download stage twice. Looping to demo-builder.
+
+## handoff
+- produced: v3 build review; verdict fail; tightened fix list with all 3 songs' real stem inventories on disk.
+- decisions: loop to demo-builder (not REDIRECT); downloads are complete so remaining work is engine rewrite + songs.js + transcode/trim + rebuild only.
+- next needs: demo-builder must actually edit the app this time (engine load path + songs.js), transcode stems light, copy to public/demos/.../stems/, rebuild, and WRITE demo-builder2.out.
+- risks: shipping untranscoded stems will bloat the GH Pages repo (~200MB) — must trim/transcode; 6 vs 8-10 stems needs a consistent mixer mapping; first-paint decode of multiple mp3s may be slow (keep loading overlay, prefer trimmed clips).
+
+VERDICT: fail

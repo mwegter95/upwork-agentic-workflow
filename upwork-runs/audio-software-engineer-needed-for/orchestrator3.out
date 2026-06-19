@@ -1,0 +1,24 @@
+# Orchestrator (improve pass 3)
+
+Direction is identical to orchestrator2.out — that direction stands; re-issuing the same improve request. Only delta: tracks are already downloaded on disk (`multitracks-download/`), so demo-builder skips the login/fetch and goes straight to asset swap.
+
+Slug: `audio-software-engineer-needed-for` (unchanged). Demo is frontend-only.
+
+## Direction (unchanged from orchestrator2)
+- Swap the demo's 3 placeholder songs for 3 real Tommy Walker Ministries songs with real stems.
+- Commit ALL outstanding work first (clean tree) before touching the demo.
+- Surgical asset + song-registry swap only — reuse the existing Web Audio engine/UI, do NOT rebuild the player.
+- Transcode stems to a compressed format (mp3/aac ~128–192k), keep them sample-aligned, lazy-load per song if bundle grows.
+- Do NOT redo media-capture or proposal-writer (user explicit).
+
+## Affected steps
+- demo-builder (primary): use already-downloaded stems in `multitracks-download/`; pick 3 songs, transcode + align, replace bundled audio + track metadata in the song registry. No player rebuild.
+- deploy: re-push michaelwegter.com (audio assets changed). Backend unaffected.
+- deploy-test: re-run Playwright on live demo — confirm 3 new songs load + play/seek/mute/solo/section-jump work with real stems.
+- Pass-through: intake, planner, researcher, media-capture, proposal-writer, evaluator (gate re-check only; no prose/media regen).
+
+## handoff
+- produced: improve-pass-3 direction = same as pass 2 (swap to 3 real TWM songs w/ real stems), commit-first, no media/proposal redo.
+- decisions: reuse existing engine/UI; surgical asset+registry swap; stems already downloaded (skip login fetch); transcode compressed + sample-aligned.
+- next needs: demo-builder maps stems from `multitracks-download/` to 3 songs, replaces assets + metadata, rebuilds; then deploy + deploy-test.
+- risks: bundle size/load time; stem alignment after transcode; licensing framing (portfolio demo only).

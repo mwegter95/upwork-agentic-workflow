@@ -1,0 +1,19 @@
+# CEO (Plan) — Improve Pass 2
+
+Reviewed plan-eval2 handoff. The improvement is a single, well-bounded change: swap the 3 synth-rendered demo songs for 3 real Tommy Walker songs with real downloaded stems. Plan is correctly scoped — AudioEngine.js stem-load refactor + songs.js metadata + audio assets under demo-src/public/audio/, no UI/design/schema churn, no media-capture or proposal-writer re-run (per user).
+
+Verified:
+- Requirement fully addressed; login creds + "no emails" flag carried to pre-researcher.
+- Tech choices sound (Web Audio fetch/decodeAudioData, Vite public passthrough, no new deps).
+- Scope within caps; ~18 MP3s, acceptable bundle size.
+- "Commit everything first" instruction is a deploy/builder process note, not a planning gap — flag forward.
+
+No course-correction needed. Plan is good enough to build the win at richness 10 (the real-stem multitrack player is already the hero; real licensed content strengthens it materially).
+
+## handoff
+- produced: plan-ceo2.out — CEO pass on improve-pass-2 plan
+- decisions: proceed to pre-researcher → demo-builder → deploy → deploy-test; skip media-capture + proposal-writer per user
+- next needs: pre-researcher logs into tommywalkerministries.org (michael wegter / zweetztuph@gmail.com, receive-emails unchecked), selects 3 songs, downloads+transcodes stems, reports exact filenames/BPM/key/duration/sections; demo-builder must commit existing state before swapping
+- risks: Tommy Walker login/download flow unverified; stem naming/format varies per package — pre-researcher must report actuals
+
+VERDICT: pass

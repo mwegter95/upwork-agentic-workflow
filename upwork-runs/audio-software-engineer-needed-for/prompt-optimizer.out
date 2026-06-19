@@ -1,0 +1,19 @@
+# prompt-optimizer — audio-software-engineer-needed-for
+
+## Checkpoint
+- claude-workflow-studio: clean (no pending changes); agent prompts live in upwork-agentic-workflow/.claude/agents, not studio — nothing to commit there.
+- upwork-agentic-workflow: checkpointed pending run artifacts first (commit f6e6452), then applied edits.
+
+## Applied (safe, surgical — local commit cd132ea)
+- deploy-test.md: require a DOM inspection pass before final selectors; prefer text-content matching as primary fallback (selectors use semantic classes like .btn-transport/.song-chip, not aria/id).
+- proposal-writer.md: mandatory pre-save grep for U+2014/U+2013 incl. HTML title/alt attributes; added "read handoff tails first, open full upstream files only if insufficient."
+- demo-builder.md: scan for existing demo-src from a prior partial run before re-reading full research spec; for registry/array inserts read array boundaries and prefer full Write (or uniquely-anchored Edit) so the item lands inside the array braces.
+
+## Deferred for human review (risky / out of scope for a surgical prompt edit)
+- deploy-test [reuse]: create a shared `scripts/pw-test-template.mjs` Playwright scaffold to avoid rewriting boilerplate each run. Net-new infra file (not a prompt edit); no template content to derive safely here — recommend a human author it once.
+
+## handoff
+- produced: 3 surgical agent-prompt edits committed locally (cd132ea); pending artifacts checkpointed (f6e6452).
+- decisions: applied all 5 prompt-level suggestions (deploy-test/proposal-writer/demo-builder); deferred the 1 infra/scaffold suggestion.
+- next needs: none — final step of the run.
+- risks: studio repo untouched (prompts not located there, correct); no push performed (local-only per instructions); pw-test-template scaffold left for human.

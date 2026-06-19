@@ -1,0 +1,24 @@
+# Plan Gate — Improve Pass 2
+
+## Review
+
+Plan is tight and well-scoped. Checklist:
+
+- [x] Change scope minimal and correct: audio asset swap only; UI/engine/mixer architecture untouched
+- [x] AudioEngine.js refactor fully specified (fetch + decodeAudioData replacing synth renders; countIn click tick preserved)
+- [x] songs.js schema defined with all required fields (slug, stems map, key/bpm/duration/sections/cues)
+- [x] File placement specified: `demo-src/public/audio/<slug>/` -> Vite includes verbatim
+- [x] Build/deploy path clear: npm run build -> copy dist -> commit michaelwegter.com only
+- [x] Blockers correctly identified and enumerated as 6 research questions for pre-researcher
+- [x] No media capture or proposal writer re-run (per user instruction)
+- [x] No unknowns left unacknowledged; risks documented (site login, stem naming variance, bundle size)
+
+No gaps. Pre-researcher has everything it needs to act (login creds provided by user, exact questions listed, slug/path conventions specified).
+
+## handoff
+- produced: plan-gate2.out — VERDICT pass; plan is complete and routes correctly to pre-researcher
+- decisions: plan requires pre-researcher to log in, select 3 songs, download+transcode stems, report exact filenames+metadata; demo-builder then edits AudioEngine.js + songs.js, rebuilds, deploys
+- next needs: pre-researcher executes all 6 research questions; demo-builder needs exact file paths + BPM/key/duration/sections per song before touching any code
+- risks: Tommy Walker site may require real browser interaction; stem naming per package is unknown until download
+
+VERDICT: pass

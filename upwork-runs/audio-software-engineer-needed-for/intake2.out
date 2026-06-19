@@ -1,0 +1,19 @@
+# Intake — improve pass 2
+
+## Change captured
+User improvement request: replace 3 placeholder/synth songs in the worship multitrack demo with 3 real songs from Tommy Walker Ministries, using login credentials (michael wegter / zweetztuph@gmail.com).
+
+## Brief update
+Edited `brief.json` audio_sources field to specify:
+- Real songs sourced from https://www.tommywalkerministries.org/multitracksmenu
+- Login credentials (name, email, uncheck emails)
+- Transcode stems to compressed format (mp3/aac 128-192k) for bundle reasonableness
+- Keep stems sample-aligned post-transcode
+
+All other brief fields remain unchanged. Feature richness stays 10/10. Hero feature (sample-accurate multitrack transport + mixer) and supporting features (section nav, click track + count-in) are unaffected; only audio asset source and metadata swap.
+
+## handoff
+- produced: brief.json updated; audio_sources now specifies real Tommy Walker Ministries songs + transcode/alignment notes
+- decisions: minimal edit to audio_sources only; rest of brief and all prior decisions (Web Audio engine, UI, design aesthetic) preserved
+- next needs: demo-builder logs in to Tommy Walker site (creds in brief), downloads 3 song stem sets, replaces audio assets + song metadata, rebuilds Vite app, keeps Web Audio engine/mixer UI intact
+- risks: bundle size (mitigated by transcoding), stem alignment post-transcode, login form gating, licensing framing (portfolio demo scope)
