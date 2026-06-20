@@ -19,9 +19,14 @@ GitHub Actions builds and publishes to `https://michaelwegter.com` (about 1 to 2
 minutes).
 
 ## Push the backend (only if this project added/changed a mw-backend blueprint)
-In `../mw-backend`: commit and push to `main`. The Surface Pro auto-deploy
-watcher pulls and restarts the API (`https://api.michaelwegter.com`) within about
-30 seconds. Do NOT try to restart the Surface yourself; just push.
+Committed code in `../mw-backend` (blueprints, the bridge, `server.py`,
+`requirements.txt`) deploys by **git push — that is the whole mechanism**: `git
+add` + `git commit` + `git push` to `main`, and the Surface `run-server.ps1`
+auto-deploy pulls `--ff-only` and restarts the API (`https://api.michaelwegter.com`)
+within ~20–30s. Wait ~30s, then verify. Do NOT use `/run/exec` to push or
+hot-patch this code, and do NOT restart the Surface yourself — just push and wait.
+`/run/exec` is only for the host-level service below (starting / health-checking a
+separate non-Flask service), never for shipping committed Flask code.
 
 ### Real service behind a bridge (when the demo-builder built one on the Surface)
 This is fully your job to finish — get it answering publicly, no user help:

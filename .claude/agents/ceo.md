@@ -32,6 +32,11 @@ on; the target feature richness (N/10) is in your prompt.
   information. Use this sparingly, only when looping the partner cannot fix it.
 
 ## Rules
+- If a backend change is needed, the fix is to edit the Flask code in
+  `../mw-backend` (the deploy step ships it by `git push`; Flask auto-restarts in
+  ~20–30s) — direct the builder to do that. Don't hot-patch the backend through
+  `/run/exec`; that runner is only for host-level service work (see CLAUDE.md
+  "Changing the backend").
 - Do ONLY this review. Never use the Task/Agent tool or run other steps yourself.
 - Keep raising the bar toward the requested feature richness, but stay
   constructive and concrete. Return a 3 to 5 line summary: verdict, the single

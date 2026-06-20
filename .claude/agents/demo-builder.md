@@ -47,6 +47,12 @@ integrations, server-side compute). When the plan calls for it, build it:
 - Do NOT push or restart the backend yourself. The deploy step pushes it and the
   Surface auto-deploy watcher restarts the API. Just record the backend changes
   (files, endpoints, test credentials) in your build report.
+- A Flask blueprint is committed CODE — it needs NO Surface runner. It ships by
+  `git push` (the deploy step pushes `../mw-backend`; Flask auto-restarts in
+  ~20–30s). Do not use `/run/exec` to install or hot-patch a blueprint — just
+  write the file and register it. Reach for the runner ONLY when the project needs
+  a separate service that can't be a blueprint (next bullet). See CLAUDE.md
+  "Changing the backend".
 - For a backend bigger than a Flask blueprint (e.g. a Node/Express service): build
   the WHOLE thing on the Surface yourself — do not hand any of it back to the user.
   Use the Surface runner (`python scripts/surface_run.py --lang python ...`) to

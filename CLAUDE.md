@@ -153,6 +153,31 @@ never just static images.
 
 ---
 
+## Changing the backend: `git push` is the default; the runner is only for host work
+
+There are TWO different ways to affect the backend. Most of the time you want the
+first one — reach for the runner only when git genuinely can't do the job.
+
+1. **Committed code in `../mw-backend`** — Flask blueprints, the bridge
+   blueprints, `server.py`, `requirements.txt`. Deploy these the normal, reliable
+   way: edit/add the file in `../mw-backend`, then `git add` + `git commit` +
+   `git push` to `main` **from this Mac**. The Surface's `run-server.ps1`
+   auto-deploy polls origin, pulls `--ff-only`, and **restarts Flask within
+   ~20–30s** — then verify the live endpoint. Pushing is the expected, routine
+   action here. Do NOT try to recreate, hot-patch, or copy committed Flask code
+   onto the Surface through `/run/exec`; just commit and push and wait ~30s.
+
+2. **Host-level work that is NOT in the repo** — installing Node/Postgres,
+   building or starting a separate long-running service (e.g. a Node app), running
+   DB migrations or seeds, and (re)starting / health-checking that service. This
+   can't be git-deployed, so use the `/run/exec` runner (`scripts/surface_run.py`,
+   `scripts/surface_register_service.py`).
+
+So: a Flask blueprint or bridge = path 1 (push, wait ~30s, verify). A new Node
+service = both — build/run it on the Surface via path 2, and its small Flask
+bridge is committed via path 1. When a backend change isn't taking effect, prefer
+re-checking the push/auto-deploy (path 1) over fighting `/run/exec`.
+
 ## Surface runner — build and deploy real backends end-to-end, on your own
 
 When a project needs a real backend beyond a Flask blueprint (a Node/Express
