@@ -178,6 +178,32 @@ service = both — build/run it on the Surface via path 2, and its small Flask
 bridge is committed via path 1. When a backend change isn't taking effect, prefer
 re-checking the push/auto-deploy (path 1) over fighting `/run/exec`.
 
+### Verifying Flask is actually running (not a managed service)
+
+The correct Flask `/health` response is `{"ok": true, "status": "ok"}` or similar
+Flask-shaped JSON. **If you see `{"service": "adverteyes-api"}` or any other
+non-Flask response from `https://api.michaelwegter.com/health`, Flask is DOWN and
+a managed service has grabbed port 5050.** Do not attempt to use `/run/exec` in
+this state — it won't work.
+
+To recover: push any mw-backend commit. The auto-deploy watcher restarts Flask,
+and Flask's startup code now kills whatever is on port 5050 before binding. The
+Surface will be healthy within ~30s of the push.
+
+The `/run/exec` runner is only usable when Flask is healthy. Check
+`https://api.michaelwegter.com/run/health` — if it returns
+`{"ok": true, "enabled": true}` the runner is up. If it 403s or 404s, Flask is
+down; push to recover first.
+
+### Port conflicts from long-running Surface scripts
+
+When a script run via `/run/exec` times out, it now kills the entire process tree
+(including any services it spawned). This prevents demo backends from accumulating
+on the Surface and squatting ports. If you start a service via the runner without
+registering it in `services.json`, it will be killed on the next timeout — always
+register services with `scripts/surface_register_service.py` so `run-server.ps1`
+owns and restarts them.
+
 ## Surface runner — build and deploy real backends end-to-end, on your own
 
 When a project needs a real backend beyond a Flask blueprint (a Node/Express

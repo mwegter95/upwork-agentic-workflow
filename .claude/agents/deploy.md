@@ -46,8 +46,13 @@ This is fully your job to finish — get it answering publicly, no user help:
 - Poll `https://michaelwegter.com/work-samples/<slug>` and the demo at
   `/demos/<slug>/` until they return 200 with the expected content, or time out
   (~3 min) and report the failure. Use `scripts/link-check.mjs` or curl.
-- If the backend changed, poll `https://api.michaelwegter.com/health` until ok,
-  and hit one real endpoint the demo uses.
+- If the backend changed (or any time you push to mw-backend), verify Flask is
+  actually running — NOT a managed service. Correct Flask response:
+  `{"ok": true, ...}` WITHOUT a `"service"` field. If you see
+  `{"service": "adverteyes-api"}` or any non-Flask body, Flask is down; push
+  another mw-backend commit (even a no-op comment) to trigger the startup port
+  eviction and wait ~30s more. Do NOT proceed to deploy-test with a dead Flask.
+- After confirming Flask is up, hit one real endpoint the demo uses.
 
 ## Output
 Write your output with: the commit hashes pushed (frontend and backend), the live
