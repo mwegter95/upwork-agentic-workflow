@@ -95,7 +95,16 @@ loosely-anchored Edit can drop the item outside the array and break the build.
    `scripts/capture.mjs` smoke mode to confirm it paints with no console errors.
 2. Site still builds: in `../michaelwegter.com`, run `npm run build`. It must
    pass. Fix anything you broke in `workSamples.js`.
-3. Stay within the caps: at most ~12 files touched, build timeout 3 min.
+3. Dash gate (DoD #5): before declaring done, run
+   `grep -rl $'[–—]' demo-src/src index.html` (or the built demo dir) —
+   it must return nothing. This includes `index.html` `<title>`/meta, not just
+   `src/**`. Fix every hit. This is a hard gate; do not skip it.
+4. Live data gate: exercise EVERY hero/supporting endpoint against the real
+   service (curl the live `https://api.michaelwegter.com/<prefix>/...`), not just
+   `/health` + login and not just `npm run build`. A frontend mock-fallback can
+   silently mask a 502, so assert the response is real, non-empty data. NEVER
+   label fallback/mock data as "Live" in the UI without a visible offline badge.
+5. Stay within the caps: at most ~12 files touched, build timeout 3 min.
 
 ## Output
 Do not stop at intermediate artifacts (e.g. downloaded files/assets sitting on

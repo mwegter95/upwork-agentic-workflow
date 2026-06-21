@@ -20,7 +20,20 @@ plan/brief for what the demo is supposed to do.
   build). If the app has auth, log in (use the seeded demo credentials the
   demo-builder noted) and run a representative multi-step workflow.
 - If a backend is involved, confirm real requests to `https://api.michaelwegter.com`
-  return the expected data, not errors or empty responses.
+  return the expected data, not errors or empty responses. For ANY endpoint with a
+  frontend mock/fallback catch, assert the response is real, non-empty live data —
+  a green UI can be masking a 502.
+- Flask-shape early check: before deep testing, GET `/health` and confirm it is
+  Flask-shaped (`{"ok": true, ...}`, no `"service"` field). A non-Flask body (e.g.
+  `{"service": "...-api"}`) or an Express-style "Cannot POST /run/exec" means a
+  managed service grabbed the port / a misconfigured blueprint is intercepting —
+  report that root cause immediately instead of burning a full Playwright pass.
+- Named test case — infinite API loop: watch network for the first ~5s after load;
+  more than ~10 identical requests signals a 401-interceptor / unauthenticated-
+  context loop. Fail fast and name it.
+- Two-phase auth testing: (1) test the real login flow, then (2) use Playwright
+  `page.route()` to inject a valid auth header and verify the app is functional
+  when auth works — this separates "auth flow broken" from "app broken".
 - Compare what you observe to what the brief says should happen.
 
 Actually run the flows (a Playwright script, e.g. via `scripts/capture.mjs`

@@ -204,6 +204,17 @@ registering it in `services.json`, it will be killed on the next timeout — alw
 register services with `scripts/surface_register_service.py` so `run-server.ps1`
 owns and restarts them.
 
+### Node service scaffold gotchas (bake these in, do not rediscover per run)
+
+The Surface is Windows on Node 22+. Two issues have cost mid-run fix scripts on
+multiple runs — set them as defaults in any Node backend scaffold:
+
+- **SQLite:** `better-sqlite3` fails to install (gyp native compile breaks on
+  Node 22+ Windows). Use the built-in `node:sqlite` (or a pure-JS store) instead.
+- **HTTP fetch:** do NOT set a manual `Accept-Encoding` header with `node-fetch`
+  v2 (brotli is unsupported and throws "Invalid response body", surfacing as a
+  502 on the bridged endpoint). Prefer Node 22+ global `fetch`.
+
 ### Cloudflare tunnel config is sacred — NEVER touch it
 
 `~/.cloudflared/config.yml` on the Surface is owned exclusively by `run-server.ps1`.
