@@ -26,6 +26,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -48,7 +49,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={`layout${collapsed ? ' sidebar-collapsed' : ''}`}>
-      <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+      {mobileOpen && <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
+      <aside className={`sidebar${collapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`}>
         <div className="sidebar-logo">
           <span className="logo-icon">👁</span>
           {!collapsed && (
@@ -66,6 +68,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               to={n.path}
               className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
               title={collapsed ? n.label : undefined}
+              onClick={() => setMobileOpen(false)}
             >
               <span className="nav-icon">{n.icon}</span>
               {!collapsed && <span className="nav-label">{n.label}</span>}
@@ -89,6 +92,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="main-content">
         <header className="topbar">
           <div className="topbar-left">
+            <button
+              className="mobile-menu-btn btn btn-ghost"
+              onClick={() => { setCollapsed(false); setMobileOpen(true); }}
+              aria-label="Open menu"
+              title="Menu"
+            >
+              ☰
+            </button>
             <button
               className="gs-trigger"
               onClick={() => setSearchOpen(true)}
