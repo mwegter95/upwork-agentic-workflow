@@ -1,0 +1,327 @@
+# Researcher — AdvertEyes Build-Prep
+
+## Scaffold state (what exists vs. what needs to be written)
+
+### BACKEND — fully authored, do NOT regenerate
+- `upwork-runs/adverteyes/backend/src/` — 13 TS files, all routes complete
+- `upwork-runs/adverteyes/surface_build.py` — embeds full backend source into Surface workspace `data/runner-workspace/adverteyes-api/`, runs `npm install && npm run build`
+- `upwork-runs/adverteyes/surface_register.py` — registers service `adverteyes-api` on port `3741`, polls LISTENING
+- Run both via `python scripts/surface_run.py --lang python --file <script>` (workflow repo, from the runner)
+- **Flask bridge NOT yet written** — demo-builder must create `../mw-backend/adverteyes_blueprint.py` (PREFIX=`adverteyes`, UPSTREAM=`http://127.0.0.1:3741`) from `bridge_blueprint_template.py`, register in `server.py`. Do NOT push — deploy step does that.
+
+### FRONTEND — scaffold only, all pages/components EMPTY
+Existing files (keep as-is):
+- `demo-src/package.json` — deps already correct (see below)
+- `demo-src/vite.config.ts` — `base: '/demos/adverteyes/'` ✓
+- `demo-src/tsconfig.json` — must have `"moduleResolution": "Bundler"` (react-leaflet ESM fix)
+- `demo-src/index.html` — check/create if missing; link Google Fonts + `<div id="root">`
+- `demo-src/src/main.tsx` — imports leaflet CSS + leaflet-config before App ✓
+- `demo-src/src/leaflet-config.ts` — Leaflet icon fix ✓
+- `demo-src/src/styles.css` — full design system CSS ✓ (all tokens, layout, badges, tables, cards, modals)
+
+**Must write from scratch:**
+```
+src/App.tsx                    (BrowserRouter + routes + ProtectedRoute)
+src/contexts/AuthContext.tsx   (JWT token in localStorage, axios header)
+src/api/index.ts               (axios instance + all typed call fns)
+src/pages/Login.tsx
+src/pages/Dashboard.tsx
+src/pages/Inventory.tsx        (table + Leaflet map toggle)
+src/pages/Campaigns.tsx
+src/pages/Bookings.tsx
+src/pages/Weather.tsx
+src/pages/Users.tsx            (admin-only)
+src/components/Layout.tsx      (sidebar + topbar)
+src/components/DataTable.tsx   (sort/filter/paginate)
+src/components/KpiCard.tsx
+src/components/RoleBadge.tsx
+src/components/Modal.tsx
+```
+
+Build: `cd demo-src && npm install && npm run build` → copies `dist/*` to `../michaelwegter.com/public/demos/adverteyes/`
+Output dir must be: `../michaelwegter.com/public/demos/adverteyes/` (create if absent)
+
+---
+
+## Confirmed library versions (from package.json — use these exactly)
+
+### Frontend
+| Lib | Version |
+|-----|---------|
+| react | ^18.3.1 |
+| react-dom | ^18.3.1 |
+| react-router-dom | ^6.23.1 |
+| axios | ^1.6.8 |
+| leaflet | ^1.9.4 |
+| react-leaflet | ^4.2.1 |
+| recharts | ^2.12.7 |
+| @types/leaflet | ^1.9.12 |
+| vite | ^5.2.11 |
+| @vitejs/plugin-react | ^4.3.0 |
+| typescript | ^5.4.5 |
+
+### Backend (already authored — reference only)
+| Lib | Version |
+|-----|---------|
+| express | ^4.19.2 |
+| better-sqlite3 | ^9.4.3 |
+| jsonwebtoken | ^9.0.2 |
+| bcryptjs | ^2.4.3 |
+| node-fetch | ^2.7.0 |
+| dotenv | ^16.4.5 |
+| typescript | ^5.4.5 |
+
+---
+
+## API base URL + mock-fallback pattern
+
+```ts
+// src/api/index.ts
+const BASE = import.meta.env.VITE_API_URL ?? 'https://api.michaelwegter.com/adverteyes';
+const api = axios.create({ baseURL: BASE });
+// On 401/network error → clear token, redirect to login
+// CRITICAL: wrap ALL calls in try/catch and return mock data on failure (no console errors on first paint)
+```
+
+Demo-time `.env` (for local vite dev): `VITE_API_URL=http://localhost:3741`
+Production build uses the default `https://api.michaelwegter.com/adverteyes`.
+
+**Mock data strategy:** Each API module exports a `MOCK_*` constant. On fetch failure (network or 502), return mock. This ensures the demo loads cleanly if Surface is down.
+
+---
+
+## Exact API contracts (extracted from backend source)
+
+### Auth
+```
+POST /auth/login   { email, password } → { token, user: { id, email, name, role } }
+GET  /auth/me      (Bearer) → { user: { id, email, name, role } }
+```
+
+### Inventory
+```
+GET  /inventory              ?type=&status=&search= → { inventory: Unit[] }
+GET  /inventory/:id          → { unit: Unit, bookings: Booking[] }
+POST /inventory              (admin|sales) { name, type, lat, lng, monthly_rate, ... }
+PUT  /inventory/:id          (admin)
+DELETE /inventory/:id        (admin)
+```
+Unit fields: `id, name, type, subtype, location_desc, city, state, lat, lng, width_ft, height_ft, illuminated(0|1), digital(0|1), monthly_rate, weekly_impressions, status, notes`
+
+### Campaigns
+```
+GET  /campaigns              ?client_id=&status= → { campaigns: Campaign[] }
+     (client role sees only their campaigns — server-side filtered to client_id=1)
+     Campaign includes: client_name, booking_count, booked_value
+GET  /campaigns/:id          → { campaign, bookings }
+POST /campaigns              (admin|sales)
+PUT  /campaigns/:id          (admin|sales)
+```
+
+### Bookings
+```
+GET  /bookings               ?campaign_id=&unit_id=&status= → { bookings: Booking[] }
+     Booking includes: campaign_name, client_name, unit_name, unit_type, city, location_desc
+POST /bookings/check-conflict  { unit_id, start_date, end_date } → { conflict: bool, detail: string|null }
+POST /bookings               → 201 { id, conflict:false } | 409 { error, conflict:true, detail }
+PUT  /bookings/:id           (admin|sales)
+DELETE /bookings/:id         (admin) → soft cancel
+```
+
+### Users
+```
+GET  /users                  (admin) → { users: User[] }
+POST /users                  (admin) { email, password, name, role }
+PUT  /users/:id              (admin) { name, role, active, password? }
+```
+
+### Weather
+```
+GET /weather/:unitId         → {
+  unit: { id, name, city, lat, lng },
+  current: { temperature, wind_speed, wind_gusts, precipitation, weather_code, weather_desc,
+             install_risk:'HIGH'|'LOW', install_risk_reason },
+  hourly: { time[], temperature_2m[], wind_speed_10m[], precipitation[], weather_code[], visibility[] },
+  timezone, fetched_at
+}
+```
+
+### Traffic
+```
+GET /traffic/:unitId         → { currentSpeed, freeFlowSpeed, congestionPct, confidence, roadClosure,
+                                  trafficScore, impression_multiplier, source:'tomtom'|'mock', unit:{id,name} }
+GET /traffic                 → { traffic: [{id, name, currentSpeed, freeFlowSpeed, congestionPct, ...}] }
+```
+
+### Health
+```
+GET /health → { ok:true, service:'adverteyes-api', ts:... }
+```
+
+---
+
+## RBAC nav matrix (enforce server-side; also hide nav on frontend)
+
+| Page | Admin | Sales | Ops | Client |
+|------|-------|-------|-----|--------|
+| Dashboard | ✓ | ✓ | ✓ | ✗ |
+| Inventory | ✓ | ✓ | ✓ | ✗ |
+| Campaigns | ✓ | ✓ | ✗ | ✓ (own only) |
+| Bookings | ✓ | ✓ | ✓ | ✗ |
+| Weather | ✓ | ✓ | ✓ | ✗ |
+| Users | ✓ | ✗ | ✗ | ✗ |
+
+Client login → redirect to `/campaigns` (only page they see).
+
+---
+
+## Seeded demo credentials (4 quick-fill cards on Login page)
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@adverteyes.com | Admin123! |
+| Sales | sarah@adverteyes.com | Sales123! |
+| Ops/Installer | ops@adverteyes.com | Ops1234! |
+| Client-Viewer | client@forddealer.com | Client12! |
+
+---
+
+## Design system (already in styles.css — reference only)
+
+Palette tokens: `--bg-primary:#0A0E1A`, `--bg-surface:#131929`, `--bg-elevated:#1C2540`, `--border:#2D3A5A`, `--accent:#FF6B1A`, `--accent-blue:#3B82F6`, `--success:#22C55E`, `--warning:#EAB308`, `--error:#EF4444`, `--text-primary:#E8EDF5`, `--text-muted:#8A9AC0`
+
+Fonts (Google Fonts — add to `index.html`):
+```html
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+```
+
+CSS classes already defined in styles.css (use, don't redefine): `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-danger`, `.btn-sm`, `.input`, `.select`, `.card`, `.card-header`, `.badge`, `.badge-available`, `.badge-booked`, `.badge-maintenance`, `.badge-active`, `.badge-upcoming`, `.badge-completed`, `.badge-confirmed`, `.badge-pending`, `.badge-cancelled`, `.badge-admin`, `.badge-sales`, `.badge-ops`, `.badge-client`, `.badge-risk-high`, `.badge-risk-low`, `.badge-billboard`, `.badge-dooh`, `.badge-truckside`, `.layout`, `.sidebar`, `.sidebar.collapsed`, `.sidebar-logo`, `.nav-item`, `.nav-item.active`, `.topbar`, `.main-content`, `.page-body`, `.kpi-grid`, `.toolbar`, `.table-wrap`, `table/th/td`, `.pagination`, `.detail-overlay`, `.detail-panel`, `.modal-overlay`, `.modal`, `.login-page`, `.login-card`, `.cred-cards`, `.cred-card`, `.map-container`, `.traffic-bar`, `.traffic-fill`, `.spinner`, `.empty-state`, `.conflict-alert`, `.conflict-ok`, `.form-grid-2`, `.dashboard-grid`, `.activity-item`
+
+Sidebar: collapsed=64px, expanded=220px, toggle button in sidebar-footer or topbar.
+Logo: 👁 AdvertEyes (display font, accent color) + sub "OOH OPS PLATFORM"
+
+---
+
+## Dashboard KPIs (computed from API data)
+
+Fetch on mount: `/inventory`, `/campaigns`, `/bookings`, activity from seed.
+
+| KPI | Formula |
+|-----|---------|
+| Total Units | `inventory.length` |
+| Occupancy Rate | `booked / total * 100`% |
+| Active Campaigns | `campaigns.filter(c=>c.status==='active').length` |
+| Revenue MTD | sum of active booking `monthly_rate` (simplified; label "Est. Revenue MTD") |
+
+Recharts `<AreaChart>` or `<BarChart>` for occupancy trend — use static week-labels + computed values from booking counts by type (billboard/dooh/truckside). Chart height 220px, fill `--accent` with 20% opacity.
+
+Activity feed: `GET /activity` not exposed — use 8 seeded activity strings from db.ts as static array in Dashboard mock, or add a `/activity` route. Simpler: hardcode the 8 recent events from seed as mock activity in the Dashboard component (no new endpoint needed).
+
+---
+
+## Inventory Leaflet map spec
+
+- Center: Tampa Bay approx `[27.95, -82.46]`, zoom 11
+- Marker color per type: billboard=`#FF6B1A` (orange), dooh=`#3B82F6` (blue), truckside=`#EAB308` (yellow)
+- Use `L.circleMarker` (not default marker) → avoids icon-path issue entirely; radius 8-12px
+- Fill-opacity scales with traffic congestion: `0.5 + (congestionPct/200)` (fetch from `/traffic` batch endpoint)
+- Click marker → show asset detail panel (right slide-in `.detail-panel`) with weather+traffic data
+- Map toggle: Table view | Map view (`.view-toggle` buttons)
+
+---
+
+## Conflict detection demo flow (Bookings page)
+
+1. Select unit "Dale Mabry & Kennedy" (id=3, currently `booked`)
+2. Enter dates overlapping existing Ford Summer booking (2026-06-01 to 2026-08-31)
+3. POST `/bookings/check-conflict` → `{ conflict: true, detail: "Conflicts with campaign \"Ford Summer Sales Event\" (2026-06-01 to 2026-08-31)" }`
+4. Show `.conflict-alert` div with the detail message
+5. Block submit until conflict resolved (different dates or unit)
+
+---
+
+## Seed asset lat/lng for map (key units with Tampa Bay coords)
+
+| id | Name | lat | lng | type |
+|----|------|-----|-----|------|
+| 1 | I-275 North Gateway | 28.0854 | -82.4374 | billboard |
+| 2 | I-4 West Corridor | 27.9834 | -82.3521 | billboard |
+| 9 | Channelside Bay Plaza Digital | 27.9435 | -82.4521 | dooh |
+| 11 | Amalie Arena North Facade | 27.9428 | -82.4512 | dooh |
+| 12 | Tampa Int'l Airport Arrivals | 27.9763 | -82.5326 | dooh |
+| 16 | City Route Alpha — Tampa Core | 27.9506 | -82.4572 | truckside |
+(All 20 units have lat/lng from the seed — fetch from `/inventory`)
+
+---
+
+## workSamples.js entry (ready to paste)
+
+```js
+{
+  id: 9,
+  slug: 'adverteyes',
+  title: 'AdvertEyes Ops Platform',
+  description: 'Full-stack internal ops tool for an OOH advertising company. Inventory management, campaign booking with conflict detection, live weather/install-risk via Open-Meteo, real-time traffic scoring via TomTom, and role-based access control across 4 user tiers.',
+  category: 'Data',
+  status: 'live',
+  href: import.meta.env.BASE_URL + 'demos/adverteyes/',
+  color: '#FF6B1A',
+  icon: '👁',
+  frameStyle: 'walnut',
+  client: 'AdvertEyes (Fictional OOH Advertising Co.)',
+  postingSummary: 'Full Stack Developer for custom web app with admin dashboard, RBAC, API integrations, React/Node/PostgreSQL.',
+  builtFor: 'Upwork Proposal',
+  date: '2026-06-19',
+  proposalDeckUrl: '',
+  proposalPageUrl: '',
+}
+```
+Add to `src/data/workSamples.js` after the last entry. Confirm `id` is unique vs existing entries.
+
+---
+
+## Free API notes
+
+### Open-Meteo (no key, no signup)
+URL: `https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,visibility&current=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=3`
+Already proxied in backend weather route. Frontend calls `/weather/:unitId` — never calls Open-Meteo directly.
+
+### TomTom Traffic Flow (free tier)
+Free tier: 2,500 req/day. Signup at developer.tomtom.com → generate API key → set `TOMTOM_API_KEY` in Surface `.env` at `data/runner-workspace/adverteyes-api/.env`.
+Backend falls back to realistic deterministic mock when key absent — demo works without the key.
+Backend caches 15-min TTL per unit. Frontend calls `/traffic/:unitId` or `/traffic` (batch).
+
+---
+
+## Vite tsconfig requirement
+
+`demo-src/tsconfig.json` must include:
+```json
+"moduleResolution": "Bundler"
+```
+Without this, react-leaflet ESM imports break. Verify before build.
+
+---
+
+## Surface deployment checklist (demo-builder owns steps 1-4)
+
+1. `python scripts/surface_run.py --lang python --file upwork-runs/adverteyes/surface_build.py`
+   - Writes all TS source to Surface `data/runner-workspace/adverteyes-api/`
+   - Runs `npm install && npm run build`
+   - Success: `[build] Success` + no TS errors
+2. `python scripts/surface_run.py --lang python --file upwork-runs/adverteyes/surface_register.py`
+   - Registers `adverteyes-api` service, port 3741
+   - Success: prints `LISTENING` within ~30s
+3. Write `../mw-backend/adverteyes_blueprint.py` (PREFIX=adverteyes, UPSTREAM=http://127.0.0.1:3741)
+4. Register in `../mw-backend/server.py`: `from adverteyes_blueprint import bridge_bp; app.register_blueprint(bridge_bp)` — do NOT push
+5. Build frontend: `cd demo-src && npm install && npm run build`
+6. Verify `../michaelwegter.com/public/demos/adverteyes/index.html` exists
+7. Add workSamples.js entry
+
+---
+
+## handoff
+- produced: Confirmed scaffold state (backend authored/ready, frontend shell only), exact API contracts per route, library versions, RBAC matrix, KPI formulas, Leaflet map spec, conflict demo flow, workSamples.js entry, Surface deployment checklist, TomTom free-tier note, styles.css class inventory
+- decisions: Frontend must write 15 new files; use circleMarkers (not default Leaflet markers) to sidestep icon issues; activity feed hardcoded from seed (no new endpoint); TomTom mock fallback already in backend (demo works without key)
+- next needs: demo-builder writes all frontend files using contracts above, runs surface_build + register, builds Vite, copies to public/demos/adverteyes/, adds workSamples.js entry, writes adverteyes_blueprint.py
+- risks: tsconfig `moduleResolution:Bundler` must be set or react-leaflet will break; Surface Node build may need retry — seeded-data fallback already wired in backend routes; TomTom key optional (mock fallback active)

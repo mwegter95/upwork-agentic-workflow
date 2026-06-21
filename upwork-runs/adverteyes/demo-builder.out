@@ -1,0 +1,34 @@
+# demo-builder — AdvertEyes (improve pass 3 / fix run)
+
+## Root Cause Fixed
+
+deploy-test identified ONE blocker: infinite 401 reload loop at login caused by two cooperating bugs:
+
+1. `src/api/index.ts` — 401 interceptor unconditionally redirected to `/demos/adverteyes/` on any 401, including unauthenticated requests made before login.
+2. `src/contexts/AlertsContext.tsx` — `fetchBookings()`/`fetchCampaigns()` fired on mount with no auth guard, generating 401s on the login page (triggering the interceptor above -> reload -> repeat).
+
+## Changes Made
+
+### `src/api/index.ts` (2-line fix)
+Added `hadToken` check before redirect — now only redirects on session expiry (token existed then 401 = real auth failure), not on unauthenticated API calls made from the login page.
+
+### `src/contexts/AlertsContext.tsx`
+- Added `import { useAuth } from './AuthContext'`
+- Added `const { user } = useAuth()` in provider
+- Changed `useEffect` dependency from `[]` to `[user]` with early `if (!user) return` guard
+
+AlertsContext now waits for an authenticated user before calling any API endpoints, eliminating all unauthenticated 401s at login.
+
+## Build & Deploy
+
+- `npm run build` — success, 954 modules, no errors
+- Replaced stale JS bundle: `index-Dr-vqYnr.js` -> `index-VmW0JRvj.js` (git rm old, git add new)
+- `index.html` updated to reference new bundle hash
+- CSS unchanged (`index-BsSdBTbi.css`)
+- Files staged in `michaelwegter.com`, ready for `deploy` step to commit + push
+
+## handoff
+- produced: Fixed demo build (2 files changed) staged in michaelwegter.com/public/demos/adverteyes/ — git rm old JS bundle, git add new JS + updated index.html
+- decisions: Surgical 2-file fix only; underlying app confirmed fully functional by deploy-test's bypass test — no other changes needed
+- next needs: deploy step commits + pushes michaelwegter.com to GitHub Pages; wait ~2 min for Pages build; re-run deploy-test to confirm VERDICT: pass
+- risks: None — fix matches exactly what deploy-test diagnosed; all feature tests already passed in authenticated bypass mode

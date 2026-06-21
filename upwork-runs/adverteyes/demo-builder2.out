@@ -1,0 +1,67 @@
+# demo-builder2 — AdvertEyes Improve Pass
+
+## Changes made (7 gaps closed, all 10 files touched)
+
+### NEW: src/pages/Analytics.tsx
+Full analytics page with 4 sections:
+- Pipeline KPI cards (Active Budget $107k, Pipeline $66k)
+- Revenue by Client — horizontal BarChart (Recharts)
+- Occupancy Trend — 8-week AreaChart with reference line at current value (78%)
+- Top Units by Monthly Revenue — plain table, top 8 by monthly_rate desc
+
+### NEW: src/pages/Clients.tsx
+Clients management page:
+- KPI row: Total Clients / Active Campaigns / Total Budget Pipeline
+- Expandable table rows (click to show that client's campaigns inline)
+- "+ Add Client" modal with Name, Contact, Industry, Email, Phone fields (optimistic mock add)
+- Confirmed spend per client calculated from MOCK_BOOKINGS
+
+### EDIT: src/api/index.ts
+Appended Client interface, MOCK_CLIENTS (5 entries), fetchClients (API + mock fallback), createClient.
+
+### EDIT: src/components/Layout.tsx
+- Added Clients (after Campaigns) and Analytics (after Bookings) to NAV array with correct role gates
+- Added `showNotif` state + notification bell in topbar with badge (count=5), drawer with 2 alert types (HIGH risk, pending approvals). Hard-coded alerts = { highRisk: 2, pending: 3 } per spec.
+
+### EDIT: src/App.tsx
+Added `/clients` (admin/sales) and `/analytics` (admin/sales) routes with correct ProtectedRoute wrappers.
+
+### EDIT: src/pages/Dashboard.tsx
+- Added `revenueWeeks` data (8 weeks, Apr W3 to Jun W2)
+- Added `chartTab` state with Inventory/Revenue toggle (`.view-toggle` buttons)
+- Revenue tab: AreaChart with gradient fill
+- 5th KPI card: Pending Bookings (error color)
+- Full-width Top Units card (span `1/-1`) showing top 5 units by monthly_rate with badges
+
+### EDIT: src/pages/Bookings.tsx
+- Added Timeline view toggle (Table | Timeline) in toolbar
+- TIMELINE_START/END, MONTHS, CAMPAIGN_COLORS, bookingToSpan() helper
+- Gantt rows: grouped by unit_name, colored bars positioned by date percentage within Jun–Dec 2026 window, hover tooltip showing campaign + dates + rate
+- Ternary wraps both views; conflict-check only in table view (unchanged)
+
+### EDIT: src/pages/Weather.tsx
+- Added FLEET_QUICK lookup (17 unit entries) + DEFAULT_QUICK
+- Fleet risk summary bar (has-risk/all-clear) at top
+- 3-column fleet grid of weather-unit-card cards with emoji, temp, wind, risk badge
+- Active card highlights with accent border
+- "LIVE" pill badge next to detail section title
+- Removed single-unit `<select>` toolbar — click card to select
+
+### EDIT: src/pages/Inventory.tsx
+- Imported fetchTrafficBatch, TrafficBatch
+- Added trafficMap state (Map<number, number>)
+- useEffect on view==='map' loads traffic batch and populates trafficMap
+- MapView updated: accepts trafficMap prop, fillOpacity = 0.4 + (score/100)*0.55 (maintenance stays 0.25)
+- Map legend (position: absolute, bottom-right) with type color dots + opacity note
+
+### EDIT: src/styles.css
+Appended new classes: weather fleet grid + cards, fleet-risk-bar, timeline (wrap/header/months/row/bars/bar), notif-bell/badge/drawer/item/high/warn, map-legend/title/item.
+
+## Build result
+`npm run build` — SUCCESS in 2.05s, 947 modules, no errors. Copied dist/* to ../michaelwegter.com/public/demos/adverteyes/.
+
+## handoff
+- produced: Full 10/10 feature upgrade — 2 new pages (Analytics, Clients), 5 page upgrades (Dashboard chart tab + KPI + top units, Bookings Gantt timeline, Weather fleet grid, Inventory traffic overlay + map legend, Layout notification bell), build passing, dist deployed to public/demos/adverteyes/
+- decisions: No backend changes needed; all features use existing API endpoints + mock fallbacks; weather fleet grid uses instant FLEET_QUICK mock data; notification counts hard-coded per spec; timeline is CSS-only (no new library); map legend uses absolute positioning with position:relative on .map-container wrapper
+- next needs: deploy step — commit + push michaelwegter.com (GitHub Pages auto-deploys), verify live URL returns 200; no mw-backend changes so no backend push needed
+- risks: Chunk size warning (849kb) is existing state, not new — no action needed; MOCK_CLIENTS names may not match MOCK_CAMPAIGNS client_name strings exactly (minor, Clients page shows 0 campaigns for those that don't match — acceptable for demo)

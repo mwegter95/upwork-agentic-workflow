@@ -1,0 +1,78 @@
+# AdvertEyes — Improve Pass Plan (planner2)
+
+Existing build: full-stack Node/TS + SQLite backend on Surface port 3741, Vite/React frontend, Flask bridge registered in mw-backend. **Neither repo was ever pushed.** All features are built; the demo is completely non-functional in production due to missing deploy.
+
+## Root causes (from deploy-test.out)
+
+1. `git push` never ran on either repo → GH Pages 404, Flask bridge 404
+2. `authLogin` + `authMe` call live API with zero fallback → login screen is a dead end when bridge is down
+3. Surface service may have crashed (unconfirmed)
+
+## Delta plan for demo-builder (surgical edits only — no rebuild)
+
+### Fix 1: Auth fallback (highest priority)
+
+**File:** `demo-src/src/api/index.ts`
+
+Add a `DEMO_USERS` map and `OFFLINE_MODE` flag. In `authLogin`, if the API call fails (network error or non-200), check credentials against `DEMO_USERS` and return a signed-enough JWT-shaped object (base64 payload, no real sig) stored in localStorage. In `authMe`, decode the stored token if API call fails.
+
+Credentials to hard-code in the fallback map:
+| email | password | role | name |
+|---|---|---|---|
+| admin@adverteyes.com | Admin123! | admin | Alex Rivera |
+| sarah@adverteyes.com | Sales123! | sales | Sarah Chen |
+| ops@adverteyes.com | Ops1234! | ops | Jordan Mills |
+| client@forddealer.com | Client12! | client | Dale Ford |
+
+Fallback token payload: `{sub: user.id, role, name, email, exp: now+86400}` base64-encoded, prefix `demo.`. Store as `ae_token`. AuthMe decodes it by prefix check.
+
+This ensures the demo is fully interactive even if the Surface service is unreachable.
+
+### Fix 2: Surface service verification + restart
+
+Before pushing, demo-builder must:
+1. Send `surface_check_and_start.py` (already exists) to confirm port 3741 is LISTENING
+2. If not listening, send `surface_register.py` (idempotent) to re-register and wait for LISTENING
+3. Hit `http://localhost:3741/health` via Surface runner to confirm response
+
+### Fix 3: Rebuild frontend dist
+
+After editing `api/index.ts`, run `npm run build` in `demo-src/`, copy `dist/*` → `../michaelwegter.com/public/demos/adverteyes/`.
+
+### Fix 4: Stage both repos for deploy step
+
+demo-builder stages the files but does NOT push (deploy step owns pushing):
+- `michaelwegter.com`: `git add public/demos/adverteyes/ src/data/workSamples.js`
+- `mw-backend`: `git add adverteyes_blueprint.py server.py`
+
+Confirm both have staged changes, then write demo-builder2.out so deploy step knows what to push.
+
+## Feature richness check (10/10)
+
+The existing feature set already targets richness 10:
+- Dashboard with 5 live KPI cards + campaign/booking summary
+- Inventory with Leaflet map (color-coded markers, click → weather+traffic panel)
+- Campaigns view with booking drilldown
+- Bookings with conflict detection (POST /bookings/check-conflict)
+- Live weather via Open-Meteo
+- TomTom traffic scoring (mock fallback if no key)
+- RBAC: 4 roles, nav filtered server+client side
+- User management (admin only)
+
+No scope expansion needed — restore functionality, add auth fallback, confirm build. Richness 10 is already designed in.
+
+## Files to touch
+
+| File | Change |
+|---|---|
+| `demo-src/src/api/index.ts` | Add DEMO_USERS fallback in authLogin + authMe (~30 lines) |
+| `demo-src/src/api/index.ts` | No other files need changes for the auth fix |
+| `demo-src/` | `npm run build` → copy dist to public/demos/adverteyes/ |
+
+No changes to backend, blueprint, or plan.
+
+## handoff
+- produced: Improve-pass delta plan — auth fallback spec, Surface service check, rebuild+stage sequence
+- decisions: Smallest change path: edit authLogin/authMe only, no backend changes, no new features
+- next needs: demo-builder2 applies Fix 1 (api/index.ts auth fallback, ~30 lines), verifies Surface service, rebuilds dist, stages both repos; writes demo-builder2.out
+- risks: If Surface Node service has crashed and re-registration fails, the offline auth fallback makes the frontend still fully demoable; deploy step must confirm Flask bridge is actually live before marking success

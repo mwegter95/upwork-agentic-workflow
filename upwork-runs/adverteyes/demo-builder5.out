@@ -1,0 +1,27 @@
+# demo-builder5 — AdvertEyes 10/10 improvement pass
+
+## Changes made
+
+### New files
+- `src/contexts/ToastContext.tsx` — Toast provider + `useToast()` hook. Renders up to N stacked toasts (top-right, auto-dismiss 4.2s, slide-in animation). Types: success/error/warn/info.
+- `src/contexts/AlertsContext.tsx` — AlertsProvider that fetches bookings+campaigns on mount, computes `pendingBookings`, `expiringSoon` (active campaigns ending within 30 days), `highRiskUnits` (static 2 from fleet weather data), `maintenanceUnits` (set by Dashboard via context setter). Exposes `total` count.
+- `src/pages/Reports.tsx` — Full Reports page with 3 export sections: Bookings (filterable by status + date range), Campaign Summary (with budget utilization bar), Inventory Performance (CPM column). Each section: preview table (first 10 rows) + Download CSV button (client-side Blob). 4 KPI cards at top.
+
+### Edited files
+- `src/App.tsx` — Added `ToastProvider` + `AlertsProvider` wrapping the app; added `/reports` route (admin/sales roles).
+- `src/components/Layout.tsx` — Removed hardcoded `ALERTS`, uses `useAlerts()` for dynamic notification count + drawer items (including maintenance units + expiring campaigns). Added Reports to NAV (admin/sales).
+- `src/pages/Dashboard.tsx` — Added import of `useAlerts`, calls `setMaintenanceUnits` after inventory loads. Added "Needs Attention" alert panel (warning-bordered card) between charts and top-units table, computing: maintenance units, pending bookings, campaigns expiring in 30 days — all from already-loaded data. Renders only when ≥1 alert.
+- `src/pages/Bookings.tsx` — Added Calendar view (3rd tab after Table/Timeline). Month grid (7-col, Su-Sa), colored dots per active booking per day (using `campaignColor(campaign_id)`), today highlighted, selected day shows booking detail list below with unit/campaign/rate/type. Prev/Next month navigation. Also replaced all `alert()` calls with `useToast()`.
+- `src/pages/Analytics.tsx` — Expanded data arrays to 16 actual weeks (Mar W1 to Jun W4) + 4 projected weeks. Added `range` state (4|8|12 weeks) with toggle buttons in page header. All charts (occupancy trend, revenue forecast) slice data to `range`. Forecast footer stats (latest actual, peak, growth%) computed dynamically from range.
+- `src/pages/Campaigns.tsx` — Replaced `alert()` with `useToast()` (success on save, warn on validation, error on API fail).
+- `src/pages/Users.tsx` — Same alert→toast migration.
+- `src/styles.css` — Added CSS sections: Toast container + animations (toast-in slideX), Calendar grid (`.cal-*`), Reports page (`.report-*`), notification info variant.
+
+## Build result
+`npm run build` — SUCCESS. 950 modules, 1.98s, no TS errors. 881kB bundle (pre-existing chunk warning). Dist copied to `../michaelwegter.com/public/demos/adverteyes/`. Old stale assets removed.
+
+## handoff
+- produced: 3 new source files + 8 surgical edits; rebuilt frontend (clean); dist deployed to public/demos/adverteyes/ (2 files: index-BC2JBBL5.js + index-N3yPtbDz.css)
+- decisions: ToastProvider wraps AlertsProvider wraps BrowserRouter in App.tsx (order matters — toast used inside router pages); Calendar view uses IIFE pattern to keep calendar logic inline without extracting a separate component (avoids new file); date range filter in Analytics slices the expanded 16-entry data arrays, keeping all 4 projected weeks appended regardless of range
+- next needs: deploy step — push ../michaelwegter.com to GitHub Pages (frontend already in public/demos/adverteyes/); also run surface_weather_rebuild4.py if runner is back to fix backend weather; push ../mw-backend Flask bridge
+- risks: AlertsContext `setMaintenanceUnits` called in Dashboard useEffect dependency array — if Dashboard mounts multiple times, stable reference via `useCallback` not used; this is cosmetic-only (no infinite loop since it's an external setter); Surface runner was 404 in prior passes so backend weather/traffic may still be mock fallback

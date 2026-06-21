@@ -1,0 +1,57 @@
+# Plan Eval (Rubric) — AdvertEyes Improve Pass (plan-eval2)
+
+## Context
+
+Improve pass: original plan passed all rubric gates (plan-eval.out VERDICT: pass). planner2.out is a surgical delta — no new features, no design changes, no tech changes. Evaluating only the delta plan's changes against rubric gates.
+
+## Rubric Assessment
+
+### 1. Requirements coverage
+
+All original requirements remain covered (unchanged from plan-eval.out). The delta adds:
+- Auth fallback with 4 hard-coded demo users (admin/sales/ops/client roles) — ensures RBAC demo survives API downtime
+- No requirements removed or regressed
+
+The improve pass does not reduce richness or drop any feature. ✓
+
+### 2. Technology choices
+
+No new tech introduced. Auth fallback uses:
+- Base64-encoded mock JWT (`demo.` prefix) — simple, browser-native, zero new deps
+- `OFFLINE_MODE` flag in existing `api/index.ts` — no new files, no new libs
+
+Correct approach: simpler than adding an offline-first library; fully reversible. ✓
+
+### 3. Testing approach
+
+- Playwright deploy-test will re-run against live after deploy (deploy-test2)
+- Auth fallback is exercised by any login attempt with seeded credentials — no special test hook needed
+- Surface port check is done during demo-builder2 via surface runner (explicit 3741 verification)
+
+Sufficient. ✓
+
+### 4. Scope feasibility at richness 10/10
+
+Delta is ~30 lines in one file (`api/index.ts`) + `npm run build` + git staging. Estimated demo-builder2 time: under 15 minutes. No risk of scope creep.
+
+Feature richness at 10/10 is already fully delivered by the existing build — this pass restores access to it. ✓
+
+### 5. Design direction fit for industry
+
+Unaffected. Original design (dark navy + billboard orange, Barlow Condensed, OOH data-dense ops aesthetic) is already built. ✓
+
+---
+
+## Issues
+
+None. The delta plan is minimal, unambiguous, and does not regress any hard gate.
+
+---
+
+## handoff
+- produced: Rubric eval of improve-pass delta plan — passes all gates
+- decisions: VERDICT pass; all five rubric criteria met; zero blocking issues
+- next needs: demo-builder2 executes Fix 1 (api/index.ts auth fallback), Fix 2 (Surface port check), Fix 3 (npm run build + copy dist), Fix 4 (git stage both repos)
+- risks: Surface service state unknown until demo-builder2 checks port 3741; auth fallback fully mitigates frontend risk if service is down
+
+VERDICT: pass

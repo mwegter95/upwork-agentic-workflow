@@ -1,0 +1,28 @@
+# CEO Review (Plan) — AdvertEyes
+
+## Verdict rationale
+Plan is build-ready and ambitious enough to win at richness 10/10. Eval passed all hard gates; I concur.
+
+**Strengths confirmed:**
+- Real full-stack depth: Node/TS Express + SQLite on Surface, JWT auth, 4-role RBAC with server-side filtering, 18 REST endpoints, conflict-detecting booking engine. Not a mock — genuine working backend.
+- Two real free APIs, both proxied server-side (keys hidden, cached): Open-Meteo (weather + install-risk) and TomTom Flow (congestion → effective-CPM framing). The OOH domain framing on both is credible, not bolted-on.
+- Hero (Campaign Ops multi-view) + 2 supporting (Weather/Traffic intel, RBAC/User mgmt) respects the cap while delivering several real features.
+- Design system is research-derived (Outfront/Lamar/Clear Channel), bespoke, explicitly not michaelwegter.com's look. Dark navy + billboard orange is the right register.
+- Risk mitigations are concrete: TomTom 15-min TTL cache (well under 2,500/day), 3-step Leaflet/Vite fix, seeded-data fallback if Surface compile flakes.
+
+## Directives carried forward (no re-plan needed)
+1. Cover letter MUST acknowledge Next.js + React Native fluency (posting mandatory skills) while explaining the Vite/React-TS demo is per Michael's directive. This is the single biggest "missing mandatory skill" exposure — proposal-writer cannot skip it.
+2. Proposal/demo notes must state the SQLite schema is PostgreSQL-portable (posting lists Postgres/Mongo/MySQL).
+3. demo-builder: apply all 3 Leaflet fixes verbatim; proxy BOTH APIs through Node; consolidate FE files where sensible (22 FE is over soft cap — justified, but trim duplicate components if possible).
+4. Keep RBAC enforcement server-side (not just hidden nav) — it is the differentiator the posting explicitly calls out; the live test must prove a Client-viewer cannot reach Users data.
+
+## Problems
+None blocking. The Next.js/React Native gap is a proposal-framing task, not a plan defect.
+
+## handoff
+- produced: CEO sign-off on plan; pass to researcher/demo-builder
+- decisions: PASS — no re-plan, no redirect; deviations (Next.js, Postgres, React Native) are user-directed/Surface-constrained and accepted with framing requirements
+- next needs: researcher confirms TomTom free-tier signup + any final brand assets; demo-builder builds to plan precisely with the 4 directives above
+- risks: mandatory-skill framing (Next.js/RN) must land in cover letter; TomTom quota + Surface Node compile already mitigated in plan
+
+VERDICT: pass

@@ -1,0 +1,31 @@
+# build-ceo2 — AdvertEyes (improve pass, reviewing demo-builder5)
+
+Verified on disk: ran `npm run build` (clean), grepped source + deployed bundle. Did not assume.
+
+## GOOD (10/10 breadth confirmed)
+- `npm run build` clean: 950 modules, 2.08s, no TS errors. dist deployed to `public/demos/adverteyes/` (index-BC2JBBL5.js + index-N3yPtbDz.css, ts 11:19).
+- New real features land and are wired: Reports page (3 CSV export sections w/ client-side Blob, KPI cards, filters), Bookings Calendar view (month grid + per-day booking detail), Analytics 4/8/12-week range toggle over 16 actual + 4 projected weeks, dynamic AlertsContext (notif drawer count, Dashboard "Needs Attention" panel), Toast system replacing all `alert()`. This is genuine 10/10 scope on top of builder3/4's KPI deltas, forecast/CPM, Gantt, budget bars, one-click login.
+- Prior weather 502 source fix + honest "sample data / API offline" degradation from builder4 untouched and intact.
+
+## BLOCKER (1) — REPEAT hard-gate violation, DoD #5: demo must contain NO em/en dashes
+The prior CEO (build-ceo.out, reviewing builder4) FAILED the run on exactly this and looped the builder to sweep all `—`/`–`. demo-builder5 did NOT do the sweep — it added features instead and INTRODUCED MORE dashes (Reports.tsx alone adds 12). Current state is worse than before:
+- 62 em/en dash occurrences across `demo-src/src/**` (was ~40).
+- Confirmed shipping: 61 occurrences in the DEPLOYED minified bundle `index-BC2JBBL5.js`.
+- Spread: Reports.tsx(12), Bookings.tsx(12 incl en dash `–` at 375), Inventory.tsx(6), Analytics.tsx(6), Dashboard.tsx(5), Campaigns.tsx(8), Users.tsx(3), Weather.tsx(2), Clients.tsx(2), api/index.ts(2 unit names L145/146), DataTable.tsx(125), Login.tsx(43), AlertsContext.tsx:6(comment), styles.css:1(comment).
+- Both empty-cell placeholders (`?? '—'`, ✓/— toggles) AND prose strings ("record(s) — page X of Y", "OOH ops overview — Tampa Bay market", "Save failed — API may be offline", "Booking Timeline — Jun to Dec 2026", "Revenue Forecast — 8-Week...", etc.) are affected. The gate is explicit and absolute; placeholders must become plain `-` too.
+
+This fails DoD #5 regardless of backend state. Runner-independent and mechanical.
+
+## INSTRUCTION to demo-builder (loop, no redirect)
+Sweep EVERY `—` and `–` in `demo-src/src/**` (incl. legend dashes like Weather.tsx:238 `— Wind`, Analytics.tsx:265 `— Actual`; chart titles; placeholders; toast/error strings; unit names in api/index.ts; comments for safety). Replace with `-`, `:`, `,`, or `·` to preserve layout (use `-` for empty-cell placeholders and legend markers). Then `npm run build` and recopy dist into `../michaelwegter.com/public/demos/adverteyes/` (remove stale assets). Verify zero: `grep -ro $'[–—]' demo-src/src | wc -l` and `grep -o $'[–—]' <new bundle> | wc -l` must both be 0. Do NOT touch the new features, weather fix, or honesty labels — they are good.
+
+## Decision
+No earlier-step redirect — plan/research/foundation and feature richness are sound (this is a true 10/10 build). One repeat mechanical hard-gate defect. FAIL + loop demo-builder for the dash sweep + rebuild + recopy ONLY.
+
+## handoff
+- produced: build review of demo-builder5 — confirmed clean build + real 10/10 features (Reports/Calendar/range-toggle/Alerts/Toast); found REPEAT DoD#5 dash violation (62 in src, 61 in deployed bundle), worse than builder4
+- decisions: FAIL + loop demo-builder for the em/en-dash sweep only (runner-independent); no redirect; features/weather/honesty fixes are GOOD, leave untouched
+- next needs: demo-builder replaces all `—`/`–` in demo-src/src/** with `-`/`:`/`,`/`·`, rebuilds, recopies dist, verifies grep count == 0 in both source and bundle
+- risks: builder ignored this exact instruction last pass — next pass must verify zero dashes before claiming done; Surface /run/exec was 404 in prior passes so live weather verify stays deploy's job (not a build blocker; demo degrades honestly)
+
+VERDICT: fail

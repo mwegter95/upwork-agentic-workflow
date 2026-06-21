@@ -1,0 +1,124 @@
+{
+  "projectTitle": "AdvertEyes - OOH Advertising Internal Operations Platform",
+  "slug": "adverteyes",
+  "clientDomain": "Out-of-Home (OOH) Advertising",
+  "clientContext": "Billboard, truckside (vehicle wraps), and digital (DOOH screens) advertising company. Project is a custom internal business platform to improve operations, manage inventory, organize campaigns, and provide a clean dashboard for internal teams.",
+  "projectScope": "Custom internal/business platform (not SaaS) with admin dashboard, user management, role-based access control, REST APIs, database-driven workflows, and responsive React frontend.",
+  "featureRichness": 10,
+  "featureRichnessInterpretation": "Full, production-quality app with several real working features; hero is a multi-view module (Campaign Operations Dashboard); keep scope fenced and shippable within demo constraints.",
+  "heroFeature": {
+    "name": "Campaign Operations Dashboard",
+    "description": "Inventory management (map/table views), campaign bookings with conflict detection, KPI tiles, filterable reports/tables, role-based access control gates what users see and do.",
+    "core": [
+      "Inventory units (billboards, truck-side wraps, DOOH screens) with location, size, type, availability, base rate",
+      "Clients/advertisers and their campaigns (flights with start/end, budget, assigned inventory, creative)",
+      "Bookings linking campaigns to inventory over date ranges with conflict detection",
+      "User roles (Admin, Sales, Ops/Installer, Client-viewer) with RBAC protecting routes and views",
+      "Dashboard KPI tiles and filterable reports"
+    ]
+  },
+  "supportingFeatures": [
+    {
+      "name": "Weather & Install-Risk Integration",
+      "description": "Open-Meteo API (free, no key required) displays weather/install-risk panels per billboard location. Weather drives real OOH decisions: dayparting, install scheduling (no vinyl in rain/high wind), impression estimates. Flags campaigns/installs at risk.",
+      "api": "Open-Meteo (api.open-meteo.com) — current + forecast by lat/lng"
+    },
+    {
+      "name": "User & Role Management",
+      "description": "Demo login seeded per role (Admin, Sales, Ops, Client-viewer). Protected routes, token-based auth, role-gating on dashboard views/operations."
+    }
+  ],
+  "techStackRequired": {
+    "frontend": [
+      "React",
+      "TypeScript",
+      "Vite (bundler)",
+      "base: '/demos/adverteyes/'"
+    ],
+    "backend": [
+      "Node.js",
+      "Express.js",
+      "TypeScript",
+      "REST API",
+      "Database (PostgreSQL, MongoDB, or SQLite for demo)"
+    ],
+    "mandatory": [
+      "Full-Stack Development",
+      "React",
+      "TypeScript",
+      "JavaScript",
+      "Node.js",
+      "Express.js",
+      "REST API Development",
+      "API Integration",
+      "Admin Dashboard Development",
+      "User Management",
+      "Role-Based Access Control (RBAC)",
+      "Database Management",
+      "Responsive Web Design",
+      "Git / GitHub"
+    ],
+    "niceToHave": [
+      "Experience building business management platforms",
+      "Experience with internal tools and admin dashboards",
+      "Experience with CRM, payment, email, or third-party integrations",
+      "Experience with AWS, Docker, CI/CD, or deployment workflows",
+      "Clean, scalable application architecture"
+    ]
+  },
+  "postingRequiredAnswers": [
+    "Experience with custom web applications — demonstrated in cover letter and app architecture",
+    "Examples of admin dashboards/internal tools built — the Campaign Operations Dashboard is the anchor",
+    "Strongest frontend and backend stack — React + TypeScript (FE), Node + Express + TypeScript (BE)",
+    "API integration experience — Open-Meteo weather integration + internal REST APIs for inventory/campaigns/bookings",
+    "Availability this week — can start immediately (demo is production-ready)"
+  ],
+  "postingConstraints": {
+    "duration": "1-3 months",
+    "hoursPerWeek": "Less than 30 hrs/week",
+    "rate": "Hourly, willing to pay higher for experienced",
+    "location": "US-only freelancers",
+    "experienceLevel": "Expert"
+  },
+  "explicitRequirementsFromPosting": [
+    "Build and improve custom web application features",
+    "Develop clean, responsive frontend interfaces",
+    "Create and enhance admin dashboard functionality",
+    "Implement user management and role-based access control",
+    "Build secure backend APIs and database-driven workflows",
+    "Connect third-party APIs and business tools (Open-Meteo)",
+    "Create forms, filters, tables, reports, and dashboard views",
+    "Improve application performance and user experience",
+    "Work with authentication, authorization, and protected routes",
+    "Support deployment and final project handoff",
+    "Document completed work and technical decisions"
+  ],
+  "backendinforcement": {
+    "approach": "Node.js + Express.js service (TypeScript) via Surface runner, registered as a persistent service, bridged through Flask at api.michaelwegter.com/adverteyes",
+    "fallback": "If Surface Node build proves flaky within budget: seed realistic data in-frontend, call Open-Meteo directly from browser, document the Node/TS architecture as intended backend",
+    "seed": "Demo database (SQLite or JSON store) with sample inventory (billboards, trucks, DOOH screens), campaigns, bookings, users per role"
+  },
+  "designDirection": {
+    "theme": "Confident operations-tool aesthetic: bold, visual, high-contrast, map-forward. Professional but strong.",
+    "constraint": "NOT michaelwegter.com's dark gallery theme, mustard/cyan palette, or portfolio styling",
+    "research": "OOH industry cues (Lamar, Clear Channel Outdoor, OUTFRONT) pulled by researcher",
+    "deliverables": "Exact palette (with hex), typography, mood, and layout style set by planner"
+  },
+  "acceptanceCriteria": [
+    "Demo builds and loads with no console errors on first paint",
+    "Campaign Operations Dashboard is functional with inventory, campaigns, bookings, and RBAC views",
+    "Open-Meteo weather integration displays for billboard locations",
+    "User login with demo accounts seeded per role (Admin, Sales, Ops, Client-viewer)",
+    "Protected routes enforce RBAC; each role sees appropriate views/operations",
+    "REST API backend (Node + Express + TS) is live and bridged at api.michaelwegter.com/adverteyes",
+    "Demo URL (/demos/adverteyes/) resolves locally; after deploy /work-samples/adverteyes returns 200",
+    "No em/en dashes in any prose (cover letter, one-pager, deck)",
+    "Demo link appears in cover letter and deck",
+    "Design is cohesive, bespoke, and fit for OOH industry (not portfolio look)",
+    "All explicit posting requirements are addressed in cover letter and represented in demo or deck"
+  ],
+  "demoHostingPath": "../michaelwegter.com/public/demos/adverteyes/",
+  "liveUrl": "https://michaelwegter.com/demos/adverteyes/",
+  "workSampleRoute": "/work-samples/adverteyes",
+  "registryId": 13
+}

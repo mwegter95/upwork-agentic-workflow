@@ -1,0 +1,40 @@
+# Plan Gate Review — AdvertEyes (pass #2)
+
+## Evaluation
+
+**Research completeness:** All 5 previously-flagged gate questions are now answered by the pre-researcher.
+
+1. **OOH competitor UI/brand** — Resolved. Design system derived from Outfront Media, Lamar, and Clear Channel research. Palette locked with 9 hex tokens; typography confirmed (Barlow Condensed / DM Sans / IBM Plex Mono).
+2. **Leaflet.js + Vite viability** — Resolved. All 3 known failure modes documented with exact fixes (CSS import order in main.tsx, icon fix in leaflet-config.ts, tsconfig `moduleResolution: Bundler`).
+3. **Open-Meteo field names** — Resolved. Corrected to `weather_code` and `wind_speed_10m` (not the misnamed variants). Endpoint + params confirmed.
+4. **Free traffic API** — Resolved. TomTom Traffic Flow API confirmed (free tier 2,500 req/day), endpoint verified, 15-min TTL cache mandated to stay under quota.
+5. **OOH industry KPI benchmarks** — Resolved. Industry-accurate tier data: highway static ~55k imp/wk ($4 CPM), DOOH hub ~180k imp/wk ($8 CPM), truckside ~28k imp/wk ($0.85 CPM).
+
+**Architecture:** Fully specified — Node/TS + Express + better-sqlite3 on Surface (13 source files), React/TS + Vite frontend (22 source files), Flask bridge at `/adverteyes/...`. 5-step deployment path documented.
+
+**Design system:** Locked — 9 CSS token palette (deep navy + billboard orange), 3 typefaces with Google Fonts import string, layout spec (64/220px collapsible sidebar).
+
+**Database:** Complete seed spec — 20 inventory units (3 OOH tiers), 5 clients, 8 campaigns, 15 bookings (including deliberate conflict scenario), 4 RBAC users with credentials.
+
+**RBAC:** 4 roles defined (Admin/Sales/Ops/Client-viewer), per-page access matrix specified, server-side filter for Client-viewer.
+
+**API routes:** All 18 endpoints specified with method, path, query params, role gate.
+
+**KPI formulas:** 4 domain-accurate formulas fully specified.
+
+**Scope fences:** Clear and complete.
+
+**Risks — documented with mitigations (not blocking):**
+- TomTom quota: 15-min TTL cache mandatory — sufficient
+- File count 22+13 exceeds ~12 soft cap: justified at richness 10/10, builder to consolidate where safe
+- Surface Node/TS compile: seeded-data fallback documented
+
+No unflagged unknowns. No placeholder values. Plan is confirmed and builder-ready.
+
+## handoff
+- produced: Gate check #2 passing — all 5 previously-flagged gaps resolved by pre-researcher; plan is confirmed builder-ready
+- decisions: VERDICT pass; no further research or planning needed
+- next needs: demo-builder follows plan precisely; apply all 3 Leaflet fixes; TOMTOM_API_KEY in Surface .env; proxy both APIs through Node backend; tiered seed data per spec; note 22+13 file count in build report
+- risks: TomTom 15-min TTL cache mandatory (quota); Surface Node/TS compile may need one retry; file count justified but consolidate where possible
+
+VERDICT: pass

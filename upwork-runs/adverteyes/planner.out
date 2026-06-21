@@ -1,0 +1,305 @@
+# Plan — AdvertEyes (richness 10/10)
+
+## Status
+**READY** — research complete. All 5 gate questions answered by pre-researcher. Core architecture locked; design system confirmed; TomTom Traffic API added; Leaflet Vite fixes documented; Open-Meteo field names corrected. Plan is confirmed and builder-ready.
+
+---
+
+## Demo concept: AdvertEyes Internal Ops Platform
+
+**Full build** (no prototype fallback warranted — richness 10/10 and stack matches Michael's directive exactly).
+
+A production-quality internal web app for an OOH (billboard, truckside, digital DOOH) advertising company. Covers inventory management, campaign booking, live weather/install-risk monitoring, real-time traffic scoring, and RBAC user management — all with a working Node/TS REST backend and a React/TS frontend.
+
+---
+
+## Design system (CONFIRMED — research-derived, not guesses)
+
+**Source:** Outfront Media (dark+bold modern OOH brand), Lamar (clean corporate), Clear Channel (high-contrast B2B). Outfront's dark professional dashboard is the primary reference.
+
+**Mood:** Dark, data-dense, authoritative ops tool. Like a Bloomberg terminal for a $50M outdoor advertising company. Orange accent echoes the bold, visible nature of the medium itself.
+
+**Palette (locked):**
+```css
+--bg-primary:    #0A0E1A;   /* deep navy, darker than Outfront */
+--bg-surface:    #131929;   /* card / sidebar surface */
+--bg-elevated:   #1C2540;   /* modals, raised panels */
+--border:        #2D3A5A;   /* subtle dividers */
+--accent:        #FF6B1A;   /* billboard orange — high-vis industry energy */
+--accent-blue:   #3B82F6;   /* DOOH / digital screen blue */
+--success:       #22C55E;
+--warning:       #EAB308;
+--error:         #EF4444;
+--text-primary:  #E8EDF5;
+--text-muted:    #8A9AC0;
+```
+
+**Typography (locked):**
+- Display/headings: `Barlow Condensed 700` (compressed headline aesthetic — industry standard in OOH visual identity)
+- UI/body: `DM Sans 400/500/600` (clean dashboard readability; NOT Inter per CLAUDE.md)
+- Mono/data (KPI numbers, route IDs): `IBM Plex Mono`
+- Google Fonts import: `family=Barlow+Condensed:wght@700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono`
+
+**Layout:** Fixed left sidebar (collapsed 64px / expanded 220px) + full-height main area with top bar (user name, role badge, notifications). No mobile breakpoint needed (internal ops tool; 768px min-width sufficient).
+
+---
+
+## Architecture
+
+### Backend (Node.js + TypeScript, Surface runner)
+
+**Service:** Express app compiled with `tsc`, run as a Surface-registered service on a loopback port. Bridged to `api.michaelwegter.com/adverteyes/...` via Flask bridge blueprint. `TOMTOM_API_KEY` stored in `.env` on the Surface.
+
+**Database:** SQLite via `better-sqlite3` (sync driver, simplest for Surface). Seeded with 20+ realistic OOH inventory records, 5 clients, 8 campaigns, 15+ bookings, 4 demo users.
+
+**Source files (backend, in runner workspace):**
+```
+package.json
+tsconfig.json
+.env                           (TOMTOM_API_KEY, JWT_SECRET, PORT)
+src/index.ts                   (Express app + route registration + CORS)
+src/db.ts                      (better-sqlite3 init + schema + seed)
+src/middleware/auth.ts         (JWT verify + role guard factory)
+src/routes/auth.ts             (POST /auth/login, GET /auth/me)
+src/routes/inventory.ts        (CRUD + availability query)
+src/routes/campaigns.ts        (CRUD + booking summary)
+src/routes/bookings.ts         (CRUD + conflict check)
+src/routes/users.ts            (Admin-only CRUD)
+src/routes/weather.ts          (Open-Meteo proxy — server-side, returns parsed risk)
+src/routes/traffic.ts          (TomTom proxy — 15-min TTL cache per asset)
+```
+13 source files. Compiles to `dist/`.
+
+### Frontend (React + TypeScript + Vite)
+
+**Build target:** `../michaelwegter.com/public/demos/adverteyes/`
+**Vite config:** `base: '/demos/adverteyes/'`
+
+**Source files (frontend, in `upwork-runs/adverteyes/demo-src/`):**
+```
+package.json
+vite.config.ts
+tsconfig.json
+index.html
+src/main.tsx                   (CSS imports incl. leaflet/dist/leaflet.css + leaflet icon fix)
+src/App.tsx                    (router + ProtectedRoute)
+src/contexts/AuthContext.tsx   (user + token state, axios default header)
+src/api/index.ts               (axios instance, all typed API calls)
+src/leaflet-config.ts          (icon fix — imported once in main.tsx before any map)
+src/pages/Login.tsx            (4 demo credential cards, JWT → localStorage)
+src/pages/Dashboard.tsx        (KPI tiles + occupancy chart + activity feed)
+src/pages/Inventory.tsx        (table/map toggle, Leaflet map, asset detail panel w/ weather + traffic)
+src/pages/Campaigns.tsx        (campaign list + detail/booking panel)
+src/pages/Bookings.tsx         (booking table + create form + conflict badge)
+src/pages/Weather.tsx          (location dropdown, 3-day forecast, install-risk alert)
+src/pages/Users.tsx            (Admin-only: table + create/edit/deactivate)
+src/components/Layout.tsx      (sidebar + topbar shell, role-aware nav)
+src/components/DataTable.tsx   (reusable sort/filter/paginate table)
+src/components/KpiCard.tsx
+src/components/RoleBadge.tsx
+src/components/Modal.tsx
+```
+22 source files. Exceeds ~12 soft cap — justified at richness 10/10 for a real full-stack multi-page app. Builder must note this in build report.
+
+---
+
+## Feature boundary
+
+### Hero: Campaign Operations Dashboard (multi-view)
+
+- **Dashboard** — KPI tiles: Total Inventory Units, Occupancy Rate (%), Active Campaigns, Revenue MTD. Recharts sparkline trend. Quick-action buttons.
+- **Inventory** — Filterable table (type / status / search). Columns: name, type, location, size, rate/mo, status badge (available/booked/maintenance). Map toggle: Leaflet/OSM with custom-colored markers by status. Click marker or row = detail panel (weather + traffic data for that asset).
+- **Campaigns** — Campaign list (client, dates, budget, % inventory booked). Click = detail with linked inventory units + booking timeline.
+- **Bookings** — Full booking table (campaign, unit, date range, rate, status). Create booking form with live conflict check (API validates and returns conflict detail if dates/unit overlap).
+
+### Supporting 1: Weather + Install Risk + Traffic Intelligence
+
+**Weather (Open-Meteo, proxied via backend):**
+- Location dropdown (populated from inventory lat/lng in DB)
+- 3-day hourly forecast: temperature, wind speed, wind gusts, precipitation, weather_code, visibility
+- Install Risk badge: `HIGH` if `precipitation > 0.5mm/h OR wind_speed_10m > 25 mph OR wind_gusts_10m > 35 mph`
+- `visibility` shown as "Audience Visibility" metric (low visibility = reduced impression quality — domain-accurate)
+- Risk propagates to Bookings view: warning icon on upcoming install dates under weather risk
+
+**Traffic (TomTom Flow API, proxied + cached via backend):**
+- Backend caches per-asset, 15-min TTL (stay well inside 2,500 req/day free quota)
+- Traffic Score = `((freeFlowSpeed - currentSpeed) / freeFlowSpeed) * 100` = congestion percentage
+- Map marker fill-opacity scales with congestion (dark red = heavy traffic = more dwell time = higher effective CPM)
+- Asset detail panel: "Traffic Score", current vs. free-flow speed, confidence, road closure flag
+- OOH relevance framing: "Heavy congestion near this billboard increases audience dwell time and effective ad impressions"
+
+### Supporting 2: User + Role Management
+
+- **Login** — 4 seeded demo credential cards shown on login page (one-click fill)
+- **Protected routes** — Admin: all pages; Sales: hides Users; Ops: Inventory + Bookings + Weather; Client-viewer: Campaigns (own campaigns only, filtered server-side)
+- **Users page** (Admin only) — Table of users; edit role dropdown; deactivate toggle; create new user form
+
+---
+
+## Database seed (industry-accurate data)
+
+**Inventory (20 units, 3 tiers matching OOH CPM reality):**
+- 8 static billboards (highway/downtown/suburban):
+  - Premium highway 14x48: 55k impressions/wk, $4 CPM, ~$220/wk rate
+  - Downtown arterial 10x36: 42k impressions/wk, $5 CPM
+- 6 DOOH digital screens (mall, stadium, transit hub):
+  - High-traffic hub: 180k impressions/wk, $8 CPM (highest tier — industry-verified)
+  - Mall entrance: 95k impressions/wk, $6 CPM
+- 6 truckside wraps (city + suburban routes):
+  - City route: 28k impressions/wk, $0.85 CPM (industry-low CPM = key selling point vs. competitors)
+
+**Clients (5):** Ford Dealer Group, Metro Health Network, Pepsi Regional, Coastal Credit Union, FitCore Gym
+
+**Campaigns (8):** Mix of active, upcoming, completed. Budget $5k-$80k.
+
+**Bookings (15):** At least one intentional conflict scenario to demo conflict detection.
+
+**Users (4):**
+```
+admin@adverteyes.com  / Admin123!   → Admin
+sarah@adverteyes.com  / Sales123!   → Sales
+ops@adverteyes.com    / Ops1234!    → Ops/Installer
+client@forddealer.com / Client12!   → Client-viewer
+```
+
+---
+
+## API route plan
+
+```
+POST   /adverteyes/auth/login          { email, password } → { token, user }
+GET    /adverteyes/auth/me             → { user, role }
+
+GET    /adverteyes/inventory           ?type=&status=&search=
+POST   /adverteyes/inventory           Admin/Sales only
+PUT    /adverteyes/inventory/:id       Admin only
+DELETE /adverteyes/inventory/:id       Admin only
+
+GET    /adverteyes/clients
+POST   /adverteyes/clients             Admin/Sales
+GET    /adverteyes/campaigns           ?client_id=&status=
+POST   /adverteyes/campaigns           Admin/Sales
+PUT    /adverteyes/campaigns/:id
+
+GET    /adverteyes/bookings            ?campaign_id=&unit_id=&from=&to=
+POST   /adverteyes/bookings            + conflict check response { conflict: bool, detail: string }
+PUT    /adverteyes/bookings/:id
+DELETE /adverteyes/bookings/:id
+
+GET    /adverteyes/users               Admin only
+POST   /adverteyes/users               Admin only
+PUT    /adverteyes/users/:id           Admin only
+
+GET    /adverteyes/weather/:unitId     Open-Meteo proxy, returns parsed forecast + install risk
+GET    /adverteyes/traffic/:unitId     TomTom proxy, 15-min cache, returns congestion score
+
+GET    /adverteyes/health              → { ok: true }
+```
+
+Both weather and traffic are proxied through the Node backend (keys stay server-side, response is shaped/cached).
+
+---
+
+## Open-Meteo integration (CONFIRMED field names)
+
+```
+GET https://api.open-meteo.com/v1/forecast
+  ?latitude={lat}&longitude={lon}
+  &hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,visibility
+  &current=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code
+  &temperature_unit=fahrenheit
+  &wind_speed_unit=mph
+  &timezone=auto
+  &forecast_days=3
+```
+
+No API key. Free. Field names confirmed: `weather_code` (not `weathercode`), `wind_speed_10m` (not `windspeed_10m`).
+
+Install risk logic (backend shapes this before returning to frontend):
+```ts
+const isHighRisk = (
+  current.precipitation > 0.5 ||
+  current.wind_speed_10m > 25 ||
+  current.wind_gusts_10m > 35
+);
+```
+
+`visibility` surfaced as "Audience Visibility" (meters) — directly impacts impression quality, OOH-credible metric.
+
+---
+
+## TomTom Traffic Flow integration (CONFIRMED — free tier, 2,500 req/day)
+
+```
+GET https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json
+  ?point={lat},{lon}
+  &key={TOMTOM_API_KEY}
+```
+
+Response fields used: `currentSpeed`, `freeFlowSpeed`, `confidence`, `roadClosure`
+
+Backend cache: `Map<assetId, { data, timestamp }>`, TTL 15 minutes.
+
+Traffic score formula:
+```ts
+const congestionPct = Math.round(
+  ((freeFlowSpeed - currentSpeed) / freeFlowSpeed) * 100
+);
+```
+
+Frontend: map marker `fill-opacity` scales from 0.3 (free flow) to 1.0 (heavy congestion). Label: "High traffic = more dwell time = higher effective CPM."
+
+---
+
+## Leaflet / Vite builder checklist (CONFIRMED — must apply all 3)
+
+1. **CSS import:** `import 'leaflet/dist/leaflet.css'` in `main.tsx` (before any component import)
+2. **Icon fix** in `src/leaflet-config.ts` (imported once from `main.tsx`):
+```ts
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({ iconUrl: markerIcon, iconRetinaUrl: markerIcon2x, shadowUrl: markerShadow });
+```
+3. **tsconfig:** `"moduleResolution": "Bundler"` (correct for Vite; avoids react-leaflet ESM conflict)
+
+---
+
+## KPI formulas (domain-accurate)
+
+- **Occupancy Rate** = (booked units / total units) x 100%
+- **Revenue MTD** = sum of (booking.rate x days_elapsed_in_month / 30) for active bookings
+- **CPM** = (monthly_rate / (weekly_impressions x 4 / 1000)) — shown per inventory unit detail
+- **Weekly impressions** = seeded per tier (highway static ~55k, DOOH hub ~180k, truckside route ~28k)
+
+---
+
+## Deployment path
+
+1. **demo-builder** installs runtime + builds backend (Node/TS) on Surface via runner. Registers as Surface service via `surface_register_service.py`. Confirms `LISTENING` on assigned port. Writes `adverteyes_blueprint.py` + registers in `server.py`.
+2. **demo-builder** builds frontend (Vite) locally in `upwork-runs/adverteyes/demo-src/` → copies `dist/*` to `../michaelwegter.com/public/demos/adverteyes/`.
+3. **demo-builder** registers entry in `workSamples.js` (slug `adverteyes`).
+4. **deploy** commits + pushes both repos. GH Pages auto-builds; Surface auto-deploy pulls mw-backend + restarts Flask within ~30s. Verifies `https://michaelwegter.com/demos/adverteyes/` 200 + `/adverteyes/health` ok.
+5. **deploy-test** Playwright: login as Admin → dashboard KPI tiles → inventory table + Leaflet map → create booking + conflict check → weather page with Open-Meteo data → traffic score on asset detail → VERDICT pass/fail.
+
+---
+
+## Scope fences
+
+- No real payment processing, email, file uploads.
+- No mobile breakpoint (internal ops tool; 768px min-width).
+- Map: Leaflet/OSM only (no Google Maps, no paid tiles).
+- Weather: display-only (no push alerts, no SMS).
+- Traffic: display-only (no routing, no navigation).
+- Single tenant (AdvertEyes company only).
+- TomTom free tier (2,500 req/day): 15-min TTL cache mandatory to stay under quota.
+
+---
+
+## handoff
+- produced: Full confirmed build plan — architecture, design system (locked), 13 BE + 22 FE source files, DB seed spec with industry-accurate tiers, full API route plan, Open-Meteo (corrected field names), TomTom Traffic integration, Leaflet Vite fix checklist, deployment path, scope fences
+- decisions: Full build (richness 10); hero = Campaign Ops multi-view (Dashboard/Inventory/Campaigns/Bookings); supporting 1 = Weather (Open-Meteo) + Traffic (TomTom) proxied via Node backend; supporting 2 = RBAC + User Mgmt; Node/TS + SQLite + better-sqlite3 on Surface; Leaflet/OSM with confirmed Vite fix; DM Sans + Barlow Condensed + IBM Plex Mono; dark navy + billboard orange design system
+- next needs: demo-builder follows plan precisely — apply all 3 Leaflet fixes, use confirmed CSS variable names and font imports, proxy both weather and traffic through Node backend (TOMTOM_API_KEY in .env), use tiered seed data impressions, note 22+13 file count in build report
+- risks: TomTom free tier quota (2,500/day) requires 15-min TTL cache on backend — mandatory; Surface Node/TS build may need retry (seeded-data fallback documented in intake); file count (22 FE + 13 BE) significantly exceeds soft cap — justified at richness 10/10, builder must consolidate where possible

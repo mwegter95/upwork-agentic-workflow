@@ -1,0 +1,47 @@
+# demo-builder7 — AdvertEyes 10/10 Richness Improvements
+
+## Changes made
+
+### New files
+1. **`src/components/GlobalSearch.tsx`** (140 lines) - Cmd+K / Ctrl+K full-text search overlay. Searches inventory units, campaigns, and clients in real time. Keyboard nav (arrow keys + Enter). Highlighted matches. Suggested tags (billboard, Ford, Tampa, etc.) for quick browsing. Navigates to the relevant page on select.
+
+2. **`src/pages/OpsSchedule.tsx`** (170 lines) - New page (`/ops-schedule`, roles: admin + ops) for install queue management. Shows confirmed bookings starting within 45 days with live weather risk fetched per unit. Job status flow: Scheduled → In Progress → Complete, with "Place on Hold" (blocked when HIGH weather risk). KPI row (upcoming count, in-progress, complete, weather holds). Filter by status + risk. Per-job ops notes input. Urgent flag for jobs starting in 7 days.
+
+### Modified files
+3. **`src/api/index.ts`** - Added `approveBooking(id)` (PUT /bookings/:id status=confirmed) and `rejectBooking(id)` (PUT /bookings/:id status=cancelled).
+
+4. **`src/components/Layout.tsx`** - Wired GlobalSearch (Cmd+K keyboard shortcut, search trigger button in topbar), added "Ops Queue" nav link (admin + ops roles).
+
+5. **`src/App.tsx`** - Added `/ops-schedule` route for OpsSchedule page.
+
+6. **`src/pages/Bookings.tsx`** - Added booking approval workflow: pending-approvals banner at top, Approve (✓) + Reject (✕) action buttons inline in table for pending rows (admin/sales only). Optimistic UI update on approve/reject.
+
+7. **`src/pages/Dashboard.tsx`** - Pending Approvals section in "Needs Attention" card now shows quick Approve/Reject buttons (✓/✕) inline per booking. Optimistic UI. Requires admin or sales role.
+
+8. **`src/pages/Analytics.tsx`** - Added `revenueByCity` computation (sum confirmed booking monthly_rate by city) + `unitsByCity` market breakdown. New "Revenue by Market" section at bottom: horizontal BarChart of revenue per city + "Inventory by Market" table with unit counts + occupancy progress bar per city.
+
+9. **`src/pages/Weather.tsx`** - Added `TRAFFIC_QUICK` / `DEFAULT_TRAFFIC` mock per unit (score 0-100, congestionPct, impression_multiplier). Fleet cards now show a traffic score progress bar + multiplier alongside weather. Detail panel "Install Risk + Traffic Intelligence" card replaces bare install risk: adds 4-stat grid (traffic score, congestion%, impression multiplier, install window go/no-go).
+
+10. **`src/styles.css`** - Added: `.gs-overlay`, `.gs-modal`, `.gs-input`, `.gs-results`, `.gs-result-item`, `.gs-hint`, `.gs-tag`, `.gs-trigger`, `.gs-trigger-kbd`, `.ops-job-card`.
+
+## Build result
+`npm run build` - SUCCESS. 953 modules, 2.14s, zero TS errors, zero em/en dash violations. Dist copied to `../michaelwegter.com/public/demos/adverteyes/` (assets: index-C90zCqMa.css + index-DQ72Upap.js). Stale old assets removed.
+
+## Feature count (complete app)
+- **10 pages** (Dashboard, Inventory, Campaigns, Clients, Bookings, Analytics, Weather, Ops Queue, Users, Reports)
+- **Global Cmd+K search** across units/campaigns/clients
+- **Booking approval workflow** (approve/reject from both Bookings page and Dashboard)
+- **Revenue by Market** analytics breakdown by city
+- **Traffic Intelligence** in Weather page alongside install risk
+- **Ops Install Queue** with weather-gated job progression + status flow
+- **4 roles** (admin/sales/ops/client) with RBAC nav + page guards
+- **Conflict detection**, calendar/timeline/table booking views
+- **Gantt view** for campaigns, **map view** for inventory
+- **CSV export** for bookings/campaigns/inventory
+- **Live weather** (Open-Meteo) + **traffic** (TomTom/mock) per unit
+
+## handoff
+- produced: 2 new files + 8 file edits; rebuilt frontend (clean, 953 modules); dist deployed to public/demos/adverteyes/
+- decisions: Booking approval uses existing PUT /bookings/:id endpoint (already on backend); OpsSchedule is frontend-only with weather API calls per unit; GlobalSearch fetches all data on first open (cached for session); traffic scores are mock fallback (same pattern as weather fallback)
+- next needs: deploy step - push ../michaelwegter.com to GitHub Pages; backend already live (no new backend changes); verify live at https://michaelwegter.com/demos/adverteyes/
+- risks: Backend PUT /bookings/:id approve flow will fail if Surface is offline (graceful error toast shown); OpsSchedule weather calls may be slow with many upcoming bookings (parallel Promise.allSettled used, degraded gracefully)

@@ -1,0 +1,22 @@
+# build-ceo — AdvertEyes (improve pass 3 review)
+
+## Context
+Improve pass chain: deploy (03:13, old bundle) -> deploy-test (03:22, VERDICT fail: 401 infinite-reload loop blocks login) -> demo-builder (03:24, surgical 2-file fix). Reviewing the demo-builder fix before it ships.
+
+## Verification (actual, not assumed)
+- **Fix present in source:** `demo-src/src/api/index.ts:21-23` adds `hadToken` guard; `AlertsContext.tsx` now imports `useAuth`, reads `user`, early-returns `if (!user) return`, dep `[user]`. Correct per deploy-test's prescription.
+- **Fix present in shipped bundle:** new staged bundle `index-VmW0JRvj.js` (old `index-Dr-vqYnr.js` git-rm'd, R in git status; `index.html` bumped). Minified interceptor confirmed: `===401{const n=!!localStorage.getItem("ae_token");localStorage.removeItem("ae_token"),n&&(window.location.href="/demos/adverteyes/")}` — redirect fires ONLY when a token existed. Bug fixed.
+- **Build succeeded:** 954 modules, 0 errors (per demo-builder report); assets dir contains exactly the new JS + unchanged CSS.
+- **Feature richness 10/10:** deploy-test (authenticated bypass) already confirmed full app — 10 nav sections (Dashboard, Inventory, Campaigns, Clients, Bookings, Analytics, Weather, Ops Queue, Reports, Users), real JWT auth, live SQLite DB (21 units, 14 bookings, 8 campaigns), KPIs (38% occupancy, $61,800 MTD), live weather integration (`hourly.temperature_2m` populated), 0 console errors. Genuinely production-grade; meets 10/10.
+- **Hard gate #5 (no em/en dashes):** 0 dashes in shipped JS, CSS, and index.html. The build-ceo2.out concern is resolved in the current bundle.
+
+## Assessment
+The only blocker (login reload loop) is fixed surgically and the fix is verified live in the bundle, not just in source. The underlying app was already fully functional and feature-complete. No further builder loop or earlier-step redirect needed. Foundation (plan/research) is more than adequate for 10/10. Pass to deploy.
+
+## handoff
+- produced: CEO review of demo-builder improve-pass-3 fix — verified correct and complete; no rebuild/redirect required
+- decisions: PASS; the 401 fix is confirmed in the staged bundle (minified logic inspected), em/en dashes clean, 10/10 feature set intact
+- next needs: deploy commits + pushes the staged michaelwegter.com bundle (R old JS, new JS, modified index.html) to GH Pages; wait ~2 min; deploy-test re-runs login + dashboard + weather in a real browser to confirm the loop is gone
+- risks: none structural — only residual risk is GH Pages CDN propagation lag; deploy-test must hit the demo via the direct `/demos/adverteyes/` URL after Pages rebuilds
+
+VERDICT: pass

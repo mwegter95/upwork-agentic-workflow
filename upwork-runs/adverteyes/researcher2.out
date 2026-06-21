@@ -1,0 +1,385 @@
+# Researcher2 — AdvertEyes Improve Pass (richness 10/10)
+
+## Context: what already exists
+
+The first run produced a fully functional app. All pages (Dashboard, Inventory, Campaigns, Bookings, Weather, Users) exist with real API calls + mock fallbacks, RBAC, Leaflet map, conflict detection, weather/traffic live data, and a working Node/TS backend on the Surface. Backend is deployed; Flask bridge is live at `api.michaelwegter.com/adverteyes`.
+
+This pass does NOT rebuild anything. Demo-builder makes surgical additions to push from ~7/10 to 10/10.
+
+---
+
+## Gap analysis (what's missing for genuine 10/10)
+
+1. **No Analytics/Reports page** — revenue by client, occupancy trend, top units. Core feature for any OOH platform.
+2. **No Clients page** — backend `/clients` route exists and is seeded; frontend never exposes it.
+3. **Weather shows one unit at a time** — dropdown picker for 20 units is weak; fleet grid would be 10x more useful.
+4. **Dashboard chart is static** — bar by type only; no revenue trend, no pipeline view, no top-units table.
+5. **Bookings has no timeline view** — no Gantt; conflict date overlaps are the product's core value prop.
+6. **Topbar has no notifications** — planner specified notification bell for HIGH-risk + pending items; it's absent.
+7. **Inventory map ignores traffic batch** — `/traffic` batch endpoint exists but map markers ignore it; they only vary by status, not congestion.
+
+---
+
+## Spec for each addition (demo-builder uses these exactly)
+
+### 1. NEW PAGE: Analytics (`/analytics`) — `src/pages/Analytics.tsx`
+
+Nav: add to `Layout.tsx` NAV array, roles `['admin', 'sales']`, icon `◇`, label `Analytics`, path `/analytics`.
+Add route to `App.tsx`.
+
+Three sections, all using Recharts + seeded mock data (no new API call needed — derive from MOCK constants):
+
+**Section A — Revenue by Client (horizontal BarChart)**
+```ts
+// Compute from MOCK_BOOKINGS cross-referenced to MOCK_CAMPAIGNS for client_name
+const revenueByClient = [
+  { client: 'Ford Dealer Group', revenue: 9400 + 2800 + 2400 + 1900 },  // bookings for campaign 1
+  { client: 'Pepsi Regional', revenue: 8500 + 11000 + 7200 + 2900 + 1600 },  // campaign 3
+  { client: 'Coastal CU', revenue: 2700 + 9500 + 3200 },  // campaign 4
+  { client: 'Metro Health', revenue: 3900 },  // campaign 2
+  { client: 'FitCore Gym', revenue: 2300 },  // campaign 5
+];
+```
+Use `<BarChart layout="vertical">` with `<Bar fill="var(--accent)">`, height 250px, Y=client, X=revenue with `$` formatter. Title: "Revenue by Client — Confirmed Bookings".
+
+**Section B — Occupancy Trend (AreaChart, 8 mock weeks)**
+```ts
+const occupancyTrend = [
+  { week: 'Apr W3', pct: 52 }, { week: 'Apr W4', pct: 55 },
+  { week: 'May W1', pct: 58 }, { week: 'May W2', pct: 63 },
+  { week: 'May W3', pct: 67 }, { week: 'May W4', pct: 71 },
+  { week: 'Jun W1', pct: 75 }, { week: 'Jun W2', pct: 78 },
+];
+```
+`<AreaChart>`, fill `var(--accent)` at 20% opacity, stroke `var(--accent)`, `strokeWidth=2`, title "Occupancy Trend — Last 8 Weeks". Add a reference line at the current value.
+
+**Section C — Top Units by Revenue (table)**
+Sort MOCK_UNITS by `monthly_rate` desc, show top 8.
+Columns: Rank, Unit Name, Type (badge), City, Rate/mo, Wkly Impressions.
+Render as a plain `<table>` (no DataTable component needed — no sort/paginate).
+
+**Section D — Campaign Pipeline (2 KPI cards)**
+```ts
+const pipeline = { active: MOCK_CAMPAIGNS.filter(c=>c.status==='active').reduce((s,c)=>s+(c.budget??0),0),
+                   upcoming: MOCK_CAMPAIGNS.filter(c=>c.status==='upcoming').reduce((s,c)=>s+(c.budget??0),0) }
+```
+Two side-by-side cards (`.card`, `borderTop: 3px solid var(--success/accent-blue)`): "Active Budget" and "Pipeline Budget". Above the charts, below the page header.
+
+---
+
+### 2. NEW PAGE: Clients (`/clients`) — `src/pages/Clients.tsx`
+
+Nav: roles `['admin', 'sales']`, icon `◉`, label `Clients`, path `/clients`. Add after Campaigns in Layout NAV.
+
+**API additions to `src/api/index.ts`** (append before end of file):
+```ts
+export interface Client {
+  id: number;
+  name: string;
+  contact: string;
+  email: string;
+  phone: string;
+  industry: string;
+}
+
+export const MOCK_CLIENTS: Client[] = [
+  { id: 1, name: 'Ford Dealer Group Tampa',   contact: 'Jim Patterson',  email: 'jim@fordtampa.com',      phone: '813-555-0101', industry: 'Automotive' },
+  { id: 2, name: 'Metro Health Network',       contact: 'Dr. Lisa Wu',    email: 'lisa@metrohealth.com',   phone: '813-555-0202', industry: 'Healthcare' },
+  { id: 3, name: 'Pepsi Regional Southeast',   contact: 'Carlos Reyes',   email: 'creyes@pepsi.com',       phone: '813-555-0303', industry: 'CPG'        },
+  { id: 4, name: 'Coastal Credit Union',       contact: 'Amanda Brooks',  email: 'abrooks@coastalcu.com',  phone: '813-555-0404', industry: 'Finance'    },
+  { id: 5, name: 'FitCore Gym',                contact: 'Ryan Torres',    email: 'ryan@fitcore.com',       phone: '813-555-0505', industry: 'Fitness'    },
+];
+
+export const fetchClients = async (): Promise<Client[]> => {
+  try { const res = await api.get('/clients'); return res.data.clients; }
+  catch { return MOCK_CLIENTS; }
+};
+
+export const createClient = async (data: Partial<Client>): Promise<Client> => {
+  const res = await api.post('/clients', data);
+  return res.data;
+};
+```
+
+**Clients page spec:**
+- KPI row: Total Clients, Active Campaigns (from MOCK_CAMPAIGNS cross-ref), Total Budget Pipeline
+- Table columns: Name, Contact, Email, Phone, Industry, # Campaigns (count from MOCK_CAMPAIGNS by client_id), Spend (sum of confirmed booking rates for that client)
+- "+ Add Client" button (admin/sales) → modal with fields: Name*, Contact, Email, Phone, Industry
+- No delete (clients have campaigns — soft constraint)
+- Row click: expand inline to show their campaigns (filter MOCK_CAMPAIGNS by client_id match; if name matches)
+
+---
+
+### 3. UPDATE: Weather page — fleet grid
+
+Current: single unit dropdown + detail view.
+New: **fleet grid first, then detail**.
+
+**Layout change:**
+- Remove the single `<select>` toolbar
+- Render a 3-column responsive grid of compact weather cards ABOVE the detail section
+- Each card (`.weather-unit-card`): unit name (truncated), city, large weather emoji (wxIcon), temp `XX°F`, wind `X mph`, install risk badge (`.badge-risk-high/low`)
+- Active card: border `2px solid var(--accent)`, elevated shadow
+- Click card → set `selectedId`, fetch + show detail below (preserve existing 4-panel detail view)
+- Show a "Fleet Risk Summary" bar at top: "X of Y units HIGH install risk" — highlight in error color if any HIGH
+
+**New CSS classes needed in `styles.css`** (append):
+```css
+.weather-fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.weather-unit-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.weather-unit-card:hover { border-color: var(--accent); }
+.weather-unit-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255,107,26,.2); }
+.weather-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.weather-card-name { font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.3; max-width: 120px; }
+.weather-card-city { font-size: 11px; color: var(--text-muted); }
+.fleet-risk-bar { padding: 10px 16px; border-radius: var(--radius); margin-bottom: 16px; font-size: 13px; font-weight: 500; }
+.fleet-risk-bar.has-risk { background: rgba(239,68,68,.12); border: 1px solid var(--error); color: var(--error); }
+.fleet-risk-bar.all-clear { background: rgba(34,197,94,.1); border: 1px solid var(--success); color: var(--success); }
+```
+
+**Implementation note:** On mount, `fetchInventory()` gives all units. For each unit, DON'T fetch full weather (20 API calls is too slow). Instead, use a batch approach: fetch weather for selected unit only (as before). For the grid cards, use mock quick-data:
+```ts
+// Mini mock for the fleet cards (real data loads per-unit on selection)
+const FLEET_QUICK: Record<number, { temp: number; wind: number; code: number; risk: 'HIGH'|'LOW' }> = {
+  1: { temp: 89, wind: 14, code: 1, risk: 'LOW' },
+  2: { temp: 88, wind: 18, code: 2, risk: 'LOW' },
+  3: { temp: 89, wind: 22, code: 1, risk: 'LOW' },
+  4: { temp: 91, wind: 12, code: 0, risk: 'LOW' },
+  5: { temp: 87, wind: 28, code: 3, risk: 'HIGH' },   // coastal — wind high
+  9: { temp: 90, wind: 15, code: 1, risk: 'LOW' },
+  10: { temp: 90, wind: 13, code: 1, risk: 'LOW' },
+  11: { temp: 90, wind: 16, code: 1, risk: 'LOW' },
+  12: { temp: 88, wind: 11, code: 0, risk: 'LOW' },
+  13: { temp: 91, wind: 14, code: 1, risk: 'LOW' },
+  14: { temp: 86, wind: 19, code: 2, risk: 'LOW' },
+  15: { temp: 85, wind: 32, code: 80, risk: 'HIGH' },  // beach — rain + wind
+  16: { temp: 89, wind: 13, code: 1, risk: 'LOW' },
+  17: { temp: 87, wind: 17, code: 2, risk: 'LOW' },
+  18: { temp: 88, wind: 14, code: 1, risk: 'LOW' },
+  19: { temp: 90, wind: 15, code: 0, risk: 'LOW' },
+  20: { temp: 86, wind: 16, code: 1, risk: 'LOW' },
+};
+// For units not in FLEET_QUICK, use { temp: 88, wind: 15, code: 1, risk: 'LOW' }
+```
+
+This means the fleet grid is instant (no network wait) and the detail panel loads real live data when a card is clicked. Put a "Live" pill next to the detail section title to indicate it's fetching real data.
+
+---
+
+### 4. UPDATE: Dashboard — revenue trend + top units
+
+**Add to Dashboard.tsx** (after current `chartData` block):
+
+**Revenue area chart** (replace the current `<BarChart>` or add as second chart panel):
+```ts
+const revenueWeeks = [
+  { week: 'Apr W3', revenue: 38200 }, { week: 'Apr W4', revenue: 41600 },
+  { week: 'May W1', revenue: 44000 }, { week: 'May W2', revenue: 48500 },
+  { week: 'May W3', revenue: 53100 }, { week: 'May W4', revenue: 58400 },
+  { week: 'Jun W1', revenue: 62800 }, { week: 'Jun W2', revenue: revenueMTD || 68200 },
+];
+```
+`<AreaChart>` in the left chart card. Keep the bar chart too — put them in tabs ("Inventory | Revenue") using a simple state toggle (`.chart-tab-btn` class — add to styles if needed or reuse `.view-btn`).
+
+**Top Units section** — add a new card in the `.dashboard-grid` (make it span full width at bottom):
+```tsx
+<div className="card" style={{ gridColumn: '1 / -1' }}>
+  <div className="card-header"><span className="card-title">Top Units by Monthly Revenue</span></div>
+  <div className="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Unit</th><th>Type</th><th>City</th><th>Rate/mo</th><th>Wkly Impr.</th><th>Status</th></tr></thead>
+      <tbody>{units.sort((a,b)=>b.monthly_rate-a.monthly_rate).slice(0,5).map((u,i)=>(
+        <tr key={u.id}>
+          <td style={{color:'var(--text-muted)',fontFamily:'var(--font-mono)'}}>{i+1}</td>
+          <td style={{fontWeight:500}}>{u.name}</td>
+          <td><span className={`badge badge-${u.type}`}>{u.type}</span></td>
+          <td>{u.city}</td>
+          <td style={{color:'var(--accent)',fontFamily:'var(--font-mono)'}}>${u.monthly_rate.toLocaleString()}</td>
+          <td style={{fontFamily:'var(--font-mono)'}}>{u.weekly_impressions?(u.weekly_impressions/1000).toFixed(0)+'k':'—'}</td>
+          <td><span className={`badge badge-${u.status}`}>{u.status}</span></td>
+        </tr>
+      ))}</tbody>
+    </table>
+  </div>
+</div>
+```
+
+**5th KPI** — add to `kpi-grid`: "Pending Bookings" = `bookings.filter(b=>b.status==='pending').length`, icon `◎`, color `var(--warning)`.
+
+---
+
+### 5. UPDATE: Bookings — Timeline view
+
+Add a third view toggle: Table | Timeline.
+
+**Timeline view** — pure CSS, no new library:
+- Group bookings by `unit_name`
+- X axis: months Jun–Dec 2026 (7 columns)
+- Rows: one per unit that has bookings
+- Each booking: a colored div spanning from start to end month, positioned with `left/width` as percentage of the 7-month window
+
+```ts
+const TIMELINE_START = new Date('2026-06-01');
+const TIMELINE_END   = new Date('2026-12-31');
+const MONTHS = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function bookingToSpan(b: Booking) {
+  const total = TIMELINE_END.getTime() - TIMELINE_START.getTime();
+  const left  = Math.max(0, (new Date(b.start_date).getTime() - TIMELINE_START.getTime()) / total * 100);
+  const right = Math.min(100, (new Date(b.end_date).getTime() - TIMELINE_START.getTime()) / total * 100);
+  return { left: `${left}%`, width: `${Math.max(right - left, 2)}%` };
+}
+```
+
+Campaign color palette (cycle through):
+```ts
+const CAMPAIGN_COLORS = ['#FF6B1A','#3B82F6','#22C55E','#EAB308','#A78BFA','#EC4899','#14B8A6'];
+const campaignColor = (id: number) => CAMPAIGN_COLORS[id % CAMPAIGN_COLORS.length];
+```
+
+Add new CSS to `styles.css`:
+```css
+.timeline-wrap { overflow-x: auto; }
+.timeline-header { display: grid; grid-template-columns: 160px 1fr; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.timeline-months { display: grid; grid-template-columns: repeat(7, 1fr); padding: 6px 0; }
+.timeline-month-label { font-size: 11px; color: var(--text-muted); text-align: center; }
+.timeline-row { display: grid; grid-template-columns: 160px 1fr; align-items: center; border-bottom: 1px solid rgba(45,58,90,.5); min-height: 40px; }
+.timeline-unit-label { font-size: 12px; color: var(--text-primary); padding: 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.timeline-bars { position: relative; height: 28px; }
+.timeline-bar { position: absolute; height: 22px; top: 3px; border-radius: 4px; display: flex; align-items: center; padding: 0 6px; font-size: 10px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; opacity: .85; transition: opacity .15s; }
+.timeline-bar:hover { opacity: 1; }
+```
+
+View toggle: extend existing `.view-toggle` block to have 3 buttons: `Table | Timeline`. Keep existing conflict-check behavior in table only (timeline is read-only).
+
+---
+
+### 6. UPDATE: Layout topbar — notification bell
+
+In `Layout.tsx`, fetch notification counts on mount:
+```ts
+const [alerts, setAlerts] = useState<{ highRisk: number; pending: number }>({ highRisk: 0, pending: 0 });
+
+useEffect(() => {
+  if (!user || user.role === 'client') return;
+  // Use mock values (avoid 2 extra API calls on every layout mount)
+  setAlerts({ highRisk: 2, pending: bookings-count-mock });
+}, [user]);
+```
+
+Actually, to keep it real without extra fetches: hard-code `alerts = { highRisk: 2, pending: 3 }` with a comment "// would be fetched from API in production". This is honest and fast.
+
+In topbar HTML (between `topbar-user` and Sign out):
+```tsx
+<div className="notif-bell" onClick={() => setShowNotif(!showNotif)} title="Alerts">
+  🔔
+  {(alerts.highRisk + alerts.pending) > 0 && (
+    <span className="notif-badge">{alerts.highRisk + alerts.pending}</span>
+  )}
+  {showNotif && (
+    <div className="notif-drawer">
+      <div className="notif-title">Alerts</div>
+      {alerts.highRisk > 0 && (
+        <div className="notif-item notif-high">
+          <span>⚠ {alerts.highRisk} units flagged HIGH install risk</span>
+        </div>
+      )}
+      {alerts.pending > 0 && (
+        <div className="notif-item notif-warn">
+          <span>◎ {alerts.pending} pending booking approvals</span>
+        </div>
+      )}
+    </div>
+  )}
+</div>
+```
+
+CSS to append to `styles.css`:
+```css
+.notif-bell { position: relative; cursor: pointer; font-size: 16px; padding: 4px 8px; border-radius: 6px; transition: background .15s; }
+.notif-bell:hover { background: var(--bg-elevated); }
+.notif-badge { position: absolute; top: 0; right: 0; background: var(--error); color: #fff; border-radius: 99px; font-size: 10px; font-weight: 700; min-width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; padding: 0 3px; font-family: var(--font-mono); }
+.notif-drawer { position: absolute; right: 0; top: 100%; margin-top: 6px; width: 280px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius); z-index: 100; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.notif-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
+.notif-item { padding: 8px 10px; border-radius: 4px; font-size: 13px; margin-bottom: 6px; }
+.notif-high { background: rgba(239,68,68,.12); color: var(--error); border: 1px solid rgba(239,68,68,.25); }
+.notif-warn { background: rgba(234,179,8,.1); color: var(--warning); border: 1px solid rgba(234,179,8,.2); }
+```
+
+Add `const [showNotif, setShowNotif] = useState(false);` and close-on-outside-click via `useEffect` with `document.addEventListener('click', ...)` — or just toggle on bell click (simpler, sufficient for demo).
+
+---
+
+### 7. UPDATE: Inventory map — traffic batch overlay
+
+In `Inventory.tsx`, load traffic batch on map view open:
+```ts
+const [trafficMap, setTrafficMap] = useState<Map<number, number>>(new Map());
+
+useEffect(() => {
+  if (view !== 'map') return;
+  fetchTrafficBatch().then((t) => {
+    setTrafficMap(new Map(t.map((tr) => [tr.id, tr.trafficScore])));
+  });
+}, [view]);
+```
+
+In `MapView`, pass `trafficMap` as prop, update CircleMarker fillOpacity:
+```ts
+const score = trafficMap.get(u.id) ?? 65;
+fillOpacity: u.status === 'maintenance' ? 0.25 : 0.4 + (score / 100) * 0.55,
+```
+
+Add a map legend (fixed bottom-right inside `.map-container`):
+```tsx
+<div className="map-legend">
+  <div className="map-legend-title">Ad Unit Types</div>
+  {[['billboard','#FF6B1A'],['dooh','#3B82F6'],['truckside','#EAB308']].map(([t,c])=>(
+    <div key={t} className="map-legend-item">
+      <span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:c,marginRight:6}}/>
+      {t}
+    </div>
+  ))}
+  <div className="map-legend-title" style={{marginTop:8}}>Opacity = traffic score</div>
+</div>
+```
+
+CSS (append to `styles.css`):
+```css
+.map-legend { position: absolute; bottom: 24px; right: 12px; background: rgba(19,25,41,.92); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; z-index: 1000; font-size: 12px; }
+.map-legend-title { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+.map-legend-item { display: flex; align-items: center; color: var(--text-primary); margin-bottom: 4px; }
+```
+Also set `style={{ position: 'relative' }}` on the `.map-container` wrapper if not already set.
+
+---
+
+## File change summary for demo-builder
+
+| Action | File | What |
+|--------|------|------|
+| CREATE | `src/pages/Analytics.tsx` | Full new analytics page (4 sections) |
+| CREATE | `src/pages/Clients.tsx` | Clients table + add modal |
+| EDIT | `src/api/index.ts` | Add `Client` type, `MOCK_CLIENTS`, `fetchClients`, `createClient` |
+| EDIT | `src/components/Layout.tsx` | Add Analytics + Clients to NAV; add notification bell to topbar |
+| EDIT | `src/App.tsx` | Add `/analytics` + `/clients` routes |
+| EDIT | `src/pages/Weather.tsx` | Fleet grid + fleet risk bar + selected-unit detail |
+| EDIT | `src/pages/Dashboard.tsx` | Revenue area chart tab + top units table + 5th KPI |
+| EDIT | `src/pages/Bookings.tsx` | Timeline view toggle + Gantt rows |
+| EDIT | `src/pages/Inventory.tsx` | Traffic batch load on map view + trafficMap prop + legend |
+| EDIT | `src/styles.css` | Append new classes (weather fleet, timeline, notif, map legend) |
+
+**No backend changes needed** — all new frontend pages use existing API endpoints (`/clients`, `/bookings`, `/inventory`, `/traffic`) with existing mock fallbacks.
+
+**Build sequence** (same as before):
+1. `cd demo-src && npm install && npm run build`
+2. Copy `dist/*` → `../michaelwegter.com/public/demos/adverteyes/`
+3. Verify `index.html` exists at that path
+
+---
+
+## handoff
+- produced: Gap analysis (7 concrete gaps), full spec for 2 new pages (Analytics, Clients) and 5 page upgrades (Weather fleet grid, Dashboard revenue chart + top units, Bookings timeline/Gantt, Inventory map traffic layer, Layout topbar notifications), exact TypeScript code snippets, new CSS classes, mock data arrays, and no-new-lib implementation approach for the Gantt
+- decisions: No backend changes; all new features use existing API endpoints + mock fallbacks; weather fleet grid uses pre-seeded quick-data to avoid 20 simultaneous API calls; notification counts are hard-coded mock for performance; timeline view uses CSS grid only (no new library)
+- next needs: demo-builder creates Analytics.tsx + Clients.tsx, edits 8 existing files using Edit (not rewrite), appends CSS, rebuilds Vite, copies dist to public/demos/adverteyes/, confirms no console errors on first paint
+- risks: styles.css append must not duplicate existing class names — check before adding; `map-container` needs `position: relative` for legend absolute positioning; weather fleet grid must handle units where `id` not in FLEET_QUICK (default low-risk mock)

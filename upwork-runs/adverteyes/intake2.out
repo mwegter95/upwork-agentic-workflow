@@ -1,0 +1,7 @@
+Unaffected. Improve pass starts at demo-builder per orchestrator; brief established in run 1. Feature richness 10/10 already in place. Intake passes through.
+
+## handoff
+- produced: nothing new; pass-through for improve pass
+- decisions: reuse existing brief.json and intake.out; no requirement changes at intake
+- next needs: demo-builder reads existing plan, applies feature-richness-10 polish + scope enhancements
+- risks: none at this step

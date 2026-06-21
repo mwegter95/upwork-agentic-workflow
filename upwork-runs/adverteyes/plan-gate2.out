@@ -1,0 +1,23 @@
+# Plan Gate — Improve Pass (plan-gate2)
+
+## Review
+
+Plan (planner2.out) is surgical and complete:
+
+- Root causes clearly identified (no push, no auth fallback, possible Surface crash)
+- Fix 1: Auth fallback spec is precise — specific credentials, implementation detail (~30 lines in api/index.ts), fallback token format defined
+- Fix 2: Surface verification sequence is explicit (check port 3741 → re-register if down → confirm /health)
+- Fix 3: Rebuild + copy dist path specified
+- Fix 4: Staging scope bounded to exact files, deploy step owns push
+- Feature richness 10/10 already designed in — no scope gaps, no new features needed
+- No unknowns flagged, no external research dependencies, no tech gaps
+
+No problems found.
+
+## handoff
+- produced: Plan gate check passed — planner2.out is complete and unambiguous
+- decisions: No further research needed; plan is self-contained
+- next needs: demo-builder2 executes exactly as specced: edit demo-src/src/api/index.ts (auth fallback), verify Surface port 3741, npm run build, copy dist, stage both repos
+- risks: Surface service state is unknown until demo-builder2 checks it; offline fallback mitigates frontend risk regardless
+
+VERDICT: pass

@@ -1,0 +1,7 @@
+Unaffected. Improve pass starts at demo-builder; foundation (slug `adverteyes`, run dir, startup brief) already established in run 1. No setup changes needed.
+
+## handoff
+- produced: nothing new; pass-through for improve pass
+- decisions: reuse existing run dir/slug `adverteyes`; entry point is demo-builder per user request
+- next needs: demo-builder reads its prior handoff + plan, applies feature-richness-10 improvements in place
+- risks: none at this step

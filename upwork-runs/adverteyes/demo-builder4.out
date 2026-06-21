@@ -1,0 +1,59 @@
+# demo-builder4 — AdvertEyes Improve Pass (4th)
+
+## Root cause addressed
+
+CEO (build-ceo.out) identified two blockers carried forward unfixed from passes 2 and 3:
+1. `backend/src/routes/weather.ts` — `import fetch from 'node-fetch'` + explicit `Accept-Encoding: gzip, deflate` header → node-fetch v2 auto-adds Accept-Encoding AND cannot decompress responses → 502 on `/weather/:id`
+2. Frontend Inventory.tsx — label reads "Weather — Open-Meteo Live" even when `fetchWeather` catches a 502 and silently serves hardcoded mock data
+
+## Changes made (4 files + 1 new script)
+
+### FIXED: `backend/src/routes/weather.ts` (source of record)
+- Removed `import fetch from 'node-fetch'`
+- Replaced `fetch(url, { headers: { 'Accept': 'application/json', 'Accept-Encoding': 'gzip, deflate' } })` with bare `fetch(url)` (Node 18+ native global fetch)
+- Native fetch handles brotli/gzip natively; no header injection means Open-Meteo can return uncompressed JSON
+
+### FIXED: `surface_build.py` (embedded weather.ts + traffic.ts)
+- Removed `import fetch from 'node-fetch'` from both embedded route sources
+- Ensures any future full rebuild from surface_build.py produces the fixed version
+
+### FIXED: `demo-src/src/api/index.ts`
+- Added `_isMock?: boolean` field to `WeatherData` interface
+- In `fetchWeather` catch block: added `_isMock: true` to the returned fallback object
+
+### FIXED: `demo-src/src/pages/Inventory.tsx` (label honesty)
+Before: `<div className="detail-section-label">Weather — Open-Meteo Live</div>` (always)
+After: Conditionally renders:
+- `_isMock=true` → "Weather" + grey "(sample data — API offline)" annotation
+- `_isMock=false/absent` → "Weather" + green "Open-Meteo Live" annotation
+Implements the CEO's "honesty fix" — the demo never claims live data when the API is down.
+
+### NEW: `surface_weather_rebuild4.py`
+Compact Surface script that:
+1. Writes fixed `weather.ts` + `traffic.ts` (native fetch, no node-fetch)
+2. Runs `tsc` rebuild
+3. Kills any process on port 3741, starts new `node dist/index.js`
+4. Polls for LISTENING within 25s, hits `/health` to confirm
+Run when runner recovers: `python scripts/surface_run.py --lang python --file upwork-runs/adverteyes/surface_weather_rebuild4.py`
+
+## Build result
+`npm run build` — SUCCESS, 947 modules, 2.33s, no TS errors. Chunk warning (856kb) pre-existing.
+Dist copied to `../michaelwegter.com/public/demos/adverteyes/`.
+
+## Surface runner status
+`POST /run/exec` → 404 at time of this pass (same as build-ceo observed). Source fixes applied to disk; Surface rebuild requires the runner to recover. Deploy step must:
+1. Confirm `/run/exec` is back
+2. Run `surface_weather_rebuild4.py` and verify `LISTENING` + `/health` 200
+3. Then push `../mw-backend` (Flask bridge + server.py already authored from pass 1)
+4. Wait ~30s for auto-deploy, then verify `https://api.michaelwegter.com/adverteyes/weather/1` returns `current.temperature` + non-empty `hourly.time`
+
+## Flask bridge status
+`../mw-backend/adverteyes_blueprint.py` — authored (PREFIX=adverteyes, UPSTREAM=http://127.0.0.1:3741)
+`../mw-backend/server.py` — bridge registered at lines 291-292
+NOT yet pushed — deploy step's job.
+
+## handoff
+- produced: Fixed weather 502 root cause (native fetch in weather.ts), frontend label honesty (_isMock flag + conditional "Open-Meteo Live" vs "sample data — API offline"), rebuilt frontend (clean), new Surface rebuild script surface_weather_rebuild4.py ready to run
+- decisions: Used Node 18+ native global fetch (no node-fetch) for both weather and traffic routes; _isMock is optional field on WeatherData so existing code paths unaffected; label annotation uses colored inline span (success green vs muted grey) rather than a separate badge element
+- next needs: deploy step — (1) wait for /run/exec to recover and run surface_weather_rebuild4.py, (2) push ../mw-backend (Flask bridge), (3) verify https://api.michaelwegter.com/adverteyes/weather/1 returns live data, (4) push ../michaelwegter.com (frontend already in public/demos/adverteyes/)
+- risks: Surface runner /run/exec returning 404 — no backend rebuild possible until it recovers; Flask bridge is unpushed so adverteyes API is not yet public even if backend recovers; if runner stays down, the frontend mock fallback gracefully degrades with honest "API offline" label (no console errors, no false "Live" claim)

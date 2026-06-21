@@ -1,0 +1,23 @@
+# final-ceo — AdvertEyes improve pass (10/10) FINAL sign-off
+
+## Re-verified (post dash-fix loop)
+- HARD GATE 5 (no em/en dashes): PASS. `grep "—\|–" cover-letter.md one-pager.html` → zero matches. The 7 one-pager dashes flagged last pass are gone (replaced with colons); cover-letter clean.
+- Live demo: `/demos/adverteyes/` returns 200. Demo is up.
+- Demo link in BOTH deliverables: cover-letter.md (work-samples/adverteyes) + one-pager.html (2x). Confirmed.
+- Media: all 7 shots + hero-flow.webm present in media/; one-pager grid symmetric (6 shown, 3x2).
+- Scope at 10/10: 10 working modules, RBAC (API+UI), live weather, conflict detection, dark/light, rich map popups, client-side analytics — verified by deploy-test PASS last pass; demo-builder onward unchanged since (only cosmetic text edits this loop).
+
+## Notes (non-blocking)
+- `/work-samples/adverteyes` returns 404 to `curl` — expected GH Pages SPA deep-link behavior; deploy-test already confirmed the route renders the iframe + gallery card in a real browser. Not a regression.
+- No PPTX deck exists in this run; the run's configured deliverable set is cover-letter.md + one-pager.html (HTML one-pager serves as the visual artifact). This predates the improve pass and was accepted by the prior review — out of scope to introduce now, not a course-correction for this loop.
+
+## Decision
+The one outstanding hard-gate fail is resolved with no collateral damage (text-only substitutions). Demo, deploy, RBAC, live data, links, and media all stand verified. Package is client-ready at 10/10. Signing off.
+
+## handoff
+- produced: final sign-off; confirmed em-dash fix landed (zero dashes) and nothing else regressed.
+- decisions: PASS — no further loops, no REDIRECT; deck absence is pre-existing config, not a blocker for this run.
+- next needs: prompt-optimizer can run; package is done.
+- risks: none material — work-samples curl 404 is SPA-expected and browser-verified.
+
+VERDICT: pass

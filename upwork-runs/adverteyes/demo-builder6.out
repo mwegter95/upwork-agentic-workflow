@@ -1,0 +1,41 @@
+# demo-builder6 — AdvertEyes 10/10 improvement pass
+
+## Changes made
+
+### New files
+- `src/components/ConfirmDialog.tsx` — Reusable confirm modal component (title, message, confirmLabel, danger flag, onConfirm/onCancel). Wraps the existing `Modal`. Replaces all native `confirm()` calls.
+
+### Edited files
+
+**`src/pages/Inventory.tsx`** — 4 distinct improvements:
+1. **ConfirmDialog for delete**: replaced native `confirm("Delete?")` with `deleteTarget` state + `<ConfirmDialog danger>`. Confirmations are now styled, keyboard-accessible, non-blocking.
+2. **Toast for validation/errors**: replaced `alert()` in handleSave with `toast()` (warn on missing fields, success on save, error on API fail). No more native alerts.
+3. **Market availability cards**: computed city-level summary (available/booked/maintenance counts + occupancy bar) as clickable cards above the toolbar. Clicking a city pre-filters the table to that market. Fleet occupancy summary card appended.
+4. **Unit booking availability timeline**: `UnitDetail` now calls `fetchBookings({ unit_id })` (already supported by API). Renders a 2026 horizontal availability track (colored bars for each booking), plus a list with campaign name, dates, status. Shows "fully available" message when no bookings exist.
+
+**`src/pages/Clients.tsx`**:
+- Added `useToast` hook; replaced `alert('Name is required.')` with `toast(..., 'warn')` and added `toast('Client added', 'success')` on successful create.
+
+**`src/pages/Campaigns.tsx`** — added Gantt/Timeline view:
+- New `view` state (`'table' | 'gantt'`) + view-toggle buttons in toolbar.
+- Gantt view: one row per campaign with proportional horizontal bar across Jan–Dec 2026, color-coded by status (active=green, upcoming=blue, completed=grey, cancelled=red). Budget utilization % shown inline on bars. Hover tooltip shows full date range + budget info. Clicking a bar expands an inline detail section (budget progress bar + bookings table) below the Gantt.
+
+**`src/pages/Dashboard.tsx`** — added Upcoming Milestones card:
+- Computes campaign starts/ends AND booking starts/ends within the next 14 days from live API data.
+- Renders as a responsive grid of milestone chips (color-coded: green=start, warning=end, blue=booking start, red=booking end), each showing MM-DD date + label. Hidden when no milestones in window.
+
+**`src/styles.css`** — added CSS sections:
+- `.market-summary-row`, `.market-card`, `.market-card-city`, `.market-card-stats` — market card grid + card styles
+- `.unit-avail-track`, `.unit-avail-bar` — unit availability timeline track + booking bar
+
+### Em/en dash sweep (DoD gate #5)
+Ran systematic Python replacement across all 14 source files. Replaced all `'—'` null-placeholder display chars with `'-'`; prose em dashes with `, ` / `: ` / `. ` per context; en dash in Bookings timeline tooltip with ` to `. Final count: 0 em/en dashes in any `.tsx`, `.ts`, or `.css` file.
+
+## Build result
+`npm run build` — SUCCESS (final). 951 modules, 1.74s, zero TS errors, zero em/en dash violations. Dist copied to `../michaelwegter.com/public/demos/adverteyes/` (assets: index-Cf7cy725.css + index-Cuq9s5AX.js).
+
+## handoff
+- produced: 1 new component (ConfirmDialog) + 6 files with surgical feature additions + em/en dash sweep across all 14 source files; rebuilt frontend (clean); dist deployed to public/demos/adverteyes/
+- decisions: ConfirmDialog wraps existing Modal (no new z-index layers); Gantt ternary closes after DataTable so selected-detail and modal stay outside it; Milestones card uses live campaign+booking data; dash sweep replaces all placeholder `'—'` with `'-'`, prose dashes with `:` or `,` per context
+- next needs: deploy step, push ../michaelwegter.com to GitHub Pages; push ../mw-backend Flask bridge if not already live; verify live at https://michaelwegter.com/demos/adverteyes/
+- risks: backend weather/traffic still mock fallback if Surface runner is offline (demo works fine with mocks; UnitDetail booking timeline uses MOCK_BOOKINGS as fallback when API offline)

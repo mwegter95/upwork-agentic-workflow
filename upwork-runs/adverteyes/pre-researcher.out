@@ -1,0 +1,156 @@
+# Pre-Researcher — AdvertEyes
+
+Answering the 5 gate questions from plan-gate.out. Architecture/routes/DB/scope from planner.out carry forward unchanged.
+
+---
+
+## Q1: OOH Competitor UI/Brand (Lamar, Outfront, Clear Channel)
+
+**Findings from live sites:**
+
+- **Lamar (lamar.com):** White primary background, dark footer, modern minimalist corporate. Large hero photography, card-based modular sections, generous whitespace. Clean sans-serif throughout.
+- **Outfront (outfront.com):** Full dark theme — near-black backgrounds, white text, purple accents. Bold condensed headlines ("WE BUILD BRANDS IN THE REAL WORLD"). High-contrast imagery. Grid-based layout.
+- **Clear Channel (clearchanneloutdoor.com):** Corporate B2B aesthetic, large high-contrast imagery, icon-driven stats sections, results-driven framing.
+
+**Industry pattern:** Dark professional theme with bold accent colors is standard for OOH management platforms. Outfront's dark-purple+white is the most modern; Lamar goes lighter/cleaner. Billboard/OOH apps lean into high contrast (mirrors the medium itself).
+
+**Confirmed design system for AdvertEyes** (replace all "preliminary" values in plan.md):
+
+```
+Background:        #0A0E1A   (deep navy, darker than Outfront)
+Surface/card:      #131929
+Card raised:       #1C2540
+Border:            #2D3A5A
+Accent primary:    #FF6B1A   (billboard orange — high-vis, industry energy)
+Accent secondary:  #3B82F6   (DOOH/digital screen blue)
+Text primary:      #E8EDF5
+Text secondary:    #8A9AC0
+Success:           #22C55E
+Warning:           #EAB308
+Error:             #EF4444
+
+Fonts:
+  Display:         Barlow Condensed 700  (OOH industry compressed-headline aesthetic)
+  UI/body:         DM Sans 400/500/600   (clean dashboard readability; NOT Inter per CLAUDE.md)
+  Monospace/data:  IBM Plex Mono         (KPI figures, route IDs)
+
+Google Fonts import: Barlow+Condensed:wght@700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono
+```
+
+Mood: Dark, data-dense, authoritative. Feels like a real ops dashboard for a $50M OOH company. Orange accent echoes the visible, bold nature of the medium.
+
+---
+
+## Q2: Leaflet.js + Vite/React 18 Viability
+
+**Known footguns (confirmed from GitHub issues + GitLab MRs):**
+
+1. **CSS import:** `import 'leaflet/dist/leaflet.css'` in `main.tsx` resolves correctly in Vite. The relative-URL issue is an internal leaflet package problem; the top-level CSS import in app entry avoids it.
+2. **Marker icons broken in production builds:** Vite hashes asset names and breaks Leaflet's default icon URL detection. Fix required at app init:
+   ```ts
+   import L from 'leaflet';
+   import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+   import markerIcon from 'leaflet/dist/images/marker-icon.png';
+   import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+   delete (L.Icon.Default.prototype as any)._getIconUrl;
+   L.Icon.Default.mergeOptions({ iconUrl: markerIcon, iconRetinaUrl: markerIcon2x, shadowUrl: markerShadow });
+   ```
+3. **react-leaflet v4+ with TypeScript/NodeNext moduleResolution:** react-leaflet v4 ESM may conflict if tsconfig uses `"moduleResolution": "NodeNext"`. Fix: use `"moduleResolution": "Bundler"` in tsconfig (correct for Vite anyway).
+
+**Verdict:** react-leaflet works fine in Vite/React 18 with the above 3 fixes applied. No alternative library needed. Plan's Leaflet/OSM decision is confirmed viable.
+
+**Builder must-do:** Add CSS import to `main.tsx`, apply icon fix in a `leaflet-config.ts` helper imported before any map renders, set `moduleResolution: "Bundler"` in tsconfig.
+
+---
+
+## Q3: Open-Meteo Field Names
+
+**Confirmed valid for `/v1/forecast?hourly=...`:**
+
+| Field | Description |
+|---|---|
+| `temperature_2m` | Air temp at 2m (°F with `temperature_unit=fahrenheit`) |
+| `wind_speed_10m` | Wind speed at 10m above ground |
+| `wind_gusts_10m` | Wind gusts (critical for billboard structural safety alerts) |
+| `wind_direction_10m` | Wind direction degrees |
+| `precipitation` | Total precip sum of preceding hour |
+| `weather_code` | WMO numeric weather condition code |
+| `visibility` | Viewing distance in meters (directly impacts ad exposure quality) |
+| `relative_humidity_2m` | Humidity |
+| `apparent_temperature` | "Feels like" temp |
+
+**Sample endpoint:**
+```
+https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,visibility&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=3
+```
+
+No API key required. Completely free. Response field names match exactly as listed. **All plan field names confirmed correct.**
+
+**Added value for OOH context:** `wind_gusts_10m` + `visibility` are operationally relevant (high gusts = billboard safety alerts; low visibility = reduced impression quality). Recommend surfacing these in the asset detail panel.
+
+---
+
+## Q4: Bonus Free API — TomTom Traffic Flow
+
+**Verdict: YES, viable and directly relevant.**
+
+**TomTom Traffic Flow Segment Data API:**
+- Free tier: **2,500 requests/day, no credit card required.** Sign up at developer.tomtom.com for a free API key.
+- Endpoint: `https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?point={lat},{lon}&key={apiKey}`
+- Key response fields:
+  - `currentSpeed` — real-time avg speed on nearest road segment (mph)
+  - `freeFlowSpeed` — baseline free-flow speed (mph)
+  - `currentTravelTime` — current travel time in seconds
+  - `freeFlowTravelTime` — optimal travel time in seconds
+  - `confidence` — data reliability 0-1
+  - `roadClosure` — boolean
+
+**OOH relevance (strong):** Traffic speed near a billboard location directly correlates to audience dwell time and impression quality. Congestion = slower traffic = longer ad exposure = higher effective CPM. The backend can calculate a "Traffic Score" per asset: `(freeFlowSpeed - currentSpeed) / freeFlowSpeed * 100` = congestion percentage. Show this on the map marker and in asset KPIs.
+
+**Integration plan:**
+- Backend: `GET /api/traffic/:assetId` — fetches coordinates from DB, calls TomTom, returns `{ currentSpeed, freeFlowSpeed, congestionPct, confidence }`. Cache per-asset for 15 min (avoid burning free quota).
+- Frontend: Map marker color intensity shifts based on congestionPct (red = heavy traffic = high audience). Asset detail panel shows live traffic score.
+- This replaces the "weather-only" fallback in the plan. Use BOTH: Open-Meteo for weather panel + TomTom for map traffic layer.
+
+**API key handling:** Store as `TOMTOM_API_KEY` env var in `.env` on backend. Do not expose to frontend. Proxy through backend.
+
+---
+
+## Q5: OOH Industry KPI Benchmarks
+
+**Plan estimates vs. industry reality:**
+
+| Format | Plan estimate | Industry data | Verdict |
+|---|---|---|---|
+| Static billboard | 50k impressions/week | 12k (small market) to 500k+ (highway/metro) | Reasonable for mid-size metro highway. 50k = realistic suburban arterial. |
+| DOOH digital | 120k impressions/week | Hundreds of thousands possible on busy highway DOOH | Plausible for high-traffic location. Maybe slightly conservative for urban DOOH. |
+| Truckside/mobile | 30k impressions/week | Truckside CPM ~$0.81 (lowest in media); fleet impression vol is route-dependent | 30k is conservative but defensible; mobile units cover variable geography. |
+
+**CPM reality check:**
+- Truckside: ~$0.81/thousand (lowest CPM in all media — a key selling point)
+- Static billboard: $2-7 CPM typical
+- DOOH programmatic: $3-10 CPM (rising in 2024-2025, up 25% YoY in some markets)
+
+**Plan formulas confirmed reasonable:**
+- Occupancy rate, Revenue MTD, CPM calculation, and weekly impressions are standard OOH KPIs used by Broadsign, Geopath, and Clear Channel's own reporting.
+- Geopath is the industry standard measurement body (like Nielsen for OOH). CPM formula `(revenue / impressions) * 1000` is correct.
+
+**Seed data recommendation:** Use three tiers for believability — Downtown Digital (high traffic, 180k/wk, $8 CPM), Highway Static (medium, 55k/wk, $4 CPM), Suburban Truckside Route (lower, 28k/wk, $0.85 CPM). Matches industry norms.
+
+---
+
+## Design System Patch Summary (for planner.out update)
+
+Replace "preliminary" design tokens in plan.md with:
+- Background: `#0A0E1A`, Surface: `#131929`, Card: `#1C2540`, Border: `#2D3A5A`
+- Accent: `#FF6B1A` (orange), Secondary: `#3B82F6` (blue)
+- Fonts: Barlow Condensed 700 (display), DM Sans 400/500/600 (UI), IBM Plex Mono (data)
+- Theme: Dark professional dashboard, inspired by Outfront's dark+bold brand
+
+---
+
+## handoff
+- produced: Answers to all 5 plan-gate questions; confirmed design tokens, Leaflet fix, Open-Meteo fields, TomTom free API integration plan, KPI benchmark validation
+- decisions: TomTom Traffic Flow (free tier, 2.5k req/day) approved as second live API alongside Open-Meteo; react-leaflet confirmed viable with 3 Vite fixes; dark-navy + billboard-orange design system locked
+- next needs: Planner patches design tokens in plan.md, adds TomTom integration to backend route list (GET /api/traffic/:assetId with 15-min cache), adds Leaflet Vite fix to builder checklist; plan-gate re-check should now pass
+- risks: TomTom free tier (2.5k/day) is enough for demo use but must cache aggressively; if demo seeds 10+ assets and refreshes frequently, quota could be approached — 15-min TTL cache per asset is mandatory

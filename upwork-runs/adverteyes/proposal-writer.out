@@ -1,0 +1,26 @@
+# proposal-writer — AdvertEyes improve pass (final-ceo fix)
+
+## Action Taken
+
+Surgical fix only: removed all em/en dashes from `one-pager.html` per CLAUDE.md hard gate 5 and final-ceo.out directive.
+
+**Lines edited (one-pager.html):**
+- L6: title `— Michael Wegter` → `: Michael Wegter`
+- L426: `Campaigns —` → `Campaigns:`
+- L430: `Inventory —` → `Inventory:`
+- L434: `Bookings —` → `Bookings:`
+- L438: `Analytics —` → `Analytics:`
+- L442: `Campaign Detail —` → `Campaign Detail:`
+- L446: `Login —` → `Login:` (CEO flagged as "fine" but actual file had em dash; fixed per hard rule)
+
+**Post-edit verification:** `grep -n "—\|–" one-pager.html` → zero matches.
+
+**cover-letter.md:** already clean (confirmed zero matches).
+
+No other files changed — demo, deploy, and all other proposal artifacts remain as verified by final-ceo (pass on scope, links, media refs, RBAC, live data).
+
+## handoff
+- produced: one-pager.html with zero em/en dashes (7 surgical edits); cover-letter.md unchanged (already clean)
+- decisions: replaced all em dashes with colons (natural separator for label: description pattern); no restyle or content changes
+- next needs: final-ceo to re-verify hard gate 5 passes; everything else was already passing
+- risks: none — changes are cosmetic text substitutions only, no layout or logic affected

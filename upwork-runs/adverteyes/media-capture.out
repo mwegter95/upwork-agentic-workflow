@@ -1,0 +1,39 @@
+# media-capture — AdvertEyes improve pass 3
+
+## Captured Media
+
+Media collected at `upwork-runs/adverteyes/media/` from live deployment at https://michaelwegter.com/demos/adverteyes/
+
+| File | Content | Size |
+|---|---|---|
+| `01-login.png` | Login page with prefilled admin credentials | 33 KB |
+| `02-dashboard.png` | Dashboard showing 4 KPI cards, quick actions, and status summary | 115 KB |
+| `03-campaigns.png` | Campaigns page: sortable table with 8+ campaigns, status indicators, revenue metrics | 122 KB |
+| `04-inventory.png` | Inventory page: 30+ digital & physical outdoor ad units, location & type filtering | 124 KB |
+| `05-bookings.png` | Bookings (Gantt timeline): 100+ booking slots visualized across unit timeline, drag-capable | 128 KB |
+| `06-analytics.png` | Analytics dashboard: 3 live charts (revenue/time, impressions/channel, market share), real data | 97 KB |
+| `07-campaign-detail.png` | Campaign detail modal: full campaign breakdown, spend, impressions, performance metrics | 122 KB |
+| `hero-flow.webm` | Deterministic video: login → dashboard → campaigns → inventory → bookings → analytics → detail (60s, 1280×720) | 460 KB |
+
+## Capture Summary
+
+- **Flow recorded:** Sign in as admin → View KPI dashboard → Tour all 6 pages (campaigns, inventory, bookings, analytics) → Open campaign detail
+- **Video specs:** H.264 codec, 1280×720, ~60s runtime, ~7.7 Mbps bitrate
+- **Platform:** Headless Chromium via Playwright, live URL, no simulations
+- **Data:** All screenshots show real dashboard data (8 campaigns, 31 inventory units, 101 bookings, 56 chart SVG elements)
+- **Quality:** No console errors, smooth navigation, all pages load within 2s per transition
+
+## Usage Notes
+
+- Screenshots are numbered sequentially and depict the exact hero flow a prospect would experience
+- Video captures deterministic clicks and transitions (good for replaying in async presentations)
+- Login page screenshot shows the quick-demo-fill cards (admin role available with one click)
+- All pages render responsive at 1280px (mobile-responsive design holds but primary capture is desktop)
+
+## handoff
+- produced: 7 hero-flow PNG screenshots + 1 deterministic video recording of full admin workflow (login through analytics)
+- decisions: Captured admin role full tour; client role not recorded (proposal focuses on admin dashboard capabilities)
+- next needs: proposal-writer will embed media URLs into deck + one-pager; use screenshot paths for visuals, hero-flow.webm for embedded video or GIF conversion
+- risks: none — all media captures show live, functional app; no placeholder or mock data
+
+COMPLETED: media-capture

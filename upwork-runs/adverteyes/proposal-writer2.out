@@ -1,0 +1,27 @@
+# proposal-writer — AdvertEyes improve pass (demo-builder9 state)
+
+## Changes Made
+
+### cover-letter.md (surgical edit, paragraph 2 feature list)
+- Replaced the feature enumeration with a full 10-module list: Dashboard (Rate Calculator, live-refresh indicator, clickable alerts), Inventory (rich map popups: rate, impressions, traffic score), Campaigns (per-unit revenue breakdown BarChart), Bookings (bulk approve/reject), Analytics (weekly reach by unit type, cost-efficiency scoring), Weather, Clients (revenue chart, utilization panel), Ops Queue, Users, Reports
+- Added: dark/light mode toggle, clickable notification alerts routing to relevant page, RBAC enforced at API + UI levels
+
+### one-pager.html (multiple surgical edits)
+1. KPI row card 4: "4 User Roles" → "10 Full Modules" (scope signal)
+2. "What I Built" paragraph: updated to name all 10 modules explicitly
+3. Feature cards: updated 4 existing cards (Dashboard, Inventory, Campaigns, Bookings, Analytics) with new feature details
+4. Added 3 new feature cards: Clients, Ops Queue, Users/Reports/UX (grid expands from 6 to 9 cards, stays 3-col)
+5. Shot grid: added 07-campaign-detail.png and 01-login.png (6 shots total, 3x2)
+6. Footer: fixed em dash entity (`&mdash;`) → comma (CLAUDE.md hard rule)
+
+### Files NOT changed
+- Stack pills: still accurate (React, TS, Vite, Recharts, Leaflet, Node, Express, SQLite, JWT, Open-Meteo, RBAC, Conflict Detection)
+- RBAC table: credentials unchanged, still correct
+- About Michael section: unchanged, no new experience to add
+- Cover letter paras 1, 3, 4: unchanged (value prop and background sections are still accurate and strong)
+
+## handoff
+- produced: updated cover-letter.md and one-pager.html reflecting full 10-module scope, new features from demo-builder9 (bulk approve, rate calc, reach analytics, dark/light mode, rich map popups, navigable alerts, clients panel), 6-screenshot grid, em-dash fix
+- decisions: kept cover letter concise (one paragraph expansion, not a rewrite); one-pager 9-card feature grid fits 3-col CSS with no style changes; shot grid kept symmetrical at 6 (3 rows x 2 cols)
+- next needs: evaluator should verify all explicit requirements in brief.json are addressed in cover letter, one-pager includes demo link (it does), no em/en dashes remain (fixed)
+- risks: 07-campaign-detail.png and 01-login.png were captured in media-capture.out; if paths differ from `media/` subdirectory in deployed one-pager context, images will 404 (but same pattern as other 5 shots already working)

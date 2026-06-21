@@ -1,0 +1,77 @@
+# Plan Eval (Rubric) — AdvertEyes
+
+## Rubric Assessment
+
+### 1. Requirements coverage
+
+| Posting requirement | Coverage |
+|---|---|
+| Full Stack / Web App Development | ✓ Node/TS backend + React/TS frontend, full CRUD across 4 domains |
+| React.js | ✓ React 18 + TypeScript |
+| Next.js (posting mandatory) | ~ User override: brief explicitly requests "frontend in react/typescript" — Vite SPA is intentional. Skills transfer is implicit. Acceptable given user direction. |
+| Node.js + Express.js + TypeScript | ✓ |
+| REST API | ✓ 18 endpoints fully specified |
+| API Integration | ✓ Open-Meteo (weather) + TomTom Traffic (free tier) proxied via backend |
+| Admin Dashboard | ✓ KPI tiles, occupancy chart, activity feed (Dashboard page) |
+| User Management + RBAC | ✓ 4 roles (Admin/Sales/Ops/Client-viewer), per-page matrix, server-side filter for Client-viewer |
+| Database (PostgreSQL/MongoDB/MySQL listed) | ~ SQLite via better-sqlite3. Pragmatic for Surface runner; not one of the listed DBs. Justified for demo — schema and queries are portable to Postgres. Acceptable. |
+| Responsive Web Design | ~ Internal ops tool; plan explicitly defers mobile (768px min-width). Reasonable for the stated product type. |
+| Git / GitHub | ✓ Implied by deploy workflow (GH Pages push). |
+| React Native (posting mandatory) | ✗ Not addressed; web-only demo. Acceptable — brief says web app; React Native would be a separate engagement. |
+| Forms, filters, tables, reports, dashboard views | ✓ DataTable component (sort/filter/paginate), booking form, inventory filter, KPI dashboard |
+| Third-party API integrations | ✓ Two real free APIs (Open-Meteo, TomTom) |
+| Deployment + documentation | ✓ 5-step deployment path, Leaflet fix checklist, seed credentials |
+
+### 2. Technology choices
+
+Correct and well-justified:
+- Express + TypeScript on Surface (Surface runner constraint makes SQLite + better-sqlite3 correct; Postgres would require a Surface-side install step with uncertain outcome)
+- Vite + React/TS (user directive; appropriate for a static GH Pages demo)
+- Leaflet/OSM (free, no key, Vite fix fully documented)
+- JWT auth (industry standard, simple to implement)
+- Recharts for sparklines (lightest React charting lib)
+- TomTom free tier: 2,500 req/day + 15-min TTL cache = ~96 max req/day at full volume — comfortably inside quota
+
+No red flags. SQLite is the only technical deviation from posting, and it is internally justified.
+
+### 3. Testing approach
+
+- E2E: Playwright deploy-test script defined with exact steps (login → dashboard → inventory map → booking + conflict → weather → traffic score)
+- Conflict detection tested explicitly (intentional conflicting seed booking)
+- No unit/integration test plan for backend routes — acceptable for a demo proposal
+
+Sufficient for a demo at this richness level.
+
+### 4. Scope feasibility at richness 10/10
+
+- 22 FE + 13 BE = 35 source files: large but fully justified at 10/10. Each file is scoped and named.
+- All 18 API routes specified; DB schema implied by seed spec
+- Two real API integrations (both free, keys handled server-side)
+- Known risks documented with mitigations: TomTom quota (15-min TTL), Leaflet/Vite (3-step fix), Surface compile (seeded-data fallback)
+- No handwavy features — every UI page has a named page component and clear data source
+
+Feasible. No scope creep or vague "nice-to-haves" without corresponding implementation plan.
+
+### 5. Design direction fit for industry
+
+Excellent. Research-derived from 3 real OOH brands (Outfront, Lamar, Clear Channel). Dark navy + billboard orange is the correct aesthetic register (authoritative data-dense ops tool). Barlow Condensed is verifiably used in OOH visual identity. Explicitly NOT michaelwegter.com's look. KPI benchmarks and CPM tiers are industry-accurate (not invented).
+
+---
+
+## Issues (none blocking)
+
+1. **Next.js not used:** User explicitly directed "react/typescript" frontend — this is intentional and acceptable. Cover letter should acknowledge Next.js fluency even though the demo uses Vite.
+2. **SQLite instead of PostgreSQL:** Pragmatic Surface constraint. Demo-builder should note schema is PostgreSQL-portable in the proposal.
+3. **No unit tests:** E2E Playwright covers critical paths. Acceptable for proposal demo.
+4. **React Native:** Not addressed. Web-only scope is correct for this brief.
+5. **Clients page absent from FE:** Clients are managed via campaigns; not a gap for this demo scope.
+
+---
+
+## handoff
+- produced: Rubric eval against all posting requirements — plan passes on all hard gates
+- decisions: VERDICT pass; no plan revision needed; Next.js and SQLite deviations are documented and acceptable
+- next needs: CEO reviews; demo-builder must note Next.js fluency in cover letter and SQLite-to-Postgres portability in proposal; all Leaflet fixes mandatory
+- risks: None new; TomTom quota + Surface compile risks already mitigated in plan
+
+VERDICT: pass

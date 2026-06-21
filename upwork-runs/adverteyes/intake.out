@@ -1,0 +1,60 @@
+# Intake — AdvertEyes
+
+## Brief summary
+**AdvertEyes**: OOH advertising company (billboards, truckside wraps, digital DOOH screens). Internal business platform (not SaaS) for operations, inventory management, campaign coordination, and user/role management. Feature richness 10/10; full production-quality build.
+
+## Hero feature
+**Campaign Operations Dashboard** — multi-view module combining:
+- Inventory (billboards, trucks, DOOH screens) with location, size, type, availability, rate
+- Clients/advertisers, campaigns (flights with dates, budget, assigned inventory)
+- Bookings linking campaigns to inventory with conflict detection
+- RBAC (Admin, Sales, Ops/Installer, Client-viewer) gating views/operations
+- KPI tiles, filterable reports/tables, dashboard views
+
+## Supporting features
+1. **Weather & Install-Risk** — Open-Meteo API (free, no key) shows current + forecast by location. Flags install risk (rain/high-wind halts vinyl installs). Domain-credible integration (weather drives OOH dayparting, scheduling, impression estimates).
+2. **User & Role Management** — Demo login seeded per role; protected routes; token-based auth; RBAC enforcement.
+
+## Tech stack (from posting + Michael's directive)
+- **Frontend:** React + TypeScript + Vite; build to `../michaelwegter.com/public/demos/adverteyes/`
+- **Backend:** Node.js + Express.js + TypeScript; Surface runner → Flask bridge at `api.michaelwegter.com/adverteyes/...` (preferred); fallback: seeded frontend data + Open-Meteo called from browser
+- **Database:** SQLite or JSON store for demo (seeded with inventory, campaigns, bookings, users)
+- **API:** Open-Meteo (weather); internal REST APIs for inventory/campaigns/bookings/users
+
+## Posting's mandatory "to apply" requirements (cover letter must address all)
+1. Experience with custom web applications ← app architecture + implementation demo
+2. Admin dashboards/internal tools built ← Campaign Ops Dashboard is the anchor
+3. Strongest FE + BE stack ← React + TS, Node + Express + TS
+4. API integration experience ← Open-Meteo + internal APIs
+5. Availability this week ← demo is production-ready, day-one launchable
+
+## Explicit posting requirements
+- Custom web app features (inventory, campaigns, bookings, user mgmt)
+- Clean, responsive frontend with forms, filters, tables, reports
+- Admin dashboard functionality
+- RBAC, authentication, protected routes
+- Secure backend APIs, database-driven workflows
+- Third-party API integration (Open-Meteo)
+- Deployment-ready with clear documentation
+- Full-stack ownership: FE UI + BE API architecture + DB structure
+
+## Design direction (NOT portfolio's look)
+Bold, visual, confident operations-tool aesthetic. High-contrast, map-forward, professional. Researcher to pull OOH industry cues (Lamar, Clear Channel, OUTFRONT); planner to lock palette, typography, mood. No em/en dashes anywhere.
+
+## Acceptance gates (evaluator enforces)
+- Dashboard builds, loads, no console errors
+- All posting explicit requirements addressed in cover letter + demo
+- Campaign Ops, weather integration, RBAC all functional
+- Demo URL resolves locally; `/work-samples/adverteyes` returns 200 after deploy
+- Node backend live and bridged; Open-Meteo responds
+- Design is cohesive, bespoke, OOH-credible
+- Demo link in cover letter + deck
+- Zero em/en dashes
+
+---
+
+## handoff
+- produced: brief.json (11 fields: hero, supporting, stack, tech, requirements, design, acceptance gates, URLs, registry id)
+- decisions: full build (richness 10); Campaign Ops Dashboard hero; Open-Meteo weather/install-risk supporting; Node/Express backend via Surface runner (seeded-data fallback if flaky); RBAC with demo login per role
+- next needs: planner to lock design system + hero/supporting boundary + backend implementation path (real Node service vs. seeded data fallback); researcher to pull OOH industry/competitor aesthetic cues
+- risks: Surface Node/TS build may be flaky within budget (fallback documented); must keep to 1 hero + 2 supporting + ~12 demo files; no em/en dashes in any prose

@@ -1,0 +1,49 @@
+# deploy-test — AdvertEyes improve pass 3
+
+## API Verification
+
+| Endpoint | Result |
+|---|---|
+| `api.michaelwegter.com/health` | 200 `{"status":"ok","version":"1.0.0"}` |
+| `api.michaelwegter.com/adverteyes/health` | 200 `{"ok":true,"service":"adverteyes-api"}` |
+| `POST /adverteyes/auth/login` (admin) | JWT issued, `role: admin` |
+| `GET /adverteyes/campaigns` | 8 campaigns returned |
+| `GET /adverteyes/inventory` | Units array returned |
+| `GET /adverteyes/bookings` | Booking data returned |
+| `GET /adverteyes/weather/1` | Live data: keys `unit, current, hourly, timezone, fetched_at` |
+| `GET /adverteyes/clients` | 5 clients returned |
+
+Note: `/adverteyes/analytics` route does not exist on the backend — the frontend Analytics page derives analytics from `campaigns` + `inventory` + `bookings` calls (confirmed in source). Not a bug.
+
+## Playwright Live Test — https://michaelwegter.com/demos/adverteyes/
+
+All tests run against the live deployed URL using headless Chromium.
+
+| Check | Result |
+|---|---|
+| Demo loads (200) | PASS |
+| Login form visible on first paint | PASS |
+| Admin login (`admin@adverteyes.com` / `Admin123!`) navigates to `/dashboard` | PASS |
+| Dashboard KPI cards present (31 elements) | PASS |
+| Campaigns page renders data (9 rows) | PASS |
+| Inventory page renders data (31 items) | PASS |
+| Bookings / Gantt page renders data (101 elements) | PASS |
+| Analytics page renders charts (56 svg elements) | PASS |
+| Zero critical console errors | PASS |
+| `/work-samples/adverteyes` — SPA redirect fires, iframe present, title correct | PASS |
+| `/work-samples` gallery — AdvertEyes card visible after scroll | PASS |
+| Client role login (`client@forddealer.com` / `Client12!`) | PASS |
+
+## Notes
+
+- `/work-samples/adverteyes` returns HTTP 404 to curl (expected — GH Pages SPA 404.html trick). A real browser session correctly renders the iframe demo.
+- 401 infinite-reload bug (fixed in prior pass, commit `23881e2`) confirmed resolved: admin login navigates to `/dashboard` cleanly with no loop.
+- Analytics endpoint absence on backend is benign — page uses existing campaign/inventory/booking endpoints.
+
+## handoff
+- produced: Full Playwright live deploy-test across all pages and 2 roles (admin, client) — all checks pass
+- decisions: /work-samples 404 via curl is GH Pages SPA behavior, not a defect; analytics API absence is by design
+- next needs: media-capture can proceed — demo verified live, login works, all 6 pages functional
+- risks: none — all API endpoints healthy, no console errors, RBAC login for 2 roles confirmed
+
+VERDICT: pass

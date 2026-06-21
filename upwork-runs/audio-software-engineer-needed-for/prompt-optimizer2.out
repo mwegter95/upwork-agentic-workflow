@@ -1,0 +1,40 @@
+# Prompt Optimizer — Improve Pass
+
+Read `improvements.md` (4 step headings). Checkpointed pending workflow-repo
+artifacts; studio repo already clean (0 pending). Applied safe suggestions as
+surgical prompt edits only. Local commit only — not pushed.
+
+## Suggestions triage
+- demo-builder [adherence] array-insert-use-Write — ALREADY in prompt (no-op).
+- demo-builder [tokens] scan existing source first — ALREADY in prompt (no-op).
+- proposal-writer [adherence] em/en-dash grep incl. title/alt — ALREADY in prompt (no-op).
+- proposal-writer [tokens] handoff tails suffice — ALREADY in prompt (no-op).
+- deploy-test [adherence] DOM-inspect before selectors — ALREADY in prompt (no-op).
+- build-ceo [adherence] demo-builder must produce output file + in-app edit, not
+  just downloaded artifacts, before handoff — APPLIED to demo-builder.md (Output
+  section).
+
+## Applied
+- `.claude/agents/demo-builder.md`: added requirement that the step is complete
+  only when assets are wired INTO the app AND build-report.md is written (both
+  required before return/CEO handoff). Directly fixes the "stopped at download
+  stage" failure seen this run.
+
+## Risky / human review (not edited)
+- deploy-test [reuse]: shared Playwright scaffold `scripts/pw-test-template.mjs`
+  to replace loose .mjs files. This is a NEW-FILE infra change, not a prompt
+  edit — out of scope for surgical prompt tuning. Recommend a human create the
+  shared scaffold + point deploy-test/demo-builder prompts at it.
+
+## Commits (local only, no push)
+- `ccc3724` checkpoint: run artifacts + the demo-builder prompt edit (swept in by
+  add -A; edit is committed, tree clean).
+- studio repo: clean, nothing to commit.
+
+## handoff
+- produced: prompt-optimizer2.out; one surgical prompt edit to demo-builder.md
+- decisions: 5 of 6 suggestions were already applied in prior passes → no-ops;
+  applied only the build-ceo "require output file + in-app edit" fix
+- next needs: none — run complete
+- risks: pw-template scaffold (new file) deferred to human; prompt edit landed in
+  the checkpoint commit rather than its own isolated commit (still local-only)

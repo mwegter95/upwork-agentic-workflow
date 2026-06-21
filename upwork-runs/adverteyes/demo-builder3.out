@@ -1,0 +1,57 @@
+# demo-builder3 — AdvertEyes Improve Pass (3rd)
+
+## Changes made (6 improvements, 7 files touched)
+
+### EDIT: src/components/KpiCard.tsx
+Added optional `trend?: { dir: 'up' | 'down'; pct: number }` prop. Renders as a colored `▲ / ▼ X% vs prior period` label below the sub text using `.kpi-trend-up` (success) / `.kpi-trend-down` (error).
+
+### EDIT: src/pages/Dashboard.tsx
+Passed trend data to all 5 KPI cards:
+- Total Units: ▲5%, Occupancy: ▲3%, Active Campaigns: ▲12%, Revenue MTD: ▲8%, Pending Bookings: ▼2%
+
+### EDIT: src/pages/Analytics.tsx
+Added 2 new sections (appended below existing top-units table):
+1. **Revenue Forecast chart** — 12-point AreaChart: 8-week actual (orange solid fill) + 4-week projection (blue dashed, no fill). Stats row shows latest actual ($68.2k), 4-wk forecast peak ($91.8k), growth rate (+35%). Uses existing `AreaChart` + dual `Area` series with `connectNulls=false` and `strokeDasharray`.
+2. **CPM Efficiency** — 2-column grid: horizontal BarChart of revenue-per-1000-weekly-impressions by type (DOOH $23, Billboard $24.50, Truckside $28.67) + companion table with avg rate, avg impressions, and CPM column. Includes methodology note.
+Also added `Legend` to recharts import (unused but available for future use).
+
+### EDIT: src/pages/Campaigns.tsx
+Budget utilization bar in expanded campaign detail panel:
+- Shows when `selected.budget != null`
+- `.budget-bar-label` row: "Budget utilization" + percentage / booked_value of budget
+- `.budget-progress-wrap` + `.budget-progress-fill` with dynamic color: green (>80%), orange (>40%), yellow (<40%)
+- Fixed `&mdash;` HTML entity (invalid in JSX) to `{' / '}`
+
+### EDIT: src/pages/Bookings.tsx
+Today marker on Gantt timeline:
+- Computed `TODAY_PCT` (module-level const) from today vs Jun-Dec 2026 window
+- Header: added `position: relative` to `.timeline-months` div + absolutely-positioned "TODAY" text label at `TODAY_PCT%`
+- Each `.timeline-bars` row: adds `<div className="timeline-today" style={{ left: \`\${TODAY_PCT}%\` }} />` (2px orange vertical line)
+- Today is Jun 20, 2026 = ~8.9% into the Jun-Dec window; clearly visible near the start of the timeline
+
+### EDIT: src/pages/Login.tsx
+Credential cards now trigger auto-login on click (not just fill):
+- `fillCred` upgraded to async: calls `login(email, password)` directly, navigates to `/dashboard` or `/campaigns`
+- On API failure: fills credentials + shows error "API may be offline. Credentials filled; press Sign in."
+- Added "click to log in" hint text under each credential card
+- Cards show `cursor: wait` while loading
+
+### EDIT: src/styles.css
+Appended 4 new rule groups:
+- `.kpi-trend`, `.kpi-trend-up`, `.kpi-trend-down` — KPI delta badges
+- `.budget-bar-label`, `.budget-progress-wrap`, `.budget-progress-fill` — campaign budget bars
+- `.timeline-today` — 2px orange line, z-index 5, pointer-events none
+
+## Build result
+`npm run build` — SUCCESS in 2.72s, 947 modules, no TS errors. Chunk warning is pre-existing (856kb). Copied `dist/*` to `../michaelwegter.com/public/demos/adverteyes/`.
+
+## Backend / Flask bridge status
+- Surface: `adverteyes-api` service on port 3741 already LISTENING (registered in pass 1, no changes)
+- Flask bridge `../mw-backend/adverteyes_blueprint.py` already authored + registered in `server.py` (from pass 1)
+- No backend changes this pass — push by deploy step as before
+
+## handoff
+- produced: 6 improvements across 7 files: KpiCard trend indicators (all 5 Dashboard KPIs), Analytics Revenue Forecast + CPM Efficiency (2 new chart sections), Campaigns budget utilization bars, Bookings today-line Gantt marker, Login one-click auto-login. Build clean, dist deployed to public/demos/adverteyes/.
+- decisions: Used existing AreaChart (dual-series) for forecast instead of ComposedChart to avoid new imports; TODAY_PCT computed at module level (stable across renders); budget bar color thresholds are 40/80%; credential quick-login falls back gracefully on API offline
+- next needs: deploy step — commit + push michaelwegter.com (GitHub Pages auto-deploys); no mw-backend changes so no backend push needed; verify live URL at /demos/adverteyes/
+- risks: Chunk warning (856kb) pre-existing — no action; TODAY_PCT hardcoded today's date is Jun 20, 2026 which puts marker at ~8.9% into window (visible but near start); MOCK_CLIENT name mismatch in Clients page is pre-existing (carry-over from pass 2)

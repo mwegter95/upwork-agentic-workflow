@@ -1,0 +1,28 @@
+# deploy — AdvertEyes improve pass 3
+
+## Actions taken
+
+### michaelwegter.com (frontend)
+- Committed staged bundle swap: `index-Dr-vqYnr.js` -> `index-VmW0JRvj.js` + `index.html` (ref updated)
+  Commit: `23881e2` "Fix AdvertEyes 401 infinite-reload loop on login"
+- Pushed to `main` -> GH Actions run `27898634592` completed: **success** (52s)
+
+### mw-backend
+- No changes; backend already deployed from prior pass. No push needed.
+
+## Live verification
+
+| Endpoint | Status |
+|---|---|
+| `michaelwegter.com/demos/adverteyes/` | 200 |
+| `michaelwegter.com/demos/adverteyes/assets/index-VmW0JRvj.js` | 200 — new bundle confirmed live |
+| `api.michaelwegter.com/health` | 200 `{"status":"ok","version":"1.0.0"}` (Flask healthy) |
+| `api.michaelwegter.com/adverteyes/health` | 200 `{"ok":true,"service":"adverteyes-api"}` (Node service up) |
+
+Bundle hash in live `index.html`: `index-VmW0JRvj.js` ✓ (old `index-Dr-vqYnr.js` replaced)
+
+## handoff
+- produced: 401-fix bundle live at `https://michaelwegter.com/demos/adverteyes/` (commit 23881e2, GH Actions success)
+- decisions: frontend-only deploy; mw-backend untouched (no blueprint changes this pass)
+- next needs: deploy-test should exercise login end-to-end on live URL to confirm 401 loop is gone; verify dashboard, weather, bookings load correctly post-login
+- risks: none expected; CDN propagation confirmed complete (bundle hash verified in live HTML)

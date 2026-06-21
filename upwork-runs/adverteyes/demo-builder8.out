@@ -1,0 +1,72 @@
+# AdvertEyes Demo Builder — Improvement Run (demo-builder8)
+
+## Changes made (all surgical edits, no full rewrites except Clients.tsx)
+
+### 1. Dark / Light mode toggle
+- New `src/contexts/ThemeContext.tsx`: persists to `localStorage`, sets `data-theme` on `<html>`
+- `src/App.tsx`: wrapped entire app in `<ThemeProvider>`
+- `src/components/Layout.tsx`: added sun/moon toggle button in topbar right
+- `src/styles.css`: added `[data-theme="light"]` CSS variable overrides (bg, border, text)
+
+### 2. Clients page overhaul (191 -> 340+ lines)
+`src/pages/Clients.tsx` fully rewritten with:
+- Search input + industry filter dropdown with "Clear" reset
+- Four KPI cards: Total Clients, Active Campaigns, Confirmed Revenue, Budget Pipeline
+- **Revenue by Client horizontal BarChart** (confirmed revenue + pipeline side by side for all filtered clients)
+- Click-to-open **detail side panel** (480px slide-in) per client showing:
+  - Contact info grid
+  - Revenue/pipeline stat tiles
+  - Campaign utilization BarChart (budget vs. booked per campaign)
+  - Campaign list with progress bars
+  - Activity log
+  - Notes textarea (saved to local state, toast on save)
+
+### 3. OpsSchedule: Week Calendar View
+`src/pages/OpsSchedule.tsx` + CSS:
+- Added `view-toggle` "Cards | Week" to the filter toolbar
+- Week view: 7-column grid (today to +6 days), jobs placed by start date as chips
+- Chips show unit name, status label, and HIGH risk hold warning
+- CSS: `.week-grid`, `.week-col`, `.week-col-header`, `.week-job-chip` added to styles.css
+
+### 4. Dashboard: Quick Actions + Rate Calculator
+`src/pages/Dashboard.tsx`:
+- **Quick Actions card**: 6 navigation buttons (Book a Unit, New Campaign, View Analytics, Weather Check, Ops Queue, Reports) that navigate on click via `useNavigate`
+- **Rate Calculator card**: dropdown to select a unit, slider for booking duration (1-52 weeks), shows monthly rate / weekly cost / total estimate / CPM
+
+### 5. Reports: Print / PDF
+`src/pages/Reports.tsx`: added "Print / PDF" button that calls `window.print()`
+`src/styles.css`: `@media print` block hides sidebar/topbar/buttons, forces white background, `break-inside: avoid` on cards
+
+### 6. CSS additions
+- Light mode vars for all `--bg-*`, `--border`, `--text-*` tokens
+- Print media query
+- Week calendar grid classes
+- Client detail panel classes (fixed-position slide-in)
+
+## Build result
+`npm run build` SUCCESS - 954 modules, 2.41s, zero TS errors, zero em/en dash violations.
+Dist copied to `../michaelwegter.com/public/demos/adverteyes/` (assets: index-BlqWBrSr.css + index-DXJkBYNK.js). Stale old assets removed.
+
+## Feature count (complete app after improvement run)
+- **10 pages** (Dashboard, Inventory, Campaigns, Clients, Bookings, Analytics, Weather, Ops Queue, Users, Reports)
+- **Dark/light mode toggle** (persisted to localStorage)
+- **Clients detail panel** with revenue chart, campaign utilization, notes
+- **Rate Calculator** interactive tool on Dashboard
+- **Quick Actions** nav shortcuts on Dashboard
+- **OpsSchedule week calendar view** (7-day grid)
+- **Print/PDF export** from Reports page
+- **Global Cmd+K search** with keyboard navigation + highlight
+- **Booking approval workflow** (approve/reject from Bookings + Dashboard)
+- **Revenue by Market** analytics + CPM breakdown
+- **Ops Install Queue** with weather-gated job progression
+- **4 roles** (admin/sales/ops/client) with RBAC nav + page guards
+- **Conflict detection**, calendar/timeline/table booking views
+- **Gantt view** for campaigns, **map view** for inventory
+- **CSV export** for bookings/campaigns/inventory
+- **Live weather** (Open-Meteo) + 24hr forecast charts + **traffic** (TomTom/mock) per unit
+
+## handoff
+- produced: 7 edited files + 1 new file (ThemeContext.tsx); rebuilt frontend (clean, 954 modules); dist deployed to public/demos/adverteyes/
+- decisions: Light mode uses CSS `data-theme="light"` attribute on html root; Rate Calculator is frontend-only with live API inventory data; Week calendar in OpsSchedule is display:none (not destroyed) when in cards mode for performance; no new backend endpoints needed
+- next needs: deploy step - push ../michaelwegter.com to GitHub Pages; backend already live (no new backend changes); verify live at https://michaelwegter.com/demos/adverteyes/
+- risks: Light mode does not override Recharts internal SVG text colors (they use `var(--text-muted)` which does swap); Client detail panel uses `position: fixed` so may clip on very narrow screens; OpsSchedule week view shows only bookings with start_date in the 7-day window (bookings starting after week 1 still appear in cards view)

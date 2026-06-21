@@ -1,0 +1,96 @@
+# AdvertEyes Demo Builder — Improvement Run (demo-builder9)
+
+## Changes made (all surgical edits, no full rewrites)
+
+### 1. Analytics: Reach & Impressions section (Analytics.tsx)
+- Added `PieChart, Pie, Cell, Legend` to recharts imports
+- Computed `reachByType` (impressions by billboard/dooh/truckside) and `totalWeeklyReach` from live inventory
+- Added "Weekly Reach by Unit Type" card at bottom of Analytics:
+  - Donut chart showing impression share by type (orange/blue/yellow)
+  - Total weekly reach KPI (e.g. 2.51M impressions/week)
+  - Per-type impression bar with percentage breakdown
+  - Reach efficiency table: impressions per $1k monthly spend by type
+
+### 2. Bookings: Bulk approve/reject (Bookings.tsx)
+- Added `selectedIds: Set<number>` and `bulkApproving` state
+- Added `toggleSelect`, `handleBulkApprove`, `handleBulkReject` handlers
+- Table view now prepends a checkbox column (pending rows only) via `checkCol`
+- Bulk action bar appears above DataTable when pending bookings are selected:
+  - Shows count ("3 pending bookings selected")
+  - "Approve N" button (calls approveBooking in parallel for all selected)
+  - "Reject N" button with confirm dialog
+  - "Clear" button to deselect
+
+### 3. Layout: Navigable notification alerts (Layout.tsx)
+- All 4 alert types (high risk, pending approvals, maintenance, expiring) are now clickable
+- Each item navigates to the relevant page (Weather, Bookings, Inventory, Campaigns) and closes the drawer
+- Added chevron "→ PageName" label on the right side of each alert
+
+### 4. Campaigns: Revenue-by-unit BarChart in detail panel (Campaigns.tsx)
+- Added recharts `BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid` import
+- In the table-view campaign detail panel (selected campaign, not gantt), added a 120px BarChart showing monthly rate per booking unit before the bookings table
+- Chart shows unit names on X axis, rates on Y, accent-colored bars
+
+### 5. Weather: High-risk units clickable in fleet risk banner (Weather.tsx)
+- Enhanced the existing fleet-risk-bar to show individual high-risk unit buttons
+- Clicking a unit button sets it as the selected unit (loads its live weather detail)
+- Banner now shows: "⚠ 2 of 20 units: HIGH install risk [SR-60 Causeway East] [Unit X]"
+
+### 6. Inventory: Richer Leaflet map popups (Inventory.tsx)
+- MapView popup now shows a styled mini-card with:
+  - Unit name (bold), city/state
+  - Type badge (color-matched) + status badge (color-matched)
+  - Rate/mo, Weekly impressions, Traffic score (green/yellow/red)
+  - "Click marker to open full detail panel" hint
+
+### 7. Dashboard: Live indicator + Refresh button (Dashboard.tsx)
+- Added a live pulse indicator (green dot with CSS `@keyframes pulse` animation) to dashboard header
+- Shows "Updated HH:MM" timestamp
+- Refresh button re-fetches all data (inventory, campaigns, bookings) without page reload
+
+### 8. CSS: Pulse animation (styles.css)
+- Added `@keyframes pulse` for the live indicator dot
+
+## Build result
+`npm run build` SUCCESS - 954 modules, 2.16s, zero TS errors.
+Dist copied to `../michaelwegter.com/public/demos/adverteyes/` (assets: index-BsSdBTbi.css + index-Dr-vqYnr.js).
+
+## Backend status
+- Flask healthy: `{"status":"ok","version":"1.0.0"}`
+- AdvertEyes API: `{"ok":true,"service":"adverteyes-api"}`
+- Auth working: admin login returns JWT, role=admin confirmed
+
+## Full feature inventory (demo-builder9 state)
+
+**10 pages:** Dashboard, Inventory, Campaigns, Clients, Bookings, Analytics, Weather, Ops Queue, Users, Reports
+
+**New in this run:**
+- Bulk approve/reject in Bookings (checkbox multi-select, approve all pending selected)
+- Analytics Reach & Impressions (donut chart, total weekly reach KPI, efficiency by type)
+- Navigable notification alerts (click → navigate to relevant page)
+- Campaign detail revenue chart (BarChart per booking in selected campaign)
+- High-risk unit buttons in Weather fleet banner (click to load detail)
+- Rich Leaflet map popups (styled mini-card with rate, impressions, traffic score)
+- Dashboard live indicator + refresh button
+
+**From prior runs:**
+- Dark/light mode toggle (localStorage persisted)
+- Clients detail panel (revenue chart, campaign utilization, notes)
+- Rate Calculator on Dashboard
+- Quick Actions nav shortcuts on Dashboard
+- OpsSchedule week calendar view (7-day grid)
+- Print/PDF export from Reports
+- Global Cmd+K search with keyboard navigation
+- Booking approval workflow
+- Revenue by Market analytics + CPM breakdown
+- Ops Install Queue with weather-gated job progression
+- Conflict detection, calendar/timeline/table booking views
+- Gantt view (campaigns), map view (inventory)
+- CSV export (bookings/campaigns/inventory)
+- Live weather (Open-Meteo) + 24hr forecast charts + traffic (TomTom/mock)
+
+## handoff
+- produced: 8 files edited (Analytics.tsx, Bookings.tsx, Layout.tsx, Campaigns.tsx, Weather.tsx, Inventory.tsx, Dashboard.tsx, styles.css); fresh dist built and deployed to public/demos/adverteyes/
+- decisions: Bulk approve uses parallel Promise.all; donut chart uses recharts PieChart (already bundled); dashboard refresh re-fetches same 3 endpoints; notification nav closes drawer via setShowNotif(false); map popups use inline styles (no portal needed, react-leaflet Popup supports JSX)
+- next needs: deploy step - push ../michaelwegter.com to GitHub Pages so live site gets the updated bundle; backend already live (no new backend changes)
+- risks: chunk size warning (969kB) is expected for a Vite SPA with recharts/leaflet; GH Pages build will handle it; no console errors expected (mock fallbacks in all API calls)
