@@ -204,6 +204,27 @@ registering it in `services.json`, it will be killed on the next timeout — alw
 register services with `scripts/surface_register_service.py` so `run-server.ps1`
 owns and restarts them.
 
+### Cloudflare tunnel config is sacred — NEVER touch it
+
+`~/.cloudflared/config.yml` on the Surface is owned exclusively by `run-server.ps1`.
+**Deploy scripts, demo-builder scripts, and runner scripts MUST NOT modify this
+file.** The tunnel ALWAYS routes 100% of traffic to Flask (:5050). Managed demo
+services are exposed via Flask bridge blueprints (`/demos/<slug>/...`), not via
+separate tunnel ingress rules.
+
+`run-server.ps1` now enforces this automatically: `Normalize-TunnelConfig` runs at
+startup and every 10 seconds, detects any ingress rule pointing to a non-Flask port
+or any path-based routing, rewrites the config to Flask-only, and restarts the
+tunnel within ~10s. This self-heals any accidental config corruption.
+
+The only correct ingress in `~/.cloudflared/config.yml` is:
+```yaml
+ingress:
+  - hostname: api.michaelwegter.com
+    service: http://localhost:5050
+  - service: http_status:404
+```
+
 ## Surface runner — build and deploy real backends end-to-end, on your own
 
 When a project needs a real backend beyond a Flask blueprint (a Node/Express

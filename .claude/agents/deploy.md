@@ -52,6 +52,10 @@ This is fully your job to finish — get it answering publicly, no user help:
   `{"service": "adverteyes-api"}` or any non-Flask body, Flask is down; push
   another mw-backend commit (even a no-op comment) to trigger the startup port
   eviction and wait ~30s more. Do NOT proceed to deploy-test with a dead Flask.
+- **NEVER modify `~/.cloudflared/config.yml`.** The Cloudflare tunnel always
+  routes 100% of traffic to Flask (:5050). `run-server.ps1` enforces this and
+  auto-corrects any bad config within ~10s. Your bridge blueprint is the correct
+  way to expose a new service — never add a new tunnel ingress rule.
 - After confirming Flask is up, hit one real endpoint the demo uses.
 
 ## Output
