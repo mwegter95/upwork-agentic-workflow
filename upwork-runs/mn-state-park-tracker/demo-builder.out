@@ -1,0 +1,39 @@
+# Demo Builder — MN State Park Tracker
+
+## Status: DONE
+
+### What was built
+
+**Frontend** (Vite + React 18, built to `michaelwegter.com/public/demos/mn-state-park-tracker/`):
+- `src/data/parks.js` — all 73 MN state parks with lat/lng, descriptions, amenities (Wikipedia/DNR sourced)
+- `src/components/MapView.jsx` — vanilla Leaflet 1.9.4 via useRef/useEffect; CartoDB Voyager tiles; custom SVG pine-tree pins (visited=forest green + gold dot, unvisited=gray); home marker (navy circle-house); two-way sync with list; flyTo on park select
+- `src/components/ParkList.jsx` — sidebar with search, filter chips (All/Visited/Unvisited), sort (A-Z, Distance, Region), visit count badges, distance badges with color logic (green < 50 mi, teal 50-150, gray > 150)
+- `src/components/ParkDrawer.jsx` — slide-in drawer from map panel right edge; 3 tabs: Info (description, amenities, DNR link, visited status), Visits (list of all visits + photos), Log Visit; photo lightbox; per-photo delete
+- `src/components/VisitLogForm.jsx` — date picker, attendees text, notes textarea, camera-roll photo upload with canvas resize (1200px / 0.75 quality) before upload; supports new visit + edit existing
+- `src/components/AuthModal.jsx` — login/register, demo account hint, JWT to localStorage
+- `src/components/SettingsPanel.jsx` — home location via geolocation or manual lat/lng; persisted to backend
+- `src/utils/haversine.js` — haversine distance formula + formatDist + distColor
+- `src/api/client.js` — fetch wrapper with JWT injection, resizeImage canvas utility
+- `src/styles/tokens.css` + `src/styles/app.css` — full bespoke MN outdoors design system: navy/forest-green/gold/teal/cream palette; Playfair Display + Inter; split-pane layout; responsive mobile layout with bottom tab bar; Leaflet popup overrides
+
+**Backend** (`mw-backend/mn_parks_blueprint.py`, registered in `server.py`):
+- Routes: POST /mn-parks/auth/register, POST /mn-parks/auth/login
+- GET/POST /mn-parks/visits, PATCH/DELETE /mn-parks/visits/:id
+- POST/GET/DELETE /mn-parks/visits/:id/photos/:pid (filesystem storage at data/mn-parks-photos/)
+- GET/PUT /mn-parks/user/home
+- SQLite tables: mn_users, mn_visits, mn_photos, mn_user_settings (isolated, WAL mode)
+- Demo account seeded: `demo@mnparks.test` / `Parks2024!` (3 demo visits seeded: Gooseberry Falls, Split Rock, Cuyuna)
+- JWT 30-day TTL, bcrypt passwords, send_file photo serving
+
+**Build**: `npm run build` completed cleanly — 0 errors, 0 warnings. Output: index.html (0.9 kB) + assets/index.css (29 kB) + assets/index.js (365 kB).
+
+**workSamples.js**: Entry added (id: 9, icon 🌲, color #2D5A3D).
+
+### Design
+Bespoke MN outdoors theme: `#003865` navy header with topo SVG texture, `#2D5A3D` forest green for visited state, `#FFC845` gold CTAs, CartoDB Voyager map tiles. Playfair Display for park names, Inter for UI. Split-pane desktop, bottom tab bar mobile.
+
+## handoff
+- produced: full React 18 + Leaflet frontend built to demos/mn-state-park-tracker/ + Flask blueprint mn_parks_blueprint.py registered in server.py; demo account seeded; workSamples.js updated
+- decisions: vanilla Leaflet (not react-leaflet); React 18.3.1; CartoDB Voyager tiles (no Google Maps key); filesystem photo storage; client-side canvas resize; all 73 parks in static parks.js
+- next needs: deploy step must push mw-backend (mn_parks_blueprint.py + server.py edit) to git and wait ~30s for Surface auto-deploy; push michaelwegter.com to trigger GH Pages rebuild; verify /mn-parks/auth/login returns 200 and demo loads at /work-samples/mn-state-park-tracker
+- risks: Flask must be running on Surface (check /health); photo endpoint requires multipart Content-Type (not JSON); dist-to-home sort only activates if user has set home location

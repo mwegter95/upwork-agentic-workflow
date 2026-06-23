@@ -1,0 +1,105 @@
+# Intake — MN State Park Tracker
+
+## Brief
+
+Encoded structured requirements for downstream validation.
+
+**Slug:** `mn-state-park-tracker`
+
+**Client:** Personal travel-log app user (B2C, outdoors/lifestyle vertical)
+
+**Posting Summary:** "User friendly and sleek and beautiful application for tracking on a map which of the mn state parks I've been to. See it on a map and on a list with pin markers. Save photos and a little memory entry, easy upload from camera roll. Enter attendees and date visited. Robust login. Integrate Google Maps, include descriptions so user can explore state parks. Mark home location and see distance from home displayed."
+
+### Explicit Requirements (Acceptance Criteria)
+
+| # | Requirement | Acceptance Criteria |
+|---|-------------|-------------------|
+| 1 | **Interactive map view** of all MN state parks with pin markers (Google Maps integration) | Google Maps API renders all ~66 MN state parks; pins visible on first paint, no console errors; visited parks visually distinct (color/icon) from unvisited |
+| 2 | **List view** synced with map markers | List shows all parks with names and visit status; clicking list item centers/highlights map pin; clicking pin highlights list item |
+| 3 | **Mark parks visited / not visited** with visual distinction | User can toggle visit status per park; persists per-user after login; distinct indicator on both map and list |
+| 4 | **Per-visit entry:** photos (camera-roll friendly upload), memory/notes text, attendees, date visited | Photo upload works from mobile camera roll; memory/notes and attendees fields functional; date picker present; all data persists per visit |
+| 5 | **Login / Auth** — robust, per-user data isolation | Login/signup form; user data (visits, photos) isolated per account; session/token management working; seeded demo account for testing |
+| 6 | **Park descriptions and details** for ALL parks so user can explore unvisited ones | All ~66 parks seeded with name, coordinates, description; user can click park to view details; descriptions enable discovery |
+| 7 | **Home location + distance from home display** | Home location settable via map or address input; distance from home to each park calculated (Haversine) and displayed; updates on home location change |
+| 8 | **UX bar: user friendly, sleek, beautiful** | Intuitive navigation; cohesive, bespoke design fit for outdoors/parks aesthetic (NOT portfolio palette); responsive (mobile + desktop); no em/en dashes; no console errors on first paint |
+
+### Design Direction
+
+**Aesthetic:** Outdoors/National Park — inspired by MN DNR visual language
+
+**Color Palette:**
+- Primary: Forest green (#2D5A3D or equivalent)
+- Secondary: Lake blue (#1E4D7B or equivalent)
+- Accent: Warm cream/sand (#E8DCC4 or equivalent)
+- Constraint: NOT michaelwegter.com's dark mustard/cyan theme
+
+**Typography:** Sturdy display serif/slab + clean humanist sans (e.g., Playfair Display + Inter; Slab Serif + Roboto)
+
+**Texture/Mood:** Topographic/woodcut; natural, earthy, adventurous
+
+### Build Scope
+
+**Richness Level:** 10/10 → Full, production-quality app with multiple real working features
+
+**Approach:** FULL build (not prototype)
+
+**Hero Feature:** Map + List dual view with per-park visit logging (photos, notes, attendees, date)
+
+**Supporting Features:**
+1. Explore/details browser — click parks to discover descriptions and amenities
+2. Distance-from-home calculator — display distance to each park from user's set home location
+
+**Out of Scope:** Advanced analytics, social features, route planning, offline maps
+
+### Technology Stack
+
+**Maps:**
+- Primary: Google Maps JavaScript API (client explicitly requested)
+- Fallback: Leaflet + OSM or Google raster tiles if API key/billing unavailable
+- Risk: Map MUST render on first paint; fallback must be documented and working
+
+**Backend:**
+- Real backend required (login + per-user persisted visits + photo storage)
+- Flask blueprint on mw-backend (SQLite); seeded demo account with credentials recorded
+- Auth: Per-user session/token management
+
+**Photos:** Base64/blob upload via backend; mobile camera-roll input (`<input type=file accept=image/* capture>`)
+
+**Distance:** Haversine formula from home location to each park
+
+**Data:** All ~66 MN state parks seeded with coordinates, names, descriptions, amenities (source: MN DNR)
+
+### Hard Gates (Acceptance)
+
+1. Every requirement (1–8) visibly addressed in demo AND in cover letter
+2. Map renders on first paint with no console errors
+3. Login works with seeded demo account; user data persists
+4. Photo upload functional from camera roll
+5. All ~66 parks visible on map and in list
+6. Park descriptions available for exploration
+7. Home location settable; distance displayed and updates correctly
+8. Cohesive, bespoke outdoors design; no portfolio palette; no em/en dashes anywhere
+9. Live `/work-samples/mn-state-park-tracker` route returns 200 after deploy
+
+### Constraints
+
+- **Feature scope:** 1 hero + ≤2 supporting features
+- **File budget:** ≤12 demo files (lean architecture)
+- **Build time:** ≤3 minutes
+- **Typography:** No em or en dashes (cover letter, deck, one-pager, demo UI)
+- **Design:** Bespoke only; zero reuse of michaelwegter.com theme or components
+
+### Risks & Notes
+
+| Risk | Mitigation |
+|------|-----------|
+| Google Maps API key / billing unavailable | Document Leaflet fallback; test both code paths; map MUST render either way |
+| Sourcing ~66 accurate park coordinates and descriptions | Consult MN DNR public data; verify completeness before demo build starts |
+| Photo upload durability and mobile UX | Test camera-roll input in browsers; use base64/backend storage; verify file size handling |
+| Distance compute performance at scale | Haversine is O(1) per park; no performance risk for 66 parks |
+
+## handoff
+- produced: structured `brief.json` with 8 explicit requirements, acceptance criteria, design direction (outdoors aesthetic, palette, fonts), tech stack decisions (Google Maps + Leaflet fallback, real backend, seeded auth), data scope (66 parks), hard gates, constraints, and risk mitigation.
+- decisions: FULL build at 10/10 richness; real backend with login required; Google Maps API with Leaflet fallback if billing blocked; bespoke outdoors design (no portfolio palette); all 66 parks seeded pre-build.
+- next needs: planner to convert brief into build plan with hero/supporting feature breakdown, prototype vs full decision, and design tokens; researcher to source MN DNR park data + map library decision and Google Maps API status.
+- risks: Google Maps API key availability (fallback documented); park data sourcing completeness; photo upload mobile UX durability.

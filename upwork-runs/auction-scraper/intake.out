@@ -1,0 +1,99 @@
+# Intake — auction-scraper
+
+## Posting parsed
+
+**Client:** Subscription collectibles startup. Need: reliable ETL data pipeline for auction-house websites. Long-term ongoing work.
+
+**Core skill bought:** Data acquisition specialist (Extract + Transform only, NOT full-stack). Depth in scraping, not breadth. Must explicitly reject full-stack framing in proposal.
+
+**What they need:**
+- Build/maintain Python scrapers across defined auction-house sites (different structures each).
+- Extract lot data: lot #, title, description, low/high estimates, currency, sale date, bidding deadline, images, source, source URL.
+- Normalize all sources into one consistent JSON schema.
+- Reliable periodic catalog discovery (detect new auctions well before sale; re-checks matter, not real-time polling).
+- Rate-limiting, retries, error logging, per-scraper docs.
+- Respectful scraping only: public pages, no login/credentials/anti-bot circumvention. If site is hardened, flag for API arrangement—DO NOT defeat it.
+
+**Required:** Strong Python. Proven dynamic/JS-heavy scraping (show examples). Command of toolkit (Playwright/Selenium + Scrapy/requests + BeautifulSoup/lxml, show reasoning). Clean JSON output + normalization. Fluent spoken + written English (video interviews camera-on; no camera off).
+
+**Nice to have:** AWS (S3/Lambda), scheduled jobs, backend logic.
+
+**NOT required:** Full-stack, React, design.
+
+---
+
+## Critical screening rules
+
+**BROCCOLI rule:** Proposal's cover letter MUST START with the literal word BROCCOLI (no quotes, no asterisks). This is a trip-wire filter; missing it = auto-reject.
+
+**Three required questions in proposal:**
+1. Describe one dynamic/JS-heavy site you scraped + how you handled it.
+2. Preferred tech stack for multi-site pipeline + why? Show reasoning.
+3. How you rate-limit + avoid getting blocked?
+
+**Link existing scraper code:** GitHub/portfolio. If none exists, must publish demo scraper source publicly.
+
+**Interviews:** Video camera-on, live discussion, fluent English (they screen out camera-off due to translation screening).
+
+---
+
+## Geographic + budget + communication
+
+- **Americas only:** South America, Brazil, US, Canada. No other regions.
+- **Budget:** Startup rates. Quote at or under their max posted hourly rate.
+- **Communication:** Clear, fluent written + spoken English. Slack + video. Precise, direct, real-time.
+
+---
+
+## Michael's positioning angle
+
+**Key points to emphasize in proposal:**
+1. Owns the Python backend at U.S. Bank (production ownership = reliability/maintainability credibility).
+2. Has used Python, Puppeteer, and Playwright to scrape websites before (direct match to required tools).
+
+**Framing:** Lead with backend ownership + scraping expertise. React/frontend console = demo vehicle to show scraper in action. The scraper engine is the product.
+
+**Positioning:** Data acquisition specialist, not full-stack generalist. Proposal must reject full-stack framing explicitly.
+
+---
+
+## Demo specification (richness 10)
+
+**Concept:** Auction Scraper Console — live multi-site scraper with real accumulation, JSON inspector, item photos, respectful-scraping story.
+
+**Behaviors:**
+- ~3 auction sources, different structure each, normalized to one schema.
+- "Start Scraper" button; results accumulate live in UI as scraper processes (per-source status, counts, progress).
+- Raw + normalized JSON shown in frontend (inspector + rendered cards).
+- Scraped item images rendered when available.
+- Respectful-scraping story in-product: rate-limit pacing, retries, per-source logs, hardened-site→flag-for-API state.
+
+**Design:** Auction-catalog / fine-art-house aesthetic (NOT michaelwegter.com's look). Serif display (Cormorant/Playfair) + sans body (Inter/Source Sans). Restrained ivory/charcoal + single refined accent. Premium catalog crossed with clean dashboard. Planner defines exact hex + fonts.
+
+**Backend:** Real mw-backend Flask scraper (Playwright + BeautifulSoup already installed). Scrape only public, permissive sources. Stream progress to frontend. Seed cached fallback if live scraping flaky.
+
+---
+
+## Hard gates for evaluator
+
+- Cover letter first word = BROCCOLI (trip-wire).
+- Answers all 3 screening questions in proposal.
+- Links GitHub/existing scraper code.
+- Names + links live demo prominently.
+- Emphasizes U.S. Bank Python backend ownership + Python/Puppeteer/Playwright history.
+- Addresses respectful scraping + rate-limiting explicitly.
+- Positions as scraping specialist, not full-stack.
+- Uses bespoke auction-house design, not portfolio's.
+- Zero em/en dashes.
+- Demo loads, no console errors.
+- Demo shows real JSON + real images + live accumulation.
+- Demo demonstrates respectful scraping behavior.
+
+---
+
+## handoff
+
+- produced: `brief.json` with all explicit requirements, BROCCOLI trip-wire, 3 application questions, per-lot fields, Americas/budget/video constraints, Michael's U.S. Bank + Python/Puppeteer/Playwright positioning, demo spec, design direction.
+- decisions: Full richness 10 build with real mw-backend scraper (not mock data). Scrape only public, permissive sources. BROCCOLI is non-negotiable first word—evaluator must enforce. Must link GitHub scraper code (may need to publish demo source).
+- next needs: Planner to lock 3 concrete auction sources, finalize JSON schema, design tokens (hex + fonts), feature breakdown (hero=live scrape+stream, supporting=JSON inspector + image rendering + logs), prototype vs full decision (full), req→feature traceability matrix.
+- risks: Live scraping flakiness/legality (restrict to friendly sources + cached fallback). Missing linkable GitHub scraper (may need to publish demo source as public repo). Full-stack misframing (proposal must explicitly position as specialist, not generalist). BROCCOLI omission from cover letter (evaluator gates this).

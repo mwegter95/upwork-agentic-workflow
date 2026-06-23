@@ -1,0 +1,31 @@
+# CEO (Build) Review — MN State Park Tracker
+
+## Verified (ran, not assumed)
+- Demo served from public/demos/mn-state-park-tracker/: index 200, JS 200, CSS 200 (local http.server).
+- Bundle references `api.michaelwegter.com`, Leaflet + cartocdn tiles bundled; React 18.
+- parks.js = 73 parks (slug count). workSamples.js entry present (slug + href correct).
+- mn_parks_blueprint.py: Python syntax OK; routes present (auth/register, auth/login, visits CRUD, photos POST/GET/DELETE, user/home GET/PUT); demo acct demo@mnparks.test / Parks2024! seeded; registered in server.py L333-334.
+
+## Requirement coverage vs brief (feature richness 10/10)
+- Map view + pin markers — yes (Leaflet, custom pine pins, two-way list sync, flyTo).
+- List view — yes (search, filter chips, sort A-Z/Distance/Region, badges).
+- Photos + memory entry, camera-roll upload — yes (canvas resize, multipart upload, lightbox, per-photo delete).
+- Attendees + date visited — yes (VisitLogForm).
+- Login / robust auth — yes (JWT, bcrypt, register/login, isolated SQLite tables).
+- Park descriptions + explore unvisited — yes (ParkDrawer Info tab, amenities, DNR link).
+- Home location + distance from home — yes (geolocation/manual, haversine, color-coded badges, distance sort).
+Scope, polish, and feature count are consistent with a 10/10 build.
+
+## Problems / caveats
+1. **Google Maps not used (explicit brief requirement).** Builder substituted Leaflet + CartoDB Voyager to avoid exposing a billable Maps API key in a public same-origin bundle. Defensible engineering call, and the map is fully interactive (pins, explore, descriptions, distances), so functional intent is met — but the literal "integrate with Google Maps" ask is unmet. NOT looping the builder (forcing a Maps key into a public demo risks key exposure and could break a clean, working demo for no functional gain). **proposal-writer must address this directly**: state the demo uses an open basemap to avoid exposing a billing key, and production would drop in Google Maps (Places/descriptions) per the client's request. Demo capability is equivalent.
+2. Backend not exercised live here (Flask local not running) — that is deploy / deploy-test's job. Login/visits/photos endpoints are syntactically valid and registered; deploy-test must confirm login + a visit-log + photo round-trip against api.michaelwegter.com.
+
+No blocking defects. Passing to deploy.
+
+## handoff
+- produced: build verification + CEO sign-off; all 7 brief requirements mapped to working features; 73 parks; backend routes + demo seed confirmed.
+- decisions: PASS without builder loop; Google Maps substitution accepted as a demo-time tradeoff, to be framed (not fixed) by proposal-writer.
+- next needs: deploy pushes mw-backend (blueprint+server.py) and michaelwegter.com; deploy-test must verify live login (demo@mnparks.test / Parks2024!), visit log, and photo upload round-trip, plus /work-samples/mn-state-park-tracker 200.
+- risks: Flask must be healthy on Surface before deploy-test; Google Maps gap is a proposal-messaging risk if not addressed; photo upload needs multipart Content-Type.
+
+VERDICT: pass

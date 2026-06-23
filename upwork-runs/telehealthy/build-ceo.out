@@ -1,0 +1,32 @@
+# CEO (Build) review — telehealthy
+
+## What I verified (ran, not assumed)
+- `npm run build` in demo-src: clean, 653 modules, built in 1.23s. Only warning = recharts chunk >500kB (173kB gzip) — acceptable for a demo.
+- Deployed output present: `public/demos/telehealthy/index.html` + `assets/index-*.js|css`. Title "TeleHealthy Voice Ops Console".
+- Headless load (Playwright, served from `public/`): DEMO 200, JS 200, **0 console errors**, all 4 tabs render (Inbound/Outbound/CRM/Analytics), hero copy present (Receptionist, appointment), "Start" answer button clickable.
+- Source audit of `InboundCall.jsx`: full state machine confirmed — initChips (Book / hours / insurance / telehealth / urgent), booking flow who→name→reason→time→confirm, pipeline `Greeting→Intent→Booking/FAQ→Webhook→SMS`, webhook then "SMS sent" message fired on confirm, confidence <0.45 → auto-escalate (warm transfer), EN/ES copy throughout.
+- Registered in `workSamples.js` id:10, href `BASE_URL + demos/telehealthy/`.
+
+## Brief coverage (10/10 target)
+- Inbound voice agent + greeting→intent→booking/FAQ/escalation: ✓
+- Outbound dialer w/ dynamic CRM scripting (3 script types, scriptVars): ✓
+- Webhook + SMS confirmation: ✓ (pipeline steps 3→4)
+- Call recording / transcript logging / analytics dashboard: ✓ (Analytics tab, recharts Bar+Pie, transcript table)
+- Warm-transfer handoff on low AI confidence: ✓ (threshold 0.45)
+- Nice-to-haves: healthcare workflow ✓, multilingual EN/ES ✓, browser-GPU AI messaging via WebLLM (lazy "Load AI") ✓
+- Richness: 4 full feature tabs, bilingual, CRM search/filter/expand, optional on-device LLM — genuinely full-featured. Meets 10/10.
+
+## Problems
+- None blocking. Minor: recharts bundle 604kB (173kB gzip) — fine for a demo, no action required.
+- My automated deep booking-flow assertion stalled at the free-text name step (test didn't type a name); this is a test-script limitation, not an app defect — the booking→webhook→SMS path is present and correct in source. Deploy-test should drive the full chip+text booking flow on the live URL.
+
+## Note to deploy-test
+Drive the inbound hero end-to-end: Answer → "Book an appointment" → pick who-chip → type a name (free text) → reason-chip → time-slot chip → confirm; assert "Webhook" lights and "SMS sent" appears. Also smoke the "This is urgent" escalation path (warm transfer card). Serve from site root so `/demos/telehealthy/` absolute asset paths resolve.
+
+## handoff
+- produced: build-ceo verdict — demo builds clean, loads with 0 console errors, all features present, meets 10/10
+- decisions: pass; frontend-only (no Flask blueprint) is correct for this concept; recharts bundle size accepted
+- next needs: deploy pushes michaelwegter.com only (demo files + workSamples.js); no mw-backend push; then deploy-test drives full booking + escalation flows on live URL
+- risks: WebLLM path is GPU-only and won't run headless — scripted path covers all 3 intents, so CI must test scripted flow not WebGPU
+
+VERDICT: pass

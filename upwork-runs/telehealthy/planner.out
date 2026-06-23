@@ -1,0 +1,80 @@
+# Plan — TeleHealthy Voice Ops Console
+
+## Demo Concept (locked)
+Single-screen web app: "TeleHealthy Voice Ops Console." Four tabs: Inbound, Outbound, CRM, Analytics. Hero tab open on load. Simulates an AI-powered healthcare voice platform — labeled as simulation. AI conversation is genuinely client-side (WebGPU via WebLLM) with deterministic scripted fallback.
+
+## Prototype vs Full
+FULL. No cap trips. Hero (WebGPU in-browser LLM conversation) is client-side — no backend needed. All CRM/telephony/SMS simulated with mock data. Frontend-only self-contained app. No Flask blueprint needed (session-only transcript store is sufficient for the demo).
+
+## Tech Stack
+- **Build:** Vite + React 18, base `/demos/telehealthy/`, output to `../michaelwegter.com/public/demos/telehealthy/`
+- **AI engine:** `@mlc-ai/web-llm` (CDN ESM), model `Llama-3.2-1B-Instruct-q4f32_1-MLC` (researcher to confirm exact ID + CDN import)
+- **Scripted fallback:** rule-based intent detection + response tree when WebGPU unavailable or user skips model load
+- **Fonts:** Inter (UI) + DM Mono (transcript bubbles) from Google Fonts
+- **No backend**
+
+## Design System (locked)
+
+| Token | Value |
+|---|---|
+| Background | `#F0FDFA` (teal-50) |
+| Surface (card) | `#FFFFFF` |
+| Primary | `#0D9488` (teal-600) |
+| Primary dark | `#0F766E` (teal-700) |
+| Clinical accent | `#059669` (emerald-600) |
+| Live call accent | `#F59E0B` (amber-500) — active call state, pulsing ring |
+| Escalation/alert | `#EF4444` (red-500) |
+| Text primary | `#1E293B` (slate-800) |
+| Text secondary | `#64748B` (slate-500) |
+| Border | `#CCFBF1` (teal-100) |
+
+Fonts: `Inter` weight 400/500/600 (labels, body, headings); `DM Mono` 400 (transcript bubbles, confidence scores).
+Layout: left sidebar nav (tab icons + labels), main content pane, right panel for live call status. Call active state: amber ring on avatar, live waveform animation (CSS), real-time confidence meter bar.
+
+## Feature Traceability Matrix
+
+| Req ID | Feature in Demo | Component |
+|---|---|---|
+| req-1 | Inbound call simulator: greeting → intent (book/FAQ/escalate) → warm transfer when confidence < 0.45 | `InboundCall.jsx` |
+| req-2 | Booking flow: name/date/time/reason collected, booking confirmation card shown, SMS log entry created | `InboundCall.jsx` |
+| req-3 | FAQ flow: at least 3 healthcare FAQs answered (insurance, hours, telehealth eligibility) | `InboundCall.jsx` |
+| req-4 | SMS confirmation: simulated SMS log panel shows message with booking details on booking confirm | `InboundCall.jsx` + `mockData.js` |
+| req-5 | Outbound dialer: pick CRM contact → auto-generate dynamic script from contact fields → play simulated outbound call with 2 scenarios (reminder + follow-up) | `OutboundDialer.jsx` |
+| req-6 | Analytics dashboard: call volume chart, intent breakdown doughnut, booking rate %, escalation rate %, avg confidence, transcript list with playback | `Analytics.jsx` |
+| nth-1 | Healthcare language throughout (psychiatry/medical practice FAQs, HIPAA reminder, clinical terminology) | mockData + all copy |
+| nth-2 | Automation pipeline viz: SVG flow (Greeting → Intent → Booking → Webhook → SMS) lights up in real time during inbound call | `InboundCall.jsx` (embedded) |
+| nth-3 | Language selector: English / Spanish; FAQ strings and greeting switch | `mockData.js` + App state |
+
+## File Plan (12 files max)
+
+Source under `upwork-runs/telehealthy/demo-src/`:
+
+1. `package.json`
+2. `vite.config.js`
+3. `index.html`
+4. `src/main.jsx`
+5. `src/App.jsx` — layout shell, tab routing, WebLLM init guard
+6. `src/components/InboundCall.jsx` — hero: call sim, WebLLM/fallback conversation, intent engine, booking flow, SMS log, automation pipeline viz
+7. `src/components/OutboundDialer.jsx` — CRM contact picker, dynamic script generation, simulated outbound conversation
+8. `src/components/Analytics.jsx` — charts (Chart.js via CDN or recharts), transcript list, KPI cards
+9. `src/components/CrmPanel.jsx` — GoHighLevel-style contact table (name, last appt, phone, tags)
+10. `src/hooks/useWebLLM.js` — WebLLM init, chat, loading state, GPU detection, scripted fallback
+11. `src/data/mockData.js` — CRM contacts (8 records), FAQs (EN/ES), analytics seed data, SMS templates
+12. `src/styles/app.css` — design system tokens, layout, call state animations, waveform
+
+## Research Questions (for researcher)
+
+1. **WebLLM exact model ID + CDN import:** What is the correct npm/CDN import for `@mlc-ai/web-llm` latest (ESM CDN URL), and which small instruct model (Llama-3.2-1B or Phi-3.5-mini variant) has the shortest download + best quality tradeoff for a demo? Confirm the exact `model` string to pass to `CreateMLCEngine()`.
+2. **WebGPU browser support:** Which browser versions support WebGPU in 2025? Is the `navigator.gpu` check reliable? Any flag or origin-trial still needed?
+3. **Voice AI UX conventions:** Screenshot or describe the call UI conventions used by Vapi, Retell, or Bland (confidence meter design, transcript bubble style, call-active indicator). Clone target for visual language.
+4. **GoHighLevel CRM UI:** What columns/fields appear in GoHighLevel's contact table? What are the standard contact fields (especially appointment-related) for medical practices?
+5. **Healthcare voice AI conversation patterns:** Standard greeting/intent/booking script for a medical practice AI receptionist (any public examples from Vapi or similar).
+
+## Status
+Plan is complete and well-researched enough to pass to researcher. All 6 explicit requirements and 3 nice-to-haves traced to concrete features. Design system locked. File budget at cap (12). Research questions tight and targeted (5 questions, well within the 6-fetch cap).
+
+## handoff
+- produced: locked plan with design system (palette + fonts), file plan (12 files), feature traceability matrix, tech stack (Vite + React 18, WebLLM Llama-3.2-1B, scripted fallback), 5 targeted research questions
+- decisions: FULL frontend-only, no Flask blueprint; hero = InboundCall with WebGPU + scripted fallback; outbound + analytics as 2 supporting features; CRM panel folded into OutboundDialer; automation viz folded into InboundCall; multilingual (EN/ES) folded into mockData
+- next needs: researcher confirms WebLLM CDN import + exact model ID + WebGPU browser flags; pulls GoHighLevel contact field conventions and Vapi/Retell call UI patterns
+- risks: WebLLM model download size may be prohibitive on slow connections (scripted fallback mandatory, lazy-load behind explicit "Load AI" button); WebGPU not available in Firefox or Safari without flags (must detect and fall back gracefully on first paint)

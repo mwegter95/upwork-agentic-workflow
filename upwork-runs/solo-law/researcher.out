@@ -1,0 +1,817 @@
+# Researcher — solo-law (build-prep)
+Plan is locked. This file provides the exact scaffold commands, pinned libraries, seed data, worker code, i18n JSON, and design asset references the demo-builder needs to start without discovery.
+
+---
+
+## 1. Angular 18 Scaffold
+
+```bash
+# Run from upwork-runs/solo-law/
+ng new solo-law-demo --style=css --routing=true --ssr=false --skip-git
+cd solo-law-demo
+```
+
+Angular 18 generates standalone components by default (no NgModule needed). Base href is set at build time, not scaffold time.
+
+**Build + copy to site:**
+```bash
+ng build --base-href /demos/solo-law/
+cp -r dist/solo-law-demo/browser/* ../../michaelwegter.com/public/demos/solo-law/
+```
+(Create `public/demos/solo-law/` first if it doesn't exist.)
+
+**angular.json — add these to `assets` array:**
+```json
+{ "glob": "**/*", "input": "src/assets", "output": "assets" },
+{ "glob": "webllm-worker.js", "input": "src", "output": "/" }
+```
+This ensures `assets/i18n/*.json` and `webllm-worker.js` land at the site root.
+
+---
+
+## 2. Exact Library Installs (pinned)
+
+```bash
+# i18n
+npm install @ngx-translate/core @ngx-translate/http-loader
+
+# Tailwind
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p          # creates tailwind.config.js + postcss.config.js
+```
+
+No npm install for WebLLM — imported via CDN ESM in the worker only.
+
+**versions confirmed compatible with Angular 18 + esbuild:**
+- `@ngx-translate/core` >= 15.0 (Signal-native; `provideTranslateService` functional API)
+- `@ngx-translate/http-loader` >= 8.0
+- `tailwindcss` >= 3.4
+
+**package.json scripts to add:**
+```json
+"build:demo": "ng build --base-href /demos/solo-law/ && cp -r dist/solo-law-demo/browser/* ../../../michaelwegter.com/public/demos/solo-law/"
+```
+
+---
+
+## 3. Tailwind Config (tailwind.config.js)
+
+```js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ['./src/**/*.{html,ts}'],
+  theme: {
+    extend: {
+      colors: {
+        'bg-base':    '#0D0D0D',
+        'bg-surface': '#141414',
+        'text-primary':   '#F5F3EF',
+        'text-secondary': '#9E9E9E',
+        accent:       '#C9A96E',
+        'accent-hover': '#B8955A',
+        'accent-dim': 'rgba(201,169,110,0.40)',
+        rule:         '#D0CBBE',
+        danger:       '#C0392B',
+      },
+      fontFamily: {
+        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans:  ['Inter', 'system-ui', 'sans-serif'],
+        mono:  ['JetBrains Mono', 'monospace'],
+      },
+    },
+  },
+  plugins: [],
+};
+```
+
+**styles.css (global):**
+```css
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base:    #0D0D0D;
+  --bg-surface: #141414;
+  --text-primary:   #F5F3EF;
+  --text-secondary: #9E9E9E;
+  --accent:       #C9A96E;
+  --accent-hover: #B8955A;
+  --rule:         #D0CBBE;
+}
+
+body { background: var(--bg-base); color: var(--text-primary); }
+
+/* Editorial motion */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeUp 500ms ease-out both; }
+.delay-80  { animation-delay:  80ms; }
+.delay-160 { animation-delay: 160ms; }
+.delay-240 { animation-delay: 240ms; }
+```
+
+---
+
+## 4. ngx-translate Setup (app.config.ts)
+
+```typescript
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { HttpClient } from '@angular/common/http';
+import { routes } from './app.routes';
+
+export function httpLoaderFactory(http: HttpClient): TranslateHttpLoader {
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+}
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    provideHttpClient(),
+    provideTranslateService({
+      loader: { provide: TranslateLoader, useFactory: httpLoaderFactory, deps: [HttpClient] },
+      defaultLanguage: 'en',
+    }),
+  ],
+};
+```
+
+**In any component that uses translations:**
+```typescript
+import { TranslateModule } from '@ngx-translate/core';
+// add TranslateModule to the component's imports array (standalone)
+```
+
+**Template usage:** `{{ 'nav.practice_areas' | translate }}`
+
+**Locale switch (no reload):**
+```typescript
+inject(TranslateService).use('es');
+```
+
+---
+
+## 5. WebLLM Worker (src/webllm-worker.js)
+
+This file must live at `src/webllm-worker.js` and be listed in angular.json assets so it lands at `/demos/solo-law/webllm-worker.js`.
+
+```js
+// src/webllm-worker.js  — ESM module worker; Angular copies to dist root via angular.json assets
+import { WebWorkerMLCEngineHandler } from "https://esm.run/@mlc-ai/web-llm";
+const handler = new WebWorkerMLCEngineHandler();
+self.onmessage = (msg) => handler.onmessage(msg);
+```
+
+**Main thread (ai-agent.service.ts) — engine bootstrap:**
+```typescript
+import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
+// Check GPU
+const gpuAdapter = await (navigator as any).gpu?.requestAdapter().catch(() => null);
+if (!gpuAdapter) { this.mode = 'mock'; return; }
+
+// Load engine
+const worker = new Worker('/demos/solo-law/webllm-worker.js', { type: 'module' });
+this.engine = await webllm.CreateWebWorkerMLCEngine(
+  worker,
+  'Phi-3.5-mini-instruct-q4f16_1-MLC',
+  { initProgressCallback: (r: any) => this.loadProgress$.next(r.progress) }
+);
+```
+
+**Fallback model** (low VRAM): `Llama-3.2-1B-Instruct-q4f16_1-MLC`
+Try Phi-3.5 first; catch OOM → reload Llama-3.2.
+
+**Agentic loop helper (ai-agent.service.ts):**
+```typescript
+async runAgentLoop(task: string, instruction: string, context: string): Promise<string> {
+  if (this.mode === 'mock') return this.mockResponse(task);
+  let draft = '';
+  for (let iter = 0; iter < 3; iter++) {
+    draft = await this.callLLM('draft', task, instruction, context, draft);
+    const critique = await this.callLLM('reflect', task, instruction, context, draft);
+    const evalResult = await this.callLLM('eval', task, instruction, context, draft, critique);
+    const parsed = this.parseEval(evalResult);
+    if (parsed.overall >= 7.0 || iter >= 2) break;
+  }
+  return draft;
+}
+
+private mockResponse(task: string): string {
+  return `[AI UNAVAILABLE — WebGPU not detected]\n\nTask: ${task}\n\nThis is a placeholder response demonstrating the agentic content assistant. In a GPU-enabled browser, this panel streams a real draft, reflects on it, evaluates it against the legal-tone rubric, and iterates until the score exceeds 7.0.`;
+}
+```
+
+**System prompts:**
+- DRAFT: `"You are a senior legal content writer for a boutique law firm. Write in formal, precise, institutional prose. Avoid marketing clichés. Task: {task}. Practice area context: {context}."`
+- REFLECT: `"You are a senior legal editor. Critique the following draft for: legal tone, relevance, factual grounding, and brevity. Output JSON: {\"issues\": [], \"suggestions\": []}"`
+- EVAL: `"Score this draft on: legal_tone (0-10), relevance (0-10), factual_grounding (0-10), brevity (0-10). Output JSON: {\"scores\": {...}, \"overall\": <avg>, \"pass\": <bool>, \"reason\": \"\"}"`
+
+---
+
+## 6. App Routes (app.routes.ts)
+
+```typescript
+import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
+
+export const routes: Routes = [
+  { path: '',                  loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent) },
+  { path: 'practice-areas',   loadComponent: () => import('./pages/practice-areas/pa-list.component').then(m => m.PaListComponent) },
+  { path: 'practice-areas/:slug', loadComponent: () => import('./pages/practice-areas/pa-detail.component').then(m => m.PaDetailComponent) },
+  { path: 'publications',      loadComponent: () => import('./pages/publications/pub-list.component').then(m => m.PubListComponent) },
+  { path: 'publications/:slug',loadComponent: () => import('./pages/publications/pub-detail.component').then(m => m.PubDetailComponent) },
+  { path: 'contact',           loadComponent: () => import('./pages/contact/contact.component').then(m => m.ContactComponent) },
+  { path: 'cms/login',         loadComponent: () => import('./pages/cms/login/cms-login.component').then(m => m.CmsLoginComponent) },
+  { path: 'cms',               canActivate: [authGuard], loadComponent: () => import('./pages/cms/cms-shell.component').then(m => m.CmsShellComponent),
+    children: [
+      { path: 'dashboard',                  loadComponent: () => import('./pages/cms/dashboard/cms-dashboard.component').then(m => m.CmsDashboardComponent) },
+      { path: 'practice-areas',             loadComponent: () => import('./pages/cms/pa/cms-pa-list.component').then(m => m.CmsPaListComponent) },
+      { path: 'practice-areas/edit/:id',    loadComponent: () => import('./pages/cms/pa/cms-pa-edit.component').then(m => m.CmsPaEditComponent) },
+      { path: 'publications',               loadComponent: () => import('./pages/cms/pub/cms-pub-list.component').then(m => m.CmsPubListComponent) },
+      { path: 'publications/edit/:id',      loadComponent: () => import('./pages/cms/pub/cms-pub-edit.component').then(m => m.CmsPubEditComponent) },
+      { path: 'brand-assets',               loadComponent: () => import('./pages/cms/brand/cms-brand.component').then(m => m.CmsBrandComponent) },
+      { path: 'i18n',                       loadComponent: () => import('./pages/cms/i18n/cms-i18n.component').then(m => m.CmsI18nComponent) },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ]
+  },
+  { path: '**', redirectTo: '' },
+];
+```
+
+---
+
+## 7. i18n JSON Files (src/assets/i18n/)
+
+**en.json:**
+```json
+{
+  "nav": {
+    "practice_areas": "Practice Areas",
+    "publications": "Publications",
+    "about": "About",
+    "contact": "Contact",
+    "cms_login": "Editor Login"
+  },
+  "hero": {
+    "tagline": "Sophisticated Counsel for Complex Matters",
+    "subhead": "A boutique practice delivering institutional-quality legal services to discerning clients.",
+    "cta": "Explore Our Work"
+  },
+  "pa": {
+    "heading": "Practice Areas",
+    "subhead": "Deep expertise across the full spectrum of complex commercial matters."
+  },
+  "pub": {
+    "heading": "Publications",
+    "filter_all": "All",
+    "filter_alerts": "Client Alerts",
+    "filter_articles": "Articles",
+    "filter_news": "Firm News",
+    "read_more": "Read more"
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "disclaimer": "Attorney Advertising. Prior results do not guarantee a similar outcome."
+  },
+  "cms": {
+    "login": "Editor Login",
+    "email": "Email",
+    "password": "Password",
+    "sign_in": "Sign In",
+    "dashboard": "Dashboard",
+    "practice_areas": "Practice Areas",
+    "publications": "Publications",
+    "brand_assets": "Brand Assets",
+    "translations": "Translations",
+    "logout": "Log Out",
+    "save": "Save",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "new": "New",
+    "title": "Title",
+    "tagline": "Tagline",
+    "body": "Body",
+    "locale": "Locale",
+    "published": "Published",
+    "ai_assist": "AI Assist",
+    "ai_task_draft": "Draft",
+    "ai_task_translate_en_es": "Translate EN → ES",
+    "ai_task_translate_es_en": "Translate ES → EN",
+    "ai_task_refine": "Refine",
+    "ai_instruction": "Instruction",
+    "ai_generate": "Generate",
+    "ai_drafting": "Drafting...",
+    "ai_reflecting": "Reflecting...",
+    "ai_evaluating": "Evaluating...",
+    "ai_done": "Done",
+    "ai_accept": "Accept",
+    "ai_dismiss": "Dismiss",
+    "ai_load_model": "Load AI Model (~1GB download)",
+    "ai_loading": "Loading model..."
+  },
+  "locale_switcher": {
+    "en": "EN",
+    "es": "ES",
+    "fr": "FR"
+  },
+  "locale": {
+    "content_unavailable": "This content is available in English and Spanish."
+  }
+}
+```
+
+**es.json:**
+```json
+{
+  "nav": {
+    "practice_areas": "Áreas de Práctica",
+    "publications": "Publicaciones",
+    "about": "Nosotros",
+    "contact": "Contacto",
+    "cms_login": "Acceso Editor"
+  },
+  "hero": {
+    "tagline": "Asesoramiento sofisticado para asuntos complejos",
+    "subhead": "Una práctica boutique que ofrece servicios legales de calidad institucional a clientes exigentes.",
+    "cta": "Explorar Nuestro Trabajo"
+  },
+  "pa": {
+    "heading": "Áreas de Práctica",
+    "subhead": "Experiencia profunda en el espectro completo de asuntos comerciales complejos."
+  },
+  "pub": {
+    "heading": "Publicaciones",
+    "filter_all": "Todas",
+    "filter_alerts": "Alertas",
+    "filter_articles": "Artículos",
+    "filter_news": "Noticias",
+    "read_more": "Leer más"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados.",
+    "disclaimer": "Publicidad de abogados. Resultados anteriores no garantizan resultados similares."
+  },
+  "cms": {
+    "login": "Acceso Editor",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "sign_in": "Iniciar sesión",
+    "dashboard": "Panel",
+    "practice_areas": "Áreas de Práctica",
+    "publications": "Publicaciones",
+    "brand_assets": "Activos de Marca",
+    "translations": "Traducciones",
+    "logout": "Cerrar sesión",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "new": "Nuevo",
+    "title": "Título",
+    "tagline": "Lema",
+    "body": "Contenido",
+    "locale": "Idioma",
+    "published": "Publicado",
+    "ai_assist": "Asistente IA",
+    "ai_task_draft": "Redactar",
+    "ai_task_translate_en_es": "Traducir EN → ES",
+    "ai_task_translate_es_en": "Traducir ES → EN",
+    "ai_task_refine": "Refinar",
+    "ai_instruction": "Instrucción",
+    "ai_generate": "Generar",
+    "ai_drafting": "Redactando...",
+    "ai_reflecting": "Reflexionando...",
+    "ai_evaluating": "Evaluando...",
+    "ai_done": "Listo",
+    "ai_accept": "Aceptar",
+    "ai_dismiss": "Descartar",
+    "ai_load_model": "Cargar modelo IA (~1GB descarga)",
+    "ai_loading": "Cargando modelo..."
+  },
+  "locale_switcher": {
+    "en": "EN",
+    "es": "ES",
+    "fr": "FR"
+  },
+  "locale": {
+    "content_unavailable": "Este contenido está disponible en inglés y español."
+  }
+}
+```
+
+**fr.json (UI chrome only — per CEO constraint):**
+```json
+{
+  "nav": {
+    "practice_areas": "Domaines de pratique",
+    "publications": "Publications",
+    "about": "À propos",
+    "contact": "Contact",
+    "cms_login": "Connexion éditeur"
+  },
+  "hero": {
+    "tagline": "Conseils sophistiqués pour des affaires complexes",
+    "subhead": "Un cabinet boutique offrant des services juridiques de qualité institutionnelle.",
+    "cta": "Découvrir notre travail"
+  },
+  "pa": { "heading": "Domaines de pratique", "subhead": "" },
+  "pub": {
+    "heading": "Publications",
+    "filter_all": "Tout", "filter_alerts": "Alertes",
+    "filter_articles": "Articles", "filter_news": "Actualités", "read_more": "Lire la suite"
+  },
+  "footer": {
+    "rights": "Tous droits réservés.",
+    "disclaimer": "Publicité d'avocat. Les résultats passés ne garantissent pas de résultats similaires."
+  },
+  "cms": {
+    "login": "Connexion éditeur", "email": "E-mail", "password": "Mot de passe",
+    "sign_in": "Se connecter", "logout": "Déconnexion", "save": "Enregistrer",
+    "delete": "Supprimer", "cancel": "Annuler", "edit": "Modifier", "new": "Nouveau",
+    "ai_assist": "Assistant IA", "ai_generate": "Générer", "ai_accept": "Accepter", "ai_dismiss": "Ignorer"
+  },
+  "locale_switcher": { "en": "EN", "es": "ES", "fr": "FR" },
+  "locale": { "content_unavailable": "Ce contenu est disponible en anglais et en espagnol." }
+}
+```
+
+---
+
+## 8. Seed Data — Practice Areas (EN + ES)
+
+```python
+PRACTICE_AREAS = [
+  {
+    "slug": "corporate-transactions",
+    "display_order": 1,
+    "icon_emoji": "🏛",
+    "hero_image_url": "",
+    "en": {
+      "title": "Corporate Transactions",
+      "tagline": "Strategic counsel for complex business transactions.",
+      "body_html": "<p>We advise founders, private equity sponsors, and established enterprises on mergers, acquisitions, divestitures, joint ventures, and capital markets transactions. Our practice combines deep transactional experience with an understanding of each client's long-term business objectives, enabling us to structure deals that create lasting value.</p><p>From initial term sheet through closing, we provide hands-on guidance on deal structuring, due diligence, negotiation, regulatory compliance, and post-closing integration — coordinating across disciplines to ensure seamless execution of even the most complex transactions.</p>"
+    },
+    "es": {
+      "title": "Transacciones Corporativas",
+      "tagline": "Asesoramiento estratégico para transacciones empresariales complejas.",
+      "body_html": "<p>Asesoramos a fundadores, patrocinadores de capital privado y empresas consolidadas en fusiones, adquisiciones, desinversiones, empresas conjuntas y transacciones en mercados de capitales. Nuestra práctica combina una amplia experiencia transaccional con una comprensión profunda de los objetivos empresariales a largo plazo de cada cliente, permitiéndonos estructurar operaciones que crean valor duradero.</p><p>Desde la hoja de términos inicial hasta el cierre, proporcionamos orientación práctica sobre estructuración de transacciones, diligencia debida, negociación, cumplimiento normativo e integración posterior al cierre.</p>"
+    }
+  },
+  {
+    "slug": "commercial-litigation",
+    "display_order": 2,
+    "icon_emoji": "⚖️",
+    "hero_image_url": "",
+    "en": {
+      "title": "Commercial Litigation",
+      "tagline": "Resolute advocacy in high-stakes commercial disputes.",
+      "body_html": "<p>Our litigation practice represents sophisticated clients in complex commercial disputes before state and federal courts, arbitration panels, and regulatory bodies. We bring the same rigor and preparation to every matter — from contract disputes and business torts to securities litigation and class action defense.</p><p>We approach every case with a trial mindset from day one. Our attorneys are experienced in the full litigation lifecycle: pre-dispute risk assessment, discovery strategy, dispositive motions, trial, and appeal. We also have significant experience in emergency relief, including TRO and preliminary injunction proceedings.</p>"
+    },
+    "es": {
+      "title": "Litigación Comercial",
+      "tagline": "Representación decidida en disputas comerciales de alto impacto.",
+      "body_html": "<p>Nuestro equipo de litigación representa a clientes sofisticados en disputas comerciales complejas ante tribunales estatales y federales, paneles de arbitraje y organismos regulatorios. Aplicamos el mismo rigor y preparación a cada asunto, desde disputas contractuales y agravios comerciales hasta litigación de valores y defensa en acciones colectivas.</p><p>Abordamos cada caso con una mentalidad de juicio desde el primer día. Nuestros abogados tienen experiencia en el ciclo de vida completo del litigio: evaluación de riesgos previos a la disputa, estrategia de descubrimiento, mociones dispositivas, juicio y apelación.</p>"
+    }
+  },
+  {
+    "slug": "intellectual-property",
+    "display_order": 3,
+    "icon_emoji": "💡",
+    "hero_image_url": "",
+    "en": {
+      "title": "Intellectual Property",
+      "tagline": "Protecting what you have built — at every stage.",
+      "body_html": "<p>We counsel innovators, creators, and brand owners on the full spectrum of IP strategy: patent prosecution and portfolio management, trademark registration and enforcement, copyright licensing, and trade secret protection. Our approach integrates legal strategy with business objectives to maximize the commercial value of our clients' intellectual assets.</p><p>For technology companies and startups, we design IP programs that scale with the business — establishing foundational protections early, building defensible portfolios, and positioning clients for licensing, M&amp;A, and litigation if necessary.</p>"
+    },
+    "es": {
+      "title": "Propiedad Intelectual",
+      "tagline": "Protegiendo lo que ha construido, en cada etapa.",
+      "body_html": "<p>Asesoramos a innovadores, creadores y propietarios de marcas en el espectro completo de estrategia de PI: tramitación de patentes y gestión de portafolios, registro y aplicación de marcas, licencias de derechos de autor y protección de secretos comerciales. Nuestro enfoque integra la estrategia legal con los objetivos empresariales para maximizar el valor comercial de los activos intelectuales de nuestros clientes.</p><p>Para empresas de tecnología y startups, diseñamos programas de PI que escalan con el negocio, estableciendo protecciones fundacionales temprano y construyendo portafolios defendibles.</p>"
+    }
+  },
+  {
+    "slug": "regulatory-compliance",
+    "display_order": 4,
+    "icon_emoji": "📋",
+    "hero_image_url": "",
+    "en": {
+      "title": "Regulatory & Compliance",
+      "tagline": "Navigating regulatory complexity with confidence.",
+      "body_html": "<p>Our regulatory practice guides clients through evolving federal and state regulatory requirements across industries. We advise on compliance program design, government investigations, agency rulemaking comment, and enterprise-wide risk assessment — positioning clients to operate with confidence in a complex regulatory environment.</p><p>We work closely with in-house legal and compliance teams to develop practical, scalable compliance frameworks. When enforcement actions or investigations arise, we provide experienced defense counsel with deep knowledge of agency process and priorities.</p>"
+    },
+    "es": {
+      "title": "Regulatorio y Cumplimiento",
+      "tagline": "Navegando la complejidad regulatoria con confianza.",
+      "body_html": "<p>Nuestra práctica regulatoria guía a los clientes a través de los requisitos regulatorios federales y estatales en constante evolución en múltiples industrias. Asesoramos sobre el diseño de programas de cumplimiento, investigaciones gubernamentales, comentarios a reglamentaciones de agencias y evaluación integral de riesgos empresariales.</p><p>Trabajamos estrechamente con los equipos legales y de cumplimiento internos para desarrollar marcos de cumplimiento prácticos y escalables. Cuando surgen acciones de cumplimiento o investigaciones, proporcionamos asesoría defensora experimentada con profundo conocimiento del proceso y las prioridades de las agencias.</p>"
+    }
+  }
+]
+```
+
+---
+
+## 9. Seed Data — Publications (EN + ES)
+
+```python
+PUBLICATIONS = [
+  {
+    "slug": "force-majeure-supply-chain",
+    "practice_area_slug": "corporate-transactions",
+    "author": "Michael A. Wegter",
+    "published_at": "2025-11-15",
+    "en": {
+      "title": "When the Deal Breaks: Force Majeure Clauses in an Era of Supply Chain Disruption",
+      "excerpt": "Recent supply chain disruptions have tested contract terms that practitioners rarely invoked. This article examines how courts have interpreted force majeure provisions and offers drafting guidance for sophisticated commercial agreements.",
+      "body_html": "<p>The commercial disruptions of recent years have elevated force majeure clauses from boilerplate to boardroom priority. Courts across jurisdictions have grappled with what constitutes a qualifying event, whether government-mandated shutdowns suffice, and how foreseeability doctrines apply to unprecedented disruption cascades.</p><p>This article surveys key judicial decisions, identifies the drafting failures that allowed disputes to arise, and proposes a framework for force majeure provisions that allocate risk with precision: explicit triggering events, notice mechanics, mitigation obligations, and termination rights structured to reflect the actual risk profile of the transaction.</p><p><strong>Key takeaways:</strong> Broad \"acts of God\" language provides less protection than practitioners assume. Specificity — naming disease outbreaks, regulatory actions, and logistics failures — matters. Economic hardship alone does not excuse performance in most jurisdictions without an explicit provision.</p>"
+    },
+    "es": {
+      "title": "Cuando el acuerdo se rompe: cláusulas de fuerza mayor en la era de la disrupción de cadenas de suministro",
+      "excerpt": "Las recientes disrupciones en las cadenas de suministro han puesto a prueba cláusulas contractuales que los profesionales rara vez invocaban. Este artículo examina cómo los tribunales han interpretado las disposiciones de fuerza mayor y ofrece orientación de redacción para acuerdos comerciales sofisticados.",
+      "body_html": "<p>Las perturbaciones comerciales de los últimos años han elevado las cláusulas de fuerza mayor de texto estándar a prioridad de sala de juntas. Los tribunales de diversas jurisdicciones han debatido qué constituye un evento calificado, si los cierres ordenados por el gobierno son suficientes, y cómo se aplican las doctrinas de previsibilidad a cascadas de perturbaciones sin precedentes.</p><p>Este artículo analiza las decisiones judiciales clave, identifica los fallos de redacción que permitieron que surgieran disputas y propone un marco para las disposiciones de fuerza mayor que asignan el riesgo con precisión.</p>"
+    }
+  },
+  {
+    "slug": "securities-class-action-defense",
+    "practice_area_slug": "commercial-litigation",
+    "author": "Michael A. Wegter",
+    "published_at": "2025-09-22",
+    "en": {
+      "title": "Defending Against Securities Class Actions: Key Motions Practice Strategies",
+      "excerpt": "The standard playbook for defending securities class actions has evolved significantly. We examine the most effective motion-to-dismiss strategies under both state and federal standards, with analysis of recent court decisions.",
+      "body_html": "<p>Securities class action litigation has long been a vehicle for shareholder claims following stock price drops, but the defense landscape has shifted materially. Recent Supreme Court and circuit court decisions have refined the pleading standards that defendants can invoke at the motion-to-dismiss stage, creating new opportunities for early dismissal of meritless claims.</p><p>This article examines the most effective pre-answer strategies: challenging loss causation with precision, deploying PSLRA safe harbor for forward-looking statements, and attacking class certification on ascertainability and predominance grounds before discovery proceeds.</p><p><strong>Practical note:</strong> The first 90 days after a securities class action is filed set the entire trajectory of the case. Early investment in a targeted motion-to-dismiss strategy has the highest expected return of any defensive spend.</p>"
+    },
+    "es": {
+      "title": "Defensa contra acciones colectivas de valores: estrategias clave de práctica de mociones",
+      "excerpt": "El manual estándar para defender acciones colectivas de valores ha evolucionado significativamente. Examinamos las estrategias de moción de desestimación más efectivas bajo estándares estatales y federales, con análisis de decisiones judiciales recientes.",
+      "body_html": "<p>El litigio de acciones colectivas de valores ha sido durante mucho tiempo un vehículo para las reclamaciones de los accionistas tras caídas en el precio de las acciones, pero el panorama defensivo ha cambiado materialmente. Las decisiones recientes del Tribunal Supremo y los tribunales de circuito han refinado los estándares de alegación que los demandados pueden invocar en la etapa de moción de desestimación.</p><p>Este artículo examina las estrategias previas a la respuesta más efectivas: impugnar la causalidad de pérdidas con precisión, desplegar el puerto seguro PSLRA para declaraciones prospectivas, y atacar la certificación de clase antes de que continúe el descubrimiento.</p>"
+    }
+  },
+  {
+    "slug": "trade-secrets-remote-work",
+    "practice_area_slug": "intellectual-property",
+    "author": "Michael A. Wegter",
+    "published_at": "2025-07-08",
+    "en": {
+      "title": "Trade Secret Protection in the Age of Remote Work",
+      "excerpt": "The shift to distributed workforces has created new vulnerabilities in trade secret protection. We outline the proactive steps companies must take to preserve protectability and enforce their rights.",
+      "body_html": "<p>The Defend Trade Secrets Act (DTSA) requires that trade secret owners take reasonable measures to maintain secrecy. Remote work has fundamentally complicated what \"reasonable measures\" means: home networks, personal devices, cloud collaboration tools, and informal communication channels all introduce vectors for inadvertent disclosure and theft that did not exist in the controlled office environment.</p><p>This article provides a practical framework for companies reassessing their trade secret programs: access tier classification, remote-work specific confidentiality agreements, technical controls (DLP, MFA, endpoint management), and the exit-interview and offboarding practices that courts scrutinize most carefully when enforcement becomes necessary.</p><p><strong>Critical point:</strong> A trade secret owner that cannot demonstrate it treated the information as secret will lose on the threshold question, regardless of the strength of its misappropriation evidence. Invest in the program before the incident.</p>"
+    },
+    "es": {
+      "title": "Protección de secretos comerciales en la era del trabajo remoto",
+      "excerpt": "El cambio a fuerzas laborales distribuidas ha creado nuevas vulnerabilidades en la protección de secretos comerciales. Describimos los pasos proactivos que las empresas deben tomar para preservar la protección y hacer valer sus derechos.",
+      "body_html": "<p>La Ley de Defensa de Secretos Comerciales (DTSA) requiere que los propietarios de secretos comerciales tomen medidas razonables para mantener el secreto. El trabajo remoto ha complicado fundamentalmente lo que \"medidas razonables\" significa: redes domésticas, dispositivos personales, herramientas de colaboración en la nube y canales de comunicación informales.</p><p>Este artículo proporciona un marco práctico para las empresas que reevalúan sus programas de secretos comerciales: clasificación de niveles de acceso, acuerdos de confidencialidad específicos para trabajo remoto, controles técnicos y prácticas de desvinculación que los tribunales examinan más detenidamente.</p>"
+    }
+  },
+  {
+    "slug": "ftc-non-compete-rulemaking",
+    "practice_area_slug": "regulatory-compliance",
+    "author": "Michael A. Wegter",
+    "published_at": "2025-05-19",
+    "en": {
+      "title": "Navigating the FTC's Evolving Approach to Non-Compete Agreements",
+      "excerpt": "The FTC's rulemaking signals on non-compete clauses represent a fundamental shift in how employers must approach workforce agreements. This analysis reviews the current landscape and practical compliance implications.",
+      "body_html": "<p>The Federal Trade Commission's scrutiny of non-compete agreements marks one of the most significant shifts in employment regulation in decades. While the FTC's broad ban has faced significant judicial headwinds, the enforcement posture and state-level legislative movement have combined to make legacy non-compete programs a material legal and talent risk.</p><p>This article surveys the current state of federal and state non-compete law, identifies the industries and roles where non-competes retain enforceability, and provides a framework for employers to audit their agreements, redraft toward narrow legitimate interests, and design alternative protection strategies (including enhanced trade secret programs and garden-leave arrangements) for senior personnel.</p>"
+    },
+    "es": {
+      "title": "Navegando el enfoque evolutivo de la FTC hacia los acuerdos de no competencia",
+      "excerpt": "Las señales de reglamentación de la FTC sobre las cláusulas de no competencia representan un cambio fundamental en cómo los empleadores deben abordar los acuerdos laborales. Este análisis revisa el panorama actual y las implicaciones prácticas de cumplimiento.",
+      "body_html": "<p>El escrutinio de la Comisión Federal de Comercio (FTC) sobre los acuerdos de no competencia marca uno de los cambios más significativos en la regulación laboral en décadas. Si bien la prohibición amplia de la FTC ha enfrentado importantes obstáculos judiciales, la postura de cumplimiento y el movimiento legislativo a nivel estatal han combinado para hacer que los programas de no competencia heredados representen un riesgo legal y de talento material.</p><p>Este artículo ofrece un marco para que los empleadores auditen sus acuerdos, redescriban hacia intereses legítimos limitados y diseñen estrategias de protección alternativas.</p>"
+    }
+  },
+  {
+    "slug": "cross-border-ma-regulatory-clearance",
+    "practice_area_slug": "corporate-transactions",
+    "author": "Michael A. Wegter",
+    "published_at": "2025-03-04",
+    "en": {
+      "title": "Cross-Border M&A: Structuring for Regulatory Clearance in Multiple Jurisdictions",
+      "excerpt": "Complex cross-border transactions require proactive regulatory strategy from the earliest stages of deal design. This article provides a framework for anticipating and managing multi-jurisdictional clearance requirements.",
+      "body_html": "<p>Cross-border mergers and acquisitions have never been more complex from a regulatory perspective. The convergence of competition authority activism, foreign investment screening (CFIUS in the US, NSIA in the UK, equivalent regimes across the EU), and sector-specific regulatory reviews means that deal certainty depends on regulatory strategy as much as commercial and legal execution.</p><p>This article provides a practical transaction-structuring framework: pre-signing regulatory risk mapping, jurisdiction selection and timing strategy, merger notification filing coordination across concurrent review periods, behavioral remedy negotiation, and walk-away rights design that reflects the actual probability of clearance failure rather than boilerplate material adverse change language.</p><p><strong>Key insight:</strong> Regulatory strategy that begins at LOI execution shortens the critical path by an average of six to eight weeks in multi-jurisdiction transactions, reducing exposure to market risk, financing condition failure, and deal fatigue.</p>"
+    },
+    "es": {
+      "title": "Fusiones y adquisiciones transfronterizas: estructuración para la aprobación regulatoria en múltiples jurisdicciones",
+      "excerpt": "Las transacciones transfronterizas complejas requieren una estrategia regulatoria proactiva desde las etapas más tempranas del diseño de la transacción. Este artículo proporciona un marco para anticipar y gestionar los requisitos de aprobación multijurisdiccional.",
+      "body_html": "<p>Las fusiones y adquisiciones transfronterizas nunca han sido más complejas desde una perspectiva regulatoria. La convergencia del activismo de las autoridades de competencia, el escrutinio de inversiones extranjeras (CFIUS en EE.UU., NSIA en el Reino Unido, regímenes equivalentes en la UE) y las revisiones regulatorias específicas del sector significan que la certeza de la transacción depende tanto de la estrategia regulatoria como de la ejecución comercial y legal.</p><p>Este artículo proporciona un marco práctico de estructuración de transacciones: mapeo de riesgos regulatorios previo a la firma, estrategia de selección de jurisdicción y sincronización, coordinación de notificaciones de fusión, negociación de remedios conductuales y diseño de derechos de salida.</p>"
+    }
+  }
+]
+```
+
+---
+
+## 10. Flask Blueprint OOP Skeleton (mw-backend/solo_law_blueprint.py)
+
+Pattern: mirrors `edtech_blueprint.py` (SQLite + bcrypt + JWT) + OOP class wrapping. Reference those files directly.
+
+```python
+"""
+Solo Law CMS — Flask Blueprint
+Mounts under /solo-law on the mw-backend server.
+Auth: per-boot JWT secret (demo). Storage: SQLite at data/mw.db (WAL mode).
+"""
+import sqlite3, datetime, secrets
+from pathlib import Path
+from functools import wraps
+import bcrypt, jwt as _jwt
+from flask import Blueprint, request, jsonify
+
+solo_law_bp = Blueprint("solo_law", __name__, url_prefix="/solo-law")
+
+_JWT_SECRET = secrets.token_hex(32)
+_JWT_ALG    = "HS256"
+_JWT_TTL    = datetime.timedelta(hours=24)
+
+DATA_DIR = Path(__file__).parent / "data"
+DB_PATH  = DATA_DIR / "mw.db"
+
+# --- DB class (OOP) ---
+class SoloLawDB:
+    def __init__(self):
+        self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute("PRAGMA journal_mode=WAL;")
+    def close(self): self.conn.close()
+
+def _db() -> sqlite3.Connection:
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL;")
+    return conn
+
+# --- Auth helpers ---
+def _make_token(email, role):
+    return _jwt.encode({"email": email, "role": role,
+        "exp": datetime.datetime.utcnow() + _JWT_TTL}, _JWT_SECRET, algorithm=_JWT_ALG)
+
+def require_auth(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        auth = request.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return jsonify({"error": "Unauthorized"}), 401
+        try:
+            request.sl_user = _jwt.decode(auth[7:], _JWT_SECRET, algorithms=[_JWT_ALG])
+        except _jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token expired"}), 401
+        except Exception:
+            return jsonify({"error": "Invalid token"}), 401
+        return f(*args, **kwargs)
+    return wrapper
+
+# --- Model classes ---
+class PracticeAreaModel:
+    @staticmethod
+    def get_all(locale="en"):
+        with _db() as conn:
+            return [dict(r) for r in conn.execute(
+                "SELECT * FROM sl_practice_areas WHERE locale=? AND published=1 ORDER BY display_order", (locale,))]
+    @staticmethod
+    def get_by_slug(slug, locale="en"):
+        with _db() as conn:
+            return dict(conn.execute(
+                "SELECT * FROM sl_practice_areas WHERE slug=? AND locale=?", (slug, locale)).fetchone() or {})
+    # create / update / delete follow same pattern
+
+class PublicationModel:
+    @staticmethod
+    def get_all(locale="en", practice_area_id=None, page=1, per_page=10):
+        with _db() as conn:
+            q = "SELECT * FROM sl_publications WHERE locale=? AND published=1"
+            params = [locale]
+            if practice_area_id:
+                q += " AND practice_area_id=?"; params.append(practice_area_id)
+            q += " ORDER BY published_at DESC LIMIT ? OFFSET ?"
+            params += [per_page, (page-1)*per_page]
+            return [dict(r) for r in conn.execute(q, params)]
+
+class SeedManager:
+    @staticmethod
+    def seed():
+        """Idempotent seed — runs on first startup if tables empty."""
+        # (demo-builder inserts full seed data from section 8+9 above)
+        pass
+
+# --- Init ---
+def _init_schema():
+    with _db() as conn:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS sl_practice_areas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug TEXT NOT NULL, locale TEXT NOT NULL,
+                title TEXT, tagline TEXT, body_html TEXT,
+                icon_emoji TEXT, hero_image_url TEXT,
+                display_order INTEGER DEFAULT 0,
+                published INTEGER DEFAULT 1,
+                updated_at TEXT
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_sl_pa ON sl_practice_areas(slug, locale);
+
+            CREATE TABLE IF NOT EXISTS sl_publications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug TEXT NOT NULL, locale TEXT NOT NULL,
+                title TEXT, excerpt TEXT, body_html TEXT,
+                author TEXT, practice_area_id INTEGER,
+                published_at TEXT, published INTEGER DEFAULT 1, updated_at TEXT
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_sl_pub ON sl_publications(slug, locale);
+
+            CREATE TABLE IF NOT EXISTS sl_brand_assets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT, type TEXT, value TEXT, tag TEXT, created_at TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS sl_cms_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role TEXT DEFAULT 'editor',
+                created_at TEXT
+            );
+        """)
+
+_init_schema()
+SeedManager.seed()
+```
+
+**server.py registration (insert after mn_parks block, line ~334):**
+```python
+# ─── Solo Law CMS demo blueprint ─────────────────────────────────────────────
+from solo_law_blueprint import solo_law_bp
+app.register_blueprint(solo_law_bp)
+```
+
+**CMS credentials (seed in SeedManager):**
+- email: `editor@solo-law.demo`
+- password: `Demo2026!`
+- role: `editor`
+
+---
+
+## 11. Playwright Config Stub (e2e/playwright.config.ts)
+
+Per CEO constraint — drop minimal stub so deploy-test can extend it:
+
+```typescript
+import { defineConfig, devices } from '@playwright/test';
+export default defineConfig({
+  testDir: './e2e',
+  use: {
+    baseURL: 'https://michaelwegter.com/demos/solo-law/',
+    ...devices['Desktop Chrome'],
+    launchOptions: {
+      args: [
+        '--headless=new', '--use-angle=vulkan',
+        '--enable-features=Vulkan,WebGPU', '--disable-vulkan-surface',
+        '--enable-unsafe-webgpu', '--ignore-gpu-blocklist',
+      ],
+    },
+  },
+});
+```
+
+---
+
+## 12. Hero Image Placeholder
+
+Use a full-bleed CSS gradient as the hero background (no external image required):
+```css
+.hero-bg {
+  background: linear-gradient(160deg, #0D0D0D 0%, #1a1a1a 60%, #0D0D0D 100%);
+  /* Optionally overlay a subtle noise texture via CSS or an inline SVG data-URI */
+}
+```
+
+For the editorial B&W imagery effect on practice area headers:
+```css
+.pa-hero-img {
+  filter: grayscale(100%) contrast(1.1);
+  mix-blend-mode: luminosity;
+}
+```
+
+Use royalty-free legal/architecture stock from Unsplash with direct URL embedding:
+- Hero: `https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1920&q=80` (law books, B&W convertible)
+- Corporate: `https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80`
+- Litigation: `https://images.unsplash.com/photo-1589391886645-d51941baf7fb?w=1200&q=80`
+- IP: `https://images.unsplash.com/photo-1620325867502-221cfb5faa5f?w=1200&q=80`
+- Regulatory: `https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=1200&q=80`
+
+Apply `filter: grayscale(100%) contrast(1.1)` on all `<img>` in the public site.
+
+---
+
+## handoff
+- produced: researcher.out — full build-prep package: Angular 18 scaffold command, Tailwind config + CSS vars + Google Fonts URL, ngx-translate app.config.ts pattern, webllm-worker.js exact code + agentic loop skeleton, all routes, i18n JSON (EN/ES/FR), complete bilingual seed data (4 practice areas + 5 publications), Flask OOP blueprint skeleton, server.py registration pointer, Playwright config stub, Unsplash image URLs
+- decisions: Angular route lazy-loads all pages; worker ESM from esm.run CDN; seed cred = `editor@solo-law.demo` / `Demo2026!`; no ngx-translate version pinned (use latest `>=15.0`); hero uses CSS gradient + Unsplash URLs (no bundled images); JetBrains Mono limited to CMS internal UI per plan
+- next_needs: demo-builder runs `ng new solo-law-demo ...`, installs libs, drops the files above, builds Flask OOP blueprint with full CRUD from this seed data, pushes mw-backend, verifies `/solo-law/health` live; priority order per CEO = public editorial site first, then CMS CRUD, then AI panel
+- risks: Angular esbuild builder (default in v18) + Tailwind requires `postcss.config.js` from `npx tailwindcss init -p` — if missing, Tailwind classes silently generate no CSS; `webllm-worker.js` must be listed in `angular.json` assets or it 404s; Unsplash CDN URLs may be rate-limited in CI — preload them or use local stubs if deploy-test fails on image load

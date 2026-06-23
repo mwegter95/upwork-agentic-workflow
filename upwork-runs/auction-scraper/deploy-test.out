@@ -1,0 +1,62 @@
+# Deploy Test — auction-scraper
+
+## Test Results
+
+### API Endpoints
+
+| Endpoint | Result |
+|---|---|
+| `GET /demos/auction-scraper/health` | 200 `{"ok":true,"seeds_loaded":{"bonhams":5,"heritage":8,"leland_little":5},"playwright_available":false}` |
+| `POST /demos/auction-scraper/scrape` | 202, job_id returned |
+| `GET /demos/auction-scraper/stream/<job_id>` | SSE stream: 18 lots, 3 source_done events, job_done event, elapsed ~5.5s |
+| `GET /demos/auction-scraper/jobs` | 404 (endpoint not implemented; not required — UI is client-side) |
+
+### SSE Stream Integrity
+- Total lot events: **18** (bonhams: 5, heritage_auctions: 8, leland_little: 5)
+- Em/en dash count in raw SSE payloads: **0** (CLEAN)
+- All 3 sources emit `source_done`; `job_done` arrives correctly
+- Heritage: flags 403 and serves seeded fallback per policy (expected, documented in UI)
+- Bonhams + Leland Little: Playwright not available on Surface, serves seeded fallback (labeled in `scraper_notes`)
+
+### Playwright Browser Tests
+
+**TEST 1 — Demo page load** (`https://michaelwegter.com/demos/auction-scraper/`)
+- HTTP 200 ✅
+- Title: "Auction Scraper Console" ✅
+- H1: "🏺 Auction Scraper" ✅
+- Buttons visible: "Run Scraper", "Export JSON", "View Dataset" ✅
+- Console errors on load: **0** ✅
+
+**TEST 2 — Hero flow (Run Scraper)**
+- "Run Scraper" button clicked ✅
+- After 22s: **216 result DOM elements** rendered (18 lots x ~12 elements each) ✅
+- Em/en dashes in visible body text: **0** ✅
+- Console errors after scrape: **0** ✅
+
+**TEST 3 — `/work-samples/auction-scraper` SPA route**
+- HTTP 404 from server (expected; SPA 404.html redirect handles client-side routing) ✅
+- React app loads; page body contains "auction" ✅
+- Iframe present with `src="/demos/auction-scraper/"` ✅
+- Iframe H1: "🏺 Auction Scraper" (demo loads inside iframe) ✅
+- 2 non-blocking errors logged:
+  - `Failed to load resource: 404` — the 404.html redirect itself (SPA pattern, not a bug)
+  - `REQFAIL: cloudflareinsights.com/beacon.min.js` — external Cloudflare analytics CDN, unrelated to demo
+
+### Hard Gates Check
+- No console errors on first paint ✅
+- Demo URL `/demos/auction-scraper/` resolves 200 ✅
+- `/work-samples/auction-scraper` SPA route loads and iframe shows demo ✅
+- 0 em/en dashes in UI text and SSE payloads ✅
+- API returns expected structured data (seeded realistic lots with all required fields) ✅
+
+## Issues
+- `/demos/auction-scraper/jobs` → 404: jobs list endpoint not implemented. Client-side UI does not require it (state lives in browser after scrape). Not blocking.
+- Playwright not available on Surface: all 3 sources fall back to seeded data. Seeded data is realistic and fallback is labeled in the UI. Not blocking for proposal demo purposes.
+
+## handoff
+- produced: full Playwright + curl live test; all critical paths pass; VERDICT: pass
+- decisions: /work-samples 404 from server is expected SPA behavior (404.html redirect); Cloudflare beacon CDN failure is noise; /jobs 404 is non-issue (client-side state)
+- next needs: media-capture to record the hero flow (Run Scraper -> lots populate) and take screenshots; proposal-writer to embed demo link + github.com/mwegter95/auction-scraper-demo
+- risks: seeded fallback means no live scrape demonstrated; this is clearly labeled in the UI and acceptable given anti-scraping policies on Heritage/Bonhams and Surface Playwright unavailability
+
+VERDICT: pass

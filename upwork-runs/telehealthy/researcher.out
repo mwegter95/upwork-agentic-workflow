@@ -1,0 +1,376 @@
+# researcher.out — TeleHealthy Voice Ops Console
+
+Build-prep research: scaffold pointer, exact libraries/APIs, sample data, design cues.
+
+---
+
+## 1. CRITICAL — WebLLM CDN Import + Exact Model ID
+
+**ESM CDN import (no npm install; dynamic load in hook):**
+```js
+// useWebLLM.js — lazy, only fires when user clicks "Load AI"
+const webllm = await import("https://esm.run/@mlc-ai/web-llm");
+```
+
+**Recommended model ID (use `q4f16_1`, NOT `q4f32_1`):**
+```
+Llama-3.2-1B-Instruct-q4f16_1-MLC
+```
+Reason: `q4f16_1` (4-bit weights, fp16 activations) is ~700-800 MB vs `q4f32_1` ~1.3 GB. Same quality; smaller download. Plan mentioned `q4f32_1` — override with `q4f16_1`.
+
+**Engine init pattern with progress callback:**
+```js
+const engine = await webllm.CreateMLCEngine(
+  "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+  {
+    initProgressCallback: ({ progress, text }) => {
+      // progress: 0.0 → 1.0
+      setLoadProgress(Math.round(progress * 100));
+      setLoadStatus(text); // e.g. "Loading model shard 3/7..."
+    }
+  }
+);
+```
+
+**Chat completions (OpenAI-compatible):**
+```js
+const reply = await engine.chat.completions.create({
+  messages: [
+    { role: "system", content: SYSTEM_PROMPT },
+    ...conversationHistory,
+    { role: "user", content: userInput }
+  ],
+  temperature: 0.4,
+  max_tokens: 120,
+});
+const text = reply.choices[0].message.content;
+```
+
+**System prompt for healthcare receptionist:**
+```
+You are TeleHealthy's AI receptionist. You handle appointment booking, FAQs, and escalations for a medical/psychiatry practice.
+Be concise, warm, and professional. Detect caller intent: BOOK (appointment scheduling), FAQ (hours/insurance/telehealth), ESCALATE (clinical urgency, low confidence, prescription requests, crisis).
+After each response, append a JSON confidence score on its own line: {"intent": "BOOK|FAQ|ESCALATE", "confidence": 0.0-1.0}
+Keep responses under 2 sentences.
+```
+
+**GPU detection + scripted fallback guard:**
+```js
+const hasWebGPU = typeof navigator !== "undefined" && !!navigator.gpu;
+// If !hasWebGPU → skip "Load AI" button; scripted fallback is default
+```
+
+---
+
+## 2. WebGPU Browser Support (2026)
+
+| Browser | Status | Min Version |
+|---|---|---|
+| Chrome | Stable, enabled by default | 113+ desktop; 121+ Android 12+ |
+| Edge | Stable | 113+ |
+| Firefox | Stable (Windows); macOS ARM in 141+ | 141+ |
+| Safari | Stable | macOS Tahoe 26 / iOS 26 only |
+| Others | No | — |
+
+**Global support: ~82% as of 2026.** `navigator.gpu` check is reliable — no origin trial needed in Chrome/Edge/modern Firefox. Demo must not fail if undefined (scripted fallback carries the full happy path for CI/headless).
+
+---
+
+## 3. Recharts (Analytics.jsx) — Exact Imports
+
+```bash
+npm install recharts
+```
+
+```js
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend
+} from "recharts";
+```
+
+**Bar chart (call volume, 7 days):**
+```jsx
+<ResponsiveContainer width="100%" height={200}>
+  <BarChart data={callVolumeData}>
+    <CartesianGrid strokeDasharray="3 3" stroke="#CCFBF1" />
+    <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#64748B" }} />
+    <YAxis tick={{ fontSize: 11, fill: "#64748B" }} />
+    <Tooltip />
+    <Bar dataKey="calls" fill="#0D9488" radius={[4,4,0,0]} />
+  </BarChart>
+</ResponsiveContainer>
+```
+
+**Doughnut (intent breakdown):**
+```jsx
+<PieChart width={180} height={180}>
+  <Pie data={intentData} cx={90} cy={90}
+    innerRadius={50} outerRadius={80}
+    dataKey="value" paddingAngle={3}>
+    {intentData.map((_, i) => <Cell key={i} fill={INTENT_COLORS[i]} />)}
+  </Pie>
+  <Tooltip />
+</PieChart>
+```
+`INTENT_COLORS = ["#0D9488", "#059669", "#EF4444"]` (Book / FAQ / Escalate)
+
+---
+
+## 4. GoHighLevel-Style CRM Mock Data (8 contacts)
+
+**Schema for `mockData.js`:**
+```js
+export const crmContacts = [
+  {
+    id: "c001", name: "Maria Santos", phone: "+1 (555) 014-2200",
+    email: "m.santos@email.com", insurance: "Blue Cross BlueShield",
+    lastVisit: "2025-05-14", nextAppt: "2026-07-10 10:00",
+    provider: "Dr. Chen", patientStatus: "existing",
+    tags: ["psychiatry", "follow-up"], language: "en",
+    reminderType: "appointment_reminder",
+    scriptVars: { apptDate: "July 10", apptTime: "10:00 AM", provider: "Dr. Chen" }
+  },
+  {
+    id: "c002", name: "James Whitfield", phone: "+1 (555) 029-3311",
+    email: "j.whitfield@email.com", insurance: "Aetna",
+    lastVisit: "2026-03-02", nextAppt: "2026-07-08 14:30",
+    provider: "Dr. Patel", patientStatus: "existing",
+    tags: ["therapy", "weekly"], language: "en",
+    reminderType: "appointment_reminder",
+    scriptVars: { apptDate: "July 8", apptTime: "2:30 PM", provider: "Dr. Patel" }
+  },
+  {
+    id: "c003", name: "Sofia Reyes", phone: "+1 (555) 038-4400",
+    email: "s.reyes@email.com", insurance: "Cigna",
+    lastVisit: "2025-11-20", nextAppt: null,
+    provider: "Dr. Chen", patientStatus: "inactive",
+    tags: ["reactivation", "no-show"], language: "es",
+    reminderType: "reactivation_outreach",
+    scriptVars: { lastVisit: "November 2025", provider: "Dr. Chen" }
+  },
+  {
+    id: "c004", name: "David Kim", phone: "+1 (555) 047-5512",
+    email: "d.kim@email.com", insurance: "Medicare",
+    lastVisit: "2026-05-30", nextAppt: "2026-07-15 09:00",
+    provider: "Dr. Patel", patientStatus: "existing",
+    tags: ["psychiatry", "medication-mgmt"], language: "en",
+    reminderType: "appointment_reminder",
+    scriptVars: { apptDate: "July 15", apptTime: "9:00 AM", provider: "Dr. Patel" }
+  },
+  {
+    id: "c005", name: "Priya Nair", phone: "+1 (555) 056-6601",
+    email: "p.nair@email.com", insurance: "UnitedHealth",
+    lastVisit: "2026-06-01", nextAppt: "2026-07-05 11:00",
+    provider: "Dr. Chen", patientStatus: "existing",
+    tags: ["telehealth", "anxiety"], language: "en",
+    reminderType: "post_visit_followup",
+    scriptVars: { visitDate: "June 1", provider: "Dr. Chen" }
+  },
+  {
+    id: "c006", name: "Marcus Brown", phone: "+1 (555) 065-7790",
+    email: "m.brown@email.com", insurance: "Blue Cross BlueShield",
+    lastVisit: null, nextAppt: "2026-07-09 15:00",
+    provider: "Dr. Patel", patientStatus: "new",
+    tags: ["new-patient", "intake"], language: "en",
+    reminderType: "appointment_reminder",
+    scriptVars: { apptDate: "July 9", apptTime: "3:00 PM", provider: "Dr. Patel" }
+  },
+  {
+    id: "c007", name: "Ana Gutierrez", phone: "+1 (555) 074-8823",
+    email: "a.gutierrez@email.com", insurance: "Molina Healthcare",
+    lastVisit: "2026-04-18", nextAppt: null,
+    provider: "Dr. Chen", patientStatus: "inactive",
+    tags: ["reactivation", "no-show"], language: "es",
+    reminderType: "reactivation_outreach",
+    scriptVars: { lastVisit: "April 2026", provider: "Dr. Chen" }
+  },
+  {
+    id: "c008", name: "Robert Okonkwo", phone: "+1 (555) 083-9934",
+    email: "r.okonkwo@email.com", insurance: "Cigna",
+    lastVisit: "2026-05-15", nextAppt: "2026-07-11 13:00",
+    provider: "Dr. Patel", patientStatus: "existing",
+    tags: ["therapy", "depression"], language: "en",
+    reminderType: "post_visit_followup",
+    scriptVars: { visitDate: "May 15", provider: "Dr. Patel" }
+  }
+];
+```
+
+---
+
+## 5. Healthcare Voice AI Conversation Scripts (EN + ES)
+
+### Inbound — Greeting
+```
+EN: "Thank you for calling TeleHealthy. I'm your AI health assistant. How can I help you today?"
+ES: "Gracias por llamar a TeleHealthy. Soy su asistente de salud virtual. ¿En qué puedo ayudarle hoy?"
+```
+
+### Intent Detection Keywords
+```
+BOOK:     schedule, appointment, book, see doctor, visit, available, slot, reschedule, cancel
+FAQ:      hours, open, insurance, accept, telehealth, online, location, address, new patient, eligibility, cost
+ESCALATE: emergency, crisis, suicidal, prescription, refill, medication, urgent, chest pain, hurt
+```
+Threshold: if WebLLM confidence JSON < 0.45 → auto-escalate regardless of keyword.
+
+### Booking Flow (EN)
+```
+Step 1 — Confirm intent:  "I can help you schedule an appointment. Are you a new patient or an existing patient?"
+Step 2 — Collect name:    "May I have your full name please?"
+Step 3 — Collect reason:  "What's the reason for your visit today?"
+                          [Options shown as pills: Initial Eval | Follow-up | Medication Review | Telehealth Consult]
+Step 4 — Date/time:       "What date and time works best for you? We have availability Monday through Friday, 8 AM to 6 PM."
+Step 5 — Confirm:         "I've scheduled you for [DATE] at [TIME] with [PROVIDER]. You'll receive an SMS confirmation shortly."
+Step 6 — Close:           "Is there anything else I can help you with today?"
+```
+
+### FAQ Responses (EN)
+```
+hours:       "We're open Monday–Friday 8 AM to 6 PM and Saturday 9 AM to 1 PM. After-hours, you can leave a message."
+insurance:   "We accept Blue Cross BlueShield, Aetna, Cigna, UnitedHealth, Medicare, and Molina Healthcare. Would you like to verify your specific plan?"
+telehealth:  "Yes, we offer secure video appointments for established patients. You'll need a device with a camera. Telehealth slots are available daily."
+new patient: "Welcome! New patient intake appointments are 60 minutes. We'll collect your insurance info and medical history at that visit."
+location:    "Our main clinic is at 4820 Wellness Blvd, Suite 200. Parking is validated in the attached garage."
+```
+
+### FAQ Responses (ES)
+```
+hours:       "Estamos abiertos de lunes a viernes de 8 AM a 6 PM y sábados de 9 AM a 1 PM."
+insurance:   "Aceptamos Blue Cross BlueShield, Aetna, Cigna, UnitedHealth, Medicare y Molina Healthcare."
+telehealth:  "Sí, ofrecemos citas de video seguras para pacientes establecidos."
+new patient: "¡Bienvenido! Las citas de nuevo paciente duran 60 minutos."
+```
+
+### Escalation Script
+```
+Low-confidence trigger (<0.45):
+"I want to make sure you get the right support. Let me connect you with one of our care coordinators right away. Please hold."
+
+Clinical urgency trigger (crisis/prescription keywords):
+"I'm connecting you immediately to our on-call clinical team. Please stay on the line."
+
+Warm transfer UI state: transcript shows "[AI ASSISTANT] Transferring to Care Coordinator..." + contact card + hold music indicator
+```
+
+---
+
+## 6. Vapi/Retell Call UI Conventions (clone target)
+
+**Active call card:**
+- Avatar circle (initials or phone icon) with 3-ring pulsing animation in amber (#F59E0B) at 1.5s intervals
+- Waveform: 5 vertical bars (heights: 8px, 20px, 36px, 20px, 8px baseline), CSS `@keyframes wave` animation — each bar cycles independently with 0.1s stagger
+- Call timer: monospace font (DM Mono), counts up from 00:00, positioned top-right of card
+
+**Status pill progression:**
+```
+CONNECTING (gray dot) → ACTIVE (green dot, pulse) → ON HOLD (amber) → TRANSFERRING (blue spin) → ENDED (slate)
+```
+
+**Transcript bubbles:**
+- AI (left-aligned): teal bg (#0D9488), white text, rounded 16px, max-w 75%, DM Mono font 13px
+- Caller (right-aligned): white bg, slate-800 text, border 1px teal-100, same rounding
+- New messages slide in from bottom with 200ms ease-out
+- Timestamp in slate-400 12px below each bubble
+
+**Intent badge:** Appears after first AI response, floats over call card:
+```
+BOOK APPT (teal) | FAQ (emerald) | ESCALATE (red, animated shake) | UNCLEAR (amber)
+```
+
+**Confidence meter:**
+- Horizontal bar, full width of call card, height 6px
+- Gradient: ≥0.70 emerald-500 → 0.45-0.70 amber-500 → <0.45 red-500 (triggers auto-escalate)
+- Numeric label: "Confidence: 82%" in DM Mono 11px slate-500, right-aligned
+
+**Automation pipeline viz (InboundCall.jsx embedded):**
+Horizontal SVG flow, nodes light up teal as call progresses:
+```
+[Greeting] → [Intent Detect] → [Booking|FAQ|Escalate] → [Webhook Trigger] → [SMS Confirm]
+```
+Node: 36px circle + label below, connected by dashed line. Active node = solid teal fill + drop shadow.
+
+---
+
+## 7. Analytics Seed Data (mockData.js)
+
+```js
+export const analyticsData = {
+  callVolume: [
+    { day: "Mon", calls: 24 }, { day: "Tue", calls: 31 }, { day: "Wed", calls: 28 },
+    { day: "Thu", calls: 19 }, { day: "Fri", calls: 35 }, { day: "Sat", calls: 12 }, { day: "Sun", calls: 6 }
+  ],
+  intentBreakdown: [
+    { name: "Booking", value: 58 },
+    { name: "FAQ", value: 29 },
+    { name: "Escalated", value: 13 }
+  ],
+  kpis: {
+    bookingRate: "67%",
+    escalationRate: "8%",
+    avgConfidence: "0.79",
+    avgHandleTime: "2m 14s",
+    totalCalls: 155,
+    smsConfirmations: 104
+  },
+  transcripts: [
+    { id: "t001", caller: "+1 (555) 142-8800", intent: "BOOK", duration: "1:47", confidence: 0.88,
+      summary: "New patient intake booked for July 9 with Dr. Patel", escalated: false },
+    { id: "t002", caller: "+1 (555) 293-1122", intent: "FAQ", duration: "0:52", confidence: 0.91,
+      summary: "Telehealth eligibility inquiry resolved", escalated: false },
+    { id: "t003", caller: "+1 (555) 384-4409", intent: "ESCALATE", duration: "0:28", confidence: 0.38,
+      summary: "Low confidence — transferred to care coordinator", escalated: true },
+    { id: "t004", caller: "+1 (555) 475-5511", intent: "BOOK", duration: "2:31", confidence: 0.82,
+      summary: "Existing patient rescheduled to July 15 10:00 AM", escalated: false },
+    { id: "t005", caller: "+1 (555) 567-6622", intent: "FAQ", duration: "1:05", confidence: 0.85,
+      summary: "Insurance verification question — Blue Cross confirmed accepted", escalated: false }
+  ]
+};
+```
+
+---
+
+## 8. Scaffold Pointer (Vite + React 18)
+
+```bash
+# From upwork-runs/telehealthy/
+npm create vite@latest demo-src -- --template react
+cd demo-src
+npm install recharts
+# web-llm loaded via CDN ESM — no npm install
+```
+
+**vite.config.js:**
+```js
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+export default defineConfig({
+  plugins: [react()],
+  base: "/demos/telehealthy/",
+  build: {
+    outDir: "../../../../michaelwegter.com/public/demos/telehealthy",
+    emptyOutDir: true
+  }
+});
+```
+
+**Google Fonts in index.html:**
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+```
+
+**Deploy:**
+```bash
+npm run build  # outputs to ../michaelwegter.com/public/demos/telehealthy/
+```
+
+---
+
+## handoff
+- produced: WebLLM CDN URL + model ID (q4f16_1 override from plan's q4f32_1) + init pattern; WebGPU support matrix; recharts exact imports; 8 CRM mock contacts with scriptVars; full EN/ES conversation scripts for all 3 flows; Vapi/Retell UI conventions (bubbles, confidence bar, waveform, intent badge, pipeline viz); analytics seed data; Vite scaffold commands
+- decisions: model changed to `Llama-3.2-1B-Instruct-q4f16_1-MLC` (~700MB vs ~1.3GB) — demo-builder MUST use this ID not q4f32_1; CDN ESM via dynamic `import()` inside useWebLLM.js; recharts for both bar + doughnut; scripted fallback is deterministic and carries all 3 intents fully
+- next needs: demo-builder implements `useWebLLM.js` with lazy dynamic import + progress state; InboundCall.jsx uses conversation scripts + waveform animation + confidence bar + pipeline viz; Analytics.jsx uses recharts with seed data; OutboundDialer.jsx uses crmContacts with scriptVars for dynamic script generation; all 12 files follow plan's file list exactly
+- risks: WebLLM model download still ~700-800MB — lazy-load behind button + scripted fallback must cover full happy path (confirmed for CI/headless); WebGPU unavailable in headless Playwright — scripted path is the deploy-test path

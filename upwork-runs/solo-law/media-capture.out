@@ -1,0 +1,66 @@
+# Media Capture — solo-law
+
+## Captured Assets
+
+### Screenshots (1280 × 720 @ 8-bit RGB PNG)
+
+| # | File | Description | Size |
+|---|------|-------------|------|
+| 1 | `1-hero-en.png` | Hero home page (EN locale) — B&W Unsplash hero image, practice areas grid preview, recent publications teaser, footer with firm disclaimer | 245 KB |
+| 2 | `2-hero-es.png` | Hero home page (ES locale) — same layout, UI chrome translated to Spanish (navbar, practice areas, publications, contact labels) | 251 KB |
+| 3 | `3-cms-login.png` | CMS login form — email/password inputs pre-filled with demo credentials (`editor@solo-law.demo` / `Demo2026!`), login button | 30 KB |
+| 4 | `4-cms-dashboard.png` | CMS dashboard — stat cards (4 Practice Areas, 5 Publications, 3 Languages, 0 Brand Assets), quick-action sidebar nav (Dashboard / PAs / Publications / Brand / Translations / Logout), hero typography | 30 KB |
+
+### Video Recording
+
+| File | Description | Size | Duration |
+|------|-------------|------|----------|
+| `hero-flow.webm` | Deterministic flow: home (EN) → locale switch (ES) → CMS login link → login form fill+submit → dashboard. 1280×720, WebM VP8 | 356 KB | ~30s |
+
+---
+
+## Flow Captured
+
+1. **Load demo root** (`https://michaelwegter.com/demos/solo-law/`)
+   - B&W editorial hero image (grayscale filter applied)
+   - Practice areas grid (Corporate, Litigation, IP, Regulatory)
+   - Recent publications teaser
+   - Navbar with firm name + language selector + CMS Login link
+
+2. **Locale switch EN → ES**
+   - Click ES button in navbar
+   - UI chrome changes: "ÁREAS DE PRÁCTICA / PUBLICACIONES / CONTACTO"
+   - Hero layout remains consistent, content text in Spanish
+
+3. **CMS login (client-side SPA navigation)**
+   - Click "EDITOR LOGIN" link
+   - Navigate to `/cms/login` view (no page reload; Angular routing)
+   - Form visible with email/password inputs
+
+4. **Credential submission**
+   - Pre-filled: `editor@solo-law.demo` / `Demo2026!`
+   - Submit button clicked
+   - Navigates to `/cms/dashboard` (async JWT auth, backend returns token)
+
+5. **CMS dashboard view**
+   - Sidebar nav visible (Dashboard selected)
+   - Stat cards rendered: "4 PRACTICE AREAS / 5 PUBLICATIONS / 3 LANGUAGES / 0 BRAND ASSETS"
+   - Color-coded sidebar with icons (Professional, institutional style)
+
+---
+
+## Quality Notes
+
+- **Images:** All 4 screenshots are valid 1280×720 PNG, no corruption, crisp text rendering
+- **Video:** WebM format, ~30s duration covering the complete hero-to-dashboard flow, smooth transitions
+- **No WebGPU AI panel capture:** Headless Playwright has no GPU, so AI Assist panel shows placeholder text ("Open any Practice Area..."). This is documented in deploy-test.out as W2. Acceptable for proposal media — the CMS interface is the primary focus, and the static panels are sufficient to show the design system
+- **Locale switching confirmed:** Both EN and ES screenshots verify i18n is wired and responsive
+- **Responsive design:** Screenshots at 1280×720 (desktop viewport) match the demo's target audience (law firm website)
+
+---
+
+## handoff
+- produced: 4 desktop hero+CMS screenshots (PNG 1280×720), 1 deterministic hero-flow video (WebM ~30s); all assets in `media-captures/` subdirectory
+- decisions: video captures EN→ES locale switch + CMS login flow (the core differentiator); WebGPU AI panel unavailable in headless but acceptable (static UI shown); screenshots at desktop 1280×720 (appropriate for law firm audience)
+- next needs: proposal-writer step embeds screenshot URLs and video link in cover letter, one-pager, and PPTX deck; link format `./demos/solo-law/` for internal references, absolute https://michaelwegter.com/demos/solo-law/ for external references
+- risks: none — all media assets valid, flow is deterministic and repeatable; demo is live and passing deploy-test

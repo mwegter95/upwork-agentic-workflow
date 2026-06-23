@@ -1,0 +1,80 @@
+# Orchestrator — auction-scraper
+
+## Run identity
+- slug: `auction-scraper`
+- demo path: `../michaelwegter.com/public/demos/auction-scraper/`
+- demo URL: `https://michaelwegter.com/demos/auction-scraper/`
+- work-sample route: `/work-samples/auction-scraper`
+- run dir: `upwork-runs/auction-scraper/`
+- feature richness: 10/10 (full-featured, production-quality, several real working features)
+
+## Startup brief (what this posting actually wants)
+Client runs a subscription service for collectibles and needs a **data-acquisition specialist** (Extract + Transform of ETL) to build/maintain Python scrapers across a set of auction-house sites with differing structures. They explicitly do NOT want a full-stack generalist — depth in scraping, not breadth.
+
+Core hard points the proposal must hit:
+- Reliable, respectful, periodic catalog discovery (detect new auctions well before sale date; per-lot churn is minor — periodic re-checks, not real-time polling).
+- Per-lot fields: lot number, title, description, estimates, images, sale dates, bidding deadlines.
+- Clean, consistent JSON across all sources + normalization/transform logic for messy catalog text.
+- Right tool per site: Playwright/Selenium for JS-heavy, requests/httpx + BeautifulSoup/lxml/parsel for static. Not married to any lib — show reasoning.
+- Pagination, rate-limiting, retries, error logging, per-scraper docs.
+- Respectful only: public pages, no login/credential/anti-bot circumvention; if a site is hardened, flag for API arrangement, do NOT defeat protection.
+- Must START reply with the word **BROCCOLI** (no quotes/asterisks). This is a screening trip-wire — the cover letter's first word MUST be BROCCOLI.
+- Proposal must link existing scraper code (GitHub/portfolio) and answer 3 questions: (1) a dynamic/JS-heavy site you scraped + how, (2) preferred multi-site stack + why, (3) how you rate-limit / avoid getting blocked.
+- Americas-only, startup budget (quote at/under their max rate), video interviews camera-on, fluent spoken+written English.
+
+Michael's angle to emphasize (from his notes):
+- **Owns the Python backend at U.S. Bank** (production ownership — credibility for reliability/maintainability).
+- Has used **Python, Puppeteer, and Playwright** to scrape sites before (direct match to required skills).
+
+## Demo concept (what to build — richness 10)
+An **Auction Scraper Console**: a frontend that runs a real multi-site auction scraper and streams normalized results in as they're processed.
+
+Required behaviors (from Michael's notes + posting):
+- ~3 auction sources, each with a different structure, each normalized into one consistent JSON schema (lot #, title, description, low/high estimate + currency, sale date, bidding deadline, image URL(s), source, source URL).
+- A **"Start Scraper" button** in the UI that kicks off the run; results **accumulate live** in the UI as each lot/source is processed (progress, per-source status, counts).
+- Show the **raw/normalized JSON** in the frontend (a JSON viewer/inspector alongside the rendered cards).
+- **Include photos** — render scraped item images (or screenshots) when available.
+- Demonstrate the respectful-scraping story in-product: rate-limit pacing, retries, per-source logs, and a "hardened site → flag for API" state.
+
+This maps directly to the posting's deliverable language ("clean, well-structured JSON with consistent fields across all sources" + live catalog discovery).
+
+### Backend decision (planner/researcher to confirm)
+Richness 10 + "run the scraper from the frontend and watch data accumulate" strongly favors a **real backend** doing actual scraping, not pure mock data. Recommended: a Flask blueprint in `mw-backend` (Playwright + BeautifulSoup are already installed per CLAUDE.md) that scrapes 2-3 **safe, scrape-friendly public** auction/catalog sources and **streams** progress (SSE or polling) to the frontend. This proves the real skill the client is buying. Fallbacks if live scraping is unsafe/flaky within budget:
+1. Scrape genuinely public, robots-permitted sources only; pick stable ones.
+2. If a target is hardened, demonstrate the **"flag for API" path** as a real product state (honors the posting's ethics rule — a feature, not a gap).
+3. Seed a cached/fixture snapshot the live run falls back to so the demo never shows an empty/broken state, while the live path still demonstrably works.
+Whoever builds the backend owns it end-to-end through a Flask bridge/blueprint and verifies the live endpoint (see CLAUDE.md backend rules).
+
+**Ethics guardrail for the whole pipeline:** only scrape public pages of permissive sources; respect robots/rate limits; never circumvent anti-bot. The demo must model the exact respectful behavior the client demands — getting this wrong contradicts the proposal.
+
+## Design direction (bespoke — NOT michaelwegter.com's look)
+Industry = auction houses / collectibles. Lean into an **auction-catalog / fine-art-house** aesthetic: serif display type (e.g. Cormorant/Playfair) + clean sans body (Inter/Source Sans), restrained ivory/charcoal palette with a single refined accent (deep oxblood, gilt/brass, or ink-navy), generous whitespace, catalog-card grid with lot numbers. Should feel like a premium auction catalog crossed with a clean engineering dashboard (the live scraper console). planner defines exact hex + fonts; demo-builder implements faithfully. One-pager + deck reuse this language.
+
+## Plan of attack (pipeline order)
+Recommended layout: `with-deploy` + `with-ceo` (real backend + live test).
+1. **intake** → `brief.json` (capture BROCCOLI rule, 3 application questions, ethics constraints, required fields, Americas/budget/video as explicit requirements).
+2. **planner** → `plan.md` (lock 3 sources, JSON schema, hero=live multi-site scrape+stream, supporting=JSON inspector + image rendering + respectful-scraping/log panel; prototype-vs-full = full; bespoke design tokens; req→feature matrix).
+3. **CEO** review of plan.
+4. **researcher** → `research.md` (pick 3 concrete scrape-friendly public auction/catalog sources + their structure/selectors, robots posture; confirm Playwright/bs4 in mw-backend; identify Flask blueprint to clone — `spotify_blueprint.py`; AppFrame reuse).
+5. **demo-builder** → build demo + Flask scraper blueprint (real scraping + stream), self-test build/load.
+6. **CEO** review of demo.
+7. **deploy** → push site + mw-backend; verify live.
+8. **deploy-test** → Playwright against live: click Start Scraper, confirm data accumulates, images render, JSON shows, no console errors.
+9. **media-capture** → screenshots + short recording of the Start→accumulate hero flow.
+10. **proposal-writer** → cover letter (FIRST WORD = BROCCOLI), one-pager, deck. Must: answer the 3 questions, link GitHub/scraper code, name+link the live demo, emphasize U.S. Bank Python backend ownership + Python/Puppeteer/Playwright scraping history, address ethics/rate-limiting explicitly, position as scraping specialist (not full-stack).
+11. **evaluator** → enforce hard gates.
+12. **prompt-optimizer**.
+
+## Quality guidance / gotchas
+- **BROCCOLI** is the single highest-risk omission — the cover letter's literal first word, no quotes/asterisks. Evaluator must check this.
+- Position Michael as a **scraping specialist**, NOT a full-stack dev (the posting rejects full-stack twice). Frame React/frontend demo as "I built the console to show the data; the scraping engine is the point."
+- Need a **real, linkable GitHub repo / scraper code** in the proposal. If none exists, the demo's scraper source should be published to a public repo so the proposal can link it (flag for proposal-writer/Michael).
+- No em/en dashes anywhere (hard rule).
+- Demo must show real scraped JSON + real images + live accumulation, or it doesn't prove the one skill being bought.
+- Respectful-scraping behavior must be demonstrated, not just claimed.
+
+## handoff
+- produced: run foundation — slug `auction-scraper`, startup brief, demo concept (live multi-site auction scraper console with Start button, accumulating results, JSON inspector, item photos), bespoke auction-catalog design direction, full pipeline plan-of-attack.
+- decisions: build FULL at richness 10 with a REAL mw-backend Flask scraper (Playwright/bs4 already installed) streaming results; scrape only public, permissive sources; demo must model respectful scraping incl. "flag hardened site for API" state.
+- next needs: intake to produce `brief.json` capturing BROCCOLI first-word rule, the 3 application questions, ethics/rate-limit constraints, required per-lot fields, Americas/budget/video, and Michael's U.S. Bank + Python/Puppeteer/Playwright angle as explicit graded items.
+- risks: live scraping flakiness/legality → restrict to scrape-friendly public sources + cached fallback; missing public GitHub scraper to link → may need to publish demo scraper source; full-stack misframing → keep specialist positioning.

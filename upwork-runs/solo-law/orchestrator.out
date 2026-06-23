@@ -1,0 +1,45 @@
+# Orchestrator — solo-law
+
+## Identity
+- slug: `solo-law`
+- run dir: `upwork-runs/solo-law/`
+- demo path: `../michaelwegter.com/public/demos/solo-law/` → live `https://michaelwegter.com/demos/solo-law/`, iframed at `/work-samples/solo-law`
+- feature richness: 10/10 (full, production-quality, several real working features)
+
+## Posting (compressed)
+Boutique/solo law practice wants a premium, institutional, editorial website with the polish of major international law firms. Required visual language: black-and-white editorial visuals, selective accent color, cinematic motion/video, refined typography, strong practice-area pages, publications/articles, multilingual support, disciplined brand system. CMS-driven, reusable content architecture, polished asset system. US freelancers only.
+
+## Michael's explicit build directives (HARD constraints — honor exactly)
+1. Full **multilingual** law site with a complete, working, easy-to-use **CMS + backend**.
+2. Frontend: **Angular + TypeScript + Tailwind CSS**.
+3. Backend: **Python, OOP** style.
+4. AI assist: **browser-GPU-based** tech (WebGPU / WebLLM in-browser) wrapped in a **smart prompting system**, made **agentic** with a **reflection step** then an **evaluation step using a rubric for response-quality** before it decides to answer or think more.
+
+## Stack decision (resolve against CLAUDE.md hosting model)
+- **Frontend = Angular** (TS + Tailwind). This needs a bundler, so this is NOT the default static demo. Scaffold an Angular app under `upwork-runs/solo-law/demo-src/`, build with `ng build --base-href /demos/solo-law/`, copy `dist/*` into `public/demos/solo-law/`. Angular's `index.html` becomes the demo entry; verify deep-link/base-href works inside `AppFrame`. demo-src is NOT committed to the site repo.
+- **Backend = Python OOP.** Implement as an mw-backend **Flask blueprint** (`solo_law_blueprint.py`), written in clean OOP (service/repository classes), registered in `server.py`, deployed by git push (auto-deploy ~30s). Use SQLite (`data/mw.db`) for CMS content + i18n strings + publications. This is path-1 (commit+push); no Surface runner / Node service needed.
+- **AI assist = in-browser WebGPU.** Use WebLLM (or transformers.js w/ WebGPU) running client-side in the Angular app so it is genuinely "browser GPU based." Wrap it in an agentic controller: draft → **reflection** pass → **evaluation against an explicit rubric** (e.g. relevance, legal-tone, factual-grounding, multilingual-correctness, brevity) → loop (think more) or emit. The AI assists the CMS editor (drafting/translating/refining practice-area + publication copy in the editorial brand voice). Provide graceful fallback when WebGPU is unavailable (feature-detect; show a clear non-blocking notice).
+
+## Hero + supporting features (cap: 1 hero + ≤2 supporting)
+- **Hero:** the agentic AI content assistant (browser WebGPU + smart prompting + reflection + rubric-eval loop) integrated into the CMS to draft/translate/refine site content.
+- **Supporting 1:** the working multilingual CMS — practice-area pages, publications/articles, brand asset system; editor UI that writes through the Python OOP backend; locale switcher on the public site driven by stored translations.
+- **Supporting 2:** the premium public-facing law site itself — editorial B/W visuals, selective accent, cinematic motion/video, refined typography, practice-area + publications templates rendered from CMS content.
+
+## Design direction (planner owns final spec — do NOT use michaelwegter.com's look)
+Bespoke "international law firm" system: monochrome editorial base (true black/ink + paper white + grayscale photography), ONE restrained accent (e.g. deep oxblood, brass/gold, or ink-blue — researcher to confirm vs real boutique-firm conventions), serif editorial display type (e.g. a refined transitional/Didone for headlines) paired with a clean grotesk for body, generous whitespace, ruled lines, large captioned imagery, slow cinematic motion. Serious, expensive, institutional. The proposal one-pager + deck inherit this language, not the portfolio's.
+
+## Plan of attack (pipeline order)
+intake → planner → ceo → researcher → demo-builder → deploy → deploy-test → media-capture → proposal-writer → evaluator (use with-deploy + with-ceo layouts). Backend (Flask blueprint) is path-1 deploy. Angular build step lives in demo-builder.
+
+## Quality guidance / risks to flag downstream
+- WebGPU availability is the biggest risk: it requires a recent Chromium and a capable GPU; deploy-test runs headless Playwright — ensure a deterministic fallback path so the live test passes even if WebGPU is unavailable in CI (test the agentic reflection/eval loop with a mockable model interface, not only the live WebLLM weights). First-load model download can be large/slow — lazy-load, gate behind explicit "Start AI assist," cache.
+- Angular + base-href `/demos/solo-law/` must be exact or assets 404 inside the iframe; verify in `AppFrame` before deploy.
+- Multilingual must be real (≥2 locales, e.g. EN + ES or EN + FR) with content stored/served by the backend, not hardcoded — every brief requirement (practice areas, publications, multilingual, brand system, motion/video) must be both demo-represented and named in the cover letter.
+- Writing rules: NO em/en dashes anywhere in any deliverable.
+- Seed a demo CMS editor account; record credentials for deploy-test login.
+
+## handoff
+- produced: orchestrator.out — slug `solo-law`, compressed brief, locked stack decisions (Angular+TS+Tailwind front / Python-OOP Flask blueprint back / in-browser WebGPU agentic AI w/ reflection+rubric-eval), hero+supporting features, design direction, pipeline order.
+- decisions: Angular = bundler build → dist copied to `public/demos/solo-law/` w/ `--base-href /demos/solo-law/`; backend = path-1 Flask blueprint (no Surface/Node); AI assist runs client-side via WebGPU/WebLLM with a mockable model interface for testability; bespoke monochrome-editorial law-firm design, not portfolio look; richness 10.
+- next needs: intake to formalize brief.json capturing every explicit requirement (CMS, multilingual, AI-assisted assets, editorial B/W + accent, motion/video, practice areas, publications, brand system) and Michael's 4 hard build directives.
+- risks: WebGPU/Playwright headless availability (need deterministic fallback + mockable model); Angular base-href asset paths in iframe; large first-load model weights; multilingual must be backend-driven and real; seed + record demo editor credentials.

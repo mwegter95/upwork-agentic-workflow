@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Michael Wegter | Data Acquisition Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory:   #F8F5EF;
+    --ivory-2: #EDE9E0;
+    --charcoal:#1A1814;
+    --mid:     #4A4540;
+    --muted:   #8A827A;
+    --oxblood: #6B1A1A;
+    --gilt:    #A8842C;
+    --rule:    #D4C8BB;
+    --card-bg: #FFFFFF;
+  }
+
+  html { font-size: 16px; }
+  body {
+    background: var(--ivory);
+    color: var(--charcoal);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Layout ────────────────────────────────────── */
+  .page { max-width: 900px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+
+  /* ─── Header ────────────────────────────────────── */
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gilt);
+    margin-bottom: 0.6rem;
+  }
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 3rem;
+    line-height: 1.1;
+    color: var(--charcoal);
+  }
+  .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--mid);
+    margin-top: 0.4rem;
+  }
+  .header-meta {
+    margin-top: 1.2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+  .header-meta a { color: var(--oxblood); text-decoration: none; }
+  .header-meta a:hover { text-decoration: underline; }
+
+  /* ─── Demo Hero ─────────────────────────────────── */
+  .demo-hero {
+    background: var(--charcoal);
+    border-radius: 4px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .demo-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(168,132,44,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .demo-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gilt);
+    margin-bottom: 0.5rem;
+  }
+  .demo-hero h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--ivory);
+    margin-bottom: 0.6rem;
+  }
+  .demo-hero p {
+    font-size: 0.9rem;
+    color: #BDB5AB;
+    line-height: 1.65;
+    max-width: 600px;
+    margin-bottom: 1.4rem;
+  }
+  .demo-btn {
+    display: inline-block;
+    background: var(--oxblood);
+    color: var(--ivory);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 0.65rem 1.4rem;
+    border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .demo-btn:hover { background: #882020; }
+  .demo-url {
+    display: inline-block;
+    margin-left: 1rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'Inter', monospace;
+  }
+
+  /* ─── Screenshot strip ──────────────────────────── */
+  .screenshot-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 1.5rem 0 2.5rem;
+  }
+  .screenshot-strip img {
+    width: 100%;
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+    display: block;
+  }
+  .screenshot-caption {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 0.3rem;
+  }
+
+  /* ─── Section ───────────────────────────────────── */
+  section { margin-bottom: 2.5rem; }
+  .section-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+  }
+  .section-num {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gilt);
+    white-space: nowrap;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 0.9rem;
+  }
+  p { color: var(--mid); font-size: 0.9rem; margin-bottom: 0.8rem; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ─── Pipeline grid ─────────────────────────────── */
+  .pipeline {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 1.2rem 0;
+  }
+  .pipeline-cell {
+    background: var(--card-bg);
+    padding: 1.2rem 1rem;
+  }
+  .cell-source {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--oxblood);
+    margin-bottom: 0.3rem;
+  }
+  .cell-tool {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 0.25rem;
+  }
+  .cell-note {
+    font-size: 0.73rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* ─── Q&A ────────────────────────────────────────── */
+  .qa-block {
+    border-left: 2px solid var(--gilt);
+    padding-left: 1.2rem;
+    margin-bottom: 1.4rem;
+  }
+  .qa-q {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gilt);
+    margin-bottom: 0.4rem;
+  }
+  .qa-a {
+    font-size: 0.88rem;
+    color: var(--mid);
+    line-height: 1.65;
+  }
+
+  /* ─── Proof grid ─────────────────────────────────── */
+  .proof-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .proof-card {
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1.1rem 1.2rem;
+  }
+  .proof-card-label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gilt);
+    margin-bottom: 0.4rem;
+  }
+  .proof-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 0.35rem;
+  }
+  .proof-card-body {
+    font-size: 0.8rem;
+    color: var(--mid);
+    line-height: 1.5;
+  }
+
+  /* ─── Skills row ─────────────────────────────────── */
+  .skills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.9rem;
+  }
+  .skill-tag {
+    background: var(--ivory-2);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--mid);
+    padding: 0.2rem 0.55rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* ─── Footer ─────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    margin-top: 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .footer-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+  .footer-links {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.78rem;
+  }
+  .footer-links a { color: var(--oxblood); text-decoration: none; }
+  .footer-links a:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 2.2rem; }
+    .pipeline { grid-template-columns: 1fr; }
+    .proof-grid { grid-template-columns: 1fr; }
+    .screenshot-strip { grid-template-columns: 1fr 1fr; }
+    .demo-url { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header>
+    <div class="badge">Proposal &mdash; Data Acquisition Engineer</div>
+    <h1>Michael Wegter</h1>
+    <p class="subtitle">Python Backend Engineer &amp; Web Scraping Specialist</p>
+    <div class="header-meta">
+      <span>Minneapolis, MN &mdash; USA</span>
+      <a href="https://github.com/mwegter95">github.com/mwegter95</a>
+      <a href="https://michaelwegter.com">michaelwegter.com</a>
+    </div>
+  </header>
+
+  <!-- Demo Hero -->
+  <div class="demo-hero">
+    <div class="demo-label">Live Working Demo</div>
+    <h2>Auction Scraper Console</h2>
+    <p>
+      Three real auction sources (Leland Little, Bonhams, Heritage Auctions), each requiring a
+      different tool, each normalized into one consistent JSON schema. Click Run Scraper and watch
+      lot cards stream in live with images, estimates, and sale dates. Raw and normalized JSON
+      inspectable in-panel. Rate-limit pacing, retries, and hardened-site flagging logged in real
+      time.
+    </p>
+    <a class="demo-btn" href="https://michaelwegter.com/demos/auction-scraper/" target="_blank">Open Live Demo</a>
+    <span class="demo-url">michaelwegter.com/demos/auction-scraper/</span>
+  </div>
+
+  <!-- Screenshots -->
+  <div class="screenshot-strip">
+    <div>
+      <img src="media/01-initial.png" alt="Demo initial state" />
+      <div class="screenshot-caption">Initial load</div>
+    </div>
+    <div>
+      <img src="media/03-mid-stream.png" alt="Lots streaming in" />
+      <div class="screenshot-caption">Live lot accumulation</div>
+    </div>
+    <div>
+      <img src="media/05-export-json.png" alt="JSON export" />
+      <div class="screenshot-caption">Normalized JSON export</div>
+    </div>
+  </div>
+
+  <!-- Pipeline Architecture -->
+  <section>
+    <div class="section-rule">
+      <span class="section-num">01</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>Tool judgment across three source types</h2>
+    <p>
+      A multi-site scraping pipeline has no universal right tool. The right call is picking the
+      lightest approach that works reliably for each target, and documenting why.
+    </p>
+    <div class="pipeline">
+      <div class="pipeline-cell">
+        <div class="cell-source">Leland Little</div>
+        <div class="cell-tool">requests + BeautifulSoup</div>
+        <div class="cell-note">Static HTML, open robots.txt. Lighter tool, kinder pacing, no browser overhead.</div>
+      </div>
+      <div class="pipeline-cell">
+        <div class="cell-source">Bonhams</div>
+        <div class="cell-tool">Playwright + /_next/data</div>
+        <div class="cell-note">Next.js app. Intercept the hydration JSON endpoint rather than parse rendered DOM. Faster and more stable.</div>
+      </div>
+      <div class="pipeline-cell">
+        <div class="cell-source">Heritage Auctions</div>
+        <div class="cell-tool">Playwright + JSON-LD / flagged</div>
+        <div class="cell-note">Strong anti-scraping. Attempt JSON-LD extraction; if blocked, emit flagged_for_api and serve seeded fallback rather than defeat protection.</div>
+      </div>
+    </div>
+    <p style="margin-top: 0.8rem;">
+      All three sources produce the same output schema: lot_number, title, description,
+      estimate_low, estimate_high, estimate_currency, sale_date, bidding_deadline, image_urls,
+      source, source_url.
+    </p>
+  </section>
+
+  <!-- Screening Q&A -->
+  <section>
+    <div class="section-rule">
+      <span class="section-num">02</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>Answers to your three questions</h2>
+
+    <div class="qa-block">
+      <div class="qa-q">1. A JS-heavy site you scraped</div>
+      <div class="qa-a">
+        Bonhams is a Next.js app. Lot data is not in the HTML source; it is hydrated client-side.
+        My approach: launch headless Chromium via Playwright, intercept the <code>/_next/data</code>
+        endpoint that Next.js calls during hydration, and extract the structured payload directly
+        from that JSON response rather than parsing the rendered DOM. Faster, more stable, and
+        exposes less surface area to anti-scraping measures. DOM-based extraction is the fallback
+        when the data endpoint is not consistently structured.
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">2. Preferred stack for a multi-site pipeline</div>
+      <div class="qa-a">
+        <code>requests</code> + <code>BeautifulSoup</code> for static pages (faster, gentler on the
+        target). Playwright for JS-rendered pages (async API, reliable in headless environments).
+        Plain Python with <code>asyncio</code> for pipeline orchestration, with per-source
+        crawl-delay constants and exponential backoff. I skip Scrapy for bespoke multi-site work:
+        its abstraction layer fights you when each site needs a meaningfully different extraction
+        strategy. The real skill is reading each site and choosing the lightest tool that works
+        reliably, then documenting that decision so the next person understands the reasoning.
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q">3. Rate-limiting and avoiding blocks</div>
+      <div class="qa-a">
+        Each scraper has a named crawl-delay constant declared at the top of the file (auditable,
+        not buried in logic). Inter-request intervals are randomized slightly to avoid
+        fingerprinting. <code>Crawl-delay</code> in <code>robots.txt</code> is respected. Retries
+        use exponential backoff with jitter. If a site returns repeated 403s or 429s, I treat that
+        as a signal to flag it for an API arrangement, not a problem to overcome. I have never
+        caused a client to get blocked.
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Michael -->
+  <section>
+    <div class="section-rule">
+      <span class="section-num">03</span>
+      <div class="section-line"></div>
+    </div>
+    <h2>Relevant background</h2>
+    <p>
+      I am not a full-stack generalist applying to every role I see. This posting matches the work
+      I actually do: Python backend ownership, data pipeline reliability, and web scraping of sites
+      that were not built to be scraped.
+    </p>
+
+    <div class="proof-grid">
+      <div class="proof-card">
+        <div class="proof-card-label">Production Python Ownership</div>
+        <div class="proof-card-title">U.S. Bank (via Turnberry): TDAAS</div>
+        <div class="proof-card-body">
+          Became sole developer and SME on a 600-user internal platform within two months of
+          joining. Roughly 60,000 lines of production code across Python backend, React frontend,
+          and SQL data layer. Led the six-month Azure Cloud migration as the project's main
+          technical rep. If something broke, I fixed it, often within ten minutes.
+        </div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-card-label">Scraping and Automation</div>
+        <div class="proof-card-title">Playwright, Puppeteer, Python</div>
+        <div class="proof-card-body">
+          Used Python, Puppeteer, and Playwright to scrape and automate JS-heavy websites in
+          production contexts. Understand the difference between a site that is genuinely hardened
+          and one that just needs the right headers. Know when to stop and flag for an API
+          arrangement rather than escalate countermeasures.
+        </div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-card-label">Communication</div>
+        <div class="proof-card-title">Native English, US-based</div>
+        <div class="proof-card-body">
+          Minneapolis, Minnesota. English is my first language. Comfortable on video with camera
+          on. Have worked in close Slack and video-call environments at every role. Direct,
+          precise communicator, not someone who sends a wall of text when a sentence will do.
+        </div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-card-label">Pipeline Reliability Mindset</div>
+        <div class="proof-card-title">Fails gracefully, logs clearly</div>
+        <div class="proof-card-body">
+          Production ownership teaches you that a pipeline that fails silently is worse than one
+          that does not run. Retries, error logging, per-source status, and clear failure states
+          are built-in defaults, not afterthoughts. The demo's rate-limit telemetry panel shows
+          this philosophy in practice.
+        </div>
+      </div>
+    </div>
+
+    <div class="skills-row">
+      <span class="skill-tag">Python</span>
+      <span class="skill-tag">Playwright</span>
+      <span class="skill-tag">Puppeteer</span>
+      <span class="skill-tag">BeautifulSoup</span>
+      <span class="skill-tag">requests / httpx</span>
+      <span class="skill-tag">asyncio</span>
+      <span class="skill-tag">JSON normalization</span>
+      <span class="skill-tag">ETL pipelines</span>
+      <span class="skill-tag">Flask</span>
+      <span class="skill-tag">SQL</span>
+      <span class="skill-tag">Azure</span>
+      <span class="skill-tag">React</span>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-name">Michael Wegter</div>
+    <div class="footer-links">
+      <a href="https://github.com/mwegter95">GitHub</a>
+      <a href="https://michaelwegter.com">Portfolio</a>
+      <a href="https://michaelwegter.com/demos/auction-scraper/">Live Demo</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

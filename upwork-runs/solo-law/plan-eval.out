@@ -1,0 +1,33 @@
+# Plan Eval (Rubric) — solo-law
+
+## Rubric Scores
+
+| Axis | Score | Notes |
+|------|-------|-------|
+| All requirements covered | 9/10 | All 8 required features mapped with traceability matrix; 3 nth-tier features assigned to deck. Minor: FR locale = UI strings only but nav shows [EN/ES/FR] toggle — slight mismatch with "multilingual" expectation unless explicitly scoped (it is, in plan). Contact form listed but no backend endpoint (static only) — acceptable given posting. |
+| Technology choices | 9/10 | Angular 18+ standalone / TS / Tailwind ✓; Flask Python OOP (7 classes) ✓; WebLLM 0.2.84 + WebGPU ✓; ngx-translate v18 Signals ✓; SQLite WAL ✓. One real risk: plan shows `import * as webllm from "https://esm.run/@mlc-ai/web-llm"` — ESM CDN URL is not resolvable by Angular CLI (Webpack/esbuild). The plan also references a separate `webllm-worker.js` which IS the correct pattern (workers load ESM via `importScripts` or dynamic import). This needs demo-builder to implement the CDN load inside the WebWorker only, not in the TypeScript service file directly. |
+| Testing approach defined | 6/10 | Playwright WebGPU flags documented; mock fallback behavior defined for CI. But no test script outline, no assertion list, no component test plan. For richness=10 this is thin — deploy-test step will need to define assertions from scratch. Acceptable since deploy-test is a later node, but demo-builder should scaffold a minimal `e2e/` config. |
+| Scope feasible at richness 10 | 8/10 | Ambitious but structured: 8 public routes + 8 CMS routes, 5 services, 7 OOP backend classes, 18 API endpoints, agentic AI loop, motion system, bilingual seed data. 12-file budget is tight but plan groups smartly (e.g. cms/ directory = single budget line covering all CMS pages). Primary risk: WebLLM first-load model (~1–3GB) requires explicit "Load AI" gate — plan correctly specifies this. Build time for Angular + Tailwind + full CMS is real but within 3-min cap with ng build optimization. |
+| Design direction fit for industry | 10/10 | #0D0D0D bg / #F5F3EF warm white / #C9A96E antique gold palette is precision-calibrated for elite boutique law. Cormorant Garamond (Didone/transitional) + Inter: editorial institutional. Motion vocabulary (stillness, no bounce/spring) is correct. Gibson Dunn / Quinn Emanuel nav + hero + publications patterns confirmed. No portfolio palette bleed. |
+
+**Weighted overall: 42/50 (84%) — PASS threshold: ≥70%**
+
+## Issues (non-blocking — pass to demo-builder as constraints)
+
+1. **WebLLM CDN import in Angular build**: `import * as webllm from "https://esm.run/@mlc-ai/web-llm"` will not resolve in the Angular CLI bundle. CDN import MUST live inside `webllm-worker.js` only (not in `ai-agent.service.ts`). Service communicates with worker via `postMessage`. Demo-builder must implement this correctly.
+
+2. **`webllm-worker.js` missing from file budget**: This is a required 13th file. Not a budget violation (budget says "meaningful hand-crafted files" and it is one), just needs to be acknowledged.
+
+3. **FR locale scope**: French = UI strings only (`assets/i18n/fr.json`), no backend content rows. Nav toggle shows EN/ES/FR but clicking FR will not switch practice-area or publication content — only UI chrome. Demo-builder must show a "Content not yet available in French" graceful state, or scope FR toggle to UI-only with a visible note.
+
+4. **Seed email clarification**: `editor@soloaw.demo` flagged as likely typo in plan-gate; plan-gate defers fix to demo-builder. Demo-builder should standardize to `editor@solodemo.law` or `admin@solo-law.demo` and document final credential.
+
+5. **Testing baseline**: No `e2e/` scaffold or assertion list provided. Deploy-test node will need to write tests cold. Recommend demo-builder creates `e2e/playwright.config.ts` stub with the documented WebGPU flags so deploy-test can add assertions without setup overhead.
+
+## handoff
+- produced: plan-eval.out — rubric check 84% (42/50), VERDICT pass; 5 non-blocking issues passed to demo-builder as constraints
+- decisions: plan approved as-is; no planner re-pass needed; demo-builder must address WebLLM CDN import pattern (worker-only), FR locale graceful state, seed credential finalization, and e2e scaffold stub
+- next_needs: CEO review of plan quality, then demo-builder executes 9-step build sequence with above 5 constraints baked in
+- risks: WebLLM ESM CDN import in Angular build is the highest implementation risk — if demo-builder gets this wrong the AI panel will not load; mock fallback must cover this gracefully
+
+VERDICT: pass

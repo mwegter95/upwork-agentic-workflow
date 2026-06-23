@@ -1,0 +1,48 @@
+# Plan Gate — solo-law (pass 2)
+
+## Review
+
+**Status declared by planner:** READY (all 6 research questions answered and integrated)
+
+### Criteria checks
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| Unknowns / flagged gaps | NONE | Plan explicitly closes all 6 Qs — prior fail was due to open Q1–Q6; all now answered |
+| Angular 18+ / TS / Tailwind | ✓ | Scaffold, config, tailwind.config.js tokens fully specified |
+| Flask Python OOP backend | ✓ | 7-class OOP map, full DB schema, all API endpoints, blueprint prefix `/solo-law` |
+| WebGPU-based AI (browser-GPU) | ✓ | WebLLM 0.2.84 via esm.run CDN, WebWorkerMLCEngine, GPU detect + mock fallback |
+| Agentic loop (reflect + eval + rubric) | ✓ | 4-step DRAFT→REFLECT→EVAL→DECIDE; 5-axis rubric, pass≥7.0, max 2 iterations |
+| Multilingual CMS-driven | ✓ | ngx-translate v18 Signals (UI strings); backend API per-locale for content; EN/ES/FR |
+| Full CMS | ✓ | JWT-protected CRUD — practice areas, publications, brand assets, i18n strings |
+| Design system | ✓ | Palette locked (#C9A96E gold / #0D0D0D bg / #F5F3EF text), Cormorant/Inter, motion vocab |
+| Feature traceability | ✓ | All 8 required features mapped; nth-tier features assigned to deck |
+| File budget | ✓ | 12 meaningful files, within cap |
+| Build sequence | ✓ | 9-step ordered sequence for demo-builder |
+| Risks & mitigations | ✓ | WebGPU headless, base-href, model VRAM, SQLite WAL, ngx-translate version all addressed |
+| Seed credentials | ✓ | editor@soloaw.demo / Demo2026! (minor typo in domain — demo-builder should standardize) |
+
+### Research integration confirmed (Q1–Q6)
+
+| Q | Status |
+|---|--------|
+| Q1 accent color | Resolved: `#C9A96E` antique gold, full palette locked |
+| Q2 WebLLM model/CDN | Resolved: `@mlc-ai/web-llm` 0.2.84, `Phi-3.5-mini-instruct-q4f16_1-MLC` (fallback `Llama-3.2-1B`) |
+| Q3 Angular i18n | Resolved: ngx-translate v18 Signals, `provideTranslateService` + HttpLoader |
+| Q4 Playwright WebGPU flags | Resolved: flags documented; CI without GPU auto-hits mock fallback |
+| Q5 UX reference | Resolved: Gibson Dunn / Quinn Emanuel patterns confirmed; nav, hero, PA, publications all specified |
+| Q6 AI lib decision | Resolved: WebLLM chosen over transformers.js; rationale documented |
+
+### Minor issues (non-blocking, no researcher re-pass needed)
+
+1. File budget item #2 lists `app.module.ts` (NgModule) while handoff says "Angular 18 standalone" — demo-builder uses standalone; budget is illustrative.
+2. DB locale field `en|es` while FR is in `assets/i18n/` — FR = UI strings only, not DB content rows; internally consistent.
+3. Seed email `editor@soloaw.demo` likely a typo; demo-builder sets actual credential.
+
+## handoff
+- produced: plan-gate.out (pass 2) — plan approved; all 6 research Qs closed, all required tech specified (Angular 18+/TS/Tailwind, Flask OOP, WebGPU/WebLLM agentic 4-step loop, ngx-translate multilingual, full CMS), design system locked, traceability complete
+- decisions: plan is complete and ready to build; no researcher re-pass required
+- next_needs: demo-builder follows 9-step build sequence; use Angular 18 standalone components (not NgModule); note FR = UI strings only; confirm/fix seed email domain; AI mock fallback must render cleanly (no GPU in CI)
+- risks: WebGPU mock fallback must be verified in deploy-test; Angular standalone vs NgModule wording mismatch is cosmetic, not architectural
+
+VERDICT: pass

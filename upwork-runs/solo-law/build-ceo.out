@@ -1,0 +1,27 @@
+# CEO (Build) review — solo-law
+
+## What I verified (not assumed)
+- **Build artifacts present + correct base href.** `public/demos/solo-law/index.html` has `<base href="/demos/solo-law/">`; full Angular chunk set, styles, `webllm-worker.js`, i18n assets (`en/es/fr.json`) all shipped.
+- **Headless load (Playwright, http-server).** Home returns **200**, title renders, hero `H1 "Sophisticated Counsel for Complex Matters"` paints, **0 console/page errors on first paint**.
+- **Client-side routing + CMS.** Nav to `/cms/login` works; login form renders (email + password inputs detected). Locale switcher (ES) present and clickable.
+- **Registry.** `workSamples.js` entry id 14, slug `solo-law`, href `BASE_URL + demos/solo-law/`, color `#C9A96E`, ⚖️ icon — confirmed.
+- **Backend code valid.** `mw-backend/solo_law_blueprint.py` (39 KB) parses cleanly (`ast.parse` OK); registered in `server.py` (lines 337-338).
+- **Flask live + healthy.** `api.michaelwegter.com/health` → `{"status":"ok"}` (Flask-shaped). `/solo-law/health` → 404 (expected: blueprint uncommitted, deploy step's job).
+
+## Feature richness vs 10/10 target — meets it
+Hits the exact requested stack and AI spec: Angular 19 + TS + Tailwind; Python OOP backend (7 model classes); full JWT CMS (CRUD for practice areas, publications, brand assets, i18n overrides); multilingual EN/ES/FR UI + bilingual content; editorial B&W design; **agentic AI assistant matching the brief precisely** — browser-GPU WebLLM with Draft → Reflect → Eval-rubric loop (legal_tone/relevance/factual_grounding/brevity, iterate until >=7.0 or 3 passes) and mock fallback when WebGPU absent. This is genuine 10/10 scope.
+
+## Problems / notes (none blocking)
+- **CORS errors in local test are expected artifacts, not defects.** Demo calls production `api.michaelwegter.com/solo-law/*`; from `localhost:8199` origin these are CORS-blocked AND the endpoint is 404 pre-deploy. Both resolve once `deploy` pushes the blueprint (Surface auto-deploy ~30s) and requests originate from the allowed `michaelwegter.com` origin. **Deploy must verify `/solo-law/health` returns 200 and that deployed-origin CORS allows the call** — this is the one live-path risk to confirm in deploy-test.
+- **Seed idempotency** (`pub.pop("practice_area_slug")` mutating list) is guarded by the empty-table check; fine for first deploy. Re-seed on a populated DB would no-op anyway.
+- http-server SPA deep-link (direct `/cms/login`) 404s without fallback — irrelevant on GH Pages (`404.html`) and inside `AppFrame` (loads root, client-routes). Not a fix.
+
+No loop-back needed; foundation (plan + research) was sufficient for the build. Builder delivered to spec.
+
+## handoff
+- produced: build-ceo verdict — pass; demo verified loading 200 with 0 first-paint errors, CMS + locale switch functional, blueprint valid + registered
+- decisions: CORS/404 against solo-law API are pre-deploy artifacts, not defects; accepted
+- next needs: `deploy` must push BOTH `mw-backend` (server.py + solo_law_blueprint.py) and `michaelwegter.com`, then confirm `api.michaelwegter.com/solo-law/health` → 200 and deployed-origin CORS works; `deploy-test` must exercise CMS login (editor@solo-law.demo / Demo2026!) + live content fetch
+- risks: only live-path risk is CORS/origin on the deployed call and backend reachability — both must be re-verified post-push, not assumed
+
+VERDICT: pass

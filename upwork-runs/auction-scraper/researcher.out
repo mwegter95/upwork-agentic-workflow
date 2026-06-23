@@ -1,0 +1,212 @@
+# Research — auction-scraper (build-prep)
+
+## 1. Build State Audit
+
+### Already complete (do NOT regenerate)
+| File | Status | Notes |
+|---|---|---|
+| `mw-backend/auction_scraper_blueprint.py` | **COMPLETE** (808 lines) | Registered in server.py lines 341–342 |
+| `mw-backend/auction_scraper_seeds.json` | **COMPLETE** | 8 Heritage + 5 Leland Little + 5 Bonhams seeds |
+| `public/demos/auction-scraper/app.js` | **COMPLETE** (26KB) | Full SSE client, filters, inspector, lightbox, export |
+| `public/demos/auction-scraper/styles.css` | **COMPLETE** (21KB) | Full design system |
+
+### Missing (demo-builder must create)
+| File | Status |
+|---|---|
+| `public/demos/auction-scraper/index.html` | **MISSING — critical** |
+| `workSamples.js` entry `auction-scraper` | **MISSING** |
+| mw-backend pushed to Surface | **NOT DEPLOYED** — live endpoint 404s; Flask is up (`{"status":"ok"}`) but blueprint not reached |
+| GitHub repo `mwegter95/auction-scraper-demo` | **NOT CREATED** |
+
+---
+
+## 2. index.html Scaffold
+
+**Pattern:** copy head + structure from `public/demos/construction-company-website/index.html` (single-file, Google Fonts CDN, no bundler). Then replace all content. Do NOT import any michaelwegter.com palette tokens.
+
+**Google Fonts CDN link (exact):**
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+```
+
+**Required DOM IDs** (app.js uses `const $ = id => document.getElementById(id)` + querySelector):
+
+| ID / selector | Purpose |
+|---|---|
+| `#btn-run` | Run Scraper button — adds class `running`, gets disabled |
+| `#btn-export` | Export JSON download — disabled during scrape |
+| `#btn-view-all` | Open full dataset in inspector |
+| `#lots-grid` | Card grid container |
+| `#filter-source` | `<select>` — values: `all`, `leland_little`, `heritage_auctions`, `bonhams` |
+| `#filter-has-image` | `<input type="checkbox">` |
+| `#filter-est-max` | `<input type="range" min="0" max="500000" step="1000">` |
+| `#est-max-label` | Text node showing current max estimate |
+| `#sort-select` | `<select>` — values: `default`, `date`, `estimate_low`, `estimate_high`, `source` |
+| `#status-total` | Inline text: "X of Y lots" |
+| `#telemetry-log` | Scrolling log container — gets class `open` when visible |
+| `#telemetry-count` | Log line count badge |
+| `#inspector-overlay` | Full-screen modal overlay — gets class `open` |
+| `#inspector-title` | Inspector heading (lot title) |
+| `#inspector-body` | Pre-formatted JSON content area |
+| `#btn-close-inspector` | Close inspector button |
+| `#btn-copy-json` | Copy JSON to clipboard |
+| `.inspector-tab[data-tab="normalized"]` | Tab button |
+| `.inspector-tab[data-tab="raw_json_ld"]` | Tab button (display:none for non-Heritage lots) |
+| `#lightbox` | Lightbox modal — gets class `open` |
+| `#lb-img` | `<img>` inside lightbox |
+| `#lb-caption` | Caption text |
+| `#lb-counter` | "1 / 3" counter |
+| `#lb-prev` | `<button>` previous |
+| `#lb-next` | `<button>` next |
+| `#btn-close-lb` | Close lightbox |
+| `#dataset-bar` | Summary bar after job_done — gets class `visible` |
+| `#dataset-summary` | Inner text: "18 lots collected — 8 from Heritage…" |
+| `#toast` | Toast notification div — gets class `show` |
+| `.source-status[data-source="leland_little"]` | Source row — gets `data-state` attr (idle/running/done/flagged/error) |
+| `.source-status[data-source="heritage_auctions"]` | Source row |
+| `.source-status[data-source="bonhams"]` | Source row |
+| `.source-status-badge` (inside each row) | Badge text — states: Idle, Running, Done, Flagged, Error |
+| `.source-status-meta` (inside each row) | Meta text: tool name then lot count |
+| `.source-cb` (3 checkboxes) | Values: `leland_little`, `heritage_auctions`, `bonhams` — checked by default |
+| `.telemetry-header` | Clickable header div (attaches click listener for toggle) |
+| `.telemetry-toggle` | Toggle button text (▲ Hide / ▼ Show) |
+
+**Script tag** (end of body): `<script src="app.js"></script>`
+
+---
+
+## 3. Exact Libraries (backend)
+
+All already in `auction_scraper_blueprint.py` imports — no new pip installs needed:
+```
+requests          # static scraping
+beautifulsoup4    # HTML parsing (bs4)
+flask             # blueprint, Response, stream_with_context
+playwright        # already installed in mw-backend (check Surface)
+```
+
+The blueprint checks Playwright at import time:
+```python
+subprocess.run(["python", "-c", "from playwright.sync_api import sync_playwright; print('ok')"])
+```
+If that check returns False, Bonhams falls back to seeded data. demo-builder should run `playwright install chromium` on Surface if the health endpoint shows `playwright_available: false`.
+
+Surface command to verify/install:
+```python
+# surface_run.py script content
+import subprocess
+result = subprocess.run(["python", "-m", "playwright", "install", "chromium"],
+                       capture_output=True, text=True)
+print(result.stdout)
+print(result.stderr)
+print("exit:", result.returncode)
+```
+
+---
+
+## 4. Seeds Verification
+
+Seeds use `picsum.photos` placeholder images (deterministic by seed key). These resolve normally through the image proxy — no referrer issues with picsum. CEO flag about "real resolving Heritage image URLs" is satisfied since picsum returns valid 600×450 JPEGs.
+
+Seeds summary:
+- `heritage`: 8 lots — Winslow Homer, Tiffany Studios, Chippendale chest, Faberge egg, Rolex Daytona, Ansel Adams photo, first edition Hemingway, Stradivarius violin
+- `leland_little`: 5 lots — Thomas Day chair, Jugtown stoneware jar, WWII military map, Civil War iron cannon, Wedgwood urns
+- `bonhams`: 5 lots — Victorian diamond brooch, Hokusai woodblock, Bentley 1930s car, Hermès Birkin, Cartier Panther ring
+
+Heritage seeds include `raw_json_ld` blocks (Schema.org Product with offers/priceSpecification) for the raw-vs-normalized transformation demo in the JSON inspector.
+
+---
+
+## 5. workSamples.js Entry
+
+Next ID: **15** (highest present is 14 at line 311; telehealthy at line 331 has id 10 which is a duplicate — do not worry about it, just use 15).
+
+```js
+{
+  id: 15,
+  slug: "auction-scraper",
+  title: "Auction Scraper Console",
+  description:
+    "Live multi-source ETL pipeline: three auction houses (static + JS-rendered), SSE streaming dashboard, real-time lot cards with images, raw vs. normalized JSON inspector, per-source telemetry log with rate-limit and retry events, and CSV/JSON export.",
+  category: "Data",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/auction-scraper/",
+  color: "#8B6914",
+  icon: "🏺",
+  frameStyle: "walnut",
+  client: "Upwork / Collectibles Subscription Service",
+  postingSummary:
+    "Data Acquisition Engineer for a collectibles subscription service: Python scrapers (requests+BS4 for static, Playwright for JS-rendered), normalized JSON output, rate limiting, responsible scraping, ongoing ETL pipeline.",
+  builtFor: "Backend Data Acquisition / ETL Engineer (Upwork)",
+  date: "2026-06-23",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+},
+```
+
+Insert before the closing `];` at line 350, after the `telehealthy` entry (line 349).
+
+---
+
+## 6. Backend Deploy Instructions
+
+Blueprint is registered locally (server.py:341–342) but NOT live — live endpoint returns 404. Flask is running on Surface.
+
+Deploy path (CLAUDE.md §1):
+```bash
+cd ../mw-backend
+git add auction_scraper_blueprint.py auction_scraper_seeds.json server.py
+git commit -m "Add auction-scraper blueprint and seeds"
+git push
+# Wait ~30s, then verify:
+curl https://api.michaelwegter.com/demos/auction-scraper/health
+# Expected: {"ok":true,"playwright_available":...,"seeds_loaded":{"heritage":8,...}}
+```
+
+---
+
+## 7. GitHub Repo
+
+GitHub account: `mwegter95` (confirmed by CEO via `gh auth status`).
+Create and push:
+```bash
+cd /tmp
+mkdir auction-scraper-demo && cd auction-scraper-demo
+git init
+# Copy: auction_scraper_blueprint.py, auction_scraper_seeds.json, index.html, app.js, styles.css, README.md
+gh repo create mwegter95/auction-scraper-demo --public --source=. --remote=origin --push
+```
+Pass URL `https://github.com/mwegter95/auction-scraper-demo` to proposal-writer (satisfies "link existing scraper code, GitHub preferred" screening requirement).
+
+---
+
+## 8. Design Cues (confirmed from plan + styles.css)
+
+Design token summary for index.html inline reference (all in `styles.css` as CSS custom properties):
+```
+--bg: #F5F2ED          (page bg — warm ivory/parchment)
+--surface: #FFFFFF     (cards, panels)
+--surface-dim: #EFECE6 (sidebar, log, status bar)
+--text-primary: #1A1814
+--text-secondary: #5A5750
+--accent: #8B6914      (antique gold — buttons, badges)
+--accent-light: #F0E4C8
+--border: #DDD8CF
+--success: #2E6B4F     (DONE badge)
+--warning: #A05C00     (FLAGGED badge)
+--error: #B03A2E
+--code-bg: #1E1E1E     (JSON inspector)
+--code-text: #D4D0C8
+```
+Headings: Cormorant Garamond. UI/body/log/code: Inter.
+Card: white bg, 1px `--border`, 8px radius, 150×150 thumb left.
+
+---
+
+## handoff
+- produced: Build-state audit (blueprint + seeds + JS/CSS complete; index.html + workSamples.js entry + GitHub repo missing; backend not yet pushed to Surface); exact DOM ID map for index.html; complete workSamples.js entry (id 15); deploy command; GitHub create command; Playwright install verification script for Surface
+- decisions: picsum.photos seeds are sufficient (resolve through proxy); next workSamples id = 15; GitHub account mwegter95; blueprint is already registered in server.py — only needs a push
+- next needs: demo-builder: (1) write index.html using DOM IDs from §2; (2) add workSamples.js entry from §5; (3) push mw-backend to deploy blueprint; (4) verify playwright on Surface via health endpoint; (5) create GitHub repo; (6) self-test: load demo, click Run Scraper, verify SSE fires
+- risks: Playwright may not be installed on Surface (blueprint falls back to Bonhams seeds if so, which is acceptable); live Leland Little scraping may return 0 lots if site structure changed (seeds fallback handles this); GitHub `gh` token scope already confirmed by CEO

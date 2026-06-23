@@ -1,0 +1,123 @@
+{
+  "metadata": {
+    "slug": "auction-scraper",
+    "client": "Subscription collectibles startup",
+    "role": "Data Acquisition Engineer (ETL Extract & Transform specialist)",
+    "feature_richness": 10,
+    "date_posted": "yesterday",
+    "location_scope": "Americas only (South America, Brazil, US, Canada)",
+    "budget_constraint": "startup rates (quote at or below their max posted hourly rate)"
+  },
+  "client_core_need": {
+    "summary": "Reliable data pipeline: extract auction listings from defined auction-house websites, normalize into consistent structure, keep current. Long-term ongoing project.",
+    "specialist_positioning": "Data acquisition SPECIALIST (Extract + Transform), NOT full-stack generalist. Depth in scraping, not breadth. Must emphasize scraping expertise, not full-stack.",
+    "focus_area": "Extract and Transform stages of ETL. Getting structured data reliably out of websites not built to be scraped, keeping it current."
+  },
+  "core_responsibilities": {
+    "catalog_discovery": "Detect when new auctions are posted and capture well before sale date. Reliable periodic re-checks are priority, NOT high-frequency real-time polling. Per-lot churn is minor.",
+    "data_extraction": "Extract lot data: lot number, title, description, estimates, images, sale dates, bidding deadlines from auction-house websites with different structures.",
+    "tool_selection": "Use appropriate tools per site: Playwright/Selenium for JS-heavy/dynamic pages, lighter approaches (requests/httpx + BeautifulSoup/lxml/parsel) for static pages. Show judgment, not married to specific library.",
+    "output": "Clean, well-structured JSON with consistent fields across all sources.",
+    "transformation": "Normalization logic that converts inconsistent catalog text into standard fields.",
+    "operations": "Handle pagination, responsible rate-limiting, retries, error logging, per-scraper documentation.",
+    "respectful_scraping_mandatory": "Public pages ONLY. No logging in, no credentials, no circumvention of access controls. Built-in rate-limiting + polite request pacing mandatory. If site has strong anti-scraping protection, flag for API arrangement—DO NOT defeat protection."
+  },
+  "required_skills": {
+    "python_strong": "Required. Firm requirement.",
+    "web_scraping_proven": "Demonstrated, real-world scraping of dynamic/JS-heavy sites. Must show examples.",
+    "toolkit_judgment": "Solid command of scraping tools + good judgment about which fits which site. Candidates use: browser-automation (Playwright/Selenium/Puppeteer), scraping frameworks (Scrapy), HTTP fetchers (requests/httpx), parsers (BeautifulSoup/lxml/parsel). Show reasoning.",
+    "data_engineering": "Clean JSON output + data-normalization experience.",
+    "communication": "Clear, fluent WRITTEN AND SPOKEN English essential. Work over Slack + video calls. Precise, direct, real-time communication."
+  },
+  "nice_to_have": {
+    "aws": "S3, Lambda, basic scheduling (not required, they can handle infra)",
+    "scheduled_jobs": "Experience turning scraper into scheduled, repeatable job",
+    "backend_logic": "Data matching, notifications (for possible future work, not this posting)"
+  },
+  "not_required": {
+    "fullstack": false,
+    "frontend_react": false,
+    "design": false
+  },
+  "screening_and_application": {
+    "proposal_must_include": "Link to existing scraper code (GitHub/portfolio preferred). If moving forward, there is a small PAID bounded test task: scrape one specific auction page, return clean JSON + approach note.",
+    "interview_format": "Video with camera ON. Discuss scraping experience live in English. Talk through past projects in real time. Camera must be on (they do not like camera off; screens out machine translation).",
+    "three_required_questions": {
+      "q1": "Describe one dynamic/JS-heavy site you have scraped and how you handled it.",
+      "q2": "What is your preferred tech stack for a multi-site scraping pipeline, and why? Show your reasoning, not buzzwords.",
+      "q3": "How do you rate-limit and avoid getting blocked?"
+    }
+  },
+  "hard_trip_wire_rule": {
+    "rule": "Proposal MUST start with the word BROCCOLI (no quotes, no asterisks). This is a screening filter. If the cover letter does not begin with BROCCOLI, proposal is filtered out.",
+    "severity": "CRITICAL — evaluator must enforce."
+  },
+  "per_lot_required_fields": [
+    "lot_number",
+    "title",
+    "description",
+    "estimate_low",
+    "estimate_high",
+    "estimate_currency",
+    "sale_date",
+    "bidding_deadline",
+    "image_urls",
+    "source",
+    "source_url"
+  ],
+  "michael_positioning": {
+    "angle_1": "Owns the Python backend at U.S. Bank (production ownership = credibility for reliability and maintainability in a scraper pipeline)",
+    "angle_2": "Has used Python, Puppeteer, and Playwright to scrape websites before (direct match to their required tools)",
+    "framing": "Lead with backend ownership and scraping expertise. Frame the React console as a demo vehicle to show the scraper in action, not the product. The scraper engine is the point."
+  },
+  "demo_spec": {
+    "type": "Auction Scraper Console (live multi-site scraper with real accumulation)",
+    "key_behaviors": [
+      "~3 auction sources, each with different structure, each normalized into one consistent JSON schema",
+      "Start Scraper button kicks off the run; results accumulate live in UI as each lot/source processes",
+      "Progress indicators, per-source status, counts as scraping happens",
+      "Raw/normalized JSON shown in frontend (JSON viewer/inspector alongside rendered cards)",
+      "Scraped item images displayed when available",
+      "Respectful-scraping story demonstrated in-product: rate-limit pacing, retries, per-source logs, hardened-site→flag-for-API state"
+    ]
+  },
+  "design_direction": {
+    "aesthetic": "Auction-catalog / fine-art-house aesthetic (NOT michaelwegter.com's look)",
+    "typography": "Serif display (Cormorant/Playfair) + clean sans body (Inter/Source Sans)",
+    "color_palette": "Restrained ivory/charcoal with single refined accent (deep oxblood, gilt/brass, or ink-navy)",
+    "mood": "Premium auction catalog crossed with clean engineering dashboard. Generous whitespace, catalog-card grid with lot numbers.",
+    "usage": "One-pager + deck reuse this language. Bespoke to this client's industry, not portfolio site's."
+  },
+  "explicit_hard_constraints": [
+    "Americas only (South America, Brazil, US, Canada). Reject non-Americas applicants.",
+    "Startup budget: quote at or under their max posted hourly rate.",
+    "Video interviews camera-on. No camera off (screens out machine translation, ensures fluent English).",
+    "Fluent spoken + written English mandatory.",
+    "No em/en dashes in proposal, cover letter, or deck (hard writing rule).",
+    "Respectful scraping ONLY: public pages, no login/credentials/anti-bot circumvention.",
+    "If a site is hardened, flag for API arrangement. Do NOT defeat protection.",
+    "BROCCOLI first word in cover letter (trip-wire filter).",
+    "Must link existing scraper code (GitHub/portfolio) in proposal."
+  ],
+  "definition_of_success": {
+    "proposal_must": [
+      "Start with BROCCOLI (first word, no quotes/asterisks)",
+      "Answer all 3 screening questions",
+      "Link GitHub/existing scraper code",
+      "Name + link the live demo prominently",
+      "Emphasize Michael's U.S. Bank Python backend ownership + Python/Puppeteer/Playwright scraping history",
+      "Address respectful scraping and rate-limiting explicitly",
+      "Position Michael as scraping specialist (not full-stack generalist)",
+      "Use bespoke auction-house design (not portfolio's look)",
+      "Contain zero em/en dashes"
+    ],
+    "demo_must": [
+      "Load with no console errors on first paint",
+      "Show real scraped JSON + real images",
+      "Demonstrate live accumulation of results as scraper runs",
+      "Show respectful scraping behavior (rate-limit logs, retries, hardened-site flag state)",
+      "Normalize data across 3+ sources into single JSON schema",
+      "Use auction-house design aesthetic, not portfolio's"
+    ]
+  }
+}

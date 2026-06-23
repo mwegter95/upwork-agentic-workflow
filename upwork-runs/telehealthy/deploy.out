@@ -1,0 +1,25 @@
+# TeleHealthy Deploy
+
+## Actions taken
+
+**michaelwegter.com** (frontend-only; no mw-backend push needed)
+- Staged: `public/demos/telehealthy/index.html`, `assets/index-B3LfZB7g.js`, `assets/index-DC-EpoCA.css`, `src/data/workSamples.js`
+- Commit: `0ec75e9` — "Add TeleHealthy Voice Ops Console demo (feature richness 10/10)"
+- Push: `0623a75..0ec75e9 main -> main` ✓
+
+## Live verification
+
+| URL | Status |
+|-----|--------|
+| `https://michaelwegter.com/` | 200 ✓ |
+| `https://michaelwegter.com/demos/telehealthy/` | 200 ✓ |
+| `https://michaelwegter.com/work-samples/telehealthy` | 404 → SPA redirect (expected; React Router handles in browser) ✓ |
+| `https://api.michaelwegter.com/health` | 200 `{"status":"ok","version":"1.0.0"}` (Flask healthy) ✓ |
+
+No mw-backend changes were required — demo is fully frontend-only.
+
+## handoff
+- produced: telehealthy demo live at `https://michaelwegter.com/demos/telehealthy/` (200); workSamples.js updated (id:10); commit 0ec75e9 pushed
+- decisions: no Flask blueprint; frontend-only deploy; /work-samples/telehealthy 404 is expected SPA behavior — browser redirect works correctly
+- next needs: deploy-test drives full inbound booking flow (Answer→"Book an appointment"→who-chip→type name→reason-chip→time-slot→confirm) and asserts webhook + "SMS sent"; also smoke "This is urgent" warm-transfer path; skip WebLLM/WebGPU paths (GPU-only, not testable headless)
+- risks: GH Pages CDN cache — if deploy-test hits immediately it may serve stale HTML; add a short wait or verify the asset hash in the response before testing

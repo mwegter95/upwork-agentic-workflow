@@ -1,0 +1,42 @@
+# Deploy — MN State Park Tracker
+
+## Commits
+
+**mw-backend** (2 commits pushed to main):
+1. `205db7c` — Add MN State Park Tracker blueprint (auth, visits, photos, home location)
+2. `f7fb9ae` — Fix mn_parks JWT: sub must be string for PyJWT 2.x compatibility
+
+**michaelwegter.com** (1 commit pushed to main):
+- `0623a75` — Add MN State Park Tracker demo and work-samples registry entry (6 files: index.html, favicon.svg, icons.svg, assets/index-BzdxiEkw.css, assets/index-D8q1wjYm.js, icons.svg, workSamples.js)
+
+## Live verification
+
+| Check | Result |
+|---|---|
+| Flask health (`/health`) | `{"status":"ok","version":"1.0.0"}` ✓ |
+| Blueprint registered (`/mn-parks/auth/login`) | 200 OK, returns JWT ✓ |
+| JWT auth fix deployed | `visits GET` returns `[]` (empty, correct) ✓ |
+| `visits POST` (park_id=1) | `{"id":1,"park_id":1}` ✓ |
+| `user/home GET` | `{"home_lat":null,"home_lng":null}` ✓ |
+| Demo index (`/demos/mn-state-park-tracker/`) | HTTP 200 ✓ |
+| Demo JS bundle | HTTP 200 ✓ |
+| GitHub Pages GH Actions build | Complete ✓ |
+| `workSamples.js` entry | Present, slug=mn-state-park-tracker ✓ |
+
+## Bug fixed during deploy
+
+**Root cause:** `make_token(user_id)` set `"sub": user_id` (int). PyJWT 2.x enforces RFC 7519 §4.1.2 — subject must be a string — so `jwt.decode()` raised `InvalidSubjectError`, caught by `except Exception` → "invalid token" 401.
+
+**Fix:** `"sub": str(user_id)` on encode; `int(payload["sub"])` on decode. One-line each.
+
+## Notes
+
+- `/work-samples/mn-state-park-tracker` returns HTTP 404 from curl — this is expected GH Pages SPA behavior (no file at that path; browser follows 404.html → JS redirect → React Router renders the route).
+- Parks data (73 parks) is statically embedded in the JS bundle; no `/mn-parks/parks` API endpoint is needed or expected.
+- Demo account seeded: `demo@mnparks.test` / `Parks2024!`
+
+## handoff
+- produced: both repos pushed + live; JWT bug fixed and verified; all 5 core API endpoints confirmed working (login, visits GET/POST, home GET, photos upload route registered).
+- decisions: JWT `sub` string cast is the canonical fix for PyJWT 2.x; parks data is frontend-static (no parks API route needed).
+- next needs: deploy-test must exercise login (demo@mnparks.test / Parks2024!), visit creation, home PUT, photo upload multipart POST, and confirm demo renders at `/demos/mn-state-park-tracker/`.
+- risks: photo upload uses multipart/form-data — deploy-test must set Content-Type correctly; `PHOTOS_DIR` write permissions on Surface are unverified (mkdir is in blueprint init, should be fine).

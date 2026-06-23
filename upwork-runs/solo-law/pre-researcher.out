@@ -1,0 +1,196 @@
+# Pre-Researcher — solo-law
+
+Answering Q1–Q6 from plan-gate.out.
+
+---
+
+## Q1 — Accent color (definitive)
+
+**Use `#C9A96E` (antique gold) as the primary accent.**
+
+Rationale: Elite law firm sites universally use one muted metallic accent against
+B&W. Pure gold (#D4AF37, #FFD700) reads cheap at screen resolution. #C9A96E is
+warm, editorial, and subdued — fits the "expensive but not loud" brief exactly.
+Use it at full opacity only for CTAs and ruled lines; 40% opacity for decorative
+dividers.
+
+Full palette:
+- Background: `#0D0D0D` (near-black, not pure black — avoids harsh contrast)
+- Surface: `#141414`
+- Text primary: `#F5F3EF` (warm white)
+- Text secondary: `#9E9E9E`
+- Accent: `#C9A96E` (antique gold)
+- Accent hover: `#B8955A`
+- Danger/error: `#C0392B`
+
+---
+
+## Q2 — WebLLM package, CDN, model ID (definitive)
+
+**npm:** `@mlc-ai/web-llm` — current stable `0.2.84`
+
+**CDN (ESM, no bundler needed):**
+```js
+import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+```
+
+**Recommended model ID (balance of speed + quality for browser):**
+```
+Phi-3.5-mini-instruct-q4f16_1-MLC
+```
+~3GB VRAM; runs at acceptable TPS on a discrete GPU. Falls back to:
+```
+Llama-3.2-1B-Instruct-q4f16_1-MLC
+```
+for low-VRAM devices (~0.8GB) — set this as the secondary candidate in config.
+
+**Initialization pattern:**
+```js
+const engine = new webllm.MLCEngine();
+await engine.reload("Phi-3.5-mini-instruct-q4f16_1-MLC", {
+  initProgressCallback: (report) => { /* loading bar */ }
+});
+// OpenAI-compatible chat:
+const reply = await engine.chat.completions.create({
+  messages, stream: true
+});
+```
+
+Worker thread: use `webllm.WebWorkerMLCEngine` for production (keeps UI
+responsive during inference).
+
+---
+
+## Q3 — Angular i18n pattern (definitive)
+
+**Use `@ngx-translate/core` v18 (Signal-native), NOT Angular built-in i18n.**
+
+Angular built-in i18n is compile-time only — it requires one build per locale,
+making runtime language switching impossible without a page reload. This demo
+requires in-page switching (user toggles EN/ES/FR without reload).
+
+ngx-translate v18 is rebuilt on Angular Signals:
+- `currentLang` and `fallbackLang` are `Signal<Language | null>`
+- Translations are signal-backed; read directly in templates without subscriptions
+- Works with Angular 18+ standalone component API
+
+**Install:**
+```
+npm install @ngx-translate/core @ngx-translate/http-loader
+```
+
+**Pattern:**
+```ts
+// app.config.ts
+provideTranslateService({
+  loader: { provide: TranslateLoader, useFactory: httpLoaderFactory, deps: [HttpClient] },
+  defaultLanguage: 'en'
+})
+```
+
+Translation JSON files live at `assets/i18n/{en,es,fr,de}.json`. Switch at
+runtime with `translateService.use('fr')` — no reload.
+
+Supported locales for the demo: `en`, `es`, `fr`, `de` (4 is sufficient to
+demonstrate multilingual capability).
+
+---
+
+## Q4 — Playwright WebGPU headless flags
+
+**Production test launch args (Linux CI with hardware GPU):**
+```js
+launchOptions: {
+  args: [
+    '--headless=new',
+    '--use-angle=vulkan',
+    '--enable-features=Vulkan,WebGPU',
+    '--disable-vulkan-surface',
+    '--enable-unsafe-webgpu',
+    '--ignore-gpu-blocklist',
+  ]
+}
+```
+
+**CI without GPU (most cloud runners — GitHub Actions, etc.):**
+WebGPU will be unavailable (`navigator.gpu === undefined`). This is the key
+trigger for the mock-fallback path. Design `AiAgentService` to check:
+```ts
+const gpuAvailable = typeof navigator !== 'undefined' && !!navigator.gpu;
+```
+If false, skip WebLLM load entirely and use a hardcoded mock reflection/evaluation
+response. Playwright in CI without GPU args will hit this path automatically —
+write tests to assert mock-fallback UI renders correctly rather than testing the
+full WebGPU inference path (which requires real GPU hardware).
+
+**For local dev / staging testing with GPU:** add the Vulkan flags above in
+`playwright.config.ts` under `projects[x].use.launchOptions`.
+
+---
+
+## Q5 — Reference site UX patterns (from Gibson Dunn + Quinn Emanuel)
+
+**Nav structure (adopt this):**
+```
+[Logo]  Practice Areas | Attorneys | Insights | About | Locations  [Search] [Contact CTA]
+```
+Desktop: horizontal, minimal, uppercase or smallcaps labels, no mega-menus.
+Mobile: hamburger → full-screen overlay with language switcher visible.
+
+**Hero section:**
+- Full-viewport-height editorial image (B&W or desaturated) with cinematic overlay
+- One large serif headline (60–80px), subhead 18px, single gold CTA button
+- Optional: subtle parallax scroll or looping B&W video background at low opacity
+
+**Practice area page layout:**
+- Full-width header with practice name + gold accent rule
+- Left rail: alphabetical list of sub-practices (sticky)
+- Main content: rich prose, key contacts cards (attorney photo + name + title),
+  recent matters/results section (brief 2-line summaries), related insights feed
+
+**Publications / Insights listing:**
+- Masonry or even 3-column grid of cards
+- Each card: category tag (gold label), headline, date, attorney byline, 1-line
+  excerpt, "Read more" link
+- Filter bar: All | Client Alerts | Articles | In the Media | Firm News
+
+**Attorney profile:**
+- Hero: full-bleed B&W portrait, name in large serif, title + practice areas
+- Body: bio prose, representative matters, publications list, contact block
+
+---
+
+## Q6 — WebLLM vs transformers.js (final decision)
+
+**Use WebLLM (`@mlc-ai/web-llm`).**
+
+Decision rationale:
+- The brief requires chat/text generation with a reflection+evaluation agentic loop.
+  WebLLM's OpenAI-compatible API (`engine.chat.completions.create`) maps directly
+  onto a multi-turn conversation array — straightforward to implement the
+  generate → reflect → evaluate → answer cycle.
+- WebLLM streams tokens natively; transformers.js text generation is harder to
+  stream and lacks a clean conversational API for multi-turn.
+- transformers.js excels at embeddings, classification, and HF pipeline tasks —
+  none of which are in scope here.
+- WebLLM's WebWorkerMLCEngine keeps the Angular UI thread free during inference.
+
+Agentic loop implementation sketch:
+```
+user query
+  → [GENERATE] engine.chat({role:'user', ...}) — initial answer draft
+  → [REFLECT]  engine.chat({role:'assistant', draft}, {role:'user', reflectPrompt}) — self-critique
+  → [EVALUATE] parse evaluation score from reflection output against rubric
+  → if score < threshold: loop back to GENERATE with reflection as context (max 2 retries)
+  → else: emit final answer to UI
+```
+Rubric for evaluation (inject in system prompt): accuracy, completeness,
+appropriate legal caution, citation of practice area context.
+
+---
+
+## handoff
+- produced: definitive answers to all 6 planner blockers (Q1 accent hex, Q2 WebLLM package+CDN+model, Q3 ngx-translate v18, Q4 Playwright WebGPU flags + mock-fallback strategy, Q5 Gibson Dunn UX patterns, Q6 WebLLM chosen over transformers.js)
+- decisions: accent=`#C9A96E`, model=`Phi-3.5-mini-instruct-q4f16_1-MLC` (fallback `Llama-3.2-1B`), i18n=ngx-translate v18 Signals, AI lib=WebLLM 0.2.84
+- next needs: planner integrates these answers and re-emits plan.md with READY status; demo-builder can scaffold Angular 18 + ngx-translate + WebLLM Worker immediately
+- risks: Phi-3.5-mini needs ~3GB VRAM; users on low-end devices without discrete GPU will always hit mock fallback — frame this as a graceful-degradation feature in the demo UI (show a "GPU not detected" banner and continue with intelligent mock responses)

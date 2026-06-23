@@ -1,0 +1,147 @@
+# Pre-Research — auction-scraper
+
+## Q1: Source Selection (3 confirmed)
+
+### ✅ PICK 1: Leland Little Auctions (lelandlittle.com) — requests+BS4
+- **robots.txt:** Fully open — `Disallow:` (blank), zero path restrictions. Only crawl-delay (10s) for AI bots. No blocks for general crawlers.
+- **Structure:** Static HTML, no JS rendering. Catalog at `/auction/[name]/[ID]/`, lot detail at `/items/[DB-ID]/[title-slug]?listId=[auction-ID]`.
+- **Data in HTML:** title (h1), lot number, sale date, image URLs (`/images/inventory/medium/[ID]/`). Estimates may only appear on individual lot detail pages (not on catalog listing). Confirmed accessible via fetch — returns full HTML.
+- **No JSON-LD.** Pure HTML parsing.
+- **Risk:** Low. Open, friendly, static site. Collectibles + cars + fine art.
+
+### ✅ PICK 2: Heritage Auctions (ha.com) — Playwright
+- **robots.txt:** Permissive for general crawlers. Disallows are scoped to `/c/cart/`, `/c/my/`, `/c/bid*` (user account + bidding flows only). Lot pages not disallowed. Crawl-delay 15s for general bots.
+- **Structure:** Bot-detection (403 to simple HTTP/WebFetch). Requires Playwright with realistic browser fingerprint + UA. Lot pages historically at `/c/item.zx?saleNo=XXXX&lotNo=XXXX` or newer `/[category]/[slug]/[lot-id]/`.
+- **Data:** Heritage embeds JSON-LD (`Product` schema) on lot detail pages — title, description, image, estimate. Confirms the "structured data normalization" story.
+- **Risk:** Medium. Cloudflare detection may trigger even with Playwright. **Mitigation: emit `flagged_for_api` SSE event + serve seeded fallback. This is a feature, not a bug** — it demonstrates exactly the respectful-scraping posture the client wants.
+- Crawl-delay: use ≥15s between requests. Retry 3x with exponential backoff.
+
+### ✅ PICK 3: Bonhams (bonhams.com) — Playwright
+- **robots.txt:** Permissive. Only disallows `/ldc/`, `/vms-assets/`, `*/aggregate$`, `*/head_image*`. Bytespider fully blocked but all other crawlers allowed on lot pages. No crawl-delay specified.
+- **Structure:** Next.js app (`/_next/image` confirmed in response), JS-rendered. Requires Playwright. Auction listing at `/auctions/upcoming/`, individual auction at `/auction/[ID]/[slug]/`.
+- **Data:** Individual lot pages at `/lot/[ID]/` — title, description, estimates, sale date, images accessible via JS rendering. Uses `/_next/` prefetched JSON which Playwright can intercept for cleaner extraction.
+- **Risk:** Low-medium. Content is rendered and accessible (fetch returned proper data). No heavy anti-bot layer observed.
+
+### Rejected Candidates
+| Site | Reason Rejected |
+|------|----------------|
+| Heritage lot pages (WebFetch) | 403 to all simple HTTP — Playwright required but included as Pick 2 |
+| Invaluable.com | 403 even for robots.txt — hostile anti-bot, skip |
+| Bidsquare.com | robots.txt blocks many crawlers; JS-rendered aggregator with weaker public lot data |
+| Catawiki.com | 403 on robots.txt — hostile |
+| Swann Galleries | 403 on robots.txt |
+
+---
+
+## Q2: Structure Per Selected Source
+
+### Leland Little
+```
+Catalog URL: /auction/{name}/{auction-id}/
+Lot URL:     /items/{item-db-id}/{title-slug}?listId={auction-id}
+Pagination:  URL-based (?page=N) or all lots on one page (small auctions)
+
+Fields:
+  title       → h1 text
+  lot_number  → text before "·" in listing cards / breadcrumb
+  images      → img[src] under /images/inventory/medium/{id}/
+  sale_date   → header text in catalog page ("Jun 24, 2026, 12:00pm")
+  description → body text on lot detail page
+  estimate    → likely in lot detail page body text (needs individual page fetch)
+  currency    → USD (assumed, domestic auctions)
+```
+**Approach:** `requests` + `BeautifulSoup`. One GET for catalog (paginated if needed), one GET per lot for description + estimate. 2s delay between requests.
+
+### Heritage Auctions
+```
+Catalog URL: /c/search-results.zx?type=191&N={category-codes}
+Lot URL:     /c/item.zx?saleNo={sale}&lotNo={lot} (legacy)
+             /{category}/{title}/{lot-id}m.s (newer clean URLs)
+Pagination:  URL param &p=N or next-page link
+
+Fields (via JSON-LD Product schema on lot page):
+  title       → JSON-LD "name"
+  description → JSON-LD "description"
+  images      → JSON-LD "image" array
+  estimate    → JSON-LD "offers.price" or text in .lot-estimate span
+  sale_date   → JSON-LD "event.startDate" or text in .sale-date
+  lot_number  → URL param or .lot-number span
+```
+**Approach:** Playwright headless + intercept JSON-LD. 15s+ between requests. If 403/Cloudflare → emit `flagged_for_api`, return seeded Heritage lots.
+
+### Bonhams
+```
+Catalog URL: /auction/{id}/{slug}/
+Lot URL:     /lot/{lot-id}/
+Pagination:  /auction/{id}/{slug}/?page=N
+
+Fields (JS-rendered, Playwright):
+  title       → h1.lot-title
+  description → .lot-description div
+  images      → img in .lot-images gallery / /_next prefetch JSON
+  estimate    → .lot-estimate text (e.g. "£3,000 – 5,000")
+  sale_date   → .auction-date text
+  lot_number  → .lot-number or breadcrumb
+```
+**Approach:** Playwright, wait for `.lot-title` to appear. Intercept `/_next/data/*.json` if available for cleaner extraction. 3s between lots.
+
+---
+
+## Q3: Michael's GitHub
+
+`github.com/michaelwegter` returns **404** — no public profile exists.
+
+**Implications:**
+- No existing scraper code to link.
+- **Resolution:** demo-builder should publish the demo's scraper source as a new public GitHub repo (e.g., `michaelwegter/auction-scraper-demo`) so the cover letter has a real link. This is standard Upwork practice — create a public repo specifically for the proposal. Alternatively, the proposal writer can link the live demo and note "source available on request."
+- Preferred: create a public repo. The posting explicitly asks for GitHub links.
+
+---
+
+## Q4: Competitor Positioning
+
+Upwork scraping specialists for auction/ETL work typically present as:
+- Generalist scrapers ("I do Python, Node, PHP scraping") with no domain depth
+- Offshore developers who handle static pages well but struggle with JS-heavy anti-bot sites
+- Volume bidders who show toy examples, not production pipelines
+
+**Michael's gap to exploit:**
+- "I own and maintain the Python data pipeline at U.S. Bank" → production-grade reliability, not toy scripts
+- Has specifically used Playwright + Puppeteer on JS-heavy sites (as mentioned in the posting notes)
+- Demo shows rate-limit telemetry + flagged_for_api event handling → exactly the "respectful scraping" posture the client demands and almost no other applicants will demo
+- The posting says "we have relationships with these auction houses" — Michael's responsible-scraping posture + flag-for-API behavior directly addresses their biggest fear (getting blocked)
+
+**Cover letter answer to Q3 (rate-limiting):** The telemetry log in the demo is the answer — show it, link it.
+
+---
+
+## Q5: Structured Data (JSON-LD)
+
+- **Heritage Auctions:** Has `application/ld+json` Product schema on lot pages (title, description, image, offers). Makes normalization story strong — can show "raw JSON-LD → normalized schema" comparison in JSON inspector panel.
+- **Leland Little:** No JSON-LD detected. Pure HTML parsing.
+- **Bonhams:** Next.js with potential prefetched JSON in `/_next/data/`. May have structured data; Playwright can intercept.
+- **Recommendation:** Feature Heritage's JSON-LD prominently in the JSON inspector's "raw vs normalized" toggle. Use it to show transformation sophistication.
+
+---
+
+## Additional Risks / Gaps the Planner is Missing
+
+1. **Estimates on Leland Little** are not guaranteed on the lot detail page (may be hidden until after auction). Demo-builder should scrape what's available; normalize missing estimates to `null` with note in schema.
+
+2. **Heritage live scraping will likely hit bot protection** — the seeded fallback must include realistic Heritage lot data (5-10 real lots with JSON-LD structure) so the demo still shows the full normalization story even when flagged.
+
+3. **Bonhams currency** — estimates will be in GBP (London-based), EUR (Nordic sales), or USD. Normalization logic must handle currency detection and store raw vs converted.
+
+4. **GitHub repo creation** — demo-builder or deploy step must create a new public GitHub repo (`michaelwegter/auction-scraper-demo`) and push the scraper Python files there. Proposal-writer needs the URL before writing the cover letter.
+
+5. **Playwright on mw-backend (Windows Surface):** Playwright is installed, but browser binaries must be confirmed (`playwright install chromium`). demo-builder should include a health-check that verifies chromium is available before the SSE stream starts.
+
+6. **Image proxying:** lot images from Heritage/Bonhams may have referrer checks. Backend should proxy image URLs through `/auction-scraper/image?url=...` (simple `requests.get` + stream response) rather than passing CDN URLs directly to frontend, or set `Referer` headers in Playwright screenshot mode.
+
+---
+
+## handoff
+- produced: Source selection (3 confirmed: Leland Little/requests+BS4, Heritage/Playwright+seeded-fallback, Bonhams/Playwright), per-source HTML structure + key selectors, GitHub status (no profile → need new public repo), positioning analysis, risks
+- decisions: Leland Little = static HTML (safe), Heritage + Bonhams = Playwright (with seeded fallback if blocked). Heritage has JSON-LD (feature the raw→normalized toggle prominently). Currency normalization needed for Bonhams (GBP/EUR).
+- next needs: demo-builder must (a) create public GitHub repo for scraper source before proposal-writer runs, (b) confirm `playwright install chromium` on Surface, (c) seed 5-10 realistic Heritage lots in blueprint fallback JSON with JSON-LD structure, (d) implement image proxy endpoint
+- risks: Heritage live scraping may always 403 (mitigated by seeded fallback + flagged_for_api UX); Leland Little estimates may be null (acceptable); Bonhams estimates need currency detection; no public GitHub means proposal-writer cannot link existing code

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleHealthy Voice Ops Console: Michael Wegter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #F0FDFA;
+    --surface:   #FFFFFF;
+    --elevated:  #E6FAF8;
+    --border:    #CCFBF1;
+    --primary:   #0D9488;
+    --prim-dark: #0F766E;
+    --clinical:  #059669;
+    --amber:     #F59E0B;
+    --red:       #EF4444;
+    --text:      #1E293B;
+    --muted:     #64748B;
+    --tag-bg:    #CCFBF1;
+    --font:      'Inter', sans-serif;
+    --mono:      'DM Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- layout ---- */
+  .page { max-width: 900px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  /* ---- header ---- */
+  .header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; border-bottom: 2px solid var(--primary); padding-bottom: 28px; margin-bottom: 40px; }
+  .header-left {}
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--primary); font-weight: 500; margin-bottom: 8px; }
+  .title { font-size: 36px; font-weight: 800; line-height: 1.15; color: var(--text); }
+  .title span { color: var(--primary); }
+  .subtitle { font-size: 15px; color: var(--muted); margin-top: 8px; max-width: 440px; }
+  .header-right { flex-shrink: 0; text-align: right; }
+  .demo-badge { display: inline-block; background: var(--primary); color: #fff; border-radius: 6px; padding: 10px 18px; font-weight: 700; font-size: 13px; text-decoration: none; font-family: var(--mono); letter-spacing: 0.04em; white-space: nowrap; }
+  .demo-badge:hover { background: var(--prim-dark); }
+  .by-line { font-size: 12px; color: var(--muted); margin-top: 8px; font-family: var(--mono); }
+
+  /* ---- sections ---- */
+  section { margin-bottom: 40px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--primary); font-weight: 500; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+
+  /* ---- feature grid ---- */
+  .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .feature-card .fc-icon { font-size: 22px; margin-bottom: 10px; }
+  .feature-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .feature-card .tag { display: inline-block; background: var(--tag-bg); color: var(--prim-dark); font-family: var(--mono); font-size: 10px; font-weight: 500; border-radius: 4px; padding: 2px 7px; margin-top: 10px; }
+  .feature-card.amber { border-color: #FDE68A; }
+  .feature-card.amber .tag { background: #FEF3C7; color: #92400E; }
+
+  /* ---- req table ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { background: var(--elevated); color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); }
+  tbody tr:nth-child(even) { background: #F8FFFE; }
+  tbody td { padding: 10px 12px; vertical-align: top; border-bottom: 1px solid var(--border); }
+  .req-id { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--primary); white-space: nowrap; }
+  .where { color: var(--muted); }
+
+  /* ---- approach ---- */
+  .approach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .approach-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+  .approach-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .approach-card p { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .approach-card .stack { font-family: var(--mono); font-size: 11px; color: var(--primary); margin-top: 8px; }
+
+  /* ---- proof ---- */
+  .proof-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .proof-list li { display: flex; gap: 14px; align-items: flex-start; }
+  .proof-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+  .proof-list strong { font-size: 14px; font-weight: 700; display: block; margin-bottom: 2px; }
+  .proof-list span { font-size: 13px; color: var(--muted); }
+
+  /* ---- pipeline viz ---- */
+  .pipeline { display: flex; align-items: center; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 24px; overflow-x: auto; }
+  .pipe-node { text-align: center; min-width: 90px; }
+  .pipe-node .pn-icon { font-size: 20px; margin-bottom: 4px; }
+  .pipe-node .pn-label { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; }
+  .pipe-arrow { font-size: 18px; color: var(--border); flex-shrink: 0; padding: 0 4px; }
+
+  /* ---- confidence meter ---- */
+  .confidence-demo { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
+  .cd-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .cd-title { font-size: 13px; font-weight: 700; }
+  .cd-badge { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+  .badge-high { background: #D1FAE5; color: #065F46; }
+  .badge-low { background: #FEE2E2; color: #991B1B; }
+  .meter-row { display: flex; flex-direction: column; gap: 8px; }
+  .meter { display: flex; align-items: center; gap: 12px; }
+  .meter-label { font-family: var(--mono); font-size: 11px; color: var(--muted); width: 120px; flex-shrink: 0; }
+  .meter-bar { flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .meter-fill { height: 100%; border-radius: 99px; }
+  .fill-high { background: var(--clinical); }
+  .fill-mid { background: var(--amber); }
+  .fill-low { background: var(--red); }
+  .meter-val { font-family: var(--mono); font-size: 11px; color: var(--text); width: 36px; text-align: right; }
+
+  /* ---- kpi row ---- */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+  .kpi-val { font-size: 28px; font-weight: 800; color: var(--primary); line-height: 1; }
+  .kpi-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 6px; }
+
+  /* ---- footer ---- */
+  footer { border-top: 1px solid var(--border); padding-top: 24px; margin-top: 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  footer .ft-left { font-size: 13px; font-weight: 700; }
+  footer .ft-links { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  footer a { color: var(--primary); }
+
+  @media (max-width: 640px) {
+    .features, .approach-grid, .kpi-row { grid-template-columns: 1fr; }
+    .header { flex-direction: column; }
+    .header-right { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="eyebrow">Proposal / Upwork / Voice AI Engineer</div>
+      <h1 class="title">TeleHealthy<br><span>Voice Ops Console</span></h1>
+      <p class="subtitle">AI receptionist + outbound dialer + CRM analytics, fully functional in your browser. Built for this posting.</p>
+    </div>
+    <div class="header-right">
+      <a class="demo-badge" href="https://michaelwegter.com/work-samples/telehealthy" target="_blank">Open Live Demo</a>
+      <div class="by-line">michaelwegter.com/work-samples/telehealthy<br>Michael Wegter</div>
+    </div>
+  </header>
+
+  <!-- DEMO SUMMARY KPIs -->
+  <section>
+    <div class="section-label">Demo at a Glance</div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-val">24/7</div><div class="kpi-label">Inbound Coverage</div></div>
+      <div class="kpi"><div class="kpi-val">67%</div><div class="kpi-label">Booking Rate</div></div>
+      <div class="kpi"><div class="kpi-val">&lt;45%</div><div class="kpi-label">Confidence Triggers Transfer</div></div>
+      <div class="kpi"><div class="kpi-val">8</div><div class="kpi-label">CRM Contacts w/ Dynamic Scripts</div></div>
+    </div>
+  </section>
+
+  <!-- AI CONFIDENCE METER (inline viz) -->
+  <section>
+    <div class="section-label">Live AI Confidence Scoring</div>
+    <div class="confidence-demo">
+      <div class="cd-header">
+        <span class="cd-title">Current call: Booking an appointment</span>
+        <span class="cd-badge badge-high">BOOKING CONFIRMED</span>
+      </div>
+      <div class="meter-row">
+        <div class="meter">
+          <span class="meter-label">Booking intent</span>
+          <div class="meter-bar"><div class="meter-fill fill-high" style="width:88%"></div></div>
+          <span class="meter-val">0.88</span>
+        </div>
+        <div class="meter">
+          <span class="meter-label">Insurance FAQ</span>
+          <div class="meter-bar"><div class="meter-fill fill-high" style="width:82%"></div></div>
+          <span class="meter-val">0.82</span>
+        </div>
+        <div class="meter">
+          <span class="meter-label">Telehealth FAQ</span>
+          <div class="meter-bar"><div class="meter-fill fill-mid" style="width:61%"></div></div>
+          <span class="meter-val">0.61</span>
+        </div>
+        <div class="meter">
+          <span class="meter-label">Urgent / escalate</span>
+          <div class="meter-bar"><div class="meter-fill fill-low" style="width:34%"></div></div>
+          <span class="meter-val">0.34 <span style="font-size:9px;color:#EF4444">TRANSFER</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUTOMATION PIPELINE -->
+  <section>
+    <div class="section-label">Call Automation Pipeline (lights up in real time)</div>
+    <div class="pipeline">
+      <div class="pipe-node"><div class="pn-icon">📞</div><div class="pn-label">Greeting</div></div>
+      <div class="pipe-arrow">&#8594;</div>
+      <div class="pipe-node"><div class="pn-icon">🧠</div><div class="pn-label">Intent</div></div>
+      <div class="pipe-arrow">&#8594;</div>
+      <div class="pipe-node"><div class="pn-icon">📅</div><div class="pn-label">Booking</div></div>
+      <div class="pipe-arrow">&#8594;</div>
+      <div class="pipe-node"><div class="pn-icon">🔗</div><div class="pn-label">Webhook</div></div>
+      <div class="pipe-arrow">&#8594;</div>
+      <div class="pipe-node"><div class="pn-icon">💬</div><div class="pn-label">SMS</div></div>
+      <div class="pipe-arrow">&#8594;</div>
+      <div class="pipe-node"><div class="pn-icon">🚨</div><div class="pn-label">Escalate</div></div>
+    </div>
+  </section>
+
+  <!-- FEATURE CARDS -->
+  <section>
+    <div class="section-label">What the Demo Shows</div>
+    <div class="features">
+      <div class="feature-card">
+        <div class="fc-icon">🎙️</div>
+        <h3>AI Inbound Receptionist</h3>
+        <p>Simulated call flow: greeting, intent detection (book / FAQ / escalate), multi-turn booking conversation with name, date, reason captured. WebGPU in-browser LLM with scripted fallback.</p>
+        <span class="tag">req-1 + req-2 + req-3</span>
+      </div>
+      <div class="feature-card amber">
+        <div class="fc-icon">🚨</div>
+        <h3>Warm Transfer + Escalation</h3>
+        <p>When AI confidence drops below 0.45, a live escalation badge fires and a care coordinator transfer message plays. Try the "This is urgent" path in the Inbound tab.</p>
+        <span class="tag">req-1 / escalation</span>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">💬</div>
+        <h3>SMS Confirmation Log</h3>
+        <p>Booking confirmation triggers a real-time SMS entry in the sidebar. Message contains patient name, appointment date, provider, and a cancel link. Healthcare-appropriate copy throughout.</p>
+        <span class="tag">req-4</span>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">📤</div>
+        <h3>Outbound Dialer + CRM Scripts</h3>
+        <p>8 CRM contacts (GoHighLevel-style) with provider, last visit, upcoming appointment. Selecting a contact auto-generates a dynamic outbound script. Two scenarios: appointment reminder and post-visit follow-up.</p>
+        <span class="tag">req-5</span>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">📊</div>
+        <h3>Analytics Dashboard</h3>
+        <p>155 calls logged. Bar chart (call volume by day), intent breakdown doughnut, KPI cards: booking rate 67%, escalation rate 8%, avg confidence 0.79, avg handle time 2m14s. Transcript list with full call logs.</p>
+        <span class="tag">req-6</span>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🌐</div>
+        <h3>Multilingual + Healthcare Language</h3>
+        <p>English / Spanish language toggle. Healthcare-specific FAQs: insurance coverage, telehealth eligibility, medication refills. HIPAA reminder built into booking confirmation. Clinical terminology throughout.</p>
+        <span class="tag">nth-1 + nth-3</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUIREMENTS TABLE -->
+  <section>
+    <div class="section-label">Every Requirement, Addressed</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Req</th>
+          <th>What You Asked For</th>
+          <th>Where It Lives</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="req-id">req-1</td>
+          <td>AI receptionist: greeting, intent, booking, FAQ, escalate to human</td>
+          <td class="where">Inbound tab: full call simulator, 6 intent paths, warm transfer</td>
+        </tr>
+        <tr>
+          <td class="req-id">req-2</td>
+          <td>Appointment booking with details captured</td>
+          <td class="where">Booking flow: new/existing patient, date/time/provider selection, confirmation card</td>
+        </tr>
+        <tr>
+          <td class="req-id">req-3</td>
+          <td>FAQ handling: insurance, hours, telehealth eligibility</td>
+          <td class="where">3 FAQ intents in Inbound tab, EN/ES responses in mockData</td>
+        </tr>
+        <tr>
+          <td class="req-id">req-4</td>
+          <td>SMS confirmation on booking</td>
+          <td class="where">Live SMS log fires with patient + appointment details on booking confirm</td>
+        </tr>
+        <tr>
+          <td class="req-id">req-5</td>
+          <td>Outbound dialer, dynamic CRM scripts, 2+ scenarios</td>
+          <td class="where">Outbound tab: contact picker, auto-generated reminder + follow-up scripts</td>
+        </tr>
+        <tr>
+          <td class="req-id">req-6</td>
+          <td>CRM integration, call analytics, transcript logging</td>
+          <td class="where">Analytics tab: call volume chart, intent doughnut, confidence metrics, transcript list</td>
+        </tr>
+        <tr>
+          <td class="req-id">nth-1</td>
+          <td>Healthcare / psychiatry workflow familiarity</td>
+          <td class="where">Clinical terminology, HIPAA note, medical FAQ copy, provider names/specialties</td>
+        </tr>
+        <tr>
+          <td class="req-id">nth-2</td>
+          <td>Automation orchestration (n8n / Make style)</td>
+          <td class="where">Live pipeline viz embedded in Inbound tab: lights up step-by-step during call</td>
+        </tr>
+        <tr>
+          <td class="req-id">nth-3</td>
+          <td>Multilingual support (English primary)</td>
+          <td class="where">Language toggle: English / Spanish FAQ responses and greeting</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- REAL SYSTEM APPROACH -->
+  <section>
+    <div class="section-label">How I Would Build the Real Thing</div>
+    <div class="approach-grid">
+      <div class="approach-card">
+        <h4>Telephony Layer</h4>
+        <p>Vapi or Retell for inbound call handling: both provide webhook-driven conversation APIs, built-in GoHighLevel integration, configurable confidence thresholds for escalation, and HIPAA-eligible call recording.</p>
+        <div class="stack">Vapi / Retell + Twilio for SMS</div>
+      </div>
+      <div class="approach-card">
+        <h4>Outbound Dialer</h4>
+        <p>Twilio Programmable Voice or Retell outbound API. Scripts generated from GoHighLevel CRM contact fields via API at call time, so each patient gets a personalized reminder with their actual appointment details.</p>
+        <div class="stack">Retell Outbound + GoHighLevel API</div>
+      </div>
+      <div class="approach-card">
+        <h4>Orchestration</h4>
+        <p>n8n self-hosted workflow: webhook triggers from Vapi/Retell feed into booking logic, CRM update, and SMS dispatch. Each node is visible and auditable. The automation pipeline in the demo mirrors this directly.</p>
+        <div class="stack">n8n / Make.com</div>
+      </div>
+      <div class="approach-card">
+        <h4>Analytics + Logging</h4>
+        <p>Transcripts, confidence scores, and call metadata logged to a lightweight PostgreSQL table or GoHighLevel CRM activity log. Dashboard queries aggregate daily. A simple admin UI surface is the same as the demo's Analytics tab.</p>
+        <div class="stack">PostgreSQL / GHL + React dashboard</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY ME -->
+  <section>
+    <div class="section-label">Why I Am the Right Fit</div>
+    <ul class="proof-list">
+      <li>
+        <div class="proof-dot"></div>
+        <div>
+          <strong>2.5 years sole developer and SME at U.S. Bank (TDAAS)</strong>
+          <span>React + Python + SQL, 600 users/month, ~60k LOC. Became SME within months, fixed critical bugs within ten minutes, led the six-month Azure Cloud migration as the team's primary rep.</span>
+        </div>
+      </li>
+      <li>
+        <div class="proof-dot"></div>
+        <div>
+          <strong>Current contract at Optum (RHRP 4): Angular + .NET/C#</strong>
+          <span>150+ story points delivered in strict Agile. Team's designated resource for AI-assisted development. Contract started April 2026.</span>
+        </div>
+      </li>
+      <li>
+        <div class="proof-dot"></div>
+        <div>
+          <strong>Real AI integration experience, not just wrappers</strong>
+          <span>The WebGPU in-browser LLM in this demo runs actual Llama-3 inference in the user's browser. I have shipped Azure OpenAI integrations in production and use AI tooling daily for delivery acceleration.</span>
+        </div>
+      </li>
+      <li>
+        <div class="proof-dot"></div>
+        <div>
+          <strong>Full-stack across the stack this project needs</strong>
+          <span>React, TypeScript, Python/Flask, .NET, PostgreSQL, Docker, GitHub Actions, Playwright. Vapi and Retell docs read; GoHighLevel API documented and understood.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="ft-left">Michael Wegter, Full-Stack + AI Engineer</div>
+    <div class="ft-links">
+      <a href="https://michaelwegter.com/work-samples/telehealthy">Live Demo</a>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <a href="https://michaelwegter.com">Portfolio</a>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      zweetztuph@gmail.com
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

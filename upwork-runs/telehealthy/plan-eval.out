@@ -1,0 +1,58 @@
+# Plan Eval — TeleHealthy Voice Ops Console
+
+## Rubric Scores
+
+### 1. Requirements coverage (6 explicit + 3 nice-to-have)
+| Req | Status | Evidence |
+|---|---|---|
+| Inbound call handler (24/7, booking, FAQ, escalation) | ✓ | `InboundCall.jsx` — greeting → intent → booking/FAQ/escalate, confidence < 0.45 triggers warm transfer |
+| Appointment booking + SMS confirmation | ✓ | Booking flow collects name/date/time/reason; SMS log entry auto-generated on confirm |
+| Outbound dialer with dynamic CRM-driven script | ✓ | `OutboundDialer.jsx` — CRM contact picker → auto-generated script from contact fields, 2 scenarios |
+| Webhook integration (appointment + SMS) | ✓ | Simulated webhook: automation pipeline viz lights up in real time; SMS log panel |
+| Call recording / transcript logging / analytics | ✓ | `Analytics.jsx` — call volume chart, doughnut, KPI cards, transcript list |
+| Handoff / warm transfer logic | ✓ | Confidence < 0.45 → escalation path; labeled as human handoff |
+| Nice-to-have: healthcare language | ✓ | Psychiatry/HIPAA copy throughout; all mock data uses clinical terminology |
+| Nice-to-have: automation orchestration viz | ✓ | Inline SVG pipeline (Greeting→Intent→Booking→Webhook→SMS) animates during call |
+| Nice-to-have: multilingual | ✓ | EN/ES toggle; FAQ strings + greeting switch via mockData |
+
+All 9 requirements covered. **Pass.**
+
+### 2. Technology choices
+- **Vite + React 18:** Standard, correct for Vite build → `public/demos/telehealthy/` output path. ✓
+- **WebLLM (@mlc-ai/web-llm):** Directly maps to the "browser GPU based AI messaging system" requirement. Client-side, no backend dependency. ✓
+- **Scripted fallback:** Non-negotiable for a demo with WebGPU uncertainty (Firefox, Safari). Mitigates biggest demo risk. ✓
+- **No Flask blueprint:** Justified — all telephony/CRM is simulated; no live integrations needed. ✓
+- **Minor ambiguity:** Chart library listed as "Chart.js via CDN or recharts" — undecided. For a Vite build, recharts (npm) is cleaner than a CDN import inside JSX; demo-builder should commit to one. Flag for demo-builder, not a plan failure.
+
+### 3. Testing approach
+Plan does not define an explicit test plan. Acceptable: the deploy-test step handles E2E against the live deployment (Playwright). Scripted fallback + GPU detection guard ensure demo runs in all test-relevant browsers. No gap here given the workflow structure. ✓
+
+### 4. Scope feasibility at 10/10
+- 4 tabs, each with real functionality (not placeholders)
+- WebGPU + scripted fallback = genuine AI interaction path
+- Booking flow, FAQ (EN+ES), escalation, outbound scripting, analytics with charts + transcripts, CRM table, automation viz, multilingual toggle
+- Frontend-only, no backend build time — keeps the full feature set inside the 3-min build cap
+- **Risk:** `InboundCall.jsx` carries the most weight (call sim + WebLLM + intent engine + booking flow + SMS log + automation viz). Could be complex enough to warrant a sub-component split, but the file cap (12) doesn't allow it without collapsing another file. Demo-builder should be aware and keep the component lean.
+- Overall: achievable at 10/10 for a frontend-only Vite app. ✓
+
+### 5. Design direction fit for industry
+- Palette (teal-50 bg, teal-600 primary, emerald-600 clinical accent, amber-500 live call, red-500 escalation): appropriate for a healthcare SaaS product — clean, clinical, trustworthy. ✓
+- Inter + DM Mono: professional, readable, no personality clash with medical context. ✓
+- Left sidebar + right live-call panel: matches enterprise voice AI UIs (Vapi, Retell conventions). ✓
+- No michaelwegter.com tokens reused. ✓
+
+## Problems Found
+
+1. **Chart library undecided** ("Chart.js via CDN or recharts"): Demo-builder must pick one before writing `Analytics.jsx`. Recommend recharts (npm, tree-shaken, no CDN collision in Vite). Minor — does not fail the plan.
+2. **WebLLM model ID is a forward dependency:** Researcher must confirm `Llama-3.2-1B-Instruct-q4f32_1-MLC` (or exact string) before `useWebLLM.js` is written. Plan correctly flags this for researcher; demo-builder should not start that hook until confirmed.
+3. **InboundCall.jsx complexity:** Six distinct responsibilities in one file at the 12-file cap. Demo-builder must keep it well-sectioned internally or accept that it will be a large file.
+
+None of these are plan failures — all are manageable execution concerns for demo-builder and researcher.
+
+## handoff
+- produced: rubric eval of planner.out against all 5 criteria — all pass
+- decisions: plan is correct and complete; chart library ambiguity + WebLLM model ID are forward dependencies researcher and demo-builder must resolve, not plan gaps
+- next needs: researcher confirms WebLLM CDN import + exact model ID (most critical); researcher picks up the 5 plan questions (especially model ID and Vapi/Retell UI conventions for demo-builder reference)
+- risks: InboundCall.jsx complexity at the file cap; WebLLM model download size on slow connections (scripted fallback mandatory); chart library must be committed before Analytics.jsx is written
+
+VERDICT: pass

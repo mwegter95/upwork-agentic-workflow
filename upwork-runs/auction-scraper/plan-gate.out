@@ -1,0 +1,35 @@
+# Plan Gate — auction-scraper
+
+## Evaluation
+
+**Status line:** READY — no open unknowns flagged by planner.
+
+### Criteria check
+
+| Criterion | Result |
+|---|---|
+| Research integrated | ✓ All 3 sources confirmed with tool choice, crawl delay, and structural notes from research |
+| No flagged unknowns | ✓ Explicit "No open unknowns" — all uncertain items resolved or mitigated |
+| Requirements addressed | ✓ Full req→feature traceability matrix (§9) — every posting requirement mapped |
+| Technical decisions made | ✓ Tool per source (requests+BS4 / Playwright+JSON-LD / Playwright+_next/data), schema defined, SSE architecture chosen |
+| Design system defined | ✓ Bespoke palette (ivory/charcoal/antique-gold), fonts (Cormorant Garamond + Inter), tokens tabled |
+| Backend architecture | ✓ Routes, scraper class hierarchy, seeded fallback, image proxy, SSE queue pattern |
+| Frontend architecture | ✓ Self-contained vanilla JS, layout wireframe, all panels specified |
+| Michael's differentiators | ✓ U.S. Bank Python ownership + Playwright/Puppeteer history in traceability row + build sequence note |
+| Risks identified + mitigated | ✓ Heritage 403 → seeded fallback + flagged_for_api UX; Bonhams currency detection; GitHub token dependency |
+| Scope fences explicit | ✓ 6 items fenced out (scheduling, AWS, search, persistence, login, full-stack) |
+| Build sequence actionable | ✓ Steps a–g for demo-builder with no ambiguity |
+
+### Issues
+
+None. No gaps requiring pre-research. The one structural risk (GitHub `gh` auth token) is noted and delegated to demo-builder, which is appropriate — it is an execution detail, not a planning unknown.
+
+---
+
+VERDICT: pass
+
+## handoff
+- produced: Gate evaluation confirming plan is complete, actionable, and research-integrated
+- decisions: No rework needed; plan passes on first check
+- next needs: demo-builder proceeds with plan.md as-is; execute §12 build sequence steps a–g; pay special attention to `playwright install chromium` verification on Surface before blueprint is pushed
+- risks: Carried forward from plan — Heritage 403 (mitigated), GitHub token for repo creation (demo-builder must handle), Bonhams currency parsing

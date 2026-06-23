@@ -1,0 +1,65 @@
+# Plan Eval (Rubric) — MN State Park Tracker
+
+## Rubric Scores
+
+### 1. Requirements Coverage (8 explicit client reqs)
+| Req | Client Ask | Plan Coverage | Status |
+|-----|-----------|---------------|--------|
+| 1 | Interactive map + pin markers | Leaflet + CartoDB Voyager, custom L.divIcon SVG pins | ✓ |
+| 2 | Synced list view | ParkList.jsx, two-way map↔list event sync | ✓ |
+| 3 | Mark visited, persist | VisitLogForm + POST /visits + pin color swap | ✓ |
+| 4 | Photos, notes, attendees, date | VisitLogForm + canvas resize + filesystem upload + SQLite | ✓ |
+| 5 | Login / auth + user isolation | JWT, AuthModal, seeded demo account | ✓ |
+| 6 | Park descriptions + exploration | 75-park seed in parks.js, ParkDrawer with detail panel | ✓ |
+| 7 | Home location + distance from home | SettingsPanel, haversine.js, /user/home PUT/GET, home pin on map | ✓ |
+| 8 | Google Maps integration | **SUBSTITUTED**: Leaflet + CartoDB Voyager (no API key available) | ⚠ |
+
+**Google Maps note:** Client explicitly requested Google Maps. Plan commits to Leaflet (functionally equivalent for demo). Acceptable for a proposal demo; cover letter must acknowledge this and clarify production would use Google Maps API. Traceability matrix folds this into "map + pins" without calling out the substitution — minor gap in documentation only.
+
+### 2. Technology Choices
+- Vite + React 18 + Leaflet: appropriate for complexity and iframe hosting model
+- Flask blueprint + SQLite (isolated tables): correct per CLAUDE.md pattern
+- JWT + bcrypt: standard, solid
+- Canvas resize client-side before upload: smart mitigation for Waitress body limit
+- CartoDB Voyager tiles: no CORS issues, correct fallback for no Google Maps key
+
+**Verdict: appropriate**
+
+### 3. Testing Approach
+No explicit test plan defined. Acceptable for this workflow (deploy-test step handles live Playwright testing as the QA gate). Demo-builder should verify the Vite build and first-paint before handoff. No gap that would block build.
+
+### 4. Scope Feasibility (10/10 richness)
+- 13 frontend source files, 10 backend routes, 4 SQLite tables: well-scoped and component-level clear
+- Risk: 75 park descriptions x 3 sentences hand-curated is time-intensive; flagged as open, tractable
+- Waitress body size limit and ArcGIS fallback both have explicit mitigations
+- File budget: 2 deployed files (index.html + assets/) — well within 12-file cap
+- Feasible, though park data curation is the single biggest build-time risk
+
+### 5. Design Direction
+- MN official brand palette (navy `#003865`, forest green `#2D5A3D`, gold `#FFC845`, cream `#F5E1A4`): excellent fit for MN state parks / outdoors / government agency aesthetic
+- Playfair Display + Inter: refined but accessible, fits exploratory nature app
+- CartoDB Voyager tiles: muted, clean, outdoorsy — pairs well with palette
+- Mood: earthy, adventurous, distinctly MN-branded
+- Not using michaelwegter.com look: confirmed
+
+**Verdict: excellent industry fit**
+
+---
+
+## Problems
+
+1. **Google Maps substitution not explicit in traceability matrix** — Req row 1 should acknowledge the Leaflet substitution explicitly so cover letter writer knows to address it. Minor documentation gap, not a build blocker.
+2. **No photo DELETE route** — API routes define POST photos and GET photo but no DELETE. Should be added so users can remove unwanted photos from a visit.
+3. **Park description curation scope** — 75 parks is the single biggest build-time unknown. Demo-builder should be briefed to prioritize a hardcoded parks.js with all lat/lng and at least placeholder descriptions over a live ArcGIS fetch that could fail.
+
+None of these are blocking failures. Google Maps substitution is acknowledged and mitigated. The other two are demo-builder tasks.
+
+---
+
+## handoff
+- produced: rubric evaluation of planner.out; all 8 requirements verified covered; 3 non-blocking issues noted
+- decisions: VERDICT pass; Leaflet substitution acceptable for demo with cover letter disclosure; photo DELETE route and park seed curation delegated to demo-builder
+- next needs: CEO review then demo-builder; cover letter must explicitly address Leaflet-not-Google-Maps; demo-builder should hardcode parks.js fallback first before attempting ArcGIS fetch
+- risks: 75-park description curation remains open; photo DELETE missing from spec (demo-builder should add)
+
+VERDICT: pass

@@ -1,0 +1,26 @@
+# CEO Review (Plan) — solo-law
+
+Verified plan-eval.out (84% PASS) against planner.out and the brief (10/10 richness). Concur with the eval. Plan is genuinely strong enough to build a winning demo: full Angular 18/TS/Tailwind public site + JWT CMS + Flask OOP blueprint + 4-step WebLLM agentic loop, locked editorial design system, complete req→feature traceability (8/8 + 3 nth-tier). No planner re-pass needed.
+
+## CEO calls (binding constraints for demo-builder, beyond eval's 5)
+
+1. **FR locale contradiction must be resolved, not papered over.** Plan body says backend content = EN/ES only, FR = UI strings; the planner handoff says "seed 4 PA + 5 pubs (EN+ES+FR)". These conflict. Decision: backend content is **EN + ES** (real bilingual depth is the win); FR toggle switches UI chrome only and shows a tasteful "Available in English and Spanish" note on content. Do NOT half-seed FR content. This keeps the multilingual claim honest in the cover letter.
+
+2. **WebLLM CDN import is the #1 build risk — get it right first.** ESM CDN (`esm.run/@mlc-ai/web-llm`) MUST be imported only inside `webllm-worker.js`; `ai-agent.service.ts` talks to it via `WebWorkerMLCEngine` + postMessage. Mock fallback (no `navigator.gpu`) must render a clean banner + template output so the agentic loop is demonstrable in headless deploy-test. The draft→reflect→eval→decide loop is the hero — it must be visibly real (step indicators) even in mock mode.
+
+3. **Scope discipline at 10/10.** 8 public + 8 CMS routes is the right ambition, but the 12-file budget is tight and the 3-min build cap is real. Prioritize, in order: (a) editorial public site that screams "elite firm", (b) working bilingual CMS CRUD with login, (c) the agentic AI panel. If time pressure hits, the AI panel may ship with the loop fully working on Phi-3.5/Llama-3.2 fallback + mock — never cut the CMS CRUD or the design polish, since those are what the posting is graded on. Use OnPush + standalone components to keep build fast.
+
+4. **Finalize the seed credential** (`editor@soloaw.demo` is a typo): standardize to `editor@solo-law.demo` / `Demo2026!`, seed it, and record it in the build report so deploy-test can log in.
+
+5. **Drop a minimal `e2e/playwright.config.ts` stub** with the documented WebGPU flags so deploy-test adds assertions without setup overhead.
+
+## Why pass (not redirect)
+All open items are implementation-time constraints correctly owned by demo-builder, not gaps in research or planning. Research is integrated (Q1–Q6 answered), design is industry-correct (no portfolio bleed), tech stack matches the client's explicit asks (Angular/TS/Tailwind, Python OOP, browser-GPU agentic AI with reflection+rubric-eval). No earlier step needs re-running.
+
+## handoff
+- produced: plan-ceo.out — CEO sign-off on the plan; 5 binding constraints layered on top of plan-eval's issues
+- decisions: PASS, no redirect; backend content EN+ES only (FR = UI-only chrome with a note); WebLLM import worker-only; build priority order PA-site > CMS CRUD > AI panel; seed cred = editor@solo-law.demo / Demo2026!
+- next_needs: demo-builder executes the 9-step build sequence honoring eval's 5 issues + these 5 CEO constraints
+- risks: WebLLM CDN/worker wiring and the 12-file/3-min build cap are the two things most likely to slip; mock fallback must keep the agentic loop demonstrable headless
+
+VERDICT: pass

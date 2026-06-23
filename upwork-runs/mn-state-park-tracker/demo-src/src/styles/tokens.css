@@ -1,0 +1,50 @@
+/* tokens.css — MN State Park Tracker design tokens */
+:root {
+  --navy:         #003865;
+  --navy-light:   #004a87;
+  --forest:       #2D5A3D;
+  --forest-light: #3d7a54;
+  --gold:         #FFC845;
+  --gold-dark:    #e6b000;
+  --teal:         #008EAA;
+  --cream:        #F5E1A4;
+  --page-bg:      #FAFAF2;
+  --text-dark:    #1A2B1F;
+  --muted:        #A8A8A0;
+  --card-bg:      #FFFFFF;
+  --border:       #E5E0D0;
+  --red:          #C0392B;
+
+  --radius-card:   8px;
+  --radius-drawer: 16px;
+  --radius-input:  4px;
+  --radius-badge:  10px;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.18);
+  --shadow-drawer: -4px 0 32px rgba(0,0,0,0.14);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root { height: 100%; width: 100%; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--page-bg);
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+button { cursor: pointer; font-family: var(--font-body); }
+input, textarea { font-family: var(--font-body); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }

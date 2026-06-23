@@ -1,0 +1,46 @@
+{
+  "nav": {
+    "practice_areas": "Domaines de pratique",
+    "publications": "Publications",
+    "about": "À propos",
+    "contact": "Contact",
+    "cms_login": "Connexion éditeur"
+  },
+  "hero": {
+    "tagline": "Conseils sophistiqués pour des affaires complexes",
+    "subhead": "Un cabinet boutique offrant des services juridiques de qualité institutionnelle.",
+    "cta": "Découvrir notre travail"
+  },
+  "pa": { "heading": "Domaines de pratique", "subhead": "Expertise approfondie dans les affaires commerciales complexes." },
+  "pub": {
+    "heading": "Publications",
+    "filter_all": "Tout", "filter_alerts": "Alertes",
+    "filter_articles": "Articles", "filter_news": "Actualités", "read_more": "Lire la suite"
+  },
+  "contact": {
+    "heading": "Contact",
+    "subhead": "Les demandes sont confidentielles.",
+    "name": "Nom", "email": "E-mail", "matter": "Nature de l'affaire",
+    "message": "Message", "send": "Envoyer", "sent": "Demande envoyée.",
+    "disclaimer": "Contacter ce cabinet ne crée pas de relation avocat-client."
+  },
+  "footer": {
+    "rights": "Tous droits réservés.",
+    "disclaimer": "Publicité d'avocat. Les résultats passés ne garantissent pas de résultats similaires."
+  },
+  "cms": {
+    "login": "Connexion éditeur", "email": "E-mail", "password": "Mot de passe",
+    "sign_in": "Se connecter", "logout": "Déconnexion", "save": "Enregistrer",
+    "delete": "Supprimer", "cancel": "Annuler", "edit": "Modifier", "new": "Nouveau",
+    "ai_assist": "Assistant IA", "ai_generate": "Générer", "ai_accept": "Accepter", "ai_dismiss": "Ignorer",
+    "dashboard": "Tableau de bord", "practice_areas": "Domaines de pratique",
+    "publications": "Publications", "brand_assets": "Actifs de marque", "translations": "Traductions",
+    "ai_task_draft": "Rédiger", "ai_task_translate_en_es": "Traduire EN → ES",
+    "ai_task_translate_es_en": "Traduire ES → EN", "ai_task_refine": "Affiner",
+    "ai_instruction": "Instruction", "ai_drafting": "Rédaction...", "ai_reflecting": "Réflexion...",
+    "ai_evaluating": "Évaluation...", "ai_done": "Terminé", "ai_load_model": "Charger le modèle IA",
+    "ai_loading": "Chargement du modèle...", "no_items": "Aucun élément.", "confirm_delete": "Supprimer cet élément?"
+  },
+  "locale_switcher": { "en": "EN", "es": "ES", "fr": "FR" },
+  "locale": { "content_unavailable": "Ce contenu est disponible en anglais et en espagnol." }
+}

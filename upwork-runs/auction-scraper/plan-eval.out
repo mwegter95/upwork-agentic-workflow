@@ -1,0 +1,98 @@
+# Plan Eval — auction-scraper
+
+## Rubric Check
+
+### 1. All Requirements Covered?
+
+| Requirement | Coverage | Note |
+|---|---|---|
+| Python scrapers, 3+ sites | ✓ | LelandLittle / Heritage / Bonhams |
+| JS-rendered pages + browser automation | ✓ | Playwright for Heritage + Bonhams |
+| Lighter tool for static pages | ✓ | requests+BS4 for Leland Little — tool judgment explicit |
+| Consistent normalized JSON | ✓ | Schema defined §4; JSON inspector panel shows both raw + normalized |
+| Rate limiting / retries / error logging | ✓ | SSE events → telemetry log; crawl delays per source (2s/15s/3s) |
+| Respectful scraping / flag hardened sites | ✓ | `flagged_for_api` SSE event for Heritage 403; seeded fallback |
+| Images | ✓ | Image proxy (referrer bypass) + card thumbnails + lightbox |
+| Per-scraper documentation | ✓ | README + code comments in GitHub repo |
+| Catalog discovery before sale date | ✓ | `sale_date` field; catalog-level scrape |
+| Live "run scraper" trigger from UI | ✓ | POST /scrape → SSE stream; cards accumulate in real time |
+| JSON view of normalized data | ✓ | JSON inspector + global View Dataset + export |
+| Michael: U.S. Bank Python ownership | ✓ | Traceability row + cover letter lead |
+| Michael: Playwright/Puppeteer history | ✓ | Cover letter screening Q2 |
+| Link existing scraper code | ✓ | New public GitHub repo created by demo-builder |
+| BROCCOLI start word | ✓ | Explicitly delegated to proposal-writer |
+| Screening Q1 (JS-heavy site) | ✓ | Cover letter |
+| Screening Q2 (tech stack rationale) | ✓ | Cover letter + telemetry shows tool per source |
+| Screening Q3 (rate limiting) | ✓ | Telemetry log IS the live answer |
+
+No requirements missing or unaddressed.
+
+---
+
+### 2. Right Technologies?
+
+- **requests+BS4 for Leland Little** — correct; static HTML, no JS needed, lightest possible tool
+- **Playwright + JSON-LD for Heritage** — correct; JS-rendered, structured data extraction is the right approach; 403 fallback is well-reasoned
+- **Playwright + `/_next/data` intercept for Bonhams** — correct; Next.js apps expose this internal API; efficient alternative to full DOM parsing
+- **SSE (text/event-stream)** — correct choice over WebSockets for unidirectional server-push; no polling
+- **Flask Blueprint on mw-backend** — correct deployment model per CLAUDE.md
+- **Vanilla JS + no bundler** — correct for demo complexity; 3 files stays well within the ~12-file cap
+
+No technology concerns.
+
+---
+
+### 3. Testing Approach Defined?
+
+- ✓ demo-builder self-test: load locally, verify SSE fires, cards appear, JSON inspector opens, telemetry populates (§12 step g)
+- ✓ deploy-test (Playwright against live): Run Scraper → SSE events arrive → lot cards render → JSON inspector opens Heritage lot with raw JSON-LD → telemetry log shows rate_limit_pause → export downloads JSON
+- ✓ Health endpoint: `GET /health` returns `{ok, playwright_available}`
+
+Testing approach is defined and exercising all hero + supporting features.
+
+---
+
+### 4. Scope Feasible at Richness 10?
+
+**Yes, with one flag:**
+
+The plan specifies 4 supporting features (JSON inspector, image rendering/lightbox, telemetry log, filters/export) against the CLAUDE.md guideline of "at most 2 supporting." However:
+- All 4 land in the same 3-file frontend (index.html / app.js / styles.css) — no file-count pressure
+- Each is lightweight UI around SSE data already in memory; no additional async complexity
+- Feature richness 10 explicitly calls for "several working features"
+- The CEO review after demo-builder will catch scope overrun if demo-builder can't finish cleanly
+
+Assessment: scope is stretched but defensible at richness 10. Flag to CEO to watch for build overrun, not a plan failure.
+
+**GitHub repo creation risk:** No public `github.com/michaelwegter` profile exists. demo-builder must create a public repo via `gh repo create` — requires `gh` auth token. This is an execution risk, flagged and delegated correctly.
+
+---
+
+### 5. Design Direction Fit for Industry?
+
+- **Cormorant Garamond** (display serif) + **Inter** (UI/code): perfect tension between auction-house elegance and data-console precision
+- **Ivory/parchment background** (#F5F2ED): auction house material culture
+- **Antique gold accent** (#8B6914): strongly genre-appropriate
+- **Dark code surface** (#1E1E1E) for JSON inspector: ETL/developer tool register
+- Source status badges (green/amber/red): dashboard/pipeline visual language
+- Zero overlap with michaelwegter.com palette or typography
+
+Design direction is well-chosen and industry-appropriate.
+
+---
+
+## Problems
+
+1. **4 supporting features vs 2-max guideline** — flagged for CEO attention; not a fail at richness 10 with 3-file frontend
+2. **GitHub repo creation dependency** — execution risk; demo-builder must have `gh` auth working before step f; no mitigation if token is absent (propose fallback: Gist or skip repo, inline code in README served from demo)
+3. **Heritage seeded fallback** — 8 lots is sufficient but demo-builder must ensure seed data is high-quality (real lot details, real image URLs that resolve, real JSON-LD structure) to tell the transformation story convincingly
+
+---
+
+VERDICT: pass
+
+## handoff
+- produced: Rubric evaluation — plan passes on all 5 criteria (requirements, tech, testing, scope, design)
+- decisions: 4 supporting features acceptable at richness 10; GitHub repo creation flagged as execution risk; seeded Heritage data quality is demo-builder's responsibility
+- next needs: CEO reviews plan + this eval, then hands to demo-builder; demo-builder must verify `gh` auth before step f and seed 8 real Heritage lots with resolving image URLs
+- risks: `gh` auth token absent = GitHub repo unlinked in proposal (cover letter cannot satisfy "link existing scraper code"); Heritage seeds with broken image URLs would undermine image proxy feature

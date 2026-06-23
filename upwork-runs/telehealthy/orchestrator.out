@@ -1,0 +1,53 @@
+# Orchestrator — TeleHealthy run setup
+
+## Identity
+- slug: `telehealthy`
+- run dir: `upwork-runs/telehealthy/`
+- demo path: `../michaelwegter.com/public/demos/telehealthy/` → live `/demos/telehealthy/`, framed at `/work-samples/telehealthy`
+- feature richness: 10/10 (full, production-quality, several real working features)
+
+## Startup brief (what the client wants)
+Client "TeleHealthy" — healthcare/service business building an AI phone system. Two linked capabilities:
+1. **AI Receptionist** — 24/7 inbound: greeting → intent detection → booking / FAQ / escalation, SMS confirmations, warm human handoff on low confidence.
+2. **AI Outbound Caller** — automated follow-up/reminder calls with dynamic scripts pulled from CRM contact fields.
+Cross-cutting: CRM integration (GoHighLevel or similar), webhooks for appointment confirm + SMS, call recording + transcript logging + analytics dashboard.
+Nice-to-have: healthcare/psychiatry workflow familiarity, n8n/Make orchestration, multilingual (English primary).
+Client explicitly wants this proven by someone who has shipped real voice AI — not a basic chatbot.
+
+**Michael's framing (decisive):** Demonstrate via a **web app** that **simulates the phone-answering system** plus a **browser GPU-based AI messaging system**. Everything demoable in-browser. So the demo is a self-contained simulation of the voice/agent platform, not a real telephony integration.
+
+## Demo concept (recommendation to planner)
+A single-screen **"TeleHealthy Voice Ops Console"** web app that shows the whole platform working in simulation:
+- **Inbound call simulator:** a ringing call comes in, the AI receptionist greets, detects intent (book / FAQ / escalate), runs the booking flow, fires a (simulated) SMS confirmation, and demonstrates a warm-transfer handoff when confidence is low. Live transcript pane with confidence scores.
+- **Browser-GPU AI messaging:** an in-browser LLM (WebLLM / WebGPU, e.g. a small instruct model) powering the conversation so it genuinely runs client-side on the GPU — this directly satisfies Michael's "browser GPU based AI messaging" ask and makes the demo provably real, not scripted. Provide a scripted-fallback if WebGPU is unavailable so the demo never dead-ends.
+- **Outbound dialer:** pick a CRM contact, the app composes a dynamic script from that contact's fields (name, appt date, last visit, meds reminder) and plays the call as a simulated outbound conversation.
+- **CRM panel:** mock GoHighLevel-style contact list driving the dynamic scripts.
+- **Analytics dashboard:** call volume, intents breakdown, booking rate, escalation rate, avg confidence, recordings/transcripts list.
+- **Webhook/automation view:** show the n8n/Make-style flow (greeting → intent → booking → webhook → SMS) as a visual pipeline that lights up as a call runs.
+
+This hits every explicit requirement and the nice-to-haves visibly, at richness 10.
+
+## Prototype vs full decision
+**Build FULL.** No cap trips: the hero (browser-GPU AI conversation) is achievable client-side via WebLLM/WebGPU with a scripted fallback; everything else is simulation with mock CRM data — no external telephony/CRM backend required. mw-backend is OPTIONAL: a small blueprint could log transcripts/serve analytics, but the demo can be fully self-contained frontend + WebGPU. Recommend frontend-only unless planner wants persisted call logs (then a thin Flask blueprint). Default: frontend-only, self-contained app.
+
+## Design direction (for planner to finalize)
+NOT michaelwegter.com's look. Target a **clinical-but-modern healthtech** aesthetic: calm, trustworthy, accessible. Think soft teal/clinical-green primary, clean whites, one warm accent for the "live call" state, generous spacing, a real UI font (e.g. Inter or DM Sans + a friendly display). Voice/call UI conventions: waveform, call timers, confidence meters, transcript bubbles. Researcher to pull real GoHighLevel + healthcare voice-AI (Vapi/Retell/Bland) visual conventions; planner to lock palette/fonts.
+
+## Plan of attack (pipeline)
+intake → planner → CEO → researcher → demo-builder → deploy → deploy-test → media-capture → proposal-writer → evaluator. (with-ceo + with-deploy layout.)
+- **intake:** parse posting into brief.json; capture all 6 explicit "what I need built" items + 3 nice-to-haves as gradable requirements; note Michael's web-app simulation + browser-GPU constraint.
+- **planner:** lock demo concept above, hero = browser-GPU AI receptionist conversation; supporting (≤2) = outbound dynamic-script dialer + analytics dashboard; fold CRM panel/webhook view into those. Decide frontend-only vs thin blueprint. Lock design system. Build requirement→feature traceability matrix.
+- **researcher:** WebLLM/WebGPU API + a suitable small model id; GoHighLevel/voice-AI UX conventions; clone target = `src/data/apps.js` + `AppFrame.jsx` mechanics.
+- **demo-builder:** implement in `public/demos/telehealthy/`, register in `workSamples.js`, add navbar "Work Samples" link if missing.
+
+## Quality guidance / risks
+- **Browser-GPU is the credibility hook AND the top risk.** WebLLM model download is large and WebGPU support varies. MUST ship a deterministic scripted fallback so the live demo (and deploy-test on CI) never hangs or shows console errors on first paint. First paint must work without waiting on a model download (lazy-load the model behind a "Start AI" control).
+- Keep simulation honest: label it a simulation of the real telephony/CRM stack so the client trusts it, while making the AI conversation genuinely real (WebGPU).
+- Hard gates: every brief requirement in cover letter AND demo/deck; demo link in cover letter + deck; no em/en dashes; bespoke healthtech design; no console errors first paint; live route 200.
+- Caps: 1 hero + ≤2 supporting, ≤12 demo files, 3-min build, ≤6 research fetches.
+
+## handoff
+- produced: run identity (slug `telehealthy`), startup brief, full demo concept, full-build decision, design direction, pipeline plan, risk list.
+- decisions: build FULL frontend-only self-contained app; hero = browser-GPU (WebLLM/WebGPU) AI receptionist conversation with scripted fallback; simulate telephony/CRM with mock data; bespoke clinical-healthtech design (NOT portfolio look).
+- next needs (intake): produce brief.json capturing all 6 build items + 3 nice-to-haves as gradable requirements; record Michael's "web app simulation + browser-GPU messaging" constraint as a hard requirement.
+- risks: WebGPU/model-download fragility (mandate lazy-load + scripted fallback, no first-paint dependency); keep "simulation" labeling honest; thin Flask blueprint only if planner wants persisted call logs.

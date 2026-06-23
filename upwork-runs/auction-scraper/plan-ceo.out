@@ -1,0 +1,29 @@
+# CEO Review (Plan) — auction-scraper
+
+## Verdict reasoning
+Plan is genuinely strong and build-ready at feature richness 10. Eval passed all 5 criteria; I independently verified the two execution risks it flagged and both are clear.
+
+## Strengths
+- Demo concept (live SSE scrape console) IS the proposal — proves scraping depth, tool judgment (3 distinct strategies: requests+BS4 static, Playwright+JSON-LD, Playwright+`/_next/data`), and respectful-scraping posture in one artifact. Directly answers screening Q1/Q2/Q3.
+- Full req→feature traceability; every posting requirement maps to a working demo feature or proposal line, including Michael's U.S. Bank Python ownership + Playwright/Puppeteer history.
+- `flagged_for_api` + seeded Heritage fallback turns the unavoidable 403 into a demonstration of the exact "flag hardened sites, don't defeat protection" behavior the client demands. Excellent.
+- Bespoke design (Cormorant Garamond + Inter, ivory/antique-gold/charcoal-code) fits auction-house + ETL register; zero portfolio-palette overlap.
+
+## Verified execution risks (de-risked)
+1. **GitHub repo** — `gh auth status` confirms logged in as account **`mwegter95`** with `repo` scope. Repo creation is viable. CORRECTION for demo-builder: the existing profile is `github.com/mwegter95`, NOT `github.com/michaelwegter` (that 404 in §11 is why). Create + push under `mwegter95`; pass that URL to proposal-writer so "link existing scraper code" (a hard posting requirement, GitHub preferred) is satisfied.
+2. **Backend health** — `api.michaelwegter.com/health` returns Flask-shaped JSON. Blueprint deploy path is clear.
+
+## Notes to carry forward (not blockers)
+- 4 supporting features exceeds the CLAUDE.md "≤2 supporting" guideline but is justified at richness 10 and all land in the same 3-file frontend. I will watch for build overrun at build-ceo; if demo-builder cannot finish cleanly, drop Filters+Export (Supporting 4) first — it is the least tied to a screening question.
+- Heritage seed quality is load-bearing: 8 seeds must have real lot detail, resolving image URLs (test through the image proxy), and authentic JSON-LD structure so the raw→normalized transformation story is convincing. demo-builder owns this.
+- Confirm `playwright install chromium` on the Surface via `/health` `playwright_available` before relying on live Heritage/Bonhams runs.
+
+No earlier step needs redoing. Requirements were fully captured at intake; plan and research are sufficient. Proceed to demo-builder.
+
+## handoff
+- produced: CEO pass on plan; verified gh auth + backend health firsthand
+- decisions: pass as-is; GitHub account is `mwegter95` not `michaelwegter` (correction to §11/§9); keep 4 features but Filters+Export is the drop-first if build overruns
+- next needs: demo-builder builds per planner.out §12, targets repo under `mwegter95`, seeds 8 real resolvable Heritage lots, verifies playwright_available
+- risks: Heritage seed image URLs must resolve through the proxy; build overrun on 4 supporting features (mitigated by drop-order above)
+
+VERDICT: pass

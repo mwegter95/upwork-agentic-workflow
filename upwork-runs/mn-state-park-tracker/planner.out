@@ -1,0 +1,183 @@
+# Plan — MN State Park Tracker
+
+**STATUS: READY** — Research integrated. All blockers resolved.
+
+---
+
+## Demo Concept
+
+Full-stack personal state park journal and explorer. React (Vite) frontend + Flask blueprint on mw-backend. User logs in, sees a Leaflet map of all ~75 MN state parks with color-coded custom pins (visited vs. unvisited). Side panel shows a synced list view. Clicking a park opens a detail drawer: description, amenities, distance from home, and a "Log Visit" form (date, attendees, photos, memory note). Home location is set once from a settings panel (browser geolocation or lat/lng input) and persists per user.
+
+---
+
+## Prototype vs Full
+
+**FULL.** Richness 10/10. Real backend required for auth, per-user data, filesystem photo storage.
+No prototype fallback — all 8 acceptance criteria require live functionality.
+
+---
+
+## Hero Feature
+
+**Map + List Dual View with Per-Park Visit Logging**
+- Leaflet + CartoDB Voyager tiles (primary path; no Google Maps API key available)
+- Custom `L.divIcon` SVG pins: filled green pine = visited, outlined gray pine = unvisited
+- Side list panel: filterable (All / Visited / Unvisited), sortable by distance from home
+- Map + list two-way sync: click pin -> highlight list row; click list row -> `map.flyTo()` + highlight pin
+- Visit log drawer per park: date picker, attendees (tag chips or comma input), notes textarea, photo upload (mobile camera-roll `<input accept="image/*" capture="environment">`)
+- Client-side image resize to max 1200px / JPEG 0.75 via `<canvas>` before upload
+- Visit data stored in backend SQLite; photos on filesystem
+
+---
+
+## Supporting Features
+
+**1. Park Explorer / Details**
+- Every park seeded with: name, lat/lng (from MN DNR ArcGIS REST), region, acreage, key amenities, DNR URL, hand-curated description (3 sentences)
+- Detail drawer shows full info for unvisited parks with "Log First Visit" CTA
+- Visit history tab for visited parks (list of visits with dates, photos, notes)
+
+**2. Home Location + Distance**
+- Settings panel: set home via browser `navigator.geolocation` or manual lat/lng input (no Geocoding API needed)
+- Haversine distance from home to each park computed client-side
+- Distance displayed on list rows, in detail drawer, and on pin tooltip
+- List sortable by distance (nearest first); home marker on map (house icon, navy)
+
+---
+
+## Architecture
+
+### Frontend (Vite + React 18)
+
+Source: `upwork-runs/mn-state-park-tracker/demo-src/`
+Build output: `../michaelwegter.com/public/demos/mn-state-park-tracker/`
+Base path (Vite config): `/demos/mn-state-park-tracker/`
+
+**Key source files:**
+| File | Role |
+|------|------|
+| `src/main.jsx` | React root, app mount |
+| `src/App.jsx` | Auth gate, view router (map vs. login) |
+| `src/components/MapView.jsx` | Leaflet map, custom pins, park data layer, two-way sync |
+| `src/components/ParkList.jsx` | Sidebar list, filter bar, distance sort |
+| `src/components/ParkDrawer.jsx` | Slide-in detail: park info + visit log tabs |
+| `src/components/VisitLogForm.jsx` | Date, attendees, notes, photo upload + canvas resize |
+| `src/components/AuthModal.jsx` | Login / signup forms |
+| `src/components/SettingsPanel.jsx` | Home location input |
+| `src/data/parks.js` | Static seed: all ~75 MN state parks (name, lat/lng, description, amenities) |
+| `src/utils/haversine.js` | Distance calculator |
+| `src/api/client.js` | Fetch wrapper: base URL, JWT injection, error handling |
+| `src/styles/tokens.css` | Design tokens (palette, typography, spacing) |
+| `src/styles/app.css` | Layout, component styles |
+
+Dist output: `index.html` + `assets/` bundle — fits well under 12-file demo budget.
+
+### Backend (mw-backend Flask blueprint)
+
+Blueprint: `mn_parks_blueprint.py`, prefix `/mn-parks`
+
+**Routes:**
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/mn-parks/auth/register` | — | Create account, return JWT |
+| POST | `/mn-parks/auth/login` | — | Verify creds, return JWT |
+| GET | `/mn-parks/parks` | — | All park records (static seed or DB) |
+| GET | `/mn-parks/visits` | JWT | All user visits |
+| POST | `/mn-parks/visits` | JWT | Create visit (JSON: park_id, date, attendees, notes) |
+| DELETE | `/mn-parks/visits/<vid>` | JWT | Remove visit |
+| POST | `/mn-parks/visits/<vid>/photos` | JWT | Upload photo (multipart, after client-side resize) |
+| GET | `/mn-parks/visits/<vid>/photos/<pid>` | JWT | Serve photo file |
+| GET | `/mn-parks/user/home` | JWT | Get home lat/lng |
+| PUT | `/mn-parks/user/home` | JWT | Set home lat/lng |
+
+**SQLite tables (new, isolated):**
+- `mn_users(id, email, password_hash, created_at)`
+- `mn_visits(id, user_id, park_id, date_visited, attendees TEXT, notes TEXT, created_at)`
+- `mn_photos(id, visit_id, file_path TEXT, created_at)`
+- `mn_user_settings(user_id, home_lat REAL, home_lng REAL)`
+
+**Photo storage:** Filesystem at `mw-backend/data/mn-parks-photos/<user_id>/<visit_id>/`. Flask serves via `send_file()`. DB stores relative path only.
+
+**Seeded demo account:** `demo@mnparks.test` / `Parks2024!` (hard-coded in seed step at startup)
+
+### Data
+
+**Park lat/lng:** MN DNR ArcGIS REST endpoint (called server-side at seed time):
+```
+https://arcgis.dnr.state.mn.us/host/rest/services/Hosted/Minnesota_State_Parks_Recreation_Areas_Waysides/FeatureServer/1/query?where=1%3D1&outFields=*&returnCentroid=true&f=geojson
+```
+Fallback if endpoint fails at build time: fully hand-curated lat/lng array in `parks.js` (demo-builder must have both ready).
+
+**Descriptions/amenities:** Hand-curated 3-sentence descriptions + amenity arrays for all ~75 parks, shipped as static `parks.js` in the frontend. Demo-builder writes these (researched from MN DNR park pages).
+
+---
+
+## Design System (bespoke MN outdoors — NOT portfolio palette)
+
+| Token | Value | Use |
+|-------|-------|-----|
+| Navy | `#003865` | Header/nav bg, strong text, official MN brand |
+| Forest green | `#2D5A3D` | Visited markers, success states |
+| Gold | `#FFC845` | CTAs, "Mark Visited" button, visited badges — MN brand accent |
+| Teal | `#008EAA` | Links, active states, lake-inspired accents |
+| Cream | `#F5E1A4` | Card backgrounds, warm panels — official MN brand cream |
+| Page bg | `#FAFAF2` | App background |
+| Dark body text | `#1A2B1F` | Primary text |
+| Muted gray | `#A8A8A0` | Unvisited markers, secondary labels |
+| Visited pin | `#2D5A3D` fill, white pine SVG glyph |
+| Unvisited pin | `#A8A8A0` fill, white outline pine glyph |
+| Home pin | House SVG, `#003865` |
+| Font: Display | Playfair Display 700 (park names, H1/H2) — Google Fonts |
+| Font: Body | Inter 400/500/600 (UI, descriptions) — Google Fonts |
+| Map tiles | CartoDB Voyager (muted, clean, outdoorsy) |
+| Border radius | 8px cards, 16px drawers, 4px inputs |
+| Mood | Earthy, adventurous, MN-branded; topographic texture on hero header |
+
+---
+
+## File Budget
+
+Frontend build output:
+```
+public/demos/mn-state-park-tracker/
+├── index.html
+└── assets/
+    ├── main-[hash].js   (bundled React + all deps)
+    └── main-[hash].css
+```
+2 deployed files (well under 12 budget); source tree has ~13 files (acceptable, budget applies to deployed output).
+
+---
+
+## Requirement Traceability
+
+| Req # | Requirement | Feature / Component | Files |
+|-------|-------------|---------------------|-------|
+| 1 | Interactive map + pins | MapView.jsx; Leaflet; custom L.divIcon pins | MapView.jsx, parks.js |
+| 2 | List view synced with map | ParkList.jsx + context event bus | ParkList.jsx, App.jsx |
+| 3 | Mark visited / persisted | VisitLogForm; POST /visits; pin color swap | VisitLogForm.jsx, client.js, blueprint |
+| 4 | Photos, notes, attendees, date | VisitLogForm; canvas resize; filesystem upload | VisitLogForm.jsx, blueprint |
+| 5 | Login / auth + isolation | AuthModal; JWT in localStorage; all routes scoped | AuthModal.jsx, client.js, blueprint |
+| 6 | Park descriptions + exploration | ParkDrawer; seeded parks.js | ParkDrawer.jsx, parks.js |
+| 7 | Home location + distance | SettingsPanel; haversine.js; /user/home; map home pin | SettingsPanel.jsx, haversine.js, blueprint |
+| 8 | UX: sleek, beautiful, mobile | tokens.css; app.css; responsive layout | tokens.css, app.css |
+
+---
+
+## Risk Register (post-research)
+
+| Risk | Mitigation | Status |
+|------|-----------|--------|
+| ArcGIS REST endpoint fails at build time | Demo-builder prepares hand-curated lat/lng fallback array | Open |
+| Photo upload fails on mobile (large files) | Client-side canvas resize to 1200px / JPEG 0.75 before POST | Planned |
+| Waitress default 1MB body limit | Set `max_request_body_size` in waitress call; after client resize, uploads are 150-400KB | Planned |
+| Park description quality for ~75 parks | Demo-builder hand-curates from DNR park pages; 75 x 3 sentences is tractable | Open |
+| Leaflet + CartoDB tiles CORS in iframe | CartoDB tiles are publicly served; no CORS issue | Resolved |
+
+---
+
+## handoff
+- produced: final, research-integrated build plan; all 7 research questions resolved; architecture confirmed with two changes from original plan (Leaflet primary, filesystem photos)
+- decisions: FULL build 10/10; Vite+React frontend; Leaflet+CartoDB Voyager (no Google Maps key); filesystem photo storage with client-side canvas resize; Playfair Display+Inter; MN official brand palette (navy+gold+cream+forest green); hand-curated park descriptions in static parks.js; ArcGIS REST for lat/lng at seed time
+- next needs: demo-builder to scaffold Vite+React app, curate ~75 park records into parks.js, build Flask blueprint with filesystem photo routes, seeded demo account, and responsive split-pane UI
+- risks: ArcGIS endpoint needs live test at build time (fallback JSON ready); waitress body size limit must be raised before photo upload testing; park description curation is time-intensive but tractable

@@ -1,0 +1,36 @@
+# Deploy — solo-law
+
+## Actions taken
+
+### mw-backend
+- Committed: `solo_law_blueprint.py` (new, 681 lines) + `server.py` (blueprint registration)
+- Pushed to `main` → Surface auto-deploy pulled + restarted Flask
+- Verified after ~35s:
+  - `api.michaelwegter.com/health` → `{"status":"ok","version":"1.0.0"}` ✓
+  - `api.michaelwegter.com/solo-law/health` → `{"ok":true,"service":"solo-law"}` ✓
+
+### michaelwegter.com
+- Committed: `public/demos/solo-law/` (30 files: Angular chunks, i18n assets, webllm-worker.js) + `src/data/workSamples.js`
+- Pushed to `main` → GH Pages auto-deployed
+- Verified:
+  - `https://michaelwegter.com/demos/solo-law/` → HTTP 200 ✓
+  - `/work-samples` → 404 (expected SPA behavior, 404.html redirect handles it) ✓
+
+### CORS
+- `Origin: https://michaelwegter.com` against `api.michaelwegter.com/solo-law/health`
+  → `access-control-allow-origin: https://michaelwegter.com` ✓
+  → Pre-deploy CORS risk confirmed resolved
+
+## Live URLs
+- Demo: https://michaelwegter.com/demos/solo-law/
+- Work sample: https://michaelwegter.com/work-samples/solo-law (SPA route)
+- API: https://api.michaelwegter.com/solo-law/
+
+## CMS credentials for deploy-test
+- editor@solo-law.demo / Demo2026! (as specified in build-ceo.out)
+
+## handoff
+- produced: both repos pushed and live; Flask blueprint serving at /solo-law/*, demo at /demos/solo-law/ (200), CORS confirmed from michaelwegter.com origin
+- decisions: /work-samples 404 is SPA behavior (expected), not a defect; no backend seed step needed (blueprint seeds on first request)
+- next needs: deploy-test must exercise CMS login (editor@solo-law.demo / Demo2026!), locale switch (EN/ES/FR), and at least one live API call (practice-areas or publications) from the deployed origin
+- risks: WebLLM/WebGPU agentic AI requires a WebGPU-capable browser — may be absent in headless Playwright; test should fall back to mock mode gracefully (confirmed in build)

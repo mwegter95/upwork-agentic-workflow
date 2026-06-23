@@ -1,0 +1,86 @@
+# Demo Builder — solo-law
+
+## What was built
+
+Full-stack boutique law firm site. Angular 19 + TypeScript + Tailwind CSS frontend; Flask OOP backend with JWT-auth CMS; browser-GPU WebLLM agentic AI panel.
+
+### Frontend (Angular 19, built + deployed to `public/demos/solo-law/`)
+
+**Public site:**
+- `HomeComponent` — full-bleed Unsplash B&W hero (grayscale filter), practice areas grid preview, recent publications teaser, footer with attorney advertising disclaimer
+- `PaListComponent` — editorial card grid (grayscale Unsplash hero per PA), locale-reactive via ngx-translate
+- `PaDetailComponent` — full-width B&W hero image, body_html prose, related publications list
+- `PubListComponent` — tabbed filter bar (All / Articles / Alerts / News), date + author byline, locale-reactive
+- `PubDetailComponent` — article body_html, excerpt standfirst, legal disclaimer footer
+- `ContactComponent` — form (name, email, matter, message), demo submit → confirmation
+
+**CMS (JWT-guarded `/cms/*`):**
+- `CmsLoginComponent` — credential form pre-filled with demo creds, backend JWT auth
+- `CmsShellComponent` — fixed sidebar (Dashboard / Practice Areas / Publications / Brand Assets / Translations / Logout)
+- `CmsDashboardComponent` — stat cards (PAs, Publications, Languages, Brand Assets), quick-action links, AI capability note
+- `CmsPaListComponent` — locale tabs (EN/ES), list with Edit/Delete, link to new
+- `CmsPaEditComponent` — locale select, title, icon, tagline, body_html textarea, display_order, published toggle; AI Assist panel toggle
+- `CmsPubListComponent` — same pattern as PA list
+- `CmsPubEditComponent` — author, title, excerpt, body_html, published_at, published; AI Assist panel
+- `CmsBrandComponent` — color palette swatches, font tokens, brand voice text (seeded locally)
+- `CmsI18nComponent` — side-by-side EN/ES editable string tables; save to backend i18n override endpoint
+
+**AI Assist panel (`AiAssistComponent`):**
+- Task selector: Draft / Translate EN→ES / Translate ES→EN / Refine
+- Free-text instruction field
+- Agentic loop: Draft → Reflect → Eval rubric (legal_tone, relevance, factual_grounding, brevity); iterates until overall >= 7.0 or 3 passes
+- Live step progress dots (green = done, gold = active, dim = pending)
+- Eval scorecard displayed with color-coded scores
+- Accept → inserts into body_html textarea; Dismiss discards
+- GPU detection: if WebGPU available, offers "Load AI Model (~1GB)" button; falls back to descriptive mock otherwise
+- Models: Phi-3.5-mini-instruct-q4f16_1-MLC (primary), Llama-3.2-1B (OOM fallback)
+
+**i18n:** EN, ES, FR — all UI chrome + hero + nav + CMS labels. Content (PA/pub body text) served bilingual from backend.
+
+**Navbar:** locale switcher (EN/ES/FR buttons, persisted to localStorage), CMS Login link, firm name.
+
+### Backend (Flask OOP — `mw-backend/solo_law_blueprint.py`, NOT yet pushed)
+
+**Mount:** `/solo-law`
+
+**Routes:**
+- `GET /health`
+- `POST /auth/login` → JWT
+- `GET /practice-areas?locale=` → published PAs
+- `GET /practice-areas/<slug>?locale=` → PA + related publications
+- `GET /publications?locale=&page=` → paginated
+- `GET /publications/<slug>?locale=`
+- `GET /brand-assets` (public)
+- `GET /i18n?locale=` → i18n overrides
+- `GET /cms/stats` (auth) → dashboard counts
+- `GET|POST /cms/practice-areas` (auth)
+- `GET|PUT|DELETE /cms/practice-areas/<id>` (auth)
+- `GET|POST /cms/publications` (auth)
+- `GET|PUT|DELETE /cms/publications/<id>` (auth)
+- `POST /cms/brand-assets` / `DELETE /cms/brand-assets/<id>` (auth)
+- `POST /cms/i18n` (auth) → upsert string override
+
+**OOP models:** `SoloLawDB`, `PracticeAreaModel`, `PublicationModel`, `BrandAssetModel`, `I18nModel`, `UserModel`, `SeedManager`
+
+**Seed data (idempotent):**
+- CMS user: `editor@solo-law.demo` / `Demo2026!`
+- 4 practice areas × 2 locales (EN + ES): Corporate Transactions, Commercial Litigation, Intellectual Property, Regulatory & Compliance
+- 5 publications × 2 locales: force-majeure, securities class actions, trade secrets, FTC non-competes, cross-border M&A
+
+**Schema tables:** `sl_practice_areas`, `sl_publications`, `sl_brand_assets`, `sl_cms_users`, `sl_i18n_overrides`
+
+**server.py:** blueprint registered (line ~337–338, uncommitted).
+
+### Build artifacts
+- Demo source: `upwork-runs/solo-law/solo-law-demo/`
+- Built output: `../michaelwegter.com/public/demos/solo-law/` (base href `/demos/solo-law/` confirmed)
+- E2e stub: `solo-law-demo/e2e/playwright.config.ts`
+- workSamples.js: entry registered at id ~33, slug `solo-law`, color `#C9A96E`
+
+---
+
+## handoff
+- produced: Angular 19 demo built and copied to `public/demos/solo-law/` (base href correct); Flask OOP blueprint written to `mw-backend/solo_law_blueprint.py` and registered in `server.py` (uncommitted); i18n JSON EN/ES/FR in assets; Playwright stub created; workSamples.js entry confirmed
+- decisions: `app.component.ts` uses inline template (HTML file ignored); ngx-translate v18 `currentLang` is a Signal returning `string|null` (pattern `currentLang() || 'en'` used throughout); WebLLM ESM from `esm.run` CDN; mock fallback always active if WebGPU absent; seed credentials `editor@solo-law.demo` / `Demo2026!`
+- next needs: deploy step commits and pushes `mw-backend` (both `server.py` + `solo_law_blueprint.py`), waits ~30s for Surface auto-deploy, verifies `https://api.michaelwegter.com/solo-law/health`; then commits and pushes `michaelwegter.com` for GH Pages deploy; verifies `/demos/solo-law/` returns 200
+- risks: `pub.pop("practice_area_slug")` in seed mutates list items — only idempotent on first seed call (tables empty guard protects); TranslateDirective unused import warnings in build (non-blocking); Unsplash CDN may throttle in CI — images have `loading="lazy"` fallback but no local stubs

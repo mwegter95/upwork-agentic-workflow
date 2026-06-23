@@ -1,0 +1,58 @@
+# Deploy Test — solo-law
+
+## Test Matrix
+
+| # | Test | Result | Notes |
+|---|------|--------|-------|
+| T1 | Demo HTTP 200 at /demos/solo-law/ | ✓ PASS | title="SoloLawDemo" |
+| T2 | Hero content renders | ✓ PASS | "BOUTIQUE LAW PRACTICE / Sophisticated Counsel..." visible |
+| T3 | Navigation element present | ✓ PASS | `<nav>` with Wegter Law branding |
+| T4 | Locale buttons EN/ES/FR visible | ✓ PASS | All three buttons in nav |
+| T5 | Locale switch (ES) changes UI | ✓ PASS | "ÁREAS DE PRÁCTICA / PUBLICACIONES / CONTACTO" after ES click |
+| T6 | API /solo-law/practice-areas (CORS from michaelwegter.com) | ✓ PASS | 4 items, `access-control-allow-origin: https://michaelwegter.com` |
+| T7 | API /solo-law/auth/login (correct endpoint) | ✓ PASS | Returns JWT, role=editor |
+| T8 | API /solo-law/cms/stats (authenticated) | ✓ PASS | 4 PA, 5 pubs, 3 langs, 0 assets |
+| T9 | API /solo-law/publications (paginated) | ✓ PASS | total=5 items |
+| T10 | CMS login UI flow (SPA nav) | ✓ PASS | EDITOR LOGIN → login form → submit → /cms/dashboard |
+| T11 | CMS dashboard content | ✓ PASS | "4 PRACTICE AREAS / 5 PUBLICATIONS / 3 LANGUAGES" |
+| T12 | /work-samples/solo-law route | ✓ PASS | 404→SPA redirect, iframe present |
+
+## Issues Found
+
+### Non-blocking (warnings)
+
+**W1 — Angular deep-link routing (no 404.html in demo subfolder):**
+Direct navigation to `https://michaelwegter.com/demos/solo-law/cms/login` returns a GH Pages 404 (site's 404.html redirects to the React SPA, not the Angular demo). SPA-internal navigation from the demo root works correctly — the EDITOR LOGIN link navigates client-side to the login view without a page load. Impact: low — demo is always accessed via iframe or from root, not deep-linked directly. Users who bookmark a CMS sub-route will land on the portfolio site.
+
+**W2 — WebGPU AI assistant gracefully degraded:**
+Headless Playwright has no WebGPU; the AI Content Assistant panel shows "Open any Practice Area or Publication to access the AI Assist panel. In a WebGPU-enabled browse..." — confirmed graceful fallback with no console errors.
+
+**W3 — /solo-law/cms/login route does not exist at API level:**
+Correct login endpoint is `/solo-law/auth/login` (POST with `{email, password}` body). The old path `/solo-law/cms/login` returns 404. Demo frontend correctly calls `/auth/login`; no user-facing impact.
+
+### Resolved false positive (test script error)
+
+Initial test run flagged T8 (publications) as a failure because the response is paginated `{items, page, per_page, total}` — not a plain array. API is correct; test logic was wrong. Re-run with corrected assertion: PASS.
+
+## Console Errors on Final Run
+
+None. No console errors, no network 404s on full `networkidle` run from demo root.
+
+## API Direct Verification
+
+```
+GET  /solo-law/health          → {"ok":true,"service":"solo-law"}
+GET  /solo-law/practice-areas  → 4 items (en), CORS ✓
+GET  /solo-law/publications    → {total:5, page:1, per_page:10, items:[...]}
+GET  /solo-law/i18n?locale=es  → {locale:"es", overrides:{}}
+POST /solo-law/auth/login      → {token:"eyJ...", user:{email,role:"editor"}}
+GET  /solo-law/cms/stats       → {practice_areas:4,publications:5,languages:3,brand_assets:0}
+```
+
+## handoff
+- produced: full Playwright + API verification of live solo-law deployment; all 12 tests pass; 3 non-blocking warnings documented
+- decisions: W1 (Angular deep-link 404) is non-blocking — demo accessed via iframe/root only; W2 (WebGPU) is by design with graceful fallback; VERDICT = pass
+- next needs: media-capture — record hero flow at demo root, locale switch (EN→ES), and CMS login/dashboard; avoid direct deep-link navigation
+- risks: WebGPU AI assist can't be captured in headless screenshot; screenshot will show the "open a PA/publication" placeholder — acceptable for media capture
+
+VERDICT: pass

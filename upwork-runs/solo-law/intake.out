@@ -1,0 +1,48 @@
+# Intake — solo-law
+
+## Summary
+Parsed Upwork posting (boutique law firm premium website) + Michael's 4 explicit build directives. Formalized into brief.json capturing all client requirements, Michael's tech stack constraints, hero/supporting features, design direction, hard gates, and feature richness 10/10.
+
+## Client & Scope
+- **Client:** Solo Law (boutique/solo law practice)
+- **Industry:** Legal Services
+- **Scope:** Premium institutional website + multilingual CMS + agentic AI content assistant
+- **Feature richness:** 10/10 (full production-quality app with several working features)
+
+## 8 Explicit Requirements (mapped from posting + Michael's directives)
+1. **Premium institutional visual identity** (B/W editorial, selective accent, refined type, cinematic motion, no em/en dashes)
+2. **Content Management System** (easy-to-use CMS for editors; create/edit practice areas, publications, assets)
+3. **Multilingual support** (backend-driven, ≥2 locales, locale switcher on public site)
+4. **Practice-area pages** (editable, with imagery, related publications)
+5. **Publications / articles section** (create/edit/publish, filterable, refined layout)
+6. **AI-assisted content & assets** (browser WebGPU agentic LLM: draft → reflection → rubric-eval → emit/loop; integrate into CMS)
+7. **Brand asset system** (centralized, library, editor access)
+8. **Reusable content architecture** (blocks, templates, no duplication)
+
+## Michael's 4 Hard Build Directives
+1. **Frontend:** Angular + TypeScript + Tailwind CSS (bundler build, `ng build --base-href /demos/solo-law/`, dist → public/demos/solo-law/)
+2. **Backend:** Python OOP, Flask blueprint (solo_law_blueprint.py), SQLite, deployed via git push (no Surface runner/Node)
+3. **AI Assist:** Browser WebGPU (WebLLM / transformers.js), agentic (reflection + rubric-eval rubric), mockable for test fallback
+4. **Multilingual:** Real backend-driven (not hardcoded), ≥2 locales
+
+## Hero + Supporting Features
+- **Hero:** Agentic browser-GPU AI content assistant (reflection + rubric-eval loop) in CMS for drafting/translating/refining copy
+- **Supporting 1:** Multilingual CMS (practice areas, publications, brand assets, backend persistence)
+- **Supporting 2:** Premium public-facing law site (editorial B/W + accent, refined typography, cinematic motion, practice-area + publication templates)
+
+## Design Direction (for planner to detail)
+Bespoke international law-firm aesthetic: monochrome editorial base (black/ink + paper white + grayscale photography), ONE restrained accent (researcher to validate), serif headlines (transitional/Didone), clean grotesk body, generous whitespace, ruled lines, large captioned imagery, slow cinematic motion/video. Serious/expensive/institutional tone. NOT michaelwegter.com's portfolio look.
+
+## Key Risks & QA Flags
+- WebGPU availability in headless Playwright (fallback path + mockable model required)
+- Angular base-href asset 404s if incorrect inside AppFrame (verify during build)
+- Model first-load size (lazy-load, gate behind user action)
+- SQLite multithread access under concurrent CMS edits (use WAL mode)
+- Multilingual schema must be designed upfront
+- Seed demo editor account with credentials for deploy-test
+
+## handoff
+- produced: brief.json (8 explicit reqs + 3 nice-to-haves, Michael's 4 directives, hero + supporting features, design direction, 11 hard gates, richness 10/10)
+- decisions: Angular bundler + Flask blueprint backend; hero = browser WebGPU agentic AI w/ reflection + rubric-eval integrated into CMS; multilingual real backend-driven (≥2 locales); monochrome-editorial law-firm design (not portfolio look); base-href /demos/solo-law/; deploy = dist copy + Flask push (auto-deploy ~30s); richness 10.
+- next_needs: planner reads brief.json, locks design system (palette hex + fonts), validates hero rubric criteria, decides AI model architecture, finalizes feature traceability, scopes practice areas + article templates.
+- risks: WebGPU headless availability (mandate mockable model + fallback test); Angular base-href 404s inside AppFrame; model first-load size; SQLite concurrent writes; multilingual schema alignment upfront.

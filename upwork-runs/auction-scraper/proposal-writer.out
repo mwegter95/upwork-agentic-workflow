@@ -1,0 +1,78 @@
+# Proposal Writer — auction-scraper
+
+## Deliverables
+
+| File | Description |
+|---|---|
+| `cover-letter.txt` | Upwork cover letter, plain text |
+| `one-pager.html` | HTML one-pager, self-contained |
+| `deck.pptx` | 7-slide PowerPoint deck |
+
+---
+
+## Cover Letter (`cover-letter.txt`)
+
+- Starts with BROCCOLI (no quotes, no asterisks). First word, first line.
+- All three screening questions answered inline (Q1: Bonhams Next.js / Playwright /_next/data; Q2: stack reasoning with no Scrapy rationale; Q3: rate-limiting discipline and never-blocked policy).
+- U.S. Bank Python backend ownership called out explicitly (600-user platform, 60k LOC, sole SME within two months).
+- Playwright and Puppeteer scraping history named directly.
+- Demo link: https://michaelwegter.com/demos/auction-scraper/ (appears twice: once in the hook, once at close).
+- GitHub link: https://github.com/mwegter95
+- Positioned as scraping specialist, not full-stack generalist.
+- No em/en dashes. No filler or preamble. Michael's voice.
+- Word count: ~430 words (skimmable).
+
+---
+
+## One-Pager (`one-pager.html`)
+
+Design: auction-catalog/fine-art-house aesthetic. Cormorant Garamond display serif, Inter body. Palette: ivory (#F8F5EF) background, charcoal (#1A1814), oxblood (#6B1A1A) accent, gilt (#A8842C) labels. Zero em/en dashes.
+
+Sections:
+1. Header (name, role, location, GitHub, portfolio)
+2. Demo hero panel (dark, gilt accent, CTA button linking to live demo, demo URL)
+3. Screenshot strip: 3 of the 5 captured media files (initial, mid-stream, JSON export)
+4. Pipeline tool judgment table: 3 sources x (tool / site type / rationale)
+5. Screening Q&A (3 blocks, gilt left-border rule)
+6. Proof cards grid (2x2): U.S. Bank TDAAS / Playwright+Puppeteer / Optum current contract / communication/location
+7. Skills tags: Python, Playwright, Puppeteer, BeautifulSoup, requests/httpx, asyncio, JSON normalization, ETL pipelines, Flask, SQL, Azure, React
+8. Footer: name + GitHub / Portfolio / Live Demo links
+
+Screenshot paths use relative `media/` prefix (correct since the file sits in the run directory alongside the media/ folder).
+
+---
+
+## Deck (`deck.pptx`)
+
+7 slides, 13.33 x 7.5 in (widescreen). Auction-catalog palette applied via python-pptx (ivory background, charcoal/oxblood/gilt accent, Georgia serif for display, Calibri body). No em/en dashes.
+
+| Slide | Title |
+|---|---|
+| 1 | Cover: name, role, demo + GitHub URLs |
+| 2 | Live Demo: what it does, 6 feature bullets, demo URL |
+| 3 | Tool Judgment: 3 source cards (tool, site type, rationale) + normalized schema fields |
+| 4 | Responsible Scraping: 6 practice cards (crawl-delay, jitter, robots.txt, backoff, flagging, telemetry) |
+| 5 | Why Michael: 4 proof cards (U.S. Bank, Playwright/Puppeteer, Optum, communication) |
+| 6 | Screening Q&A: 3 full answers in bordered blocks |
+| 7 | Next Steps: CTA, three links, location/language/camera-on tagline |
+
+---
+
+## Hard Gates Verified
+
+- [x] BROCCOLI is the first word of the cover letter (no quotes, no asterisks)
+- [x] All three screening questions answered
+- [x] GitHub link included (https://github.com/mwegter95)
+- [x] Demo link named and linked in cover letter and deck (twice in cover letter)
+- [x] U.S. Bank Python backend ownership stated explicitly
+- [x] Playwright and Puppeteer scraping history named
+- [x] Positioned as scraping specialist, NOT full-stack generalist
+- [x] Bespoke auction-house design (not portfolio's look)
+- [x] Zero em/en dashes in all three deliverables
+- [x] Americas location stated (Minneapolis, MN, US)
+
+## handoff
+- produced: cover-letter.txt (430 words, BROCCOLI-prefixed), one-pager.html (auction-catalog design, screenshots embedded), deck.pptx (7 slides, python-pptx, matching palette)
+- decisions: screenshot paths are relative to run dir (media/01-initial.png etc.) so one-pager must be opened from upwork-runs/auction-scraper/ or paths adjusted if hosted elsewhere; deck uses Georgia + Calibri (pptx-safe fonts) not Cormorant Garamond (not a pptx system font)
+- next needs: evaluator to check all hard gates, confirm BROCCOLI placement, confirm demo link present in cover letter + deck, confirm no em/en dashes
+- risks: one-pager screenshot paths are relative; if evaluator opens the HTML from a different directory the images will 404 (evaluator should confirm from the run directory or note as cosmetic-only)

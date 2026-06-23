@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "practice_areas": "Áreas de Práctica",
+    "publications": "Publicaciones",
+    "about": "Nosotros",
+    "contact": "Contacto",
+    "cms_login": "Acceso Editor"
+  },
+  "hero": {
+    "tagline": "Asesoramiento sofisticado para asuntos complejos",
+    "subhead": "Una práctica boutique que ofrece servicios legales de calidad institucional a clientes exigentes.",
+    "cta": "Explorar Nuestro Trabajo"
+  },
+  "pa": {
+    "heading": "Áreas de Práctica",
+    "subhead": "Experiencia profunda en el espectro completo de asuntos comerciales complejos."
+  },
+  "pub": {
+    "heading": "Publicaciones",
+    "filter_all": "Todas",
+    "filter_alerts": "Alertas",
+    "filter_articles": "Artículos",
+    "filter_news": "Noticias",
+    "read_more": "Leer más"
+  },
+  "contact": {
+    "heading": "Contacto",
+    "subhead": "Las consultas son confidenciales. Respondemos en un día hábil.",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "matter": "Naturaleza del asunto",
+    "message": "Mensaje",
+    "send": "Enviar consulta",
+    "sent": "Consulta enviada. Nos pondremos en contacto pronto.",
+    "disclaimer": "Contactar a este despacho no crea una relación abogado-cliente."
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados.",
+    "disclaimer": "Publicidad de abogados. Resultados anteriores no garantizan resultados similares."
+  },
+  "cms": {
+    "login": "Acceso Editor",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "sign_in": "Iniciar sesión",
+    "dashboard": "Panel",
+    "practice_areas": "Áreas de Práctica",
+    "publications": "Publicaciones",
+    "brand_assets": "Activos de Marca",
+    "translations": "Traducciones",
+    "logout": "Cerrar sesión",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "new": "Nuevo",
+    "title": "Título",
+    "tagline": "Lema",
+    "body": "Contenido",
+    "locale": "Idioma",
+    "published": "Publicado",
+    "ai_assist": "Asistente IA",
+    "ai_task_draft": "Redactar",
+    "ai_task_translate_en_es": "Traducir EN → ES",
+    "ai_task_translate_es_en": "Traducir ES → EN",
+    "ai_task_refine": "Refinar",
+    "ai_instruction": "Instrucción",
+    "ai_generate": "Generar",
+    "ai_drafting": "Redactando...",
+    "ai_reflecting": "Reflexionando...",
+    "ai_evaluating": "Evaluando...",
+    "ai_done": "Listo",
+    "ai_accept": "Aceptar",
+    "ai_dismiss": "Descartar",
+    "ai_load_model": "Cargar modelo IA (~1GB descarga)",
+    "ai_loading": "Cargando modelo...",
+    "practice_area": "Área de Práctica",
+    "excerpt": "Resumen",
+    "author": "Autor",
+    "published_at": "Fecha de publicación",
+    "icon": "Icono",
+    "display_order": "Orden",
+    "no_items": "Sin elementos.",
+    "confirm_delete": "¿Eliminar este elemento?"
+  },
+  "locale_switcher": {
+    "en": "EN",
+    "es": "ES",
+    "fr": "FR"
+  },
+  "locale": {
+    "content_unavailable": "Este contenido está disponible en inglés y español."
+  }
+}

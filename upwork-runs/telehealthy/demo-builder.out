@@ -1,0 +1,51 @@
+# demo-builder.out — TeleHealthy Voice Ops Console
+
+## Build Summary
+
+**Demo:** TeleHealthy Voice Ops Console
+**Slug:** `telehealthy`
+**Output:** `../michaelwegter.com/public/demos/telehealthy/` (index.html + assets/)
+**Build:** ✅ vite build succeeded (1.27s, 604 kB JS gzipped to 173 kB, 20.7 kB CSS)
+**Backend:** None (fully frontend-only, no Flask blueprint)
+**workSamples.js:** Registered as id:10, icon 🩺, color #0D9488, frameStyle walnut
+
+---
+
+## Files Built (12)
+
+| File | Role |
+|---|---|
+| `demo-src/package.json` | deps: react 18, react-dom 18, recharts 2.12, @vitejs/plugin-react |
+| `demo-src/vite.config.js` | base `/demos/telehealthy/`, outDir `../michaelwegter.com/public/demos/telehealthy` |
+| `demo-src/index.html` | Inter + DM Mono Google Fonts, mount root |
+| `demo-src/src/main.jsx` | ReactDOM.createRoot entry |
+| `demo-src/src/App.jsx` | Sidebar nav (4 tabs), language toggle EN/ES, tab routing |
+| `demo-src/src/data/mockData.js` | 8 CRM contacts, outbound script templates (3 types), FAQ responses EN/ES, analytics seed data |
+| `demo-src/src/hooks/useWebLLM.js` | WebLLM lazy CDN init (Llama-3.2-1B-Instruct-q4f16_1-MLC), progress tracking, GPU detection, scripted fallback detectIntent() |
+| `demo-src/src/styles/app.css` | Full design system: teal-600 primary, Inter + DM Mono, animations (pulse-ring, wave, shake, slide-up, blink) |
+| `demo-src/src/components/InboundCall.jsx` | Hero: full conversation state machine (BOOK/FAQ/ESCALATE paths), pipeline viz SVG, confidence meter, waveform, SMS log, booking card, transfer card, session stats panel |
+| `demo-src/src/components/OutboundDialer.jsx` | CRM contact picker, dynamic script preview with var highlighting, auto-progressing simulated call |
+| `demo-src/src/components/Analytics.jsx` | 6 KPI cards, recharts BarChart (7-day call volume) + PieChart doughnut (intent breakdown), transcript log table |
+| `demo-src/src/components/CrmPanel.jsx` | GoHighLevel-style table (8 contacts, search/filter by status, expandable row detail) |
+
+---
+
+## Key Design Decisions
+
+- **Design system:** teal-600 primary, teal-50 bg, Inter UI + DM Mono transcript/mono, bespoke healthcare palette (emerald clinical, amber live-call, red escalation) — no michaelwegter.com styling
+- **Scripted fallback is the primary path:** keyword-based intent detection covers BOOK/FAQ/ESCALATE fully; WebLLM loads lazily on GPU-enabled browsers only
+- **Inbound conversation machine:** 10 phases (greeting → intent → booking_who → booking_name → booking_reason → booking_time → booking_confirm → faq_topic → faq_follow → closing/escalating); all 3 intents have complete flows
+- **Confidence threshold:** < 0.45 auto-escalates regardless of intent (matching researcher spec)
+- **Pipeline viz:** 5 nodes (Greeting → Intent Detect → Booking/FAQ → Webhook → SMS) with emoji icons, light up sequentially in real time
+- **SMS log:** appears in sidebar when booking confirmed (step 4); fires webhook step first then SMS step
+- **Outbound:** 3 script types (appointment_reminder / reactivation_outreach / post_visit_followup) with contact.scriptVars highlighting teal; call auto-progresses with timed delays
+- **Language toggle:** EN/ES conversation copy, FAQ responses, quick-reply chips all switch at App level; passed as prop to InboundCall + OutboundDialer
+- **recharts chunk warning:** expected (604kB pre-gzip, 173kB gzip) — acceptable for demo, no code splitting needed
+
+---
+
+## handoff
+- produced: built + deployed demo at `public/demos/telehealthy/` (index.html + assets); registered in workSamples.js id:10; demo-src source at `upwork-runs/telehealthy/demo-src/`
+- decisions: frontend-only, no Flask blueprint; scripted fallback is primary CI/Playwright path; WebLLM optional via "Load AI" button; recharts for analytics charts; 4-tab layout (Inbound hero, Outbound, CRM, Analytics)
+- next needs: deploy step pushes `michaelwegter.com` to GitHub Pages (just the demo files + workSamples.js change); no mw-backend push needed; deploy-test exercises the scripted Inbound path (not WebGPU) via Playwright
+- risks: recharts bundle is 604kB (173kB gzip) -- warrants noting but acceptable for a demo; WebLLM still lazy-loaded and will fail in headless -- scripted path covers all 3 intents fully for CI

@@ -1,0 +1,45 @@
+# Media Capture — auction-scraper
+
+## Screenshots Captured
+
+| File | Sequence | Content |
+|---|---|---|
+| `01-initial.png` | Initial state | Demo page load: navbar, h1 "🏺 Auction Scraper", three action buttons ("Run Scraper", "Export JSON", "View Dataset") |
+| `02-running.png` | Scrape started | Button clicked, UI showing loading state |
+| `03-mid-stream.png` | Lots flowing in (~2s into SSE stream) | First 6–8 lots visible, columns layout, lot cards with images + metadata (lot #, estimate, date, sale location) |
+| `04-final.png` | All results loaded | Full 18-lot grid (5 from bonhams, 8 from heritage_auctions, 5 from leland_little); each card shows lot image, lot number, description, estimate range, auction date, sale location, source label |
+| `05-export-json.png` | Export feature | JSON export dialog showing raw structured data payload with consistent field schema across all sources |
+
+## Video Captured
+
+**File:** `page@71b4a9a8415cbd1c635d179bf35c71e1.webm` (660 KB, WebM format)
+
+**Duration:** ~25 seconds (full hero flow from page load → "Run Scraper" click → SSE stream to completion)
+
+**Content:** Deterministic end-to-end hero flow:
+- Page load (0–3s): navbar, header, buttons visible, 0 console errors
+- Button click & SSE stream (3–22s): lot cards render incrementally as server sends events; visual confirmation of streaming architecture
+- Completion (22–25s): final count, Export JSON feature demonstrated
+
+## Assets Location
+
+All media files are in `./media/`:
+- 5 PNG screenshots (58 KB – 1.0 MB each)
+- 1 WebM video (660 KB)
+
+Total media size: ~2.6 MB (acceptable for proposal embedding)
+
+## Quality Checks
+
+- No console errors during capture
+- No em/en dashes in visible text (verified earlier by deploy-test)
+- Lot count: 18 (confirmed)
+- All UI buttons responsive and functional
+- Images load correctly in lot cards
+- Export JSON feature visible and working
+
+## handoff
+- produced: 5 high-res hero-flow screenshots + deterministic 25s WebM video of full scrape interaction
+- decisions: captured both static snapshots (key moments) and dynamic video to show real-time SSE streaming and incremental lot population
+- next needs: proposal-writer to embed screenshots/video into cover letter, one-pager, and PPTX deck; link demo at https://michaelwegter.com/demos/auction-scraper/
+- risks: none; media quality is production-ready

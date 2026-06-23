@@ -1,0 +1,40 @@
+# Deploy — auction-scraper
+
+## Verification Summary
+
+### Frontend (michaelwegter.com / GH Pages)
+- `https://michaelwegter.com/demos/auction-scraper/` → **200**
+- `https://michaelwegter.com/demos/auction-scraper/index.html` → **200**
+- `https://michaelwegter.com/demos/auction-scraper/app.js` → **200**
+- workSamples.js entry confirmed (slug: "auction-scraper", live href)
+- GH Pages build complete (pushed at ~19:52 UTC, verified live)
+
+### Backend (mw-backend / api.michaelwegter.com)
+- `https://api.michaelwegter.com/health` → `{"status":"ok","version":"1.0.0"}`
+- `https://api.michaelwegter.com/demos/auction-scraper/health` → `{"ok":true,"seeds_loaded":{"bonhams":5,"heritage":8,"leland_little":5},"playwright_available":false}`
+- `POST /demos/auction-scraper/scrape` (sources: ["heritage_auctions"]) → **202**, job_id returned
+- 3 sources seeded and active
+
+### Em/En Dash Gate (hard gate #5)
+- `app.js`, `styles.css`, `auction_scraper_seeds.json` → **CLEAN** (0 U+2013/U+2014)
+- Blueprint comments/regex internals retain dashes for functional reasons (`.replace("–","-")` strips them from scraped input; regex patterns match external content); these are not user-visible and do not affect gate #5 (which covers demo UI, one-pager, deck)
+
+### Git Status
+- `michaelwegter.com`: clean, HEAD = `34ccfef` (Add Auction Scraper Console demo)
+- `mw-backend`: clean, HEAD = `a1ec3ff` (auction-scraper: remove remaining em/en dashes from seeds and SSE event payloads)
+- Both pushed to origin; auto-deploy confirmed live
+
+## Live URLs
+| Resource | URL | Status |
+|---|---|---|
+| Demo | https://michaelwegter.com/demos/auction-scraper/ | 200 |
+| Work sample | https://michaelwegter.com/work-samples/auction-scraper | SPA route (client-side) |
+| API health | https://api.michaelwegter.com/health | ok |
+| Scraper health | https://api.michaelwegter.com/demos/auction-scraper/health | ok |
+| Code portfolio | https://github.com/mwegter95/auction-scraper-demo | live |
+
+## handoff
+- produced: deployment verified live; frontend 200, backend health ok, scrape endpoint 202, 3 sources seeded (bonhams 5, heritage 8, leland_little 5)
+- decisions: /work-samples/auction-scraper 404 is expected (SPA BrowserRouter, handled by 404.html client-side redirect); not a defect
+- next needs: deploy-test to run full SSE flow end-to-end on live site (POST scrape, consume stream, verify lot events, confirm zero dashes in payloads); proposal-writer to use https://github.com/mwegter95/auction-scraper-demo as code portfolio link per screening requirement ix
+- risks: Playwright not installed on Surface so scraper falls back to seeded data for all 3 sources; real-site scraping not demonstrated live (but seeded data is realistic and the fallback path is clearly labeled in the UI)

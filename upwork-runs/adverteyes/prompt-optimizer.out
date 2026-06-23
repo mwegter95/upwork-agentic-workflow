@@ -1,0 +1,45 @@
+# prompt-optimizer — adverteyes improve pass
+
+## Repo state
+- claude-workflow-studio: clean (nothing to commit; agent prompts live in
+  upwork-agentic-workflow/.claude/agents/, not studio).
+- upwork-agentic-workflow: checkpointed pending changes first (8049b89), applied
+  edits, committed (7a483c4). Local only, NOT pushed.
+
+## Applied (safe, surgical — high-frequency failures from improvements.md)
+1. `.claude/agents/demo-builder.md` self-test: added a hard **dash gate**
+   (`grep -rl $'[–—]' demo-src/src index.html` must be empty, incl `<title>`/meta)
+   and a **live-data gate** (curl every hero/supporting endpoint, assert real
+   non-empty data, never label mock/fallback as "Live" without an offline badge).
+   Sources: ~6 build-ceo notes (dashes shipped 3-4 passes; weather 502 masked by mock).
+2. `.claude/agents/proposal-writer.md`: replaced the per-file dash grep with ONE
+   repo-wide grep across ALL deliverables for literal U+2014/2013 AND HTML entities
+   (`&mdash;`/`&ndash;`/`&#8212;`/`&#8211;`). Source: final-ceo (writer only fixed footer entity).
+3. `.claude/agents/deploy-test.md`: added Flask-shape early `/health` check (catch
+   managed-service/blueprint interception before full Playwright), an infinite-API-
+   loop named test case (>10 identical reqs in 5s), and two-phase auth testing via
+   `page.route()` header injection. Sources: 2 deploy-test improve-pass notes.
+4. `CLAUDE.md` (new "Node service scaffold gotchas"): default to `node:sqlite`
+   (better-sqlite3 gyp fails on Node22 Win) and avoid manual `Accept-Encoding` with
+   node-fetch v2 (brotli "Invalid response body" → 502); prefer global fetch.
+   Sources: demo-builder + build-ceo reuse notes (both caused mid-run fix scripts).
+
+## Deferred for human review (risky / not a prompt edit)
+- `demo-builder.out` provenance gate: output file is engine-named `build-report.md`;
+  the "never wrote demo-builder.out" note is an engine naming/contract issue, not a
+  prompt fix. The re-run section already mandates addressing all CEO points.
+- Planner `__RESEARCH_REQUIRED__`/`__PALETTE_HEX__` placeholder-token scheme: changes
+  the planner↔researcher contract; structural, could break parsing. Hold.
+- Code/scaffold template extractions (downloadCSV→utils.ts, ThemeContext template,
+  auth offline-fallback DEMO_USERS map, surface_build.py node:sqlite default,
+  Recharts SVG fill-from-theme): these are demo-src/scaffold code, not agent prompts;
+  out of this step's scope (prompts/CLAUDE.md only).
+- Improve-pass "carry forward unresolved CEO blockers as mandatory": partially
+  covered by demo-builder's existing re-run section; promoting it to the improve
+  skill contract is a larger semantic change — flag, don't auto-edit.
+
+## handoff
+- produced: 4 surgical prompt/CLAUDE.md edits; 2 local commits (checkpoint 8049b89 + edits 7a483c4); no push.
+- decisions: applied only recurring, low-risk gates (dash sweep, live-endpoint, Flask-shape, fetch/sqlite defaults); left code-scaffold + contract changes for human review.
+- next needs: none — pipeline complete; human can review deferred list if desired.
+- risks: edits add cheap pre-checks only; no behavior removed. Studio repo untouched (clean, prompts not there).

@@ -1,0 +1,142 @@
+{
+  "client": "TeleHealthy",
+  "industry": "Healthcare / Service Business",
+  "posted": "2026-06-21 (11 hours ago)",
+  "slug": "telehealthy",
+  "feature_richness": 10,
+
+  "explicit_requirements": [
+    {
+      "id": "req-1",
+      "title": "AI Receptionist: Inbound Call Handler",
+      "description": "24/7 system that handles inbound calls with greeting, intent detection (booking/FAQ/escalation), conversation flow, and seamless handoff to human when needed.",
+      "acceptance_criteria": [
+        "Greeting and conversation flow visible in demo",
+        "Intent detection works (booking vs FAQ vs escalation)",
+        "Conversation is natural and handles interruptions",
+        "Warm transfer to human shown when confidence is low"
+      ]
+    },
+    {
+      "id": "req-2",
+      "title": "Appointment Booking",
+      "description": "AI receptionist can process appointment bookings within the inbound call flow.",
+      "acceptance_criteria": [
+        "Booking intent detection works",
+        "Appointment details captured (date/time/reason)",
+        "Booking confirmation shown in demo"
+      ]
+    },
+    {
+      "id": "req-3",
+      "title": "FAQ Handling",
+      "description": "AI receptionist can answer frequently asked questions without routing to human.",
+      "acceptance_criteria": [
+        "FAQ intent detection works",
+        "At least 2-3 realistic healthcare FAQs answered by AI",
+        "Responses are natural and contextual"
+      ]
+    },
+    {
+      "id": "req-4",
+      "title": "SMS Confirmations",
+      "description": "Appointment bookings trigger SMS confirmation (simulated, no real SMS needed).",
+      "acceptance_criteria": [
+        "SMS shown/logged when appointment confirmed",
+        "SMS contains relevant booking details"
+      ]
+    },
+    {
+      "id": "req-5",
+      "title": "AI Outbound Caller",
+      "description": "Automated follow-up and reminder calls to existing clients with dynamic scripts pulled from CRM contact fields.",
+      "acceptance_criteria": [
+        "Outbound call simulator shown in demo",
+        "Script dynamically generated from CRM contact data (name, appt date, last visit, etc.)",
+        "Demo shows at least 2 different outbound scenarios"
+      ]
+    },
+    {
+      "id": "req-6",
+      "title": "CRM Integration & Call Analytics",
+      "description": "Integration with GoHighLevel-style CRM data and analytics dashboard logging calls, transcripts, booking rate, escalation rate, confidence scores.",
+      "acceptance_criteria": [
+        "Mock CRM contact list visible in demo",
+        "Analytics dashboard shows call volume, intent breakdown, booking rate, escalation rate, confidence metrics",
+        "Transcripts logged and viewable",
+        "Call recording/transcript list accessible"
+      ]
+    }
+  ],
+
+  "nice_to_have": [
+    {
+      "id": "nth-1",
+      "title": "Healthcare/Psychiatry/Medical Practice Workflow Familiarity",
+      "description": "Demo context and language should reflect healthcare/medical practice conventions."
+    },
+    {
+      "id": "nth-2",
+      "title": "Automation Orchestration Visualization",
+      "description": "Visual representation of n8n/Make.com-style workflow (greeting → intent → booking → webhook → SMS)."
+    },
+    {
+      "id": "nth-3",
+      "title": "Multilingual Support",
+      "description": "English primary; additional languages a plus."
+    }
+  ],
+
+  "michael_constraints": [
+    "Web app simulation of the phone-answering system (not real telephony integration)",
+    "Browser GPU-based AI messaging system (client-side LLM via WebGPU/WebLLM)",
+    "All functionality must be demonstrable in a single web app"
+  ],
+
+  "demo_approach": {
+    "concept": "TeleHealthy Voice Ops Console web app",
+    "build_type": "FULL frontend-only self-contained",
+    "hero_feature": "Browser-GPU (WebLLM/WebGPU) AI receptionist with real inbound conversation and warm transfer",
+    "supporting_features": [
+      "Outbound dialer with CRM-driven dynamic scripting",
+      "Analytics dashboard (call volume, intents, booking rate, escalation rate, confidence, transcripts)"
+    ],
+    "supporting_features_fold_in": [
+      "Mock CRM panel (GoHighLevel-style contact list)",
+      "Webhook/automation visual pipeline (greeting → intent → booking → webhook → SMS)"
+    ],
+    "tech_stack": {
+      "frontend": "Vite + React 18 (or self-contained HTML/JS)",
+      "ai_engine": "WebLLM/WebGPU in-browser LLM with scripted fallback",
+      "backend": "Frontend-only (optional thin Flask blueprint for persisted logs if needed, but not required)",
+      "design": "Clinical-but-modern healthtech (calm teal/clinical-green, clean whites, warm accent for live state, accessible UI fonts like Inter/DM Sans)"
+    },
+    "must_label_simulation": true
+  },
+
+  "hard_gates": [
+    "Every explicit requirement (6 items) addressed in cover letter AND demo/deck",
+    "Every nice-to-have represented in demo or deck",
+    "Demo builds and loads with no console errors on first paint",
+    "Demo URL (/demos/telehealthy/) resolves locally; after deploy, /work-samples/telehealthy returns 200",
+    "Demo link appears in cover letter and deck",
+    "Demo uses cohesive, bespoke clinical-healthtech design (NOT michaelwegter.com look), no em/en dashes",
+    "Browser-GPU conversation is genuinely real (WebGPU) with scripted fallback, not just scripted AI",
+    "Simulation is labeled honestly so client trusts the demo's integrity"
+  ],
+
+  "caps": {
+    "hero_features": 1,
+    "supporting_features_max": 2,
+    "demo_files_max": 12,
+    "build_timeout_minutes": 3,
+    "research_fetches_max": 6
+  },
+
+  "handoff": {
+    "produced": "brief.json with 6 explicit requirements + 3 nice-to-haves, Michael's web-app + browser-GPU constraints, demo concept, hard gates, caps",
+    "decisions": "Build FULL frontend-only self-contained app; hero = browser-GPU AI receptionist with WebGPU + scripted fallback; simulate telephony/CRM/SMS with mock data; clinical-healthtech design; label simulation honestly",
+    "next_needs": "planner locks design system (palette + fonts), decides hero exactly (which WebLLM model), finalizes feature traceability matrix",
+    "risks": "WebGPU/model-download support varies (mandate lazy-load + scripted fallback, no first-paint dependency); keep simulation labeling clear; thin Flask blueprint only if planner wants persisted call logs beyond the demo session"
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "client": "Solo Law (boutique law practice)",
+  "industry": "Legal Services / Law Practice",
+  "posted": "2026-06-21 (yesterday)",
+  "slug": "solo-law",
+  "feature_richness": 10,
+
+  "explicit_requirements": [
+    {
+      "id": "req-1",
+      "title": "Premium Institutional Visual Identity",
+      "description": "Website must feel serious, expensive, editorial, and institutional—matching the polish of major international law firms. Not a generic local lawyer website.",
+      "acceptance_criteria": [
+        "Black-and-white editorial visuals (genuine photography, not stock)",
+        "Selective accent color (one restrained color; researcher to validate against boutique-firm conventions)",
+        "Refined serif typography for headlines (transitional/Didone style)",
+        "Generous whitespace, ruled lines, large captioned imagery",
+        "Cinematic motion or video (slow, deliberate transitions)",
+        "Monochrome editorial base with disciplined brand system",
+        "No em/en dashes anywhere"
+      ]
+    },
+    {
+      "id": "req-2",
+      "title": "Content Management System (CMS)",
+      "description": "Easy-to-use, working CMS backend enabling editors to manage all content without code.",
+      "acceptance_criteria": [
+        "CMS interface is intuitive and functional",
+        "Editor can create/edit/publish practice areas",
+        "Editor can create/edit/publish articles/publications",
+        "Editor can manage brand assets (images, approved colors, fonts)",
+        "Changes persist to database and are served on public site immediately",
+        "CMS accessible via demo editor account with credentials recorded for QA"
+      ]
+    },
+    {
+      "id": "req-3",
+      "title": "Multilingual Support",
+      "description": "Full multilingual website with backend-driven content storage. At least 2 locales (e.g., English + Spanish or English + French).",
+      "acceptance_criteria": [
+        "Public site has working locale switcher (e.g., EN / ES dropdown)",
+        "Content stored per locale in backend database (not hardcoded)",
+        "All practice areas, publications, and UI strings available in ≥2 languages",
+        "Locale preference persists or defaults correctly",
+        "Multilingual content fully represented in both public site AND cover letter/deck"
+      ]
+    },
+    {
+      "id": "req-4",
+      "title": "Practice-Area Pages",
+      "description": "Dedicated, well-designed pages for each practice area (e.g., Corporate Law, Litigation, IP, etc.).",
+      "acceptance_criteria": [
+        "At least 3–4 practice areas seeded in CMS",
+        "Each practice area has: title, description, icon/imagery, related publications link",
+        "Practice area pages are editable via CMS",
+        "Practice area pages render with premium editorial layout"
+      ]
+    },
+    {
+      "id": "req-5",
+      "title": "Publications / Articles Section",
+      "description": "Editorial section for law firm publications, articles, and thought leadership.",
+      "acceptance_criteria": [
+        "Publications index page lists all articles with title, date, excerpt, author",
+        "Individual publication pages render with refined typography and layout",
+        "Editor can create/edit/publish articles via CMS",
+        "Publications filterable by practice area or date",
+        "At least 3–5 sample articles seeded"
+      ]
+    },
+    {
+      "id": "req-6",
+      "title": "AI-Assisted Content & Asset Generation",
+      "description": "Agentic browser-GPU LLM assisting CMS editors in drafting, translating, and refining copy. In-browser WebGPU-based with reflection step, evaluation rubric, and smart prompting.",
+      "acceptance_criteria": [
+        "AI assistant accessible from CMS editor panel",
+        "Can draft practice-area copy with brand voice context",
+        "Can translate copy between configured locales (EN ↔ ES/FR)",
+        "Can refine existing copy to match legal tone + editorial voice",
+        "Agentic flow: draft → reflection (self-critique) → evaluation against rubric (relevance, legal-tone, factual-grounding, multilingual-correctness, brevity) → emit or loop (think more)",
+        "Graceful fallback when WebGPU unavailable (non-blocking notice to editor)",
+        "All AI responses include model context and confidence signal",
+        "Model runs client-side in browser (WebGPU / WebLLM), no external LLM calls required"
+      ]
+    },
+    {
+      "id": "req-7",
+      "title": "Brand Asset System",
+      "description": "Centralized, disciplined asset library (images, color palette, typography rules, logo usage).",
+      "acceptance_criteria": [
+        "Admin can upload and tag brand assets",
+        "Assets accessible to editors when creating content",
+        "Brand asset library page on site shows approved palette, fonts, imagery guidelines",
+        "Color palette stored and served from backend"
+      ]
+    },
+    {
+      "id": "req-8",
+      "title": "Reusable Content Architecture",
+      "description": "Backend data model supports reusable components (sections, templates, blocks) to reduce duplication.",
+      "acceptance_criteria": [
+        "Content schema allows reusable blocks (hero, text block, image gallery, practice-area card, etc.)",
+        "Editors can compose pages from reusable blocks",
+        "Backend efficiently serves composed content to frontend"
+      ]
+    }
+  ],
+
+  "nice_to_have": [
+    {
+      "id": "nth-1",
+      "title": "Video / Media Integration",
+      "description": "CMS support for embedding videos (cinematic visuals per the brief)."
+    },
+    {
+      "id": "nth-2",
+      "title": "SEO / Structured Data",
+      "description": "Proper meta tags, Open Graph, and schema.org for legal services."
+    },
+    {
+      "id": "nth-3",
+      "title": "Analytics Dashboard",
+      "description": "Basic visitor analytics on the admin panel."
+    }
+  ],
+
+  "michael_constraints": [
+    "Frontend: Angular + TypeScript + Tailwind CSS (requires bundler; build with `ng build --base-href /demos/solo-law/`, copy dist to public/demos/solo-law/)",
+    "Backend: Python OOP style, implemented as Flask blueprint (solo_law_blueprint.py), uses SQLite for CMS content + i18n strings + publications, deployed via git push (no Surface runner/Node service)",
+    "AI Assistant: Browser-GPU-based (WebGPU / WebLLM in-browser), wrapped in agentic controller with reflection step + evaluation using explicit rubric before emitting response",
+    "Multilingual: Real backend-driven support (≥2 locales), not hardcoded",
+    "Seed demo CMS editor account; record credentials for deploy-test login"
+  ],
+
+  "demo_approach": {
+    "concept": "Solo Law Premium Website with Integrated Multilingual CMS and Agentic AI Content Assistant",
+    "build_type": "FULL (Angular + Flask backend)",
+    "hero_feature": "Agentic browser-GPU AI content assistant (WebLLM/WebGPU with reflection + rubric-driven evaluation loop) integrated into CMS for drafting/translating/refining practice-area and publication copy in the editorial brand voice",
+    "supporting_features": [
+      "Multilingual CMS enabling editors to manage practice areas, publications, and brand assets across ≥2 locales with backend persistence",
+      "Premium public-facing law site with editorial B/W visuals, selective accent, refined typography, cinematic motion, practice-area + publications templates rendered from CMS content"
+    ],
+    "supporting_features_fold_in": [
+      "Locale switcher on public site (EN / ES or EN / FR)",
+      "Brand asset library and editor panel",
+      "Analytics dashboard (optional, nice-to-have)"
+    ],
+    "tech_stack": {
+      "frontend": "Angular 18+ with TypeScript, Tailwind CSS, compiled with `ng build --base-href /demos/solo-law/`, served from public/demos/solo-law/",
+      "backend": "Flask 3 (Python OOP), SQLite database (CMS content, i18n strings, publications), blueprint pattern (solo_law_blueprint.py registered in mw-backend/server.py)",
+      "ai_engine": "WebLLM or transformers.js with WebGPU (client-side, no external API), agentic controller with reflection + rubric-based evaluation (legal-tone, relevance, factual-grounding, multilingual-correctness, brevity)",
+      "design": "Bespoke international law-firm aesthetic: monochrome editorial base (true black/ink + paper white + grayscale photography), ONE restrained accent (researcher to validate), serif headlines (transitional/Didone e.g., Playfair Display), clean grotesk body (e.g., Inter), generous whitespace, ruled lines, large captioned imagery, slow cinematic motion/video, serious/expensive/institutional tone"
+    },
+    "deploy_model": "Frontend bundler build (Angular dist → public/demos/solo-law/), backend blueprint (commit + push, auto-deploy ~30s), deep-link via AppFrame with base-href verification"
+  },
+
+  "hard_gates": [
+    "Every explicit requirement (8 items) addressed in cover letter AND represented in demo or deck",
+    "Every nice-to-have represented in demo or deck",
+    "Demo builds and loads with no console errors on first paint",
+    "Demo URL (/demos/solo-law/) resolves locally; after deploy, /work-samples/solo-law returns 200",
+    "Demo link appears in cover letter and deck",
+    "Demo uses cohesive, bespoke international law-firm design (monochrome editorial + accent, refined typography, cinematic motion) fit for the client's industry (NOT michaelwegter.com's portfolio look), no em/en dashes anywhere",
+    "Multilingual support is real and backend-driven (≥2 locales, not hardcoded)",
+    "Angular base-href (/demos/solo-law/) is exact; all assets load inside AppFrame iframe",
+    "CMS is functional: editor can create/edit/delete practice areas and publications, changes persist to database and render on public site immediately",
+    "Agentic AI assist genuinely uses browser WebGPU (with graceful fallback), includes reflection + rubric-based evaluation loop, not just scripted responses",
+    "Demo CMS editor credentials are seeded and recorded for deploy-test login"
+  ],
+
+  "caps": {
+    "hero_features": 1,
+    "supporting_features_max": 2,
+    "demo_files_max": 12,
+    "build_timeout_minutes": 3,
+    "research_fetches_max": 6
+  },
+
+  "handoff": {
+    "produced": "brief.json with 8 explicit requirements (premium visuals, CMS, multilingual, practice areas, publications, AI-assisted content, brand assets, reusable architecture) + 3 nice-to-haves; Michael's 4 hard build directives (Angular+TS+Tailwind, Python OOP Flask blueprint, browser WebGPU agentic AI w/ reflection+rubric-eval, multilingual real backend-driven); hero (agentic AI content assistant), 2 supporting (multilingual CMS, premium law site); bespoke international law-firm design direction; 11 hard gates; feature richness 10/10.",
+    "decisions": "Build FULL app (Angular frontend bundler + Python Flask blueprint backend); hero = browser WebGPU agentic AI with reflection + rubric-driven evaluation loop, integrated into CMS for content drafting/translating/refining; multilingual must be real, backend-persisted (≥2 locales); demo editor account seeded with credentials for QA; design = monochrome editorial + one restrained accent + refined serif + cinematic motion (not portfolio look); base-href = /demos/solo-law/; deploy = Angular dist copied to public/demos/solo-law/ + Flask blueprint committed and pushed (auto-deploy ~30s).",
+    "next_needs": "planner locks design system in detail (exact palette hex, font families, motion vocabulary), validates hero AI's rubric criteria, decides model architecture (WebLLM vs transformers.js), finalizes feature traceability matrix per requirement, scopes exact practice areas + article templates.",
+    "risks": "WebGPU availability in Playwright headless (mandate mockable model interface, test fallback path in deploy-test); Angular base-href asset 404s inside AppFrame if incorrect (verify during demo-builder); model first-load size (lazy-load, gate behind explicit user action); SQLite multithread access under concurrent CMS edits (use WAL mode); multilingual backend schema must be designed upfront so planner/demo-builder align."
+  }
+}

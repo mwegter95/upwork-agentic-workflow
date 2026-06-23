@@ -1,0 +1,134 @@
+# Pre-Researcher — MN State Park Tracker
+
+Answering all 7 planner research questions.
+
+---
+
+## Q1: MN State Park Data Source
+
+**Primary (recommended):** MN DNR ArcGIS REST Feature Service.
+- Layer URL (point centroids + polygons):
+  `https://arcgis.dnr.state.mn.us/host/rest/services/Hosted/Minnesota_State_Parks_Recreation_Areas_Waysides/FeatureServer/1/query?where=1%3D1&outFields=*&returnCentroid=true&f=geojson`
+- Returns: park name, unit type, geometry. Centroids usable as pin lat/lng.
+- Direct WebFetch returned 404 (bot protection), but this is a standard ArcGIS REST endpoint — the seed script should call it server-side (Flask or Python) at startup and it will resolve fine.
+- **Count correction:** MN has ~75 state parks + rec areas (planner assumed 66; the actual number including state recreation areas and waysides is 75+). The boundary layer includes all of them.
+- **Descriptions/amenities:** NOT available in the GIS layer. Must be sourced separately. Options:
+  1. Scrape individual park pages: `https://www.dnr.state.mn.us/state_parks/<slug>/index.html` (75 pages, feasible in seed script)
+  2. Hand-curate a JSON file in the demo with ~3 sentence descriptions per park — faster and fully reliable for demo scale.
+  - **Recommendation:** Hand-curated JSON seed file shipped with the demo. 75 parks at 3 sentences each is tractable. Include: name, lat/lng (from ArcGIS), region, acreage, 1-2 key amenities (e.g., "Camping, Hiking, Swimming"), DNR URL, description. Demo-builder should build the seed as a static `parks.json` bundled with the app.
+- **Gazetteer API** (`services.dnr.state.mn.us/api/gazetteer/v1`) is name-search-only, not a list endpoint — unsuitable for seeding.
+- **gisdata.mn.gov** is bot-protected via Cloudflare; don't rely on it during build.
+
+---
+
+## Q2: Google Maps API Key
+
+**No key present.** `mw-backend/.env` contains no `GOOGLE_MAPS_API_KEY` or equivalent. File appears empty/absent of any API key variables.
+
+**Decision: Build primary path with Leaflet + OpenStreetMap.** No Google Maps. This is confirmed architecture — do not treat it as fallback.
+- Use `react-leaflet` + `leaflet` npm packages (Vite 6 compatible, zero API cost, no key required).
+- Map tiles: CartoDB Voyager (`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`) — clean, outdoorsy, no cluttered POIs, legible at all zooms. Or Stamen Terrain for a topographic feel.
+- Geocoding for home location: use browser `navigator.geolocation` (no key) + Haversine client-side for distances. No Geocoding API needed.
+- If the user/client supplies a Maps key later, `@vis.gl/react-google-maps` is the drop-in upgrade path (see Q3).
+
+---
+
+## Q3: Best React + Maps Library
+
+Since we're on Leaflet (no key), use **`react-leaflet` v4**:
+- Fully Vite 6 compatible, no known issues
+- 100% free tile options (CartoDB, OpenStreetMap, Stamen)
+- Custom SVG markers via `L.divIcon` — supports the pine-tree pin design
+- Imperative access via `useMap()` hook for two-way sync (list click -> map pan)
+
+For the Google Maps path (if key is added later): `@vis.gl/react-google-maps` is the official recommendation. `@googlemaps/js-api-loader` has open Vite issue (#15620) — avoid.
+
+---
+
+## Q4: Existing Demo Analog to Clone
+
+**Best match: `healthstack-patient-portal`** (`public/demos/healthstack-patient-portal/`)
+- 811-line vanilla JS app with JWT auth, multi-view routing (login / dashboard / detail), role-based API calls, localStorage token persistence
+- Pattern to copy: login view -> token storage -> authenticated fetch -> list view -> detail drawer
+- It's not React (vanilla JS + htm-style), so don't copy syntax — copy the auth flow and API call structure, and adapt to React/Vite
+- Also check `civicq` for civic/map list-detail UI patterns if needed
+
+For the Vite + React scaffold specifically, clone from the most recent Vite demo in the run history — no full-site demo currently exists in the portfolio using Vite + Flask + auth, so demo-builder will scaffold fresh but can copy the auth pattern verbatim from healthstack's `api.js`.
+
+---
+
+## Q5: Photo Storage — BLOB vs Filesystem
+
+**Recommendation: Filesystem storage** (`mw-backend/data/mn-parks-photos/<user_id>/<park_id>/`) is safer for this use case.
+
+Rationale:
+- Mobile camera roll photos are 3-15MB raw. SQLite BLOBs degrade past ~100KB; acceptable to ~1MB but memory-intensive on the Surface.
+- Filesystem is trivially served via Flask `send_file()`, avoids loading large BLOBs into memory, and is simpler to inspect/debug.
+- **Mitigation for filesystem path:** Client-side resize before upload — use `<canvas>` to resize to max 1200px and compress to JPEG at 0.75 quality. This brings typical mobile photos to 150-400KB, making either storage approach safe. Build this resize step into the photo upload component.
+- DB stores only the file path (`/demos/mn-parks/photos/<file>`); Flask serves files from `data/mn-parks-photos/`.
+
+---
+
+## Q6: MN DNR Visual Brand
+
+Official State of Minnesota brand colors (mn.gov/portal/brand/style-guide/colors/):
+
+| Token | Official Hex | Use |
+|-------|-------------|-----|
+| Minnesota Blue | `#003865` | Strong dark navy |
+| Minnesota Green | `#78BE21` | Lime green (primary brand, too electric for dark UI) |
+| Accent Green (dark) | `#0D5257` | Dark forest teal — best for dark header/nav |
+| Accent Teal | `#008EAA` | Mid-tone lake blue |
+| Gold | `#FFC845` | Warm accent, excellent for CTAs |
+| Cream | `#F5E1A4` | Light warm bg |
+| Dark Gray | `#53565A` | Body text |
+
+**Design adjustment for the demo:** The official lime `#78BE21` is too electric for an earthy app. The planner's proposed forest green `#2D5A3D` is better for atmosphere. However, to feel credibly MN-branded:
+- Incorporate official navy `#003865` as header/nav dark color
+- Use gold `#FFC845` as visited/accent color (very on-brand MN)
+- Keep earthy cream `#F5E1A4` (matches official brand cream)
+- Replace planner's proposed `#1E4D7B` lake blue with `#008EAA` official teal for better on-brand feel
+- The lime `#78BE21` can appear as a subtle accent detail (border, badge, chip) without dominating
+
+**MN DNR typography:** Site uses Inter/system-sans for body; no distinctive display font. Planner's Playfair Display + Inter pairing is a step up aesthetically and appropriate for the demo.
+
+---
+
+## Q7: Map Styling (Leaflet Tiles)
+
+Since we're on Leaflet, no custom JSON style needed. Recommended tile options:
+
+1. **CartoDB Voyager** (recommended): `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`
+   - Clean, modern, muted commercial POIs, pleasant greens/blues — perfect nature app feel
+   - Attribution: `&copy; OpenStreetMap contributors &copy; CARTO`
+
+2. **Stamen Terrain** (alternative): `https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg`
+   - Topographic with elevation shading — more dramatic, very outdoorsy
+
+3. **OpenStreetMap Standard**: available but visually cluttered — avoid.
+
+If a Google Maps key is added later: use Snazzy Maps style "Subtle Grayscale" or "Light Monochrome" as base, with `featureType: "landscape.natural"` tinted green and `featureType: "water"` tinted `#008EAA`.
+
+---
+
+## Summary for Planner
+
+| Q | Status | Answer |
+|---|--------|--------|
+| Q1 park data | RESOLVED | ArcGIS REST for lat/lng; hand-curated JSON for descriptions. ~75 parks (not 66). |
+| Q2 Maps API key | RESOLVED | **No key. Leaflet is the build path, not fallback.** |
+| Q3 map library | RESOLVED | `react-leaflet` v4, CartoDB Voyager tiles |
+| Q4 scaffold analog | RESOLVED | `healthstack-patient-portal` auth/API pattern; fresh Vite scaffold |
+| Q5 photo storage | RESOLVED | Filesystem + client-side resize before upload |
+| Q6 MN DNR brand | RESOLVED | Navy `#003865`, gold `#FFC845`, cream `#F5E1A4`; tweak planner palette |
+| Q7 map style | RESOLVED | CartoDB Voyager (no JSON needed for Leaflet) |
+
+**Plan is unblocked.** Two arch decisions changed: (1) Leaflet is primary (not fallback), (2) filesystem photo storage (not SQLite BLOBs). All other planner architecture is valid.
+
+---
+
+## handoff
+- produced: answers to all 7 planner research questions; two architecture decisions confirmed/changed
+- decisions: (1) Leaflet + CartoDB Voyager is primary map (no Google Maps key exists); (2) filesystem photo storage preferred over SQLite BLOBs with client-side resize; (3) park count is ~75 not 66; (4) descriptions must be hand-curated in seed JSON
+- next needs: planner updates plan.md — change map library to react-leaflet, confirm ArcGIS endpoint for lat/lng, adjust photo storage to filesystem, update design tokens with official MN brand colors; gate re-runs
+- risks: ArcGIS REST endpoint verified via search results but not live-tested by this researcher (bot-blocked); demo-builder must confirm it resolves at build time; if it doesn't, fallback is a hand-curated lat/lng JSON for all 75 parks (feasible, ~1hr of curated data)

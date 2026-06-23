@@ -1,0 +1,39 @@
+# CEO (Build) Review — auction-scraper
+
+## What I verified (live, not assumed)
+- `GET /demos/auction-scraper/health` → `{ok:true, seeds_loaded:{bonhams:5,heritage:8,leland_little:5}, service:"auction-scraper"}`. ✓
+- `POST /scrape` (all 3 sources) → 18 normalized lots: heritage 8, leland_little 5, bonhams 5. All 18 carry `images`; all 18 have numeric `estimate_low/high`. Consistent field set across sources (source, lot_number, title, description, estimate_low/high, currency, raw_estimate_text, sale_date, bidding_deadline, images, status, source_url, scraped_at, scraper_notes). ✓
+- SSE `/stream/<job>` → emits `source_start` (with tool name), `rate_limit_pause`, `retry`, 403 detection → `flagged_for_api` (honors the brief's "flag for API, do NOT circumvent" policy), then per-`lot` events with full normalized payload incl. `raw_json_ld`. Live accumulation works. ✓
+- Frontend wired correctly: `app.js` API base = `https://api.michaelwegter.com/demos/auction-scraper`, EventSource streaming, inspector (normalized + raw JSON-LD tabs), filters/sort, export, lightbox. index.html has all required IDs. ✓
+- GitHub repo public: https://github.com/mwegter95/auction-scraper-demo ✓
+
+Feature richness: genuinely 10/10. Multi-source pipeline, live streaming accumulation, rate-limit/retry telemetry, respectful-scraping 403→flag policy, normalized JSON + raw JSON-LD inspector, images/lightbox, filters/sort/export. This is exactly what the posting asks a data-acquisition specialist to demonstrate. Strong.
+
+## Problem (hard gate #5 violation — must fix)
+The demo + its data contain em/en dashes, which gate #5 ("Demo, one-pager, and deck contain no em/en dashes") forbids and the evaluator will fail:
+- `mw-backend/auction_scraper_seeds.json`: 57 occurrences (lot titles, descriptions, `raw_estimate_text` like "$45,000 – $65,000").
+- `mw-backend/auction_scraper_blueprint.py`: 16 occurrences (hardcoded strings / fallback seed text).
+- `michaelwegter.com/public/demos/auction-scraper/app.js`: 12 occurrences, several USER-VISIBLE — estimate separator (line 60 `–`), log messages (`rate_limit_pause — `, `retry … — backoff`, `flagged_for_api — `, `source_done — `, `source_start — `, `job_done — `), flagged note (line 239 `Seeded data — site flagged`), summary (line 648 ` — `).
+- `styles.css`: 1 (comment header em-dash).
+
+These render in the live UI and in the JSON the user inspects/exports, so they count.
+
+## Fix directive (loop demo-builder)
+Strip ALL em dashes (—) and en dashes (–) from the demo and its data, replacing with commas/colons/hyphens/"to" as reads best:
+- Estimate ranges: `$45,000 – $65,000` → `$45,000 to $65,000` (in seeds, blueprint, and app.js `formatEstimate`/line 60).
+- Titles like `Winslow Homer (1836-1910) — Watercolor…` → use a comma or colon.
+- All app.js log/note/summary strings: replace ` — ` separators with `:` or `,` (keep the leading ▶/✓/⚠ glyphs).
+- Comment headers in app.js/styles.css: swap em-dash for hyphen.
+Then re-push mw-backend (seeds+blueprint), re-run a scrape, and confirm 0 dashes remain: `grep -rP "[\x{2013}\x{2014}]"` over the demo dir, seeds, and blueprint all return nothing. Note: many `──` in comment boxes are U+2500 box-drawing (allowed); only U+2013/U+2014 must go.
+
+Everything else is approved as-is — do not rebuild features, only de-dash.
+
+## handoff
+- produced: build review; live verification of health/scrape/SSE (18 lots, 3 sources, images, normalized+raw JSON-LD, respectful 403→flag policy) — all working at true 10/10.
+- decisions: PASS on functionality and feature richness; FAIL only on hard gate #5 (em/en dashes present in demo UI strings, seeds, and blueprint).
+- next needs: demo-builder strips all U+2013/U+2014 from app.js+styles.css (user-visible strings), auction_scraper_seeds.json, and auction_scraper_blueprint.py; re-push mw-backend; verify grep returns zero.
+- risks: dashes are in exported/inspected JSON too, so a partial fix (UI only) still fails the gate — must clean the data sources, not just the frontend.
+
+REDIRECT: demo-builder
+NOTE: Strip every em dash (U+2014) and en dash (U+2013) from the demo and its data — do not touch features. Replace ` — ` separators in app.js log/note/summary strings with `:` or `,`; replace estimate ranges `$X – $Y` with `$X to $Y` in app.js (line ~60 formatEstimate), auction_scraper_seeds.json (57 occ.), and auction_scraper_blueprint.py (16 occ.); fix em dashes in lot titles to commas/colons; swap comment-header em-dashes for hyphens (U+2500 box-drawing chars are fine to keep). Re-push mw-backend, re-run a scrape, and confirm `grep -rP "[\x{2013}\x{2014}]"` over the demo dir + seeds + blueprint returns nothing.
+VERDICT: fail

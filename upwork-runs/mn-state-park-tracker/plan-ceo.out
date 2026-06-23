@@ -1,0 +1,27 @@
+# CEO Review (Plan) — MN State Park Tracker
+
+Reviewed planner.out + plan-eval.out against brief and 10/10 richness target.
+
+## Assessment
+Plan is genuinely build-ready for a winning 10/10 demo:
+- All 8 client requirements traced to concrete components + backend routes.
+- FULL build correctly chosen; real Flask blueprint + JWT + SQLite + filesystem photos matches CLAUDE.md backend pattern.
+- Bespoke MN-brand design (navy/gold/cream/forest green, Playfair+Inter, Voyager tiles) — strong industry fit, not the portfolio look.
+- Scope (13 FE files, 10 routes, 4 tables) is feasible; deployed output well under file cap.
+- Risks have explicit mitigations (canvas resize, waitress body limit, ArcGIS fallback).
+
+## Problems / directives to demo-builder (all non-blocking, no earlier-step rerun needed)
+1. **Google Maps substitution** — client EXPLICITLY asked for Google Maps; plan uses Leaflet+CartoDB (no API key). Acceptable for the demo, but this is the one real deviation. Demo-builder: keep Leaflet but make the map read as polished/Google-grade. Proposal-writer/cover letter MUST openly state production would wire the Google Maps JS API (same UX, key + billing on client's account) — do not bury it.
+2. **parks.js fallback first** — hardcode all ~75 parks (lat/lng + at least placeholder descriptions) as the primary source; treat live ArcGIS fetch as enrichment only, never a build dependency. A failed fetch must not break the demo.
+3. **Add photo DELETE route** — spec has visit DELETE but no per-photo delete; add `DELETE /mn-parks/visits/<vid>/photos/<pid>` so users can remove photos.
+4. **Update traceability for Req 1** — note the Leaflet substitution explicitly so downstream writers address it.
+
+None of these warrant re-entering plan/research. Plan passes.
+
+## handoff
+- produced: CEO sign-off on plan; 4 demo-builder directives, none blocking
+- decisions: PASS, no REDIRECT; Leaflet accepted with mandatory cover-letter disclosure of Google Maps production path
+- next needs: researcher then demo-builder; hardcode parks.js first, add photo DELETE route, polish map to Google-grade
+- risks: 75-park description curation is the main build-time cost; Google Maps deviation must be honestly addressed in proposal
+
+VERDICT: pass

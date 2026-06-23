@@ -1,0 +1,22 @@
+BROCCOLI
+
+Your subscription service needs a scraper pipeline that stays current as new auction catalogs drop, extracts clean lot data across sites with wildly different structures, and never gets you flagged. I've been building exactly this kind of work in Python, and I built a live demo to show you: https://michaelwegter.com/demos/auction-scraper/
+
+The demo scrapes three real auction sources (Leland Little, Bonhams, Heritage Auctions), each with a different structure and requiring a different tool. Results stream live into the UI as each lot lands, images included. The normalized JSON schema is consistent across all three sources. Rate-limit pacing, retries, and a "flagged for API" event when Heritage blocks are all logged in real time so you can see the responsible-scraping logic playing out. Click Run Scraper and watch it work.
+
+Answers to your three questions:
+
+1. A dynamic/JS-heavy site I've scraped: Bonhams is a Next.js app. The lot data is not in the HTML source; it's hydrated client-side. My approach: launch headless Chromium via Playwright, intercept the /_next/data JSON endpoint that Next.js calls during hydration, and extract the structured lot payload directly from that response rather than parsing the rendered DOM. Faster, more stable, and sidesteps most anti-scraping surface area. I use DOM-based extraction as the fallback when the data endpoint isn't consistently structured. Both strategies are in the demo.
+
+2. My preferred stack for a multi-site pipeline: I don't use the same tool everywhere. For static or lightly-dynamic auction pages, requests + BeautifulSoup is faster and gentler on the target server. For JS-rendered sites, Playwright (I prefer it over Selenium for its async API and reliability in headless environments). Pipeline orchestration in plain Python with asyncio, a per-source crawl-delay constant, and exponential backoff on retries. I skip Scrapy for custom multi-site work because its abstraction layer fights you when each site needs a meaningfully different extraction strategy. The right call is picking the lightest tool that works reliably for each source, and documenting that decision so the next person understands the reasoning.
+
+3. Rate-limiting and avoiding blocks: Each scraper has a named crawl-delay constant set before any other config (so it's visible and auditable). I randomize inter-request intervals slightly to avoid fingerprinting, respect Crawl-delay in robots.txt, and use rotating User-Agent strings. Retries use exponential backoff with jitter. If a site returns repeated 403s or 429s, I treat that as a signal to flag it for an API arrangement, not a problem to overcome. I've never caused a client to get blocked.
+
+A bit about me: I own the Python backend for a production platform at U.S. Bank, serving around 600 users a month across roughly 60,000 lines of production code. I became the sole developer and SME on that system within two months of joining. In past projects I've used Python, Puppeteer, and Playwright to scrape and automate JS-heavy websites. I know what "production reliability" means for a data pipeline: it fails gracefully, logs clearly, recovers on its own, and the next person can read the code. I'm based in the US, English is my first language, and I'm comfortable on video with camera on.
+
+Scraper code and portfolio: https://github.com/mwegter95
+Live demo: https://michaelwegter.com/demos/auction-scraper/
+
+Happy to get on a call any time that works for your team.
+
+Michael Wegter

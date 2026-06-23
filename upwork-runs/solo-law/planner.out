@@ -1,0 +1,304 @@
+# Plan — solo-law
+Status: READY (all 6 research questions answered and integrated below)
+
+---
+
+## Demo Concept
+**Solo Law Premium Website + Integrated Multilingual CMS + Agentic Browser-GPU AI Content Assistant**
+
+Full Angular + Flask app. Public-facing law firm site (editorial, institutional) driven 100% from CMS backend. CMS panel lets editor manage practice areas, publications, brand assets across 2 locales. Hero feature: in-browser WebLLM/WebGPU agentic loop (draft → reflection → rubric-eval → emit/loop) embedded in CMS for copy drafting and translation. Richness: 10/10.
+
+---
+
+## Architecture
+
+### Frontend — Angular 18+ + TypeScript + Tailwind CSS
+Build: `ng build --base-href /demos/solo-law/` → dist copied to `../michaelwegter.com/public/demos/solo-law/`
+
+**Public routes:**
+- `/` — Hero (cinematic, large editorial imagery, firm name, tagline)
+- `/practice-areas` — Grid/list of all practice areas (locale-driven)
+- `/practice-areas/:slug` — Individual practice area (editorial layout, related publications)
+- `/publications` — Publications index (filterable by practice area, date)
+- `/publications/:slug` — Article page (editorial typography, refined layout)
+- `/contact` — Minimal contact form (static)
+
+**CMS routes (JWT-protected):**
+- `/cms/login` — Editor login
+- `/cms/dashboard` — Overview cards (counts, recent edits)
+- `/cms/practice-areas` — CRUD list
+- `/cms/practice-areas/edit/:id` — Form with AI Assist panel
+- `/cms/publications` — CRUD list
+- `/cms/publications/edit/:id` — Form with AI Assist panel
+- `/cms/brand-assets` — Asset library, palette display
+- `/cms/i18n` — Translation manager (side-by-side EN/ES)
+
+**Key Angular services:**
+1. `ApiService` — HTTP client to `/solo-law/...` Flask endpoints; attaches JWT
+2. `AuthService` — Login, token storage, route guards
+3. `AiAgentService` — WebLLM/WebGPU agentic controller (see AI section)
+4. `I18nService` — wraps `@ngx-translate/core` v18 (Signal-native, `provideTranslateService` + `HttpLoader`); UI strings from `assets/i18n/{en,es,fr}.json`; content (practice areas, publications) fetched per-locale via backend API; runtime switch via `translateService.use(lang)` (no reload)
+5. `ContentService` — CRUD wrappers for practice areas, publications, assets
+
+**Locale switcher:** Header component with EN / ES toggle; on switch, re-fetches all content for new locale.
+
+---
+
+### Backend — Flask Blueprint (solo_law_blueprint.py, Python OOP)
+
+Registers at prefix `/solo-law` in `mw-backend/server.py`. SQLite WAL mode. All Python OOP.
+
+**Python OOP class map:**
+```
+SoloLawDB          — db init, WAL pragma, connection pool
+PracticeAreaModel  — CRUD, multilingual (locale field)
+PublicationModel   — CRUD, multilingual, practice-area FK
+BrandAssetModel    — CRUD, tags
+ContentBlockModel  — reusable blocks (type, json_data, locale)
+UserModel          — login only (re-uses existing JWT pattern from mw-backend)
+SeedManager        — idempotent seed on first run
+```
+
+**Database schema:**
+```sql
+-- practice_areas
+id, slug, locale(en|es), title, tagline, body_html, icon_emoji, hero_image_url, display_order, published, updated_at
+
+-- publications
+id, slug, locale(en|es), title, excerpt, body_html, author, practice_area_id, published_at, published, updated_at
+
+-- brand_assets
+id, name, type(color|font|image|logo), value, tag, created_at
+
+-- content_blocks
+id, block_type, locale, json_data, ref_id, ref_type, created_at
+
+-- cms_users
+id, email, password_hash, role(editor|admin), created_at
+```
+
+**API endpoints:**
+```
+GET  /solo-law/health
+POST /solo-law/auth/login                    → {token, user}
+GET  /solo-law/practice-areas?locale=en      → [{id,slug,title,tagline,icon,...}]
+GET  /solo-law/practice-areas/:slug?locale=en → {full fields + publications[]}
+POST /solo-law/cms/practice-areas            [auth] → create
+PUT  /solo-law/cms/practice-areas/:id        [auth] → update
+DELETE /solo-law/cms/practice-areas/:id      [auth] → delete
+GET  /solo-law/publications?locale=en&practice_area=&page=1
+GET  /solo-law/publications/:slug?locale=en
+POST /solo-law/cms/publications              [auth]
+PUT  /solo-law/cms/publications/:id          [auth]
+DELETE /solo-law/cms/publications/:id        [auth]
+GET  /solo-law/brand-assets
+POST /solo-law/cms/brand-assets              [auth]
+DELETE /solo-law/cms/brand-assets/:id        [auth]
+GET  /solo-law/i18n?locale=en                → {ui_strings: {nav_home, nav_practice_areas,...}}
+POST /solo-law/cms/i18n                      [auth] → upsert UI string
+```
+
+**Seed data (idempotent, English + Spanish):**
+
+Practice areas:
+1. Corporate Transactions / Transacciones Corporativas
+2. Commercial Litigation / Litigación Comercial
+3. Intellectual Property / Propiedad Intelectual
+4. Regulatory & Compliance / Regulatorio y Cumplimiento
+
+Publications: 5 bilingual articles (1 per practice area + 1 general), realistic legal-thought-leadership copy.
+
+CMS credentials: `editor@soloaw.demo` / `Demo2026!` (seeded in cms_users, hashed with bcrypt)
+
+---
+
+### AI Engine — Agentic Browser-GPU Content Assistant
+
+**Library:** `@mlc-ai/web-llm` v0.2.84 (chosen over transformers.js — OpenAI-compatible chat API maps cleanly to multi-turn agentic loop; native streaming; WebWorkerMLCEngine keeps Angular UI thread free).
+
+**CDN import (ESM, no bundler required):**
+```js
+import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+```
+
+**Primary model:** `Phi-3.5-mini-instruct-q4f16_1-MLC` (~3GB VRAM, discrete GPU)
+**Fallback model:** `Llama-3.2-1B-Instruct-q4f16_1-MLC` (~0.8GB VRAM, integrated GPU)
+
+**Initialization pattern:**
+```ts
+const engine = new webllm.WebWorkerMLCEngine('/webllm-worker.js');
+await engine.reload(modelId, { initProgressCallback: (r) => { /* progress bar */ } });
+const reply = await engine.chat.completions.create({ messages, stream: true });
+```
+
+**Detection + fallback:**
+```typescript
+const gpu = await navigator.gpu?.requestAdapter();
+if (!gpu) { this.mode = 'mock'; return; }
+// else load WebLLM engine
+```
+Mock mode: returns template-fill placeholder text with [AI UNAVAILABLE — WebGPU not detected] prefix. Non-blocking.
+
+**Agentic controller — AiAgentService:**
+```
+1. DRAFT   — system prompt = firm voice + practice-area context + task (draft|translate|refine)
+              user prompt  = editor's instruction
+              → raw draft text
+
+2. REFLECT — system prompt = "You are a senior legal editor. Critique this draft..."
+              user prompt  = {draft, task, target_locale if translation}
+              → critique JSON: {issues: string[], suggestions: string[]}
+
+3. EVAL    — system prompt = rubric evaluator
+              user prompt  = {draft, critique, rubric}
+              rubric axes: legal_tone (0-10), relevance (0-10), factual_grounding (0-10),
+                           multilingual_correctness (0-10, if translate), brevity (0-10)
+              → {scores: {...}, overall: number, pass: boolean, reason: string}
+
+4. DECIDE  — if overall >= 7.0 OR iterations >= 2: emit final
+              else: refine (feed critique back, re-draft, loop from step 1)
+```
+
+**CMS integration:** AI Assist panel slides in on right side of CMS edit form. Controls: Task selector (Draft / Translate EN→ES / Translate ES→EN / Refine), instruction textarea, Generate button. Shows streaming-like output with step indicators (Drafting... Reflecting... Evaluating... Done ✓). Editor can Accept (inserts into body field) or Dismiss.
+
+**Smart prompting:** Brand voice context injected from brand_assets table (tone keywords, forbidden terms). Practice-area context injected from current form values.
+
+---
+
+## Design System
+
+**Palette (locked — Q1 research confirmed antique gold as the elite boutique law signal):**
+- Background: `#0D0D0D` (near-black; less harsh than pure black)
+- Surface: `#141414`
+- Text primary: `#F5F3EF` (warm white)
+- Text secondary: `#9E9E9E`
+- Accent: `#C9A96E` (antique gold — full opacity for CTAs + ruled lines only)
+- Accent hover: `#B8955A`
+- Accent decorative: `#C9A96E` at 40% opacity (dividers)
+- Danger: `#C0392B`
+
+**Typography:**
+- Headline: `Cormorant Garamond` 300/400 (Google Fonts) — Didone/transitional, editorial weight
+- Subhead: `Cormorant Garamond` 600 italic
+- Body: `Inter` 400/400
+- Caption/meta: `Inter` 300, letter-spacing +0.08em, small-caps where possible
+- Mono (AI output stream): `JetBrains Mono` (already in portfolio; acceptable for CMS internal UI only, not public site)
+
+**Motion vocabulary:**
+- Page entry: 500ms `opacity 0→1` + `translateY(16px→0)`, `ease-out`, staggered by 80ms
+- Hero parallax: `background-position` slow-scroll (CSS scroll-driven or JS rAF)
+- Navigation hover: 200ms bottom-border slide from left (CSS transform)
+- CMS panel transitions: 300ms `translateX` slide-in
+- No spring, no bounce — editorial stillness throughout
+
+**Layout conventions:**
+- Max content width: 1280px centered
+- Grid: 12-col; editorial pages use asymmetric (2+8+2 or 1+6+1+4 for sidebar)
+- Ruled lines: `1px solid #D0CBBE` horizontal dividers, generous padding above/below
+- Large captioned imagery: full-bleed hero (100vh), 16:9 practice-area hero band
+- CMS admin: clean white cards, no editorial drama — utility-focused
+
+**Confirmed nav structure (Gibson Dunn / Quinn Emanuel reference — Q5):**
+```
+[Logo]  Practice Areas | Publications | About | Contact  [EN/ES/FR]  [Contact CTA button]
+```
+Desktop: horizontal, smallcaps labels, no mega-menus. Mobile: hamburger → full-screen overlay with locale switcher.
+
+**Confirmed hero pattern (Q5):** Full-viewport B&W editorial image, 60–80px Cormorant Garamond serif headline, subhead 18px Inter, single gold CTA button. Optional slow looping B&W video at low opacity.
+
+**Confirmed publications layout (Q5):** 3-column card grid. Each card: gold category tag, Cormorant headline, date, excerpt, "Read more" link. Filter bar: All | Client Alerts | Articles | Firm News.
+
+**Confirmed practice-area page layout (Q5):** Full-width header + gold accent rule, sticky left nav (sub-practices), main content: rich prose + related publications feed.
+
+**Tailwind config (`tailwind.config.js`) — custom tokens:**
+```js
+theme.extend.colors: {
+  'bg-base': '#0D0D0D', 'bg-surface': '#141414',
+  'text-primary': '#F5F3EF', 'text-secondary': '#9E9E9E',
+  'accent': '#C9A96E', 'accent-hover': '#B8955A', 'rule': '#D0CBBE'
+}
+theme.extend.fontFamily: { serif: ['Cormorant Garamond', 'Georgia', 'serif'], sans: ['Inter', 'system-ui', 'sans-serif'] }
+```
+
+---
+
+## Feature Traceability Matrix
+
+| Req | Feature | Demo | Deck/CL |
+|-----|---------|------|---------|
+| req-1 | Premium visuals (B/W editorial, accent, serif, motion) | Public site — Home, PA pages, Publications | ✓ |
+| req-2 | CMS (practice areas, publications, assets) | /cms/... routes, full CRUD | ✓ |
+| req-3 | Multilingual (EN/ES, backend-driven) | Locale switcher + /solo-law/...?locale= | ✓ |
+| req-4 | Practice-area pages (4 seeded, editable) | /practice-areas/:slug + CMS CRUD | ✓ |
+| req-5 | Publications (5 seeded, filterable) | /publications?practice_area= | ✓ |
+| req-6 | AI-assisted content (WebGPU, agentic loop) | CMS edit panel AI Assist | ✓ |
+| req-7 | Brand asset system (palette, fonts, images) | /cms/brand-assets, colors displayed | ✓ |
+| req-8 | Reusable content architecture (ContentBlock) | content_blocks table + block-compose endpoint | ✓ |
+| nth-1 | Video/media | Hero video embed (YouTube/self-hosted) | deck |
+| nth-2 | SEO/structured data | Angular meta service, schema.org JSON-LD | deck |
+| nth-3 | Analytics dashboard | /cms/dashboard visit counters | deck |
+
+---
+
+## File Budget (12 meaningful hand-crafted files)
+
+1. `mw-backend/solo_law_blueprint.py` — entire Flask OOP backend
+2. `src/app/app.module.ts` + `app-routing.module.ts` — Angular module + routes
+3. `src/app/services/api.service.ts` — HTTP + auth headers
+4. `src/app/services/ai-agent.service.ts` — WebLLM agentic controller
+5. `src/app/services/i18n.service.ts` — locale management
+6. `src/app/pages/home/home.component.{ts,html,css}` — hero + PA preview + publications preview
+7. `src/app/pages/practice-areas/` — list + detail components
+8. `src/app/pages/publications/` — list + detail components
+9. `src/app/pages/cms/` — CMS shell, login, dashboard, PA editor, pub editor, asset library
+10. `src/app/components/shared/` — locale-switcher, nav, footer, ai-assist-panel
+11. `src/styles.css` — Tailwind directives + global editorial CSS
+12. `tailwind.config.js` — custom design tokens
+
+---
+
+## Build Sequence for Demo-Builder
+
+1. Scaffold Angular project, configure Tailwind, set base-href
+2. Build Flask blueprint + SQLite schema + seed data; push to mw-backend
+3. Wire Angular services (Api, Auth, I18n)
+4. Build public site pages (Home, Practice Areas, Publications) from API
+5. Build CMS pages (login, dashboard, CRUD editors)
+6. Implement AiAgentService + AI Assist panel (with mock fallback)
+7. Add motion/transitions; apply design system tokens throughout
+8. `ng build --base-href /demos/solo-law/` → copy dist → verify in AppFrame
+9. Push mw-backend, wait ~30s, verify live endpoints
+
+---
+
+## Risks & Mitigations
+
+| Risk | Mitigation |
+|------|-----------|
+| WebGPU unavailable in Playwright headless | `navigator.gpu` check → mock mode; deploy-test asserts mock-fallback UI renders correctly (banner + mock output). For GPU-enabled local testing: `--headless=new --use-angle=vulkan --enable-features=Vulkan,WebGPU --disable-vulkan-surface --enable-unsafe-webgpu --ignore-gpu-blocklist` |
+| Angular base-href 404s | Verify `<base href="/demos/solo-law/">` in dist/index.html post-build; test in AppFrame locally |
+| WebLLM model first-load size (≥1GB) | Gate model download behind explicit "Load AI" button; show progress bar; never auto-download on CMS open |
+| SQLite concurrent CMS writes | `PRAGMA journal_mode=WAL;` on DB init; connection-per-request OOP pattern |
+| Multilingual schema drift | Schema locked above; seed covers both locales; SeedManager is idempotent |
+| Angular build time | Keep component count tight; use OnPush change detection |
+
+---
+
+## RESEARCH INTEGRATED (all 6 questions answered — Q1–Q6)
+
+| Q | Answer |
+|---|--------|
+| Q1 accent | `#C9A96E` antique gold — muted metallic, not loud; full palette locked above |
+| Q2 WebLLM | `@mlc-ai/web-llm` v0.2.84; CDN `esm.run`; model `Phi-3.5-mini-instruct-q4f16_1-MLC` (fallback `Llama-3.2-1B`) |
+| Q3 i18n | `@ngx-translate/core` v18 Signals-native; `provideTranslateService` + `HttpLoader`; UI strings at `assets/i18n/{en,es,fr}.json`; runtime switch no-reload |
+| Q4 Playwright | `--headless=new --use-angle=vulkan --enable-features=Vulkan,WebGPU --disable-vulkan-surface --enable-unsafe-webgpu --ignore-gpu-blocklist`; CI without GPU hits mock fallback automatically |
+| Q5 UX | Nav, hero, PA page, publications layout all confirmed from Gibson Dunn/Quinn Emanuel reference; integrated into Design System above |
+| Q6 AI lib | WebLLM chosen; OpenAI-compatible multi-turn API maps directly onto draft/reflect/eval agentic loop; WebWorkerMLCEngine for Angular UI thread safety |
+
+---
+
+## handoff
+- produced: complete READY plan — Angular 18+/TS/Tailwind + Flask OOP blueprint architecture, full DB schema, all API endpoints, 4-step agentic AI loop spec, definitive design system (accent `#C9A96E`, background `#0D0D0D`, text `#F5F3EF`, fonts Cormorant/Inter), confirmed UX patterns from elite law firm reference, feature traceability matrix, 12-file budget, build sequence, risk table with Playwright flags
+- decisions: accent=`#C9A96E`; AI lib=WebLLM 0.2.84 + `Phi-3.5-mini-instruct-q4f16_1-MLC` (fallback `Llama-3.2-1B`); i18n=ngx-translate v18 Signals for UI strings + backend API for content; locales=EN/ES/FR; mock fallback when `navigator.gpu` absent; editor seed=`editor@soloaw.demo`/`Demo2026!`
+- next_needs: demo-builder scaffolds Angular 18 standalone + Tailwind, builds Flask OOP blueprint, implements 4-step WebLLM agentic loop in WebWorker, wires ngx-translate, seeds 4 practice areas + 5 publications (EN+ES+FR)
+- risks: Phi-3.5-mini needs ~3GB VRAM — graceful-degradation banner in UI when GPU absent; Angular base-href `/demos/solo-law/` must be verified post-build; ngx-translate v18 requires Signal-compatible Angular 18 (not 17); SQLite WAL required for concurrent CMS edits

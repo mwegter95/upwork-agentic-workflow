@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "practice_areas": "Practice Areas",
+    "publications": "Publications",
+    "about": "About",
+    "contact": "Contact",
+    "cms_login": "Editor Login"
+  },
+  "hero": {
+    "tagline": "Sophisticated Counsel for Complex Matters",
+    "subhead": "A boutique practice delivering institutional-quality legal services to discerning clients.",
+    "cta": "Explore Our Work"
+  },
+  "pa": {
+    "heading": "Practice Areas",
+    "subhead": "Deep expertise across the full spectrum of complex commercial matters."
+  },
+  "pub": {
+    "heading": "Publications",
+    "filter_all": "All",
+    "filter_alerts": "Client Alerts",
+    "filter_articles": "Articles",
+    "filter_news": "Firm News",
+    "read_more": "Read more"
+  },
+  "contact": {
+    "heading": "Contact",
+    "subhead": "Inquiries are confidential. We respond within one business day.",
+    "name": "Name",
+    "email": "Email",
+    "matter": "Nature of Matter",
+    "message": "Message",
+    "send": "Send Inquiry",
+    "sent": "Inquiry sent. We will be in touch shortly.",
+    "disclaimer": "Contacting this firm does not create an attorney-client relationship."
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "disclaimer": "Attorney Advertising. Prior results do not guarantee a similar outcome."
+  },
+  "cms": {
+    "login": "Editor Login",
+    "email": "Email",
+    "password": "Password",
+    "sign_in": "Sign In",
+    "dashboard": "Dashboard",
+    "practice_areas": "Practice Areas",
+    "publications": "Publications",
+    "brand_assets": "Brand Assets",
+    "translations": "Translations",
+    "logout": "Log Out",
+    "save": "Save",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "new": "New",
+    "title": "Title",
+    "tagline": "Tagline",
+    "body": "Body",
+    "locale": "Locale",
+    "published": "Published",
+    "ai_assist": "AI Assist",
+    "ai_task_draft": "Draft",
+    "ai_task_translate_en_es": "Translate EN → ES",
+    "ai_task_translate_es_en": "Translate ES → EN",
+    "ai_task_refine": "Refine",
+    "ai_instruction": "Instruction",
+    "ai_generate": "Generate",
+    "ai_drafting": "Drafting...",
+    "ai_reflecting": "Reflecting...",
+    "ai_evaluating": "Evaluating...",
+    "ai_done": "Done",
+    "ai_accept": "Accept",
+    "ai_dismiss": "Dismiss",
+    "ai_load_model": "Load AI Model (~1GB download)",
+    "ai_loading": "Loading model...",
+    "practice_area": "Practice Area",
+    "excerpt": "Excerpt",
+    "author": "Author",
+    "published_at": "Published Date",
+    "icon": "Icon",
+    "display_order": "Display Order",
+    "no_items": "No items yet.",
+    "confirm_delete": "Delete this item?"
+  },
+  "locale_switcher": {
+    "en": "EN",
+    "es": "ES",
+    "fr": "FR"
+  },
+  "locale": {
+    "content_unavailable": "This content is available in English and Spanish."
+  }
+}

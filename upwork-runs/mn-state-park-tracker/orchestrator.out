@@ -1,0 +1,43 @@
+# Orchestrator — MN State Park Tracker
+
+## Run identity
+- slug: `mn-state-park-tracker`
+- run dir: `upwork-runs/mn-state-park-tracker/`
+- demo path: `../michaelwegter.com/public/demos/mn-state-park-tracker/`
+- live demo: `https://michaelwegter.com/demos/mn-state-park-tracker/`
+- gallery route: `/work-samples/mn-state-park-tracker`
+- feature richness: 10/10 → full, production-quality app with several real working features.
+
+## Startup brief (what the client wants)
+Personal travel-log app to track which of Minnesota's ~75 state parks the user has visited, on an interactive map + list.
+Explicit requirements (each must trace to demo + cover letter):
+1. Interactive **map** view of all MN state parks with pin markers (Google Maps integration).
+2. **List** view synced with the map markers.
+3. Mark parks **visited / not visited**; visited markers visually distinct.
+4. Per-visit entry: **photos (easy upload from camera roll)**, a **memory/notes** text entry, **attendees**, **date visited**.
+5. **Login / auth** — robust, per-user data.
+6. Park **descriptions + details** for ALL parks so user can click around and explore unvisited ones.
+7. Set a **home location** and show **distance from home** to each park.
+8. UX bar: "user friendly, sleek, beautiful."
+
+## Plan of attack (pipeline guidance)
+- **intake**: encode the 8 requirements above into brief.json acceptance criteria. Note this is a B2C personal/lifestyle outdoors app, not enterprise.
+- **planner**: build = **FULL** (richness 10). Hero feature = the map+list dual view with visit logging; supporting = explore/descriptions browser + distance-from-home. Bespoke design: outdoors/national-park aesthetic (think MN DNR / Parks vibe — deep forest greens, lake blues, warm sand/cream, a topographic/woodcut texture; NOT michaelwegter.com's dark mustard theme). Real font pairing (e.g. a sturdy display serif/slab + clean humanist sans).
+- **researcher**: pull real MN state park list (names, lat/lng, short descriptions) — MN DNR has 66+ state parks + recreation areas. Decide map approach: **Google Maps JavaScript API** (client requested it explicitly) with a key, OR Leaflet+Google tiles fallback if key/billing is a blocker — record the decision and any API-key constraint. Confirm clone target: `src/data/apps.js` + `AppFrame.jsx` for the gallery; pick a maps lib.
+- **demo-builder**: real backend warranted (login + per-user persisted visits + photo storage). Stand up auth + visits API. Two options to weigh: a Flask blueprint on mw-backend (SQLite) for users/visits, OR self-contained with seeded demo account. Given richness 10 + login requirement, use a **real backend with a seeded demo account** (record credentials). Photos: store as base64/blob or to disk via backend; keep upload from camera roll working (`<input type=file accept=image/* capture>`). Distance: Haversine from home location to each park.
+- **deploy → deploy-test**: backend live + login flow tested with Playwright before media.
+- **proposal-writer**: tailor deck/one-pager to the parks/outdoors design language; embed live demo link.
+
+## Quality guidance / gotchas
+- Google Maps needs an API key with billing; if unavailable, document fallback (Leaflet + OSM or Google raster tiles) so the demo never shows a broken/greyed map. Map MUST render on first paint.
+- Seed ALL MN parks (66+) with coords + descriptions so "explore unvisited" is real, not 3 placeholder pins.
+- Photo upload must work in the live demo (mobile camera-roll friendly). Don't ship a fake uploader.
+- Login: seed a demo account and put credentials in the build report so deploy-test + reviewers can log in.
+- Bespoke outdoors design — no portfolio palette. No em/en dashes anywhere.
+- Caps: 1 hero + ≤2 supporting, ≤12 demo files, build ≤3min.
+
+## handoff
+- produced: run identity (slug `mn-state-park-tracker`, demo path, routes), startup brief with 8 explicit requirements, pipeline plan-of-attack, quality gotchas.
+- decisions: FULL build at richness 10; real backend with login + seeded demo account; Google Maps with Leaflet fallback documented; bespoke outdoors design (forest green/lake blue/cream), not portfolio theme.
+- next needs: intake → encode the 8 requirements as brief.json acceptance criteria; flag the Google Maps API-key/billing risk.
+- risks: Google Maps API key/billing availability; sourcing accurate coords+descriptions for all ~66 MN parks; photo storage approach for camera-roll upload.

@@ -1,0 +1,73 @@
+# Demo Builder — auction-scraper (CEO re-run: remove U+2013/U+2014)
+
+## Status: COMPLETE
+
+All pre-existing build artifacts were intact (blueprint, seeds, app.js, styles.css, index.html,
+workSamples.js entry id=15). This pass focused on the CEO directive: strip every U+2013/U+2014
+from all user-visible surfaces. U+2500 box-drawing runs (──) were left untouched.
+
+---
+
+## 1. Em/En Dash Removals
+
+### app.js (12 occurrences fixed)
+| Line | Old | Replacement |
+|---|---|---|
+| 1 | `Console - app.js` (em-dash) | `Console: app.js` |
+| 60 | estimate range en-dash | `to` |
+| 148 | `rate_limit_pause` em-dash | colon |
+| 159 | retry em-dashes | colon + comma |
+| 169 | `flagged_for_api` em-dash | colon |
+| 181 | `source_done` em-dash | colon |
+| 239 | `Seeded data` em-dash | comma |
+| 407 | `Normalized view` em-dash | colon |
+| 558 | `source_start` em-dash | colon |
+| 590 | `Flagged` em-dash | colon |
+| 611 | `job_done` em-dash | colon |
+| 648 | `collected` em-dash | comma |
+
+### styles.css (1 occurrence)
+File comment header: `Console` em-dash `bespoke` -> `Console: bespoke`
+
+### auction_scraper_blueprint.py (7 occurrences)
+- 5 `self._log()` calls: em-dashes -> semicolons/colons
+- `flagged_for_api` reason string: `returned HTTP 403` em-dash -> colon
+- `source_done` note field: `seeded fallback` em-dash `flagged_for_api` -> comma
+
+### auction_scraper_seeds.json (all titles, notes, raw_estimate_text)
+- All U+2013 en-dashes -> ASCII hyphen (date ranges, estimate text)
+- All U+2014 em-dashes -> colon (title separators, scraper_notes)
+- 170 insertions / 88 deletions across 490-line file
+
+---
+
+## 2. Deployments
+
+| Repo | Commits | Status |
+|---|---|---|
+| `mw-backend` | `998970e` (log fixes) + `a1ec3ff` (seeds + blueprint) | Pushed, Flask restarted, health OK |
+| `michaelwegter.com` | `34ccfef` (initial demo: all 4 files + workSamples.js) | Pushed to GH Pages |
+| `mwegter95/auction-scraper-demo` | `46a88f8` (synced fixed files) | Pushed |
+
+---
+
+## 3. Self-Test Results
+
+**Backend health:** `{"ok":true,"playwright_available":false,"seeds_loaded":{"bonhams":5,"heritage":8,"leland_little":5}}`
+
+**SSE self-test (heritage + bonhams):**
+- POST `/demos/auction-scraper/scrape` -> 200, job_id returned
+- Stream: `source_start` -> `rate_limit_pause` -> `flagged_for_api` -> 13 `lot` events -> `source_done` x2 -> `job_done`
+- Zero U+2013/U+2014 in any SSE payload (verified by grep over full stream output)
+- Playwright not available on Surface -> seeded fallback fires correctly for all sources
+
+**Portfolio:** `https://michaelwegter.com/demos/auction-scraper/` live once GH Pages build completes (~2 min from push at 19:52 UTC)
+**GitHub demo repo:** `https://github.com/mwegter95/auction-scraper-demo`
+
+---
+
+## handoff
+- produced: All U+2013/U+2014 removed from app.js (12), styles.css (1), blueprint (7 user-visible), and seeds.json (all fields); three repos committed and pushed; SSE self-test passed with 0 bad characters
+- decisions: Box-drawing U+2500 runs kept; en-dashes in date ranges -> ASCII hyphens; em-dashes in title separators -> colons; log/note strings use semicolons/colons; `raw_estimate_text` uses ASCII hyphens (realistic format maintained)
+- next needs: deploy step verify `https://michaelwegter.com/demos/auction-scraper/` returns 200; deploy-test run SSE flow end-to-end on live site; proposal-writer use `https://github.com/mwegter95/auction-scraper-demo` as code portfolio link (screening requirement)
+- risks: GH Pages build takes ~2 min after push; Playwright not on Surface so only seeded data streams (all sources still return realistic lots); title separator now `: ` which is unconventional but clean and dash-free

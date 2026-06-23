@@ -1,0 +1,29 @@
+# Final CEO — auction-scraper
+
+Verified the full package against the brief, the to-apply requirements, and the hard gates. Ran actual checks (file scans, pptx parse, live curl), did not assume.
+
+## Checks run
+- Cover letter: BROCCOLI is the literal first word (no quotes/asterisks) ✓. All 3 screening Qs answered inline ✓. U.S. Bank Python backend ownership stated ✓. Playwright + Puppeteer history named ✓. Demo link present twice ✓. GitHub link present ✓. 0 em/en dashes ✓.
+- One-pager: found 1 em dash on line 474 (`(via Turnberry) — TDAAS`) — fixed inline to `: TDAAS`. Re-scanned: 0 dashes ✓. (Trivial one-char fix; not worth a full writer re-run.)
+- Deck: parsed deck.pptx, 0 em/en dashes across all runs ✓. 7 slides as specified.
+- Live demo: https://michaelwegter.com/demos/auction-scraper/ returns 200 ✓.
+- /work-samples route returns server-side 404 — this is expected GH Pages SPA behavior (404.html redirect); deploy-test confirmed via Playwright the route renders the iframe with the demo H1 "🏺 Auction Scraper" ✓.
+- deploy-test VERDICT: pass (SSE stream emits 18 lots across 3 sources, source_done + job_done events, Run Scraper / Export JSON / View Dataset all functional) ✓.
+
+## Rubric / brief coverage
+- Extract+Transform focus, 3 real sources w/ different structures + tool-per-site judgment, normalized consistent JSON, live-streaming UI with accumulating lots + images, rate-limit/retry/flag-for-API logic visible — all present and demoed. Matches the 10/10 feature target.
+- Specialist (not full-stack) positioning held throughout.
+
+## Minor (non-blocking) notes
+- Cover letter links the GitHub profile (github.com/mwegter95) rather than a specific scraper repo; the live demo + profile satisfy "show existing scraper code/past work," but a direct repo link (deploy-test referenced github.com/mwegter95/auction-scraper-demo) would be marginally stronger. Not a gate failure.
+- One-pager screenshot paths are relative to the run dir (cosmetic only when opened elsewhere).
+
+No earlier-step gaps; no REDIRECT needed.
+
+## handoff
+- produced: final sign-off; fixed lone em dash in one-pager.html line 474
+- decisions: passed package as-is; accepted GitHub-profile link and relative screenshot paths as non-blocking
+- next needs: prompt-optimizer to apply improvements.md
+- risks: server-side 404 on /work-samples is expected SPA behavior (verified rendering via iframe); a direct demo-repo GitHub link could further strengthen the proposal
+
+VERDICT: pass
