@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api, resizeImage } from '../api/client.js';
+import { api, resizeImage, isHeic } from '../api/client.js';
 
 export default function VisitLogForm({ parkId, existingVisit, onSaved, onCancel }) {
   const today = new Date().toISOString().split('T')[0];
@@ -24,9 +24,15 @@ export default function VisitLogForm({ parkId, existingVisit, onSaved, onCancel 
     for (const file of files) {
       try {
         const blob = await resizeImage(file);
-        added.push({ file, preview: URL.createObjectURL(blob), blob });
+        added.push({ file, preview: URL.createObjectURL(blob), blob, name: 'photo.jpg' });
       } catch (err) {
-        failed.push(file.name || 'photo');
+        // Couldn't decode in-browser. If it's an iPhone HEIC, still upload the raw
+        // file — the backend converts it to JPEG on receipt.
+        if (isHeic(file)) {
+          added.push({ file, preview: '', blob: file, name: file.name || 'photo.heic' });
+        } else {
+          failed.push(file.name || 'photo');
+        }
       }
     }
     if (added.length) setPendingPhotos(prev => [...prev, ...added]);
@@ -57,7 +63,7 @@ export default function VisitLogForm({ parkId, existingVisit, onSaved, onCancel 
       }
       // Upload pending photos
       for (const p of pendingPhotos) {
-        await api.uploadPhoto(visitId, p.blob);
+        await api.uploadPhoto(visitId, p.blob, p.name);
         URL.revokeObjectURL(p.preview);
       }
       onSaved(visitId);
@@ -99,7 +105,7 @@ export default function VisitLogForm({ parkId, existingVisit, onSaved, onCancel 
           <div className="upload-preview-grid">
             {pendingPhotos.map((p, i) => (
               <div key={i} className="upload-preview-item" style={{position:'relative'}}>
-                <img src={p.preview} alt="" />
+                {p.preview ? <img src={p.preview} alt="" /> : <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',fontSize:11,textAlign:'center',padding:4}}>📷 HEIC<br/>(converts on save)</div>}
                 <button type="button" className="photo-delete-btn" style={{opacity:1}} onClick={() => removePending(i)}>✕</button>
               </div>
             ))}

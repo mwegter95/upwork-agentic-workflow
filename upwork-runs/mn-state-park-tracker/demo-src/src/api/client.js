@@ -32,9 +32,9 @@ export const api = {
     if (!res.ok) throw new Error(await res.text());
     return res.json();
   },
-  uploadPhoto: async (visitId, blob) => {
+  uploadPhoto: async (visitId, blob, filename = 'photo.jpg') => {
     const fd = new FormData();
-    fd.append('photo', blob, 'photo.jpg');
+    fd.append('photo', blob, filename);
     const res = await fetch(`${API_BASE}/mn-parks/visits/${visitId}/photos`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${getToken()}` },
