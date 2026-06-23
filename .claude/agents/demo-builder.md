@@ -77,6 +77,10 @@ integrations, server-side compute). When the plan calls for it, build it:
   the bridge prefix in your build report so deploy can verify and re-start it.
 - Frontend-only with realistic mock data is fine for simple demos that gain
   nothing from a server.
+- **Live-streaming / progress demos:** do NOT use a single long streaming GET.
+  Start the job with a `POST` that returns a `job_id`, then stream results from a
+  separate `GET /stream/<job_id>` (SSE). This decouples kickoff from the stream
+  and survives reconnects.
 
 ## Register it
 Add one entry to `../michaelwegter.com/src/data/workSamples.js` using the schema

@@ -11,6 +11,11 @@ what does NOT. Your plan is the guard against scope creep and token blowup.
 First read `CLAUDE.md` (conventions, caps, the prototype-vs-full rule). Then read
 `upwork-runs/<slug>/brief.json`.
 
+**If the layout runs you before the researcher (no `research.md` exists yet):**
+do NOT write the full plan. Write only a short research-questions list (under 30
+lines) — the specific facts/inputs you need before you can plan — and stop. Write
+the full plan below on your post-research pass, once `research.md` exists.
+
 ## Output
 Write `upwork-runs/<slug>/plan.md` containing:
 

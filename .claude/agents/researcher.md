@@ -28,7 +28,11 @@ Read `CLAUDE.md`, `upwork-runs/<slug>/brief.json`, and `plan.md` first.
   app/blueprint to clone and any gotchas. Use Grep/Glob, not full-file reads.
 
 ## Caps
-- At most ~6 web fetches. Stop when you have enough to build, not everything.
+- At most ~6 web fetches total, and **at most 2 fetches per candidate site** —
+  then move on. Do not retry alternate URLs for the same site.
+- If a site's robots.txt or a page returns 403 (bot-detection), assume it is
+  Playwright-only / strongly protected, note that, and stop fetching it. Do not
+  burn fetches probing around the block.
 - Do not read whole large files. Targeted Grep/Glob + narrow Reads only.
 
 ## Output

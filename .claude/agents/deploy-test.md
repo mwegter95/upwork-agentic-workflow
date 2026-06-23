@@ -17,8 +17,13 @@ plan/brief for what the demo is supposed to do.
 - Load the live demo at `https://michaelwegter.com/work-samples/<slug>` and
   `/demos/<slug>/`. No console errors on first paint.
 - Run the hero flow end to end with Playwright against the LIVE site (not a local
-  build). If the app has auth, log in (use the seeded demo credentials the
+  build). Determine whether the demo HAS auth first: grep `deploy.out` /
+  `build-report.md` for "credentials" or "login" — only attempt a login flow if
+  they appear. If it has auth, log in (use the seeded demo credentials the
   demo-builder noted) and run a representative multi-step workflow.
+- Playwright is already installed in this repo; import it by ABSOLUTE path to
+  avoid a module-resolution loop:
+  `/Users/michaelwegter/Desktop/Projects/upwork-agentic-workflow/node_modules/playwright/index.mjs`.
 - If a backend is involved, confirm real requests to `https://api.michaelwegter.com`
   return the expected data, not errors or empty responses. For ANY endpoint with a
   frontend mock/fallback catch, assert the response is real, non-empty live data —

@@ -262,6 +262,12 @@ not be present. Scripts run in the runner's workspace dir by default, so build
 everything there and use relative paths; keep scripts idempotent and check exit
 codes.
 
+### Playwright on the Surface (one-time setup, do not rediscover per run)
+If a scraper/demo needs Playwright ON the Surface and a step returns
+`playwright_available: false`, install the browser binaries once with
+`python -m playwright install chromium` via the runner, then proceed. Treat this
+as a prerequisite/setup step, not a per-run surprise to debug each time.
+
 ### Critical: start a service so it STAYS UP (and survives reboots)
 The runner waits for your script to finish, so running `node server.js` directly
 just blocks until timeout and is then killed. Do not start services yourself —
@@ -433,6 +439,9 @@ downstream steps act on a few lines instead of re-reading large files. Keep it t
 - Write in Michael's voice. See `reference/brand-voice.md`.
 - Address the client's stated requirements explicitly and concretely. No generic
   filler, no buzzword soup. Reference the live demo by name and link.
+- **Michael's GitHub handle is `mwegter95`** (github.com/mwegter95). Never write
+  `github.com/michaelwegter` — it 404s. Any agent emitting a GitHub URL must use
+  `mwegter95` (confirm via `gh auth status` if it has Bash).
 
 ---
 
