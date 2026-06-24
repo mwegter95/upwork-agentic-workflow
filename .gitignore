@@ -24,3 +24,13 @@ Thumbs.db
 upwork-runs/**/proposal/media/*.webm
 upwork-runs/**/.tmp/
 .playwright-cache/
+
+# Large downloaded/generated files — exceed GitHub's 100MB limit
+# Target download staging dirs specifically; demo source assets are allowed
+upwork-runs/**/*-download/
+upwork-runs/**/downloads/
+# Archive files are never needed in git
+*.zip
+*.tar.gz
+*.tar.bz2
+*.7z
