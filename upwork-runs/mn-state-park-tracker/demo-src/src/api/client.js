@@ -56,17 +56,42 @@ export const isHeic = (file) =>
 // standard formats everywhere and HEIC natively on Safari 16+; heic2any (WASM,
 // loaded on demand) is the HEIC fallback for Chrome/Firefox.
 async function decodeImage(file) {
+  // 1. Native — fast; Safari decodes HEIC here directly.
   try {
     return await createImageBitmap(file, { imageOrientation: 'from-image' });
   } catch { /* fall through */ }
+
   if (isHeic(file)) {
-    const mod = await import('heic2any');
-    const heic2any = typeof mod.default === 'function' ? mod.default : mod;
-    const out = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
-    const jpeg = Array.isArray(out) ? out[0] : out;
-    return await createImageBitmap(jpeg, { imageOrientation: 'from-image' });
+    // 2a. heic-to: modern libheif build; decodes current iPhone HEIC that the
+    //     older heic2any rejects ("Invalid input").
+    try {
+      const mod = await import('heic-to');
+      const heicTo = mod.heicTo || mod.default?.heicTo || mod.default;
+      const jpeg = await heicTo({ blob: file, type: 'image/jpeg', quality: 0.9 });
+      return await createImageBitmap(jpeg, { imageOrientation: 'from-image' });
+    } catch { /* fall through */ }
+    // 2b. heic2any: legacy fallback.
+    try {
+      const mod = await import('heic2any');
+      const heic2any = typeof mod.default === 'function' ? mod.default : mod;
+      const out = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+      const jpeg = Array.isArray(out) ? out[0] : out;
+      return await createImageBitmap(jpeg, { imageOrientation: 'from-image' });
+    } catch { /* fall through */ }
   }
-  throw new Error('unsupported image');
+
+  // 3. <img> element → bitmap: catches formats the browser decodes natively
+  //    even when createImageBitmap rejected them.
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = () => rej(new Error('img decode failed'));
+      im.src = url;
+    });
+    return await createImageBitmap(img, { imageOrientation: 'from-image' });
+  } finally { URL.revokeObjectURL(url); }
 }
 
 // Resize/normalize any selected photo to a JPEG blob ready for upload. Rejects
