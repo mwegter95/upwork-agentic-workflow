@@ -1,0 +1,30 @@
+# CEO Review (Plan) — Client Finder 1.0
+
+## Verification done
+- Read plan-eval.out (VERDICT pass, 3 minor problems) and planner.out handoff + traceability matrix.
+- Cross-checked all 13 brief requirements against the traceability matrix and plan-eval rubric: each maps to a concrete feature. WebGPU is real inference (SmolVLM-256M via `@huggingface/transformers` v3, client-side, WASM fallback), not faked — this is the hero and it is correctly de-risked off Playwright headless.
+- Confirmed technology calls are current and correct: Apollo replaces dead Proxycurl (Jan 2025), `@huggingface/transformers` v3 (renamed from `@xenova`), Serper `/places` + Yelp Fusion, own `clientfinder.db` isolated from mw.db, Flask blueprint mirroring spotify pattern.
+- Confirmed design is bespoke (dark navy B2B SaaS, not michaelwegter.com tokens) and industry-fit.
+
+## Assessment
+This is a winning plan at 10/10. It commits to real working features across the full pipeline (discovery → WebGPU audit → enrichment → CRM with persistence), not a mockup. Scope is feasible within caps (14 files justified, ~2-3 min build). The hard part (real local WebGPU vision inference) is confirmed feasible and architecturally sound.
+
+The 3 eval problems are all minor and correctly delegated to later steps — none require re-planning:
+- P1 (email/phone/contact_form_url missing from schema) is a genuine brief gap but a one-line schema + seed fix at demo-builder. Carrying it forward as a binding directive below, not a reason to loop.
+- P2 (no test plan) → demo-builder self-verifies.
+- P3 (LinkedIn→Apollo rationale) → proposal-writer documents.
+
+No REDIRECT, no loop. Plan proceeds to demo-builder.
+
+## Binding directives for demo-builder (carry forward, do not drop)
+1. Add `email`, `phone`, `contact_form_url` (nullable) to the clientfinder.db schema AND seed real-looking values for a subset of leads — this is an explicit brief requirement ("extract public contact info: emails, phone numbers, contact forms"), not optional polish.
+2. WebGPU panel MUST show an obvious progress/loading state for the 15-25s SmolVLM first load, AND handle iframe WebGPU restriction gracefully (fallback + a "open demo directly" link in the modal). First paint must have zero console errors.
+3. Self-verify before deploy: clean `npm run build`, all 6 Flask endpoints 200, WebGPU panel renders in Chrome without crash, Apollo masked last-name renders gracefully.
+
+## handoff
+- produced: CEO sign-off on the plan; VERDICT pass
+- decisions: proceed to demo-builder as-is; no replan/redirect; P1 email/phone/contact_form_url elevated to a binding build directive (explicit brief requirement)
+- next needs: demo-builder builds per plan + 3 binding directives above; self-verifies build/console/endpoints before deploy
+- risks: SmolVLM first-load UX (needs visible progress); iframe may block WebGPU (fallback + direct link required); Apollo free-tier name masking must degrade gracefully
+
+VERDICT: pass

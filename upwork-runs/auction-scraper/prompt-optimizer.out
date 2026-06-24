@@ -1,0 +1,36 @@
+# Prompt Optimizer — auction-scraper
+
+Checkpointed pending run artifacts in upwork-agentic-workflow (commit before edits);
+claude-workflow-studio was already clean. Applied the safe improvements.md suggestions
+as surgical edits to agent prompts + CLAUDE.md. Local commit only, no push.
+
+## Applied (commit 7d77050)
+- **researcher.md** — caps: ≤2 fetches per candidate site, no alternate-URL retries;
+  403/robots-403 ⇒ assume Playwright-only, stop probing. [pre-researcher tokens+adherence]
+- **deploy-test.md** — determine auth by grepping deploy.out/build-report for
+  "credentials"/"login" before attempting login; import Playwright by absolute module
+  path `.../upwork-agentic-workflow/node_modules/playwright/index.mjs`. [deploy-test reuse+adherence]
+- **planner.md** — if it runs before researcher (no research.md), write only a
+  <30-line research-questions list and stop; full plan on the post-research pass. [planner tokens]
+- **demo-builder.md** — live-streaming demos use POST(job_id)+GET /stream/<id> SSE,
+  not a single long streaming GET. [planner adherence]
+- **CLAUDE.md** — GitHub handle is `mwegter95` (never `michaelwegter`, 404s); one-time
+  Playwright-on-Surface install note (`python -m playwright install chromium`) so
+  `playwright_available:false` isn't re-debugged each run. [plan-ceo adherence, demo-builder reuse]
+
+## Not applied (deliberate)
+- final-ceo "add em/en-dash auto-scan to proposal-writer" — already present and explicit
+  in proposal-writer.md (lines 55-60, greps U+2014/U+2013 + HTML entities across all files).
+  The leftover dash was non-adherence, not a missing instruction; no prompt change helps.
+- researcher/demo-builder [tokens] "scope read to handoff + one section" — already covered
+  by CLAUDE.md token rules; skipped to avoid prompt bloat.
+
+## Risky / for human review
+- None requiring escalation. All edits were additive, low-blast-radius prompt text.
+
+## handoff
+- produced: 5 surgical prompt/CLAUDE.md edits + local commit 7d77050; output file
+- decisions: skipped the already-covered dash-scan suggestion; no studio edits (clean)
+- next needs: nothing — terminal step
+- risks: planner "first pass" gate assumes a layout where planner precedes researcher;
+  harmless no-op in layouts where research.md already exists

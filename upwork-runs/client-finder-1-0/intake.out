@@ -1,0 +1,83 @@
+# Intake — Client Finder 1.0
+
+## Brief Summary
+
+**Project:** Client Finder 1.0 — B2B lead-discovery + technical-audit + CRM tool for Michael's software/web dev agency.
+
+**Feature Richness:** 10/10 (production-quality, full-featured)
+
+## Architecture Requirements (4 sections)
+
+### 1. Lead Discovery Engine
+- Modular search pipeline: Google/Serper API + localized directory scraping
+- Geographic scope: Twin Cities metro (Minneapolis, St. Paul, Bloomington, Edina) + Greater Minnesota (Duluth, Rochester, St. Cloud, Mankato)
+- Target industries: Entertainment & Leisure, Professional Services, Home & Commercial Services, Healthcare & Wellness, Retail & Hospitality, Manufacturing & Logistics (examples: bowling alleys, ad agencies, HVAC, dental, breweries, machine shops)
+- SMB filter: 5–200 employees
+
+### 2. WebGPU-Powered AI Technical Audit
+- HARD REQUIREMENT: STRICTLY use WebGPU for local inference
+- Scrape homepage + full-page screenshot
+- Implementation: WebLLM or Transformers.js (in headless browser with `--enable-unsafe-webgpu --enable-features=Vulkan` flags), OR Python-native MLC LLM
+- Score 1–10: Modernity (UI/UX), Mobile Responsiveness, Functionality
+- Flag outdated stacks: legacy WordPress, missing HTTPS, non-responsive layouts
+- Output: audit notes with sub-score breakdown and rationale
+
+### 3. Contact Enrichment Pipeline
+- Extract from website: emails, phone numbers, contact forms
+- Cross-reference via Proxycurl/Apollo to identify decision-makers (CEO, Owner, Founder, VP Marketing, CTO)
+- Avoid aggressive LinkedIn bot scraping
+
+### 4. Frontend Dashboard & Lead CRM
+- Interactive data-table with columns: Company Name, Industry, Location, Tech Audit Score, Outdated Stack (Y/N), Key Decision Maker, Outreach Status
+- Sortable/filterable by: industry, location, audit score, outdated-stack, outreach status
+- Drill-down modal: homepage screenshot, AI audit notes (sub-scores + rationale), decision-maker profile (name/title/seniority)
+- Outreach status enum: New, Contacted, Ignored, In Progress
+- Bulk edits, CSV export, KPIs (total, by-industry, by-status, avg score)
+- Persistence: SQLite via Flask blueprint `/clientfinder/` (server-backed, seeded with MN leads)
+
+## Hero Feature
+**Interactive Lead CRM Table + Drill-Down Modal**
+- Real-time sort/filter on all columns
+- Editable outreach status with persistence
+- Drill-down shows screenshot + audit sub-scores + decision-maker card
+
+## Supporting Features
+1. **Run Discovery Search Panel** — industry/region pickers, animated pipeline (Search → Scrape → WebGPU Audit → Enrich), appends seeded leads to table
+2. **In-Browser WebGPU Audit Demo** — real `navigator.gpu` capability detection, either Transformers.js WebGPU inference or simulated audit with labeled capability check
+
+## Seed Data
+- Real Twin Cities and Greater Minnesota cities/businesses
+- Plausible names matching target industries
+- 5–200 employees per lead
+- Mix of audit scores (2–9 modernity)
+- Realistic decision-maker names/titles
+
+## Design Direction
+- Aesthetic: B2B data-tool / sales-intelligence (Apollo/Clay/Crunchbase category)
+- Palette: deep navy/indigo primary, bright accent for CTAs/scores, green/amber/red for score chips, neutral grays
+- Typography: modern grotesk + tabular numerals
+- Subtle Minnesota nod (map/region filter) acceptable but keep professional
+- NOT michaelwegter.com's dark gallery or mustard/cyan palette
+
+## Prototype vs Full Decision
+**FULL production-quality.** Scale scope, polish, and feature count to match richness 10.
+- Real working: CRM (sort/filter/search/bulk-edit/export/KPIs), drill-down modal, SQLite persistence, WebGPU audit detection, discovery pipeline UI
+- Sanctioned stub: external lead/people APIs (Serper, Proxycurl, Apollo) — use realistic mock data + clearly-architected pipeline UI to avoid ToS/bot-ban/key management risk. Seed with real MN business data.
+
+## Hard Gates
+1. All 4 architecture sections in demo and cover letter
+2. Demo builds, zero console errors on first paint
+3. CRM fully functional (sort, filter, search, bulk-edit, drill-down)
+4. WebGPU shown (real model or simulated with real `navigator.gpu` capability check + architecture explanation)
+5. Seed data: real MN cities, plausible business names
+6. SMB filter (5–200) visible in UI
+7. Drill-down modal: screenshot + audit sub-scores + decision-maker
+8. Demo URL local + live `/work-samples/client-finder-1-0` returns 200 after deploy
+9. Demo link in cover letter AND deck
+10. No em/en dashes, Michael's voice, GitHub mwegter95
+
+## handoff
+- produced: structured brief.json capturing 4 architecture sections, WebGPU hard requirement, MN-geo + SMB filter, hero/supporting features, design direction, prototype-vs-full (full), seed data spec, hard gates
+- decisions: full production-quality at richness 10; Flask SQLite blueprint `/clientfinder/` for server-backed persistence (not IndexedDB); external APIs (Serper/Proxycurl/Apollo) are the sanctioned mock-data stub; real WebGPU or simulated with real capability check; B2B data-tool aesthetic (not portfolio)
+- next needs: planner must scope the demo concept (CRM hero + discovery pipeline + WebGPU audit), finalize design tokens (hex + fonts), and estimate build/feature-set feasibility within 3-min cap; CEO review after planner
+- risks: real in-browser WebGPU model may not load useful inference within budget (fallback: capability check + simulated scoring, clearly labeled); SQLite persistence requires Flask blueprint (brief expects this, planner confirms)

@@ -1,0 +1,151 @@
+{
+  "projectId": "client-finder-1-0",
+  "featureRichness": 10,
+  "clientContext": "Michael's own software/web dev agency seeking to remove client-acquisition bottleneck via automated B2B lead discovery and qualification.",
+  "coreRequirements": {
+    "leadDiscoveryEngine": {
+      "description": "Modular search pipeline targeting small-to-medium businesses in Minnesota for software/web development opportunities.",
+      "specifics": [
+        "Search via Google/Serper API and localized directory scraping",
+        "Geographic scope: Twin Cities metro (Minneapolis, St. Paul, Bloomington, Edina) + Greater Minnesota (Duluth, Rochester, St. Cloud, Mankato)",
+        "Target industries: Entertainment & Leisure, Professional Services, Home & Commercial Services, Healthcare & Wellness, Retail & Hospitality, Manufacturing & Logistics (with specific examples: bowling alleys, ad agencies, HVAC, dental, breweries, machine shops)",
+        "SMB employee filter: 5 to 200 employees"
+      ]
+    },
+    "webgpuAiTechnicalAudit": {
+      "description": "Local in-browser AI inference for evaluating business websites without external API calls.",
+      "specifics": [
+        "Scrape target business homepage and capture full-page screenshot",
+        "HARD REQUIREMENT: STRICTLY use WebGPU for local AI inference (WebLLM or Transformers.js in headless browser with --enable-unsafe-webgpu --enable-features=Vulkan flags, OR Python-native WebGPU engine like MLC LLM)",
+        "Score website on 1-10 scale: Modernity (UI/UX), Mobile Responsiveness, Functionality",
+        "Flag outdated tech stacks (legacy WordPress, missing HTTPS, non-responsive layouts)",
+        "Provide audit notes with breakdown of sub-scores and rationale"
+      ]
+    },
+    "contactEnrichmentPipeline": {
+      "description": "Extract and cross-reference business decision-maker contact information.",
+      "specifics": [
+        "Extract from website: emails, phone numbers, contact forms",
+        "Cross-reference company name via professional data APIs (Proxycurl, Apollo) to identify key decision-makers",
+        "Target titles: CEO, Owner, Founder, VP of Marketing, CTO, VP Sales",
+        "Avoid aggressive LinkedIn bot scraping (use API-based lookups only)"
+      ]
+    },
+    "frontendDashboardCRM": {
+      "description": "Interactive data-table CRM for managing and tracking B2B sales pipeline.",
+      "features": [
+        "Interactive spreadsheet/data-table with columns: Company Name, Industry, Location, Tech Audit Score, Outdated Stack (Y/N), Key Decision Maker, Outreach Status",
+        "Sortable and filterable by: industry, location, audit score, outdated-stack status, outreach status",
+        "Editable outreach status with enum: New, Contacted, Ignored, In Progress",
+        "Drill-down modal per lead displaying: captured homepage screenshot, specific AI-generated audit notes (with sub-score breakdown), decision-maker profile card (name, title, seniority)",
+        "Bulk status edits and lead-state persistence",
+        "CSV export for reporting",
+        "Summary KPIs: total leads, by-industry breakdown, by-status breakdown, average audit score"
+      ],
+      "persistence": "SQLite (server-backed Flask blueprint /clientfinder/ recommended for authenticity at richness 10, seeded with realistic Twin Cities/Greater Minnesota business data)"
+    }
+  },
+  "heroFeature": {
+    "name": "Interactive Lead CRM Table + Drill-Down Modal",
+    "description": "Sortable/filterable spreadsheet of B2B leads with one-click drill-down into homepage screenshot, AI audit notes, and decision-maker info. Status is editable and persists locally.",
+    "keyCapabilities": [
+      "Real-time sort/filter on all columns",
+      "Editable outreach status (New/Contacted/Ignored/In Progress)",
+      "Drill-down modal: screenshot + audit sub-scores + decision-maker",
+      "Persisted state across sessions"
+    ]
+  },
+  "supportingFeatures": [
+    {
+      "name": "Run Discovery Search Panel",
+      "description": "Demonstrates the lead-discovery modular pipeline with industry + region pickers, animated multi-step flow (Search -> Scrape -> WebGPU Audit -> Enrich) appending new seeded leads to the CRM table."
+    },
+    {
+      "name": "In-Browser WebGPU Audit Demo",
+      "description": "Real navigator.gpu capability detection and either Transformers.js (WebGPU backend) running a small local model on captured site text/screenshot in-browser, OR a faithful simulated audit with clearly labeled WebGPU capability check and architecture explainer. Prefers REAL WebGPU inference if feasible within budget."
+    }
+  ],
+  "designDirection": {
+    "aesthetic": "B2B data-tool / sales-intelligence (Apollo/Clay/Crunchbase category): clean, dense, trustworthy SaaS",
+    "palette": {
+      "primary": "deep navy/indigo",
+      "accent": "bright accent for CTAs and score chips",
+      "semantic": "green/amber/red for score chips",
+      "neutrals": "neutral grays"
+    },
+    "typography": "modern grotesk UI font with tabular numerals for the data table",
+    "notes": "Subtle Minnesota nod (map/region filter) is fine but keep it professional. NOT michaelwegter.com's dark gallery-wall or mustard/cyan palette."
+  },
+  "prototypeVsFull": {
+    "decision": "FULL production-quality at richness 10",
+    "rationale": "Scale scope, number of real working features, and polish to match richness 10. The tool must feel genuinely usable.",
+    "realWorkingFeatures": [
+      "CRM table with sort/filter/search/bulk-edit/export/KPIs",
+      "Drill-down modal with real screenshots and audit data",
+      "SQLite persistence via Flask blueprint",
+      "WebGPU audit capability detection and demonstration",
+      "Discovery pipeline UI with animation"
+    ],
+    "sanctionedStub": {
+      "description": "External lead/people APIs (Serper, Proxycurl, Apollo)",
+      "rationale": "Cannot be safely run live in demo (cost, API keys, bot bans, ToS violations)",
+      "approach": "Demonstrate with realistic seeded/mock data + clearly-architected pipeline UI. Seed with real MN business names, locations, industries, and plausible decision-maker info."
+    }
+  },
+  "seedData": {
+    "requirement": "Seeded with realistic Twin Cities and Greater Minnesota lead data",
+    "specifics": [
+      "Use real city names (Minneapolis, St. Paul, Bloomington, Edina, Duluth, Rochester, St. Cloud, Mankato)",
+      "Plausible business names matching target industries",
+      "Employee count in 5-200 range",
+      "Mix of modern and outdated websites (modernity scores 2-9)",
+      "Realistic decision-maker names and titles"
+    ]
+  },
+  "technicalConstraints": {
+    "webgpuHardRequirement": "WebGPU is non-negotiable in narrative and implementation. Even if live model is simulated, demo MUST show real navigator.gpu capability check and explain WebLLM/Transformers.js + Playwright-flags architecture accurately.",
+    "geographicScope": "Twin Cities metro + Greater Minnesota only. No national/nationwide searches.",
+    "smbFilter": "5-200 employees must be visible in data and UI filtering.",
+    "smtpVsLocalStorage": "SQLite via Flask blueprint /clientfinder/ is the spec and recommended for richness 10. IndexedDB is fallback if budget constraints require it (label clearly as local-SQLite stand-in)."
+  },
+  "hardGates": [
+    "Every brief requirement (4 architecture sections) must appear in the demo AND be addressed in the cover letter",
+    "Demo builds and loads with zero console errors on first paint",
+    "Hero CRM is fully functional: sort, filter, search, bulk-edit, drill-down modal",
+    "WebGPU shown (real or simulated with real navigator.gpu capability check)",
+    "Seed data uses REAL MN cities and plausible local business names",
+    "SMB filter (5-200 employees) visible in UI",
+    "Drill-down modal displays: screenshot, audit sub-score breakdown, decision-maker profile",
+    "Demo URL resolves locally and live /work-samples/client-finder-1-0 route returns 200 after deploy",
+    "Demo link in BOTH cover letter and deck",
+    "No em/en dashes anywhere in prose, Michael's voice, GitHub handle mwegter95"
+  ],
+  "outreachStatusEnum": [
+    "New",
+    "Contacted",
+    "Ignored",
+    "In Progress"
+  ],
+  "auditScoringDimensions": [
+    {
+      "dimension": "Modernity",
+      "description": "UI/UX freshness, design system coherence, modern framework indicators"
+    },
+    {
+      "dimension": "Mobile Responsiveness",
+      "description": "Viewport adaptation, touch-friendly controls, performance on small screens"
+    },
+    {
+      "dimension": "Functionality",
+      "description": "Feature completeness, no broken links, contact form validation, site speed"
+    }
+  ],
+  "outdatedStackIndicators": [
+    "Legacy WordPress (pre-5.0, no block editor)",
+    "Missing HTTPS",
+    "Non-responsive layout",
+    "Flash content",
+    "Unminified assets",
+    "Broken external resources"
+  ]
+}

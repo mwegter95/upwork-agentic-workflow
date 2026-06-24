@@ -1,0 +1,71 @@
+# Deploy Test — Client Finder 1.0
+
+## Environment
+- Playwright 1.61.0, Chromium headless
+- Tested: 2026-06-24
+- Demo: https://michaelwegter.com/demos/client-finder-1-0/
+- API: https://api.michaelwegter.com/clientfinder/
+
+---
+
+## Test Results
+
+| # | Test | Result | Detail |
+|---|------|--------|--------|
+| 1 | work-samples SPA route iframe present | ✅ PASS | 404.html redirect fires; iframe src = `/demos/client-finder-1-0/` |
+| 2 | Demo page title | ✅ PASS | "Client Finder 1.0" |
+| 3 | 50 leads loaded from live API | ✅ PASS | `tbody tr` count = 50 |
+| 4 | No critical JS console errors | ✅ PASS | Clean (WASM/ONNX warnings suppressed as expected) |
+| 5 | KPI stats bar | ✅ PASS | `cf-kpi-bar` visible; shows Total 50, New 34, Contacted 9, In Progress 4, Avg Score 3.9, Outdated 33 |
+| 6 | Search input | ✅ PASS | `.cf-search input` present |
+| 7 | Industry filter dropdown | ✅ PASS | `select` elements for Industry, Status, Region, Outdated |
+| 8 | View Details button (eye icon) | ✅ PASS | `[title="View details"]` in first row |
+| 9 | Drill-down modal opens | ✅ PASS | `.cf-modal-overlay` visible, 740 chars of structured content |
+| 10 | Modal: Technical Audit Scores | ✅ PASS | "Technical Audit Scores" + score bars (Modernity 4, Mobile 3, Function 4, Composite 3.7) confirmed in textContent |
+| 11 | Modal: Key Decision Maker | ✅ PASS | "Key Decision Maker" + DM name/title/source/LinkedIn link confirmed |
+| 12 | Modal: Contact Info | ✅ PASS | "Contact Info" + email/phone/contact form confirmed |
+| 13 | Inline status chip/select | ✅ PASS | `.cf-status-chip` present in each row |
+| 14 | WebGPU Audit tab in nav | ✅ PASS | `.cf-nav-tab` elements present |
+| 15 | POST /clientfinder/leads | ✅ PASS | `{"ids":[53],"ok":true}` |
+| 16 | PATCH outreach_status | ✅ PASS | HTTP 200, `{"ok":true}` |
+| 17 | DELETE lead cleanup | ✅ PASS | HTTP 200 |
+| 18 | CSV export | ✅ PASS | HTTP 200, 17,163 bytes, `company_name` header row |
+| 19 | GET /stats | ✅ PASS | `total:50`, 6 industries, `outdated_stack_pct:66.0` |
+| 20 | Stats by_industry breakdown | ✅ PASS | 6 keys: Entertainment, Healthcare & Wellness, Home & Commercial Services, Manufacturing & Logistics, Professional Services, Retail & Hospitality |
+
+---
+
+## Issues Found
+
+### Non-blocking (minor API quirks)
+1. **POST returns `ids` array instead of `id` scalar** — `{"ids":[53],"ok":true}`. The UI handles this correctly, but the API design is inconsistent with REST conventions. Does not affect UI or user workflow.
+2. **GET /clientfinder/leads/\<id\> returns 405** — No single-resource GET route; the UI fetches from the paginated list endpoint instead, so no UI impact. Route could be added for completeness.
+
+### False negatives in initial test
+- Row click selects checkbox (expected). Drill-down opens via "View details" eye button (`[title="View details"]`), not the row body. UI behavior is intentional and correct per the screenshot.
+- work-samples route returns HTTP 404 from GH Pages — expected SPA behavior; 404.html redirects to React router which renders the iframe. Documented in deploy.out as not a defect.
+
+---
+
+## Visual Verification
+
+Screenshot taken at drill-down modal open confirmed:
+- Company header (name, industry tag, city/state, employee count)
+- Homepage screenshot placeholder (with URL + "Screenshot captured during scrape" label)
+- Detected stack issues (pill tags: Legacy WordPress, Non-responsive layout, Outdated jQuery)
+- Contact info panel (email, phone, contact form link)
+- Technical Audit Score section with animated progress bars
+- Key Decision Maker card (avatar, name, title, seniority badge, Apollo badge, LinkedIn link)
+- Outreach section with status dropdown and notes textarea
+
+Demo design is bespoke dark CRM aesthetic, no portfolio site styles. All 10/10 richness target features present.
+
+---
+
+## handoff
+- produced: full Playwright + curl test suite against live deployment; 20/20 functional checks pass; 2 minor API quirks noted (non-blocking)
+- decisions: SPA 404 is expected GH Pages behavior; drill-down opens via View Details eye button not row click (intentional UX); POST `ids` array is minor but not a blocker
+- next needs: media-capture can proceed; demo is verified live and fully functional at michaelwegter.com/demos/client-finder-1-0/ with live backend
+- risks: none blocking; ONNX WASM loads asynchronously (WebGPU Audit tab) and gracefully falls back — not tested end-to-end due to WASM load time, but load is non-blocking for CRM tab
+
+VERDICT: pass

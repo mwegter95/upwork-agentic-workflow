@@ -1,0 +1,119 @@
+# Orchestrator — Client Finder 1.0
+
+## Identity
+- slug: `client-finder-1-0`
+- run dir: `upwork-runs/client-finder-1-0/`
+- demo URL (local): `../michaelwegter.com/public/demos/client-finder-1-0/` -> `https://michaelwegter.com/demos/client-finder-1-0/`
+- work-sample route: `/work-samples/client-finder-1-0`
+- feature richness: 10/10 (genuinely full-featured, production-quality; build to this level)
+- github handle: `mwegter95` (verified via gh)
+
+## Startup brief (what the client actually wants)
+A LOCAL B2B lead-discovery + technical-audit + CRM tool for Michael's own kind of
+agency (custom software / web dev). Three pipelines feeding one dashboard:
+1. **Lead Discovery** — modular search (Google/Serper + directory scraping)
+   scoped to Twin Cities metro + Greater MN, across the named industry niches
+   (bowling alleys, ad agencies, HVAC, dental, breweries, machine shops...),
+   filtered to SMBs ~5–200 employees.
+2. **WebGPU AI Technical Audit** — scrape homepage + full-page screenshot, then
+   score Modernity / Mobile Responsiveness / Functionality (1–10) and flag
+   outdated stacks (legacy WP, no HTTPS, non-responsive). Client EXPLICITLY
+   demands WebGPU-based local AI inference (WebLLM / Transformers.js in a
+   headless browser with `--enable-unsafe-webgpu --enable-features=Vulkan`, or a
+   Python-native WebGPU engine like MLC LLM).
+3. **Contact Enrichment** — extract emails/phones/contact forms from the site;
+   cross-reference decision-makers (Owner/CEO/Founder/VP Marketing/CTO) via
+   people-data APIs (Proxycurl/Apollo) without aggressive LinkedIn scraping.
+Output: an interactive data-table CRM with outreach-status tracking, a drill-down
+modal (screenshots + AI audit notes + decision-maker profiles), and local SQLite
+persistence to dedupe and track state.
+
+Client's framing (essentialist): "remove my bottleneck — finding clients." The
+demo must FEEL like it solves that, end to end, on real-looking MN businesses.
+
+## Demo concept (recommendation for planner — not binding)
+Build a working **Client Finder dashboard** as the hero, seeded with realistic
+Twin Cities / Greater MN lead data so it demos a full flow with zero API keys:
+- **Hero feature:** interactive lead CRM table (sortable/filterable by industry,
+  location, audit score, outdated-stack, outreach status) + drill-down modal
+  (homepage screenshot, AI audit notes broken into Modernity/Responsive/
+  Functionality sub-scores, decision-maker card). Outreach status is editable and
+  persists.
+- **Supporting 1:** a "Run Discovery" search panel that demonstrates the modular
+  pipeline (industry + region pickers -> animated pipeline: Search -> Scrape ->
+  WebGPU Audit -> Enrich) appending new realistic leads to the table.
+- **Supporting 2:** an actual **in-browser WebGPU audit demo** — this is the
+  client's hard requirement and the differentiator. Show real
+  `navigator.gpu` feature detection and either Transformers.js (WebGPU backend)
+  running a small real model on captured site text/screenshot in-browser, OR a
+  faithful simulated audit with a clearly-labeled WebGPU capability check +
+  architecture explainer if the real model can't load in budget. Prefer REAL
+  WebGPU inference if feasible within caps — it is the posting's centerpiece.
+
+Persistence: SQLite is the spec. For a same-origin static demo, persist via a
+small mw-backend blueprint (SQLite) OR client-side (IndexedDB) labeled as the
+local-SQLite stand-in. Planner/demo-builder decide; backend gives a stronger
+"real tool" feel and matches the spec — lean toward a Flask blueprint with SQLite
+seeded with MN leads if it fits budget.
+
+## Prototype vs full
+Target **full, production-quality** at richness 10. Scale scope, number of real
+working features, and polish accordingly — this should read as a genuinely usable
+tool, not a sketch. The discovery/enrichment external APIs (Serper, Proxycurl,
+Apollo, live scraping of third-party sites) cannot be safely run live in the demo
+(cost, keys, bot bans, ToS), so those are demonstrated with realistic seeded/mock
+data + a clearly-architected pipeline UI — this is the one sanctioned stub.
+Everything else should be REAL working code: the CRM table (sort/filter/search,
+bulk status edits), the drill-down modal, persistence, the WebGPU audit, and the
+discovery/pipeline animation. At richness 10, **lean toward the real mw-backend
+SQLite Flask blueprint** (`/clientfinder/`) so persistence + dedupe + outreach
+state are genuinely server-backed and seeded with MN leads, rather than the
+IndexedDB stand-in. Add depth: per-lead audit sub-score breakdown with rationale,
+outdated-stack detection signals, decision-maker cards with title/seniority,
+score-based lead ranking/prioritization, CSV export, and summary KPIs. Record the
+single stub (external lead/people APIs) rationale in plan.md (rule-1 stub).
+
+## Plan of attack (pipeline order)
+intake -> planner -> CEO -> researcher -> demo-builder -> deploy -> deploy-test
+-> media-capture -> proposal-writer -> evaluator. (with-ceo + with-deploy.)
+Backend only if planner greenlights the SQLite blueprint.
+
+## Design direction (set by planner; demo-builder implements)
+NOT michaelwegter.com's look. This is a B2B sales-intelligence / data tool — think
+the Apollo/Clay/Crunchbase category: clean, dense, trustworthy SaaS. Suggest a
+crisp light data-dashboard aesthetic (deep navy/indigo primary, a single bright
+accent for CTAs/scores, neutral grays, green/amber/red score chips), a modern
+grotesk UI font + tabular numerals for the table. A subtle Minnesota nod is fine
+(map/region filter) but keep it professional. Planner finalizes hex + fonts.
+
+## Quality guidance / hard gates to honor
+- Every brief requirement (the 4 architecture sections) must appear in the demo
+  or deck AND be addressed in the cover letter.
+- WebGPU is non-negotiable in the narrative — even if the live model is simulated,
+  the demo must show a real `navigator.gpu` capability check and explain the
+  WebLLM/Transformers.js + Playwright-flags architecture accurately.
+- Geographic scope = Twin Cities metro + Greater MN only; seed data must use REAL
+  MN cities and plausible local business names/industries.
+- SMB filter (5–200 employees) visible in the data/UI.
+- Drill-down modal must show: screenshot, audit notes, decision-maker.
+- No em/en dashes anywhere in prose. Michael's voice. GitHub = `mwegter95`.
+- Demo builds, loads with no console errors on first paint; live route 200 after
+  deploy; demo link in BOTH cover letter and deck.
+
+## handoff
+- produced: project identity (slug `client-finder-1-0`), startup brief, demo
+  concept (hero CRM + discovery pipeline + WebGPU audit), prototype-vs-full call,
+  pipeline order, design direction, quality gates.
+- decisions: full production-quality build at richness 10 (scale scope + polish +
+  feature count up); CRM (sort/filter/search/bulk-edit/export/KPIs) + SQLite
+  persistence + WebGPU audit are REAL; lean toward the mw-backend SQLite Flask
+  blueprint `/clientfinder/` (server-backed persistence) over IndexedDB;
+  discovery/enrichment external APIs are the sanctioned mock-data stub
+  (keys/ToS/bot-ban risk); B2B data-tool aesthetic, NOT portfolio.
+- next needs: intake -> brief.json must capture all 4 architecture sections as
+  discrete requirements + the WebGPU hard constraint + MN-geo + SMB filter +
+  outreach-status enum (New/Contacted/Ignored/In Progress) + drill-down fields.
+- risks: real in-browser WebGPU inference may not load a useful model within
+  build budget (fallback: real capability check + simulated scoring, clearly
+  labeled); SQLite-in-static-demo needs a backend blueprint or IndexedDB stand-in
+  — planner must pick one.

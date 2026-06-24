@@ -1,0 +1,75 @@
+# Plan Gate — Client Finder 1.0
+
+## Review
+
+Plan is complete and well-researched. Assessment per criterion:
+
+**Research completeness:** All unknowns resolved.
+- WebGPU model: `HuggingFaceTB/SmolVLM-256M-Instruct` via `@huggingface/transformers` v3 (ESM CDN confirmed)
+- Enrichment API: Apollo.io (Proxycurl shut down Jan 2025 — correctly replaced throughout)
+- Discovery API: Serper `/places` primary + Yelp Fusion supplemental (500 req/day free)
+- Playwright WebGPU flags: specific set documented (`--enable-unsafe-webgpu`, `--use-angle=vulkan`, etc.)
+- CORS: inherited from `CORS(app)` in server.py (no per-blueprint config needed)
+- SQLite isolation: own `clientfinder.db`, `PRAGMA journal_mode=WAL`, not mw.db
+
+**Technology decisions:** All concrete.
+- Stack: Vite 5 + React 18 (ESM-only package requires bundler -- justified)
+- Base path: `/demos/client-finder-1-0/` set in vite.config.js
+- WebGPU inference runs client-side in React (not in Playwright) -- correct architectural decision
+- WASM fallback if `navigator.gpu` null -- confirmed feasible
+
+**Requirement traceability:** All 12 brief requirements mapped to specific features. Nothing missing.
+
+**Build plan:** Complete -- 14-file structure, Flask blueprint with 6 endpoints + full schema, seed data spec (50 MN leads, 19 cities, 6 industries, realistic DM/score/flag distribution).
+
+**Risks identified and mitigated:**
+- SmolVLM 15-25s first load -> visible loading state with progress bar
+- Apollo free-tier last-name masking -> graceful "Jane D." display
+- iframe/WebGPU restriction -> fallback + direct demo URL link in modal
+
+**File count:** 14 files vs. 12-file soft cap. Justified at richness 10 and explicitly noted in plan. Acceptable.
+
+No gaps. No unflagged unknowns. Demo-builder can proceed without clarification.
+
+## handoff
+- produced: gate verdict confirming plan is complete, all research incorporated, no blockers
+- decisions: plan is authoritative; all tech decisions locked (SmolVLM-256M, Apollo, Serper+Yelp, Vite+React, clientfinder.db)
+- next needs: demo-builder implements in `upwork-runs/client-finder-1-0/demo-src/`; Flask blueprint in `../mw-backend/clientfinder_blueprint.py`; register in server.py; build output to `../michaelwegter.com/public/demos/client-finder-1-0/`
+- risks: SmolVLM loading UX must be obvious (progress bar); iframe WebGPU fallback must be graceful and link to direct URL
+
+VERDICT: pass
+
+### Blocking / materially open issues
+
+**R1 — WebGPU / Transformers.js (HIGH — blocks core feature implementation path)**
+- Which specific package version of `@xenova/transformers` / `@huggingface/transformers` supports WebGPU backend?
+- Which small vision model loads in <30s in-browser with WebGPU? (moondream2 vs clip vs other?)
+- Exact Playwright CLI flags for headless Chromium WebGPU exposure
+- Planner notes real inference is "Uncertain — depends on R1"; demo-builder cannot make the real-vs-simulated call without this
+
+**R5 — mw-backend blueprint pattern (HIGH — needed before writing clientfinder_blueprint.py)**
+- Exact structure of `spotify_blueprint.py` (CORS setup, DB access, registration pattern)
+- `server.py` blueprint registration pattern
+- Planner explicitly says: "Flask blueprint pattern (R5) needed before writing clientfinder_blueprint.py"
+
+**R2 — Serper API structure (MEDIUM)**
+- Exact endpoint for localized Google Maps/Places queries
+- Free tier limits + query structure — needed for realistic pipeline UI JSON previews
+
+**R3 — Apollo / Proxycurl API schemas (MEDIUM)**
+- Response field names needed for realistic drill-down DM card and enrichment source tags
+
+**R4 — MN business directory sources (LOW — seed data naming)**
+- Affects realism of 50-lead seed data, not blocking but flagged
+
+### Summary
+
+The planner self-identified these gaps and routed to researcher. All 5 are legitimate open questions. R1 and R5 are hard blockers for the demo-builder: the WebGPU inference path and the Flask blueprint cannot be written correctly without them. The plan cannot be considered build-ready.
+
+VERDICT: fail
+
+## handoff
+- produced: plan-gate review identifying 5 open research questions (R1-R5) flagged by planner; R1 (WebGPU model + package) and R5 (mw-backend blueprint pattern) are hard blockers for demo-builder
+- decisions: VERDICT fail — route to researcher to answer R1, R2, R3, R4, R5 before build begins
+- next needs: researcher returns answers to all 5 Qs; planner may do a lightweight update pass (confirm R1 real-vs-simulated decision, paste in exact blueprint registration snippet); then plan-gate re-runs
+- risks: WebGPU real inference may still be ruled unfeasible after research (acceptable — planner has a labeled-simulation fallback); 14-file count slightly over soft cap but justified at richness 10

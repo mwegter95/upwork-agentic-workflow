@@ -1,0 +1,249 @@
+# Plan — Client Finder 1.0
+slug: `client-finder-1-0` | richness: 10/10 | full production-quality | STATUS: READY
+
+---
+
+## Demo Concept (confirmed)
+
+**Hero:** Interactive Lead CRM table — sortable, filterable, searchable; inline status editing; bulk ops; CSV export; KPI summary bar.
+**Supporting 1:** "Run Discovery" panel — industry/region pickers, animated multi-step pipeline (Search → Scrape → WebGPU Audit → Enrich), appends realistic new leads.
+**Supporting 2:** WebGPU Audit module — real `navigator.gpu` capability check + hardware adapter info; loads `HuggingFaceTB/SmolVLM-256M-Instruct` via `@huggingface/transformers` v3 WebGPU backend for live in-browser vision inference; WASM fallback if WebGPU unavailable.
+**Drill-down modal:** per-lead detail — homepage screenshot, audit sub-scores (Modernity/Mobile/Function 1-10 each), AI rationale text, outdated-stack flags, decision-maker card (name, title, seniority, LinkedIn-style stub).
+
+Stub (rule-1): external APIs (Serper, Apollo, live scraping) — real pipeline architecture shown but data is seeded/mock. Rationale: keys/cost/ToS/bot-ban risk. Note: Proxycurl is defunct (shut down Jan 2025) — Apollo.io is the enrichment API throughout.
+
+---
+
+## Design Tokens (finalized)
+
+### Palette
+```
+--cf-bg:           #060B18   /* near-black navy */
+--cf-surface:      #0D1526   /* card/panel surface */
+--cf-surface-2:    #142034   /* elevated surface, modal bg */
+--cf-border:       #1E3050   /* subtle borders */
+--cf-primary:      #4F6EF7   /* electric blue — CTAs, links, active states */
+--cf-primary-h:    #3B58E5   /* primary hover */
+--cf-accent:       #7C3AED   /* violet — secondary highlights */
+--cf-text:         #E8EDF5   /* primary text */
+--cf-subtext:      #7A8BA8   /* secondary/meta text */
+--cf-muted:        #3D5070   /* disabled, placeholder */
+
+/* Score chips */
+--cf-score-high:   #10B981   /* green — 7-10 */
+--cf-score-mid:    #F59E0B   /* amber — 4-6 */
+--cf-score-low:    #EF4444   /* red — 1-3 */
+
+/* Outreach status badges */
+--cf-status-new:         #60A5FA  /* blue */
+--cf-status-contacted:   #34D399  /* green */
+--cf-status-inprogress:  #FBBF24  /* amber */
+--cf-status-ignored:     #6B7280  /* gray */
+```
+
+### Typography
+- **UI/body:** `Inter` (Google Fonts) — weights 300/400/500/600/700
+- **Tabular data/scores:** `Inter` + `font-variant-numeric: tabular-nums; font-feature-settings: "tnum"`
+- **Monospace (stack flags, code snippets):** `JetBrains Mono` — small text only
+- Base size: 14px, line-height 1.5; table cells 13px; heading scale 18/22/28px
+
+---
+
+## Full Feature Specification
+
+### CRM Table (hero)
+Columns: # | Company | Industry | City | Employees | Audit Score | Outdated Stack | Key Decision Maker | Status | Actions
+- Audit Score = composite ((Modernity + Mobile + Function) / 3), color-coded chip
+- Outdated Stack = Y/N badge (Y if any of: no HTTPS, legacy WP, no mobile, score < 4)
+- Status dropdown (New/Contacted/In Progress/Ignored) — inline edit, persists via API
+- Row checkbox for bulk selection
+- Actions column: eye icon (drill-down), external link (website)
+
+**Filters + Search (persistent in URL params):**
+- Global text search (company name, city, DM name)
+- Filter: Industry (multi-select), City/Region (Twin Cities / Greater MN / All), Audit Score range slider, Outdated Stack (Y/N/All), Status (multi-select)
+- SMB filter toggle: show only 5-200 employees (default on, visible in toolbar)
+- Sort: click any column header, asc/desc toggle
+
+**Toolbar:**
+- `+ Add Lead` (manual entry modal)
+- `Run Discovery` (opens panel)
+- `Bulk Edit Status` (enabled when rows selected)
+- `Export CSV` (selected rows or all)
+- KPI bar: Total leads | New | Contacted | In Progress | Avg Audit Score | Outdated Stack %
+
+### Drill-Down Modal
+Two-panel layout:
+- **Left:** homepage screenshot (full-page img, scrollable); website URL; outdated stack flags listed (e.g., "Legacy WordPress detected", "Missing HTTPS", "Non-responsive layout")
+- **Right:**
+  - Company card: name, industry, city, employee range, website
+  - Audit sub-scores: Modernity UI/UX (1-10 gauge), Mobile Responsiveness (1-10), Overall Functionality (1-10), Composite score
+  - AI Audit Notes: 2-3 sentences per sub-score
+  - Decision Maker card: name (partial last name gracefully handled — Apollo free tier masks last name), title, seniority tier (C-Suite / Director / Manager), enrichment source tag "Apollo", LinkedIn URL (if available), avatar placeholder with initials
+  - Status editor + notes field (free text, persists)
+  - Last-updated timestamp
+
+### Discovery Panel (supporting 1)
+Slide-in drawer from right.
+- **Input fields:** Industry (multi-select, 6 categories), Region (Twin Cities / Greater MN / Both), Employee range (5-200 default), Keywords (optional)
+- **Pipeline visualization:** 4 animated steps with live status dots:
+  1. Search — Serper `/places` API query shown (`POST https://google.serper.dev/places`, JSON preview with `q`, `gl`, `hl`)
+  2. Scrape — Playwright headless Chromium with flags (`--headless=new`, `--enable-unsafe-webgpu`, `--enable-features=Vulkan`), screenshot + HTML extraction shown
+  3. WebGPU Audit — SmolVLM-256M-Instruct via `@huggingface/transformers` v3, token/score generation preview
+  4. Enrich — Apollo.io People Search (`POST https://api.apollo.io/v1/people/search`), response field preview
+- Each step shows realistic JSON snippet of what that stage produces
+- On completion: appends 3-5 new randomized MN leads to the table
+- Simulated 4-8 second animated sequence with real-looking progress
+
+### WebGPU Audit Demo (supporting 2)
+Dedicated tab/panel.
+- **GPU Detection card:** `navigator.gpu` check → green/red badge; if available: `GPUAdapter` info (vendor, architecture, device type via `requestAdapterInfo()`)
+- **Live Inference:** "Analyze a Website" input — enter any URL; fetches a screenshot (or uses a seeded placeholder); loads SmolVLM-256M-Instruct (`@huggingface/transformers` v3, `device: 'webgpu'`) in the browser; first-load shows progress bar with "Downloading model..." (15-25s); generates real sub-scores + rationale text
+- **WASM fallback:** if `navigator.gpu` null, auto-falls back to `device: 'wasm'` (slower but functional); clearly labeled "CPU fallback — WebGPU not available"
+- **Architecture explainer:** two tabs — (A) Browser path: Transformers.js WebGPU + SmolVLM-256M-Instruct + Playwright flags; (B) Python path: MLC LLM `mlc-llm` pip package + Metal/Vulkan backend
+- **Package note visible in UI:** `@huggingface/transformers` v3 (renamed from `@xenova/transformers` v2)
+
+---
+
+## Resolved Research Decisions
+
+| Question | Decision |
+|----------|----------|
+| WebGPU model | `HuggingFaceTB/SmolVLM-256M-Instruct` — 256M params, <1GB VRAM, 15-25s first load (cached), 80+ tok/s on M-series Mac |
+| Package name | `@huggingface/transformers` v3 (npm install / CDN `https://cdn.jsdelivr.net/npm/@huggingface/transformers@3/dist/transformers.min.js`) |
+| WebGPU inference location | CLIENT-SIDE in React dashboard (not in Playwright scraper). Flow: Python scrapes → Flask stores screenshot → React fetches screenshot → browser JS runs SmolVLM → POSTs scores back |
+| Playwright flags | `--headless=new`, `--use-angle=vulkan`, `--enable-features=Vulkan`, `--disable-vulkan-surface`, `--enable-unsafe-webgpu`, `--disable-dev-shm-usage` |
+| Enrichment API | Apollo.io only (Proxycurl shut down Jan 2025). People Search free tier, last name masked on free tier — DM card shows "Jane D." gracefully |
+| Discovery API | Serper `/places` primary + Yelp Fusion (500 req/day free) supplemental |
+| Flask blueprint DB | Own `clientfinder.db` (NOT mw.db) to avoid schema conflict; `PRAGMA journal_mode=WAL` |
+| CORS | Inherited from `CORS(app)` in server.py — no per-blueprint config needed |
+
+---
+
+## Build Plan
+
+### Stack
+- **Vite 5 + React 18** (JSX, hooks, context) — complexity requires real component tree; `@huggingface/transformers` v3 is ESM-only (requires Vite build, cannot use CommonJS `<script>`)
+- Build output: `../michaelwegter.com/public/demos/client-finder-1-0/`
+- Source: `upwork-runs/client-finder-1-0/demo-src/`
+- `vite.config.js`: `base: '/demos/client-finder-1-0/'`
+- CSS: plain CSS custom properties (no Tailwind) with `tokens.css`
+
+### File Structure (~14 files — justified at richness 10)
+```
+demo-src/
+  index.html
+  vite.config.js
+  package.json
+  src/
+    main.jsx
+    App.jsx
+    styles/
+      tokens.css          <- design tokens (all CSS vars)
+      global.css          <- resets, layout, typography
+    components/
+      CRMTable.jsx        <- hero table (sort/filter/search/bulk/export)
+      FilterBar.jsx       <- filter controls + KPI bar
+      DrillDownModal.jsx  <- per-lead detail modal
+      DiscoveryPanel.jsx  <- run discovery drawer + pipeline animation
+      WebGPUPanel.jsx     <- WebGPU audit demo + architecture explainer
+      StatusBadge.jsx     <- reusable status/score chips
+    data/
+      seedLeads.js        <- 50 MN leads (real cities, plausible names, Apollo partial names)
+    hooks/
+      useLeads.js         <- CRUD state + API calls (localStorage fallback if backend unavailable)
+      useWebGPU.js        <- navigator.gpu detection + adapter info + SmolVLM loader
+    utils/
+      csvExport.js
+      auditUtils.js       <- composite score calc, outdated-stack logic
+```
+
+### Backend (Flask blueprint — greenlit)
+File: `../mw-backend/clientfinder_blueprint.py`
+Prefix: `/clientfinder`
+DB: `data/clientfinder.db` (own SQLite, separate from mw.db)
+
+Endpoints:
+- `GET /clientfinder/leads` — list all; supports `?industry=&status=&region=` filters
+- `POST /clientfinder/leads` — add one or array of leads
+- `PATCH /clientfinder/leads/<id>` — update status, notes, any field
+- `DELETE /clientfinder/leads/<id>` — remove
+- `GET /clientfinder/leads/export` — CSV download
+- `GET /clientfinder/leads/stats` — KPI aggregates (counts by status/industry, avg score)
+
+Schema: `id, company_name, industry, city, state, employee_count, website, screenshot_url, score_modernity, score_mobile, score_function, composite_score, outdated_stack, stack_flags, dm_name, dm_title, dm_seniority, dm_source, outreach_status, notes, created_at, updated_at`
+
+Seeded: 50 MN leads on blueprint `init_db()` (idempotent — checks existing count).
+
+Blueprint structure mirrors `spotify_blueprint.py`: `Blueprint("clientfinder", __name__, url_prefix="/clientfinder")`, own `_get_conn()`, no import from server.py, registered after existing blueprints.
+
+---
+
+## Seed Data Spec (50 leads)
+
+Real MN cities:
+- Twin Cities: Minneapolis, St. Paul, Bloomington, Edina, Eden Prairie, Plymouth, Minnetonka, Eagan, Roseville, St. Louis Park, Burnsville
+- Greater MN: Duluth, Rochester, St. Cloud, Mankato, Moorhead, Winona, Brainerd, Fergus Falls
+
+Industries (50 total):
+- Entertainment (bowling, arcades, golf, events) — 7: e.g., Memory Lanes (Mpls), Pinstripes (Edina), Brunswick Zone (Brooklyn Park)
+- Professional Services (ad agencies, law, accounting, architecture) — 10: e.g., North Loop Creative Agency, Summit Law Group; real examples: Periscope, Mono, Zeus Jones (Mpls)
+- Home/Commercial Services (HVAC, plumbing, landscaping, cleaning) — 9: e.g., Genz-Ryan (Burnsville), Sedgwick Heating (Mpls), Northshore Landscaping
+- Healthcare/Wellness (dental, PT, gyms, med-spas) — 9: e.g., Uptown Dental (Mpls), Summit Dental Partners, Lakeside PT
+- Retail/Hospitality (restaurants, breweries, boutique retail, auto repair) — 8: e.g., Lake & City Brewing Co., Indeed Brewing, Fulton Beer, Surly Brewing (Twin Cities)
+- Manufacturing/Logistics (machine shops, logistics, food producers) — 7: e.g., Great Northern Machining, Northland Logistics
+
+Each lead:
+- `employee_count`: random 5-200
+- Plausible website URL (fabricated, e.g., `northloopagency.com`)
+- Audit scores: varied (weighted low — more sales opportunity); modernity 2-8, mobile 2-9, function 2-8
+- DM: first name + masked last initial (e.g., "Sarah C.") matching Apollo free-tier format; realistic title; seniority: C-Suite/Director/Manager
+- Status mix: New x35, Contacted x8, In Progress x4, Ignored x3
+- `stack_flags`: realistic subset of ["Legacy WordPress", "Missing HTTPS", "Non-responsive layout", "Outdated jQuery", "No meta viewport", "No SSL certificate"]
+- `screenshot_url`: placeholder path (static image from public/demos/client-finder-1-0/assets/)
+
+---
+
+## Feasibility Assessment (post-research)
+
+| Area | Verdict | Notes |
+|------|---------|-------|
+| CRM table + filters | Feasible | Standard React pattern |
+| Drill-down modal | Feasible | Two-panel layout |
+| Discovery pipeline animation | Feasible | CSS + setTimeout |
+| WebGPU detection | Feasible | 3-line navigator.gpu check |
+| WebGPU real inference (SmolVLM-256M) | Feasible | Confirmed by researcher; 15-25s first load, WASM fallback |
+| Apollo DM card (masked names) | Feasible | Graceful partial-name display |
+| Flask blueprint | Feasible | Mirror spotify_blueprint.py pattern |
+| Seed data 50 leads | Feasible | Static JS seedLeads.js + blueprint init |
+| Vite build | Feasible | ~2-3 min |
+| Total files | 14 | Slightly over 12-file soft cap; justified richness 10 |
+
+**Status: READY.** All research questions answered. No remaining blockers. WebGPU real inference confirmed feasible (SmolVLM-256M-Instruct). Proxycurl replaced with Apollo throughout. Demo-builder can proceed.
+
+---
+
+## Requirement Traceability Matrix
+
+| Brief Requirement | Demo Feature |
+|---|---|
+| Lead Discovery Engine (Serper + directory scraping) | Discovery Panel: pipeline viz, Serper `/places` JSON preview, Yelp Fusion supplemental |
+| Geographic scope: Twin Cities + Greater MN | Seed data 19 MN cities; region filter in FilterBar |
+| SMB filter 5-200 employees | employee_count column; SMB toggle in FilterBar (default on) |
+| WebGPU AI audit (modernity/mobile/function 1-10) | Drill-down sub-scores; WebGPUPanel with real SmolVLM-256M inference |
+| Flag outdated stacks (WP, HTTPS, responsive) | stack_flags per lead; Outdated Stack column Y/N |
+| Contact enrichment (emails, phones, DMs) | DM card in drill-down; Apollo enrichment source tag |
+| Decision-maker identification (CEO/Owner/CTO) | dm_title, dm_seniority; Apollo free-tier masked last name gracefully shown |
+| Frontend CRM table with sort/filter | CRMTable.jsx — all columns sortable/filterable |
+| Outreach status (New/Contacted/Ignored/In Progress) | Status badge + inline dropdown, persists via PATCH /clientfinder/leads/<id> |
+| Drill-down modal: screenshot + audit + DM | DrillDownModal.jsx — two-panel layout |
+| SQLite persistence | Flask blueprint + clientfinder.db, 6 REST endpoints |
+| Proxycurl replaced by Apollo | Apollo.io throughout; Proxycurl not mentioned anywhere |
+
+---
+
+## handoff
+- produced: final integrated plan with all R1-R5 research incorporated; design tokens; full feature spec; Flask blueprint spec; 50-lead seed data spec; resolved technology decisions; requirement traceability matrix
+- decisions: SmolVLM-256M-Instruct via `@huggingface/transformers` v3 is the WebGPU model (real inference, WASM fallback); WebGPU inference runs CLIENT-SIDE in React (not in Playwright); Apollo.io replaces Proxycurl everywhere; blueprint uses own `clientfinder.db`; Vite+React required (ESM-only package); 14-file count justified at richness 10
+- next needs: demo-builder implements in `upwork-runs/client-finder-1-0/demo-src/` with Vite build output to `../michaelwegter.com/public/demos/client-finder-1-0/`; Flask blueprint in `../mw-backend/clientfinder_blueprint.py`; register blueprint in server.py
+- risks: SmolVLM-256M first-load 15-25s requires visible loading state in WebGPUPanel; Apollo last-name masking on free tier must be handled gracefully in DM card; iframe context may restrict WebGPU access (show fallback gracefully; link to direct demo URL in modal)

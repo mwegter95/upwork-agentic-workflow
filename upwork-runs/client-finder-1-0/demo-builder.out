@@ -1,0 +1,116 @@
+# Demo Builder — Client Finder 1.0
+slug: `client-finder-1-0` | richness: 10/10 | status: BUILT & VERIFIED
+
+---
+
+## CEO Directive Pass — workSamples.js registry entry
+
+### Action
+Added id-16 entry to `michaelwegter.com/src/data/workSamples.js` (was missing; hard gate).
+
+Fields written:
+- id: 16, slug: "client-finder-1-0", category: "Data", status: "live"
+- href: `import.meta.env.BASE_URL + "demos/client-finder-1-0/"`
+- color: "#2563EB", icon: "🔍", frameStyle: "walnut", date: "2026-06-24"
+
+### Build verification
+`npm run build` → ✓ 1.35s, 44 modules, 0 errors.
+
+---
+
+## handoff (updated)
+- produced: id-16 entry added to `workSamples.js`; site builds clean
+- decisions: id 16 (next-free after 15); color #2563EB; frameStyle walnut (matches other Data entries)
+- next needs: deploy step pushes `michaelwegter.com` main → GH Pages; verify `/work-samples/client-finder-1-0` returns 200 live
+- risks: demo files at `public/demos/client-finder-1-0/` must be present on disk from prior build pass — iframe will be blank if missing
+
+---
+
+## Files Produced
+
+### Demo source (upwork-runs/client-finder-1-0/demo-src/)
+```
+index.html
+vite.config.js         # base: '/demos/client-finder-1-0/', outDir: ../../../../michaelwegter.com/...
+package.json
+src/
+  main.jsx
+  App.jsx              # top nav (CRM | WebGPU Audit tabs) + mode badge (Live API / Local)
+  styles/
+    tokens.css         # all CSS custom properties (palette, layout, z-index, shadows)
+    global.css         # ~550 lines — full design system, table, modal, drawer, WebGPU panel
+  components/
+    CRMTable.jsx       # hero: sort/filter/search/bulk/export, inline status, + Add Lead modal
+    DrillDownModal.jsx # two-panel: screenshot area, audit sub-scores w/ bars, DM card, contact info, notes
+    DiscoveryPanel.jsx # slide-in drawer, 4-step animated pipeline with live JSON previews
+    WebGPUPanel.jsx    # navigator.gpu detection + adapter info, SmolVLM live inference, arch explainer
+    StatusBadge.jsx    # ScoreChip, StatusBadge, ScoreBar — reused across components
+  data/
+    seedLeads.js       # 50 MN leads, all 6 industries, Twin Cities + Greater MN, JS syntax
+  hooks/
+    useLeads.js        # CRUD + API calls; localStorage fallback when backend offline
+    useWebGPU.js       # navigator.gpu detection, SmolVLM-256M lazy-load, progress_callback v3
+  utils/
+    auditUtils.js      # scoreColor, calcComposite, dmInitials, generateNewLead, region helpers
+    csvExport.js       # client-side CSV download, handles null/arrays
+```
+
+### Built output (michaelwegter.com/public/demos/client-finder-1-0/)
+```
+index.html              (0.74 kB gzip: 0.40 kB) — clean, base href correct
+assets/
+  index-*.css           (18.98 kB gzip: 4.18 kB)
+  index-*.js            (227.73 kB gzip: 65.79 kB)
+  transformers.web-*.js (901.87 kB gzip: 234.76 kB) — HF transformers v3 (expected large)
+  ort-wasm-simd-threaded.jsep-*.wasm (21.6 MB — ONNX runtime, lazy loaded)
+  screenshots/
+    placeholder.png     — dark navy, "No Screenshot Available" label
+```
+
+### Backend (mw-backend/)
+```
+clientfinder_blueprint.py  — Blueprint("clientfinder", url_prefix="/clientfinder")
+                             6 endpoints: GET/POST /leads, PATCH/DELETE /leads/<id>,
+                             GET /leads/export (CSV), GET /leads/stats
+                             50 seed leads embedded; idempotent init on import
+                             own SQLite: data/clientfinder.db (WAL mode)
+server.py                  — line 342+: registered after auction_scraper_bp
+```
+
+---
+
+## Verification
+
+- `npm run build` — clean, 0 errors, 64 modules transformed, built in 1.77s
+- `index.html` at correct path with `base="/demos/client-finder-1-0/"`, module script, root div
+- `clientfinder_blueprint.py` — Python syntax OK (ast.parse)
+- `server.py` — syntax OK, `from clientfinder_blueprint import clientfinder_bp` registered
+- 6 Flask endpoints: GET /leads (filters: industry, status, region), POST /leads, PATCH /leads/<id>, DELETE /leads/<id>, GET /leads/export, GET /leads/stats
+- WebGPU panel: iframe detection via `window.self !== window.top`; banner + "Open Full Demo" link shown in iframe context
+- CEO binding directives all implemented:
+  1. email/phone/contact_form_url in DB schema, seed, and DrillDownModal contact section
+  2. SmolVLM progress bar (cf-progress-wrap) with % display and descriptive messages; iframe fallback with direct link
+  3. Self-verified: build clean, blueprint syntax OK, endpoints defined
+
+---
+
+## Design
+
+- Dark navy B2B SaaS — `#060B18` bg, `#4F6EF7` primary, `#7C3AED` accent
+- Inter + JetBrains Mono (Google Fonts, inline in index.html)
+- NO michaelwegter.com portfolio tokens used anywhere in demo
+- KPI bar (6 stats), sticky sortable table with 11 columns, slide-in discovery drawer, two-panel drill-down modal
+
+---
+
+## Known vite.config issue caught and fixed
+
+researcher.out had `outDir: '../../../michaelwegter.com/...'` (3 levels up). Correct path from `demo-src` is 4 levels up (`'../../../../michaelwegter.com/...'`). Fixed in vite.config.js before final build. First build went to `upwork-agentic-workflow/michaelwegter.com/` (wrong), cleaned up.
+
+---
+
+## handoff
+- produced: full Vite + React 18 demo built to `michaelwegter.com/public/demos/client-finder-1-0/`; Flask blueprint at `mw-backend/clientfinder_blueprint.py` with 50 seeded MN leads; server.py registration inserted; placeholder.png in assets/screenshots/
+- decisions: localStorage/SEED_LEADS fallback when API unavailable (no CORS issue in iframe); WebGPU iframe warning shows "Open Full Demo" link; SmolVLM loaded lazily (import() inside runAudit, not top-level); 4 levels up in outDir (not 3)
+- next needs: deploy agent commits and pushes `michaelwegter.com` (GH Pages auto-build) and `mw-backend` (Surface auto-deploy, ~30s); verify `https://michaelwegter.com/demos/client-finder-1-0/` loads and `https://api.michaelwegter.com/clientfinder/leads` returns 200
+- risks: ONNX WASM file is 21.6 MB — GH Pages serves it fine but first load in WASM fallback mode will be slow; chunk size warning (transformers.web 901 kB) is expected — not a build error; WebGPU real inference requires Chrome 113+ with WebGPU enabled AND demo opened directly (not iframed)

@@ -1,0 +1,45 @@
+:root {
+  /* Palette */
+  --cf-bg:           #060B18;
+  --cf-surface:      #0D1526;
+  --cf-surface-2:    #142034;
+  --cf-surface-3:    #1A2B44;
+  --cf-border:       #1E3050;
+  --cf-border-2:     #243860;
+  --cf-primary:      #4F6EF7;
+  --cf-primary-h:    #3B58E5;
+  --cf-accent:       #7C3AED;
+  --cf-text:         #E8EDF5;
+  --cf-subtext:      #7A8BA8;
+  --cf-muted:        #3D5070;
+
+  /* Score chips */
+  --cf-score-high:   #10B981;
+  --cf-score-mid:    #F59E0B;
+  --cf-score-low:    #EF4444;
+
+  /* Outreach status badges */
+  --cf-status-new:         #60A5FA;
+  --cf-status-contacted:   #34D399;
+  --cf-status-inprogress:  #FBBF24;
+  --cf-status-ignored:     #6B7280;
+
+  /* Layout */
+  --cf-header-h:   56px;
+  --cf-radius-sm:  4px;
+  --cf-radius-md:  8px;
+  --cf-radius-lg:  12px;
+
+  /* Shadows */
+  --cf-shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --cf-shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --cf-shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+
+  /* Transitions */
+  --cf-transition: 150ms ease;
+
+  /* Z-index */
+  --cf-z-modal:   1000;
+  --cf-z-drawer:  900;
+  --cf-z-tooltip: 800;
+}

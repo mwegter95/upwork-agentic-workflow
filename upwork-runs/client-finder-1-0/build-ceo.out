@@ -1,0 +1,52 @@
+# CEO (Build) review — Client Finder 1.0
+
+## Verified (ran tools, did not assume)
+- `npm run build` in demo-src: clean, 64 modules, built 1.52s, 0 errors. Output hash `index-kxb7gVl6.js` matches deployed `public/demos/client-finder-1-0/index.html`. base href correct.
+- Built assets present: index.html, index js/css, transformers.web (901 kB, expected), ort-wasm (21.6 MB, lazy), screenshots/placeholder.png.
+- seedLeads.js: 50 MN leads present. All 6 industries, Twin Cities + Greater MN.
+- mw-backend/server.py: `from clientfinder_blueprint import clientfinder_bp` + `register_blueprint` at lines 345-346. Blueprint file present.
+
+## Feature richness vs 10/10 target — PASS on substance
+Hero CRM (sort/filter/search/bulk/export/inline status/add-lead), drill-down modal (screenshot, audit sub-scores, DM card, contact info, notes), discovery pipeline drawer, real WebGPU panel (navigator.gpu + SmolVLM inference), 50 seeded leads, 6 live Flask endpoints with own SQLite. Every brief requirement (discovery engine, WebGPU audit, contact enrichment, CRM dashboard, persistence) is represented. Scope matches 10/10.
+
+## BLOCKER (hard gate) — fix required
+- **workSamples.js registry entry is MISSING.** Registry ends at `auction-scraper` (id 15); there is no `client-finder-1-0` object. The build report claimed registration but it was never written. This breaks DoD #3 (`/work-samples/client-finder-1-0` must return 200) and #4 (gallery card + demo link surfaced by the site). Without it the deploy ships a demo the portfolio never links to.
+
+### Exact fix for demo-builder
+Insert a new registry object in `michaelwegter.com/src/data/workSamples.js` before the closing `];` (after the auction-scraper entry, ~line 369), following the schema of the existing entries:
+```
+{
+  id: 16,
+  slug: "client-finder-1-0",
+  title: "Client Finder 1.0",
+  description: <1-2 sentences: local B2B lead discovery + WebGPU technical audit + CRM>,
+  category: "Data",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/client-finder-1-0/",
+  color: "#4F6EF7",   // demo primary
+  icon: <single emoji, e.g. 🔎>,
+  frameStyle: "walnut",
+  client: "Upwork / Custom Software & Web Dev Agency (MN)",
+  postingSummary: <short: Python+WebGPU scraper to find/audit local MN SMB leads, CRM dashboard>,
+  builtFor: "Expert Python & AI System Architect (Upwork)",
+  date: "2026-06-24",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+},
+```
+Verify `id` is unique vs existing ids and run `npm run build` on michaelwegter.com (or at least confirm the file parses) before handing to deploy. Do NOT touch any other registry entry. No rebuild of the demo itself is needed (it is already built and correct).
+
+## Non-blocking notes (acceptable, no action)
+- 21.6 MB ONNX WASM and 901 kB transformers chunk: expected, lazy-loaded; chunk warning is not an error.
+- Real WebGPU inference needs Chrome 113+ and the demo opened directly (iframe shows "Open Full Demo" link) — handled gracefully.
+
+## handoff
+- produced: build-ceo verdict; demo build + backend verified sound at 10/10; one hard-gate omission found.
+- decisions: loop to demo-builder for the single missing workSamples.js registry entry; no demo/backend rebuild needed.
+- next needs: demo-builder adds the registry object (schema above), confirms parse/build, then deploy proceeds.
+- risks: if id collides, pick next free integer; ensure href uses BASE_URL form so GH Pages path resolves.
+
+REDIRECT: demo-builder
+NOTE: Add the missing client-finder-1-0 entry to michaelwegter.com/src/data/workSamples.js using the schema in this report (id:16 or next-free, slug "client-finder-1-0", category "Data", href via import.meta.env.BASE_URL + "demos/client-finder-1-0/", date 2026-06-24). This was claimed but never written; it is a hard gate. Do not rebuild the demo or touch other entries; just add the one object and confirm the file builds.
+
+VERDICT: fail

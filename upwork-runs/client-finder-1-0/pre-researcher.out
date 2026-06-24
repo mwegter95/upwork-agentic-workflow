@@ -1,0 +1,217 @@
+# Pre-Researcher — Client Finder 1.0
+
+Answers to R1-R5 as requested by plan-gate.
+
+---
+
+## R1 — WebGPU / Transformers.js (HIGH)
+
+**Package:** `@huggingface/transformers` v3+ (NOT `@xenova/transformers` — that's the v2 name; v3 renamed the package)
+- Install: `npm install @huggingface/transformers`
+- CDN: `https://cdn.jsdelivr.net/npm/@huggingface/transformers@3/dist/transformers.min.js`
+
+**Recommended model:** `HuggingFaceTB/SmolVLM-256M-Instruct`
+- 256M params, <1GB VRAM, fastest in-browser load of any viable VLM
+- Official Transformers.js WebGPU example repo: `huggingface/transformers.js-examples/smolvlm-webgpu`
+- Loads in ~15-25s first load (cached thereafter by browser); 80+ tokens/sec on M-series Mac
+- Alternative: moondream2 (1.8B, slower load, ~30-60s, better reasoning but overkill for a 1-10 UI audit)
+- **Decision: use SmolVLM-256M-Instruct as primary; add "Analyzing..." spinner; WASM fallback if WebGPU unavailable**
+
+**WebGPU usage pattern in JS:**
+```js
+import { pipeline } from '@huggingface/transformers';
+const pipe = await pipeline('image-text-to-text', 'HuggingFaceTB/SmolVLM-256M-Instruct', { device: 'webgpu' });
+const result = await pipe([{ role: 'user', content: [{ type: 'image', image: screenshotBlob }, { type: 'text', text: 'Rate this website 1-10 for UI modernity, mobile responsiveness, and functionality. List any outdated tech signs.' }] }]);
+```
+
+**Playwright headless Chromium flags for WebGPU (Python):**
+```python
+browser = playwright.chromium.launch(
+    headless=True,
+    args=[
+        "--no-sandbox",
+        "--headless=new",          # new headless mode required for WebGPU
+        "--use-angle=vulkan",
+        "--enable-features=Vulkan",
+        "--disable-vulkan-surface",
+        "--enable-unsafe-webgpu",
+        "--disable-dev-shm-usage",
+    ]
+)
+```
+- `--headless=new` is required (old `--headless` doesn't support WebGPU)
+- Works on Michael's Mac (Apple Silicon has Vulkan via MoltenVK / Metal)
+- Fallback: if GPU not available, drop `device: 'webgpu'` → auto-uses WASM (CPU, ~5-10x slower but functional)
+
+**Architecture clarification for demo-builder:**
+- The Python scraper (Playwright) screenshots and scrapes the target site, saves PNG + text to backend
+- The React dashboard loads SmolVLM-256M via `@huggingface/transformers` in the BROWSER (user's GPU), not in the scraper
+- Flow: Python scrapes → Flask stores screenshot → React dashboard fetches screenshot → browser JS runs SmolVLM WebGPU analysis → scores posted back to Flask
+- This avoids needing WebGPU in the Playwright scraper itself; Playwright just does screenshots/scraping
+
+**VERDICT on real vs simulated:** REAL inference is feasible. SmolVLM-256M on Michael's Mac via Chrome = confirmed working path.
+
+---
+
+## R2 — Serper API Structure (MEDIUM)
+
+**Endpoints:**
+- `POST https://google.serper.dev/places` — primary for local business discovery
+  - Body: `{"q": "HVAC company Minneapolis MN", "gl": "us", "hl": "en", "num": 10}`
+  - Response fields: `title`, `address`, `latitude`, `longitude`, `rating`, `ratingCount`, `category`, `phoneNumber`, `website`, `cid`
+- `POST https://google.serper.dev/search` — for web results + `"location": "Minneapolis, MN"`
+  - Response fields: `organic[].title`, `organic[].link`, `organic[].snippet`, `knowledgeGraph.title/website/phone`
+
+**Free tier:** 2,500 queries total (no expiry clock on credits). $50 for 50K additional.
+
+**Query strategy for MN industries:**
+```python
+queries = [
+    "bowling alleys Minneapolis MN",
+    "advertising agencies St. Paul MN",
+    "HVAC contractor Bloomington MN",
+    "dental clinic Edina MN",
+    "craft brewery Minneapolis MN",
+    ...
+]
+# POST to /places per query; deduplicate by cid or (name + address)
+```
+
+---
+
+## R3 — Apollo / Proxycurl API (MEDIUM) — CRITICAL CHANGE
+
+**Proxycurl is SHUT DOWN.** LinkedIn sued them January 2025; they ceased operations. Do NOT reference Proxycurl in the build.
+
+**Use Apollo.io instead:**
+
+People Search (free, no credits consumed):
+```
+POST https://api.apollo.io/v1/people/search
+Headers: x-api-key: <APOLLO_API_KEY>
+Body: {
+  "person_titles": ["CEO", "Owner", "Founder", "VP Marketing", "CTO"],
+  "organization_name": "Acme Plumbing",
+  "person_locations": ["Minneapolis, Minnesota"]
+}
+```
+Response shape:
+```json
+{
+  "people": [{
+    "id": "...",
+    "first_name": "Jane",
+    "last_name": "D***",       // masked on free tier
+    "name": "Jane D.",
+    "title": "Owner",
+    "linkedin_url": "https://linkedin.com/in/janed",
+    "organization_id": "...",
+    "organization": {
+      "name": "Acme Plumbing",
+      "website_url": "https://acmeplumbing.com",
+      "estimated_num_employees": 15
+    }
+  }],
+  "total_entries": 1,
+  "page": 1
+}
+```
+
+People Enrichment (costs credits, returns email):
+```
+POST https://api.apollo.io/v1/people/match
+Body: { "first_name": "Jane", "organization_name": "Acme Plumbing", "reveal_personal_emails": false }
+Response adds: email (if credits available), phone_numbers[]
+```
+
+**Free tier:** People search = free (no credits). Enrichment = limited monthly credits.
+**DM card fields for drill-down UI:** `name`, `title`, `linkedin_url`, `organization.name`. Email shown only if enrichment credits available; gray out if absent.
+
+---
+
+## R4 — MN Business Directory Sources (LOW)
+
+Primary: Serper `/places` with MN-targeted queries (covers Google Maps listings with phone/website).
+
+Supplemental/seed-data sources:
+- **MN Secretary of State:** `mblsportal.sos.mn.gov/Business/Search` — active registered businesses, searchable by name/city. Public, no API, but scrapeable. Good for verifying active status.
+- **BBB MN:** `bbb.org/search?find_loc=Minneapolis%2C+MN` — lists accredited businesses with category + contact
+- **Yelp Fusion API:** free tier, 500 req/day — `GET /businesses/search?location=Minneapolis+MN&categories=bowling,hvac,dentists` — returns `name`, `url`, `phone`, `location`, `rating`, `review_count`
+
+For the 50-lead seed dataset, use real MN business names sourced from Google Maps (Serper `/places` output). Distribute across industries: ~8 Entertainment, ~8 Pro Services, ~8 Home Services, ~8 Healthcare, ~10 Retail/Hospitality, ~8 Manufacturing/Logistics.
+
+Real MN SMB examples for seed data:
+- Entertainment: Memory Lanes (Mpls), Brunswick Zone Brooklyn Park, Pinstripes Edina
+- Advertising: Periscope, Mono, Zeus Jones (all Minneapolis)
+- HVAC: Genz-Ryan (Burnsville), Sedgwick Heating (Mpls)
+- Dental: Dental Associates (multiple MN locations), Uptown Dental (Mpls)
+- Brewery: Indeed Brewing, Fulton Beer, Surly Brewing (all Twin Cities)
+
+---
+
+## R5 — Flask Blueprint Pattern (HIGH)
+
+**Blueprint file structure** (confirmed from spotify_blueprint.py):
+```python
+from flask import Blueprint, request, jsonify
+import sqlite3
+from pathlib import Path
+
+clientfinder_bp = Blueprint("clientfinder", __name__, url_prefix="/clientfinder")
+
+# Own DB — do NOT import get_db() from server.py (circular import)
+_DB = Path(__file__).parent / "data" / "clientfinder.db"
+
+def _get_conn():
+    conn = sqlite3.connect(str(_DB))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    return conn
+
+@clientfinder_bp.route("/leads", methods=["GET"])
+def get_leads():
+    conn = _get_conn()
+    rows = conn.execute("SELECT * FROM leads ORDER BY created_at DESC").fetchall()
+    conn.close()
+    return jsonify({"leads": [dict(r) for r in rows]})
+
+@clientfinder_bp.route("/leads/<int:lead_id>", methods=["PATCH"])
+def update_lead(lead_id):
+    data = request.get_json(silent=True) or {}
+    conn = _get_conn()
+    conn.execute("UPDATE leads SET outreach_status=?, updated_at=datetime('now') WHERE id=?",
+                 (data.get("outreach_status"), lead_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+```
+
+**Registration in server.py** (add after existing blueprints at lines ~340):
+```python
+# ─── Client Finder 1.0 demo blueprint ────────────────────────────────────────
+from clientfinder_blueprint import clientfinder_bp
+app.register_blueprint(clientfinder_bp)
+```
+
+**CORS:** Inherited from `CORS(app, origins=_CORS_ORIGINS)` in server.py — no per-blueprint CORS needed.
+
+**Own DB** (`data/clientfinder.db`): separate from `mw.db` to avoid touching the main schema. Call `init_clientfinder_db()` from the blueprint's module-level code (runs once on import).
+
+---
+
+## Additional risks not in the plan
+
+1. **Proxycurl dead** — the plan references it; must switch to Apollo.io everywhere. Apollo free tier masks last_name on people search; design DM card to handle partial name gracefully.
+2. **WebGPU inference runs in the USER'S browser** (React dashboard), not in the Python scraper. The architecture should: scraper stores screenshot → Flask serves it → React fetches + runs SmolVLM inference client-side → POSTs audit scores back. This is cleaner and avoids GPU requirements on the server.
+3. **Serper `/places` vs `/search`**: `/places` returns businesses with phone/website; `/search` returns web results. Use `/places` as primary discovery, `/search` as fallback for industries not well-represented in Maps.
+4. **Yelp Fusion API** (free, 500 req/day) is a useful supplement for category-based MN SMB discovery alongside Serper.
+5. **Apollo people search `num_results` default is 25/page**; for realism in seed data, plan on 1-3 people results per company and handle "no results" gracefully.
+6. **`@huggingface/transformers` v3 is ESM-only** — React demo must use a build tool (Vite) or dynamic `import()` via CDN. Cannot use `<script src>` CommonJS bundle.
+
+---
+
+## handoff
+- produced: answers to all 5 planner research questions (R1-R5) with exact package names, model IDs, API endpoints, response field schemas, blueprint code pattern, and Playwright launch flags
+- decisions: Proxycurl is defunct — Apollo.io is the enrichment API; SmolVLM-256M-Instruct is the WebGPU model; `@huggingface/transformers` v3 is the package name; WebGPU inference runs client-side in React (not in Playwright scraper); blueprint uses its own `clientfinder.db`
+- next needs: planner updates plan.md to (a) replace Proxycurl with Apollo, (b) confirm SmolVLM-256M as the model, (c) note the React-side WebGPU inference architecture, (d) add Yelp Fusion as supplemental discovery source; then plan-gate re-runs
+- risks: SmolVLM-256M WebGPU first-load is 15-25s — UX must show a clear loading state; Apollo free tier masks last names — DM card must handle gracefully; Serper `/places` coverage may miss some niche industries (fallback to `/search`)

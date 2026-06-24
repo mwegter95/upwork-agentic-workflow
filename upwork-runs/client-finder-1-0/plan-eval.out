@@ -1,0 +1,88 @@
+# Plan Eval (Rubric) — Client Finder 1.0
+
+## Note on plan-gate.out
+
+plan-gate.out contains two verdict blocks:
+- Lines 1-40: post-research review → VERDICT: pass (all R1-R5 resolved, plan complete)
+- Lines 42-69: pre-research stub → VERDICT: fail (R1-R5 open, per earlier gate pass)
+
+The file was appended across two evaluation passes. The planner.out (STATUS: READY, "All research questions answered. No remaining blockers.") confirms the later pass reflects the current plan state. Evaluating against the final, research-integrated plan.
+
+---
+
+## Rubric Assessment
+
+### 1. ALL brief requirements covered?
+
+| Requirement | Status | Notes |
+|---|---|---|
+| Lead Discovery Engine (Serper + directory scraping) | PASS | Discovery Panel with Serper `/places` JSON preview + Yelp Fusion supplemental |
+| Geographic scope: Twin Cities + Greater MN | PASS | 19 real MN cities in seed data; region filter in FilterBar |
+| SMB filter 5-200 employees | PASS | `employee_count` column, SMB toggle default-on |
+| WebGPU AI audit (Modernity/Mobile/Function 1-10) | PASS | WebGPUPanel with real SmolVLM-256M-Instruct inference + WASM fallback |
+| Flag outdated stacks (WP, HTTPS, responsive) | PASS | `stack_flags` per lead; Outdated Stack Y/N column |
+| Homepage screenshot capture | PASS | Screenshot in drill-down (seeded static placeholder — correct architectural call, real pipeline stubbed per rule-1) |
+| Contact enrichment (emails, phones, contact forms) | GAP | DB schema has no `email`, `phone`, or `contact_form` fields. Requirement traceability maps this only to "DM card + Apollo source tag," which is incomplete. Phone/email fields should be in schema even if seeded blank. |
+| Decision-maker identification (CEO/Owner/CTO/Founder) | PASS | `dm_name`, `dm_title`, `dm_seniority`, Apollo source tag; masked last name handled gracefully |
+| LinkedIn-sourced DM discovery | ACCEPTABLE | Brief mentions LinkedIn; plan correctly substitutes Apollo (LinkedIn scraping = bot-ban risk, rightly avoided). No explicit rationale note in plan — minor. |
+| Frontend CRM table (sortable/filterable/status cols) | PASS | CRMTable.jsx with all 9 columns, sort, global search, multi-select filter |
+| Outreach status tracking (New/Contacted/Ignored/In Progress) | PASS | Inline dropdown, persists via PATCH endpoint |
+| Drill-down modal: screenshot + audit + DM | PASS | DrillDownModal.jsx two-panel with sub-scores, AI rationale, DM card, notes, timestamp |
+| SQLite persistence | PASS | `clientfinder.db` with WAL, 6 REST endpoints, idempotent seed |
+
+### 2. Right technologies chosen?
+
+- Vite 5 + React 18: Justified — `@huggingface/transformers` v3 is ESM-only, requires bundler. Correct call.
+- SmolVLM-256M-Instruct via `@huggingface/transformers` v3 WebGPU backend: Correct. Package name confirmed (renamed from `@xenova/transformers` v2). WASM fallback sound.
+- WebGPU inference client-side in React (not in Playwright): Correct architectural split — avoids headless-browser WebGPU instability; production-viable pattern.
+- Apollo.io replacing Proxycurl: Correct — Proxycurl shut down Jan 2025.
+- Serper `/places` + Yelp Fusion: Appropriate for MN localized search.
+- Flask blueprint mirroring `spotify_blueprint.py`: Correct pattern per CLAUDE.md.
+- Own `clientfinder.db` with WAL: Correct isolation from mw.db.
+
+**Issue: JetBrains Mono** is listed in michaelwegter.com's design tokens (which per CLAUDE.md must NOT be reused in demos). However, for a B2B tech dashboard showing stack flags and code snippets, monospace is contextually appropriate and industry-fit. Acceptable — note for demo-builder to source it independently (already planned as Google Fonts import).
+
+### 3. Testing approach defined?
+
+MISSING. The plan has no testing section. No build verification step, no mention of console-error check, no integration smoke test for Flask endpoints. At richness 10 this is expected. Demo-builder must self-verify: `npm run build` succeeds, no console errors on first paint, `/clientfinder/leads` returns 200 with seed data, WebGPU panel renders without crash.
+
+### 4. Scope feasible for feature level 10?
+
+YES. Assessment:
+- CRM table with sort/filter/search/bulk/export: standard React pattern, well-scoped.
+- Discovery panel with pipeline animation: CSS + setTimeout, feasible.
+- WebGPU real inference (SmolVLM-256M): confirmed feasible by researcher; 15-25s first load is a UX risk, not a feasibility risk; visible loading state required.
+- Flask blueprint with 6 endpoints + seed 50 leads: straightforward.
+- 14 files vs. 12-file soft cap: justified at richness 10, noted and accepted by plan-gate.
+- Vite build estimated 2-3 min: within 3-min cap.
+
+### 5. Design direction fit for the industry?
+
+YES. Dark navy B2B SaaS palette (electric blue primary, violet accent, semantic score chips) is appropriate for a lead intelligence/CRM tool targeting a software agency workflow. Inter for UI, tabular-nums for data tables, JetBrains Mono for stack flags — correct choices for the domain. Design is original (not michaelwegter.com's mustard/cyan/Space Grotesk palette).
+
+---
+
+## Problems Found
+
+**P1 (MEDIUM) — Email/phone fields absent from schema**
+Brief requirement: "Extract public contact info from the website (emails, phone numbers, contact forms)." DB schema has no `email`, `phone`, `contact_form_url` fields. Requirement traceability entry for this maps only to Apollo DM card — insufficient. Demo-builder must add `email`, `phone`, `contact_form_url` (nullable) to the schema and include seeded values for a subset of leads.
+
+**P2 (LOW) — No testing plan**
+No build verification or smoke-test spec. Demo-builder must self-verify: clean `npm run build`, zero console errors on first paint, all 6 Flask endpoints respond, WebGPU panel renders in Chrome without crash.
+
+**P3 (LOW) — LinkedIn gap not documented**
+Brief says to search LinkedIn. Plan uses Apollo instead without a rationale note in the plan itself. Not a build blocker (decision is correct), but the cover letter and proposal should acknowledge this substitution explicitly.
+
+---
+
+## Summary
+
+Plan is comprehensive, research-complete, and build-ready. All major requirements are addressed. Two minor gaps (email/phone schema, no test plan) are fixable at the demo-builder stage without re-planning. Technology choices are sound, scope is feasible, design is industry-appropriate.
+
+VERDICT: pass
+
+## handoff
+- produced: rubric evaluation of planner.out; VERDICT pass with 3 noted problems
+- decisions: plan proceeds to demo-builder as-is; P1 (add email/phone/contact_form_url to schema + seed) must be addressed; P2 (build verification) is demo-builder's responsibility; P3 (LinkedIn rationale) is proposal-writer's responsibility
+- next needs: demo-builder implements per plan, adds email/phone/contact_form_url fields to clientfinder.db schema and seedLeads.js; verifies clean build + zero console errors before handing off to deploy
+- risks: SmolVLM 15-25s first load requires obvious progress bar UX; iframe context may restrict WebGPU (fallback + direct URL link required); Apollo free-tier last-name masking must render gracefully in DM card

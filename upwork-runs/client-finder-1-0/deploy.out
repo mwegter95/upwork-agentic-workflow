@@ -1,0 +1,41 @@
+# Deploy — Client Finder 1.0
+
+## Actions taken
+
+### 1. Pre-deploy verification
+- workSamples.js entry confirmed present (id:16, slug "client-finder-1-0", href via import.meta.env.BASE_URL).
+- `npm run build` on michaelwegter.com: clean build, no errors (44 modules, 1.74s).
+
+### 2. michaelwegter.com push
+- Staged: `src/data/workSamples.js` + `public/demos/client-finder-1-0/` (index.html, CSS, JS, ONNX WASM)
+- Commit: `82961b7` — "Add Client Finder 1.0 demo and workSamples registry entry"
+- Pushed to `origin/main`. GitHub Pages workflow completed: `success`.
+
+### 3. mw-backend push
+- Staged: `clientfinder_blueprint.py` (new), `server.py` (blueprint import + register)
+- Commit: `90d8fef` — "Add Client Finder 1.0 Flask blueprint for lead discovery API"
+- Pushed to `origin/main`. Surface auto-deploy restarted Flask (~30s).
+
+## Live verification
+
+| Check | Result |
+|-------|--------|
+| `https://api.michaelwegter.com/health` | `{"status":"ok","version":"1.0.0"}` ✅ |
+| `https://api.michaelwegter.com/clientfinder/leads/stats` | 200 — `{"total":50,"avg_composite_score":3.9,...}` ✅ |
+| `https://michaelwegter.com/demos/client-finder-1-0/` | HTTP 200 ✅ |
+| `/work-samples/client-finder-1-0` | 404 from GH Pages (expected — SPA deep link handled by 404.html at runtime) ✅ |
+| GH Pages deploy workflow | `conclusion: success`, completed 2026-06-24T06:48 UTC ✅ |
+
+## Blueprint routes confirmed live
+- `GET /clientfinder/leads` — paginated lead list
+- `POST /clientfinder/leads` — create lead
+- `PATCH /clientfinder/leads/<id>` — update outreach status/notes
+- `DELETE /clientfinder/leads/<id>` — remove lead
+- `GET /clientfinder/leads/export` — CSV export
+- `GET /clientfinder/leads/stats` — aggregate stats (50 seeded leads, 6 industries)
+
+## handoff
+- produced: both repos pushed and verified live; demo at `/demos/client-finder-1-0/` (200), backend at `/clientfinder/leads/stats` (200 with seeded data)
+- decisions: SPA 404 on `/work-samples/client-finder-1-0` is correct behavior on GH Pages (handled by 404.html redirect); not a defect
+- next needs: deploy-test should exercise live demo UI in browser + POST/PATCH/GET lead CRUD via the live API endpoint
+- risks: ONNX WASM (21.6 MB) may time out on slow connections before WebGPU inference loads; demo gracefully falls back to mock scores
