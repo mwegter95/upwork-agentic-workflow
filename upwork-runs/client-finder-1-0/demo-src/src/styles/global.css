@@ -175,6 +175,12 @@ a:hover { text-decoration: underline; }
 .cf-btn-ghost { color: var(--cf-subtext); padding: 6px 8px; }
 .cf-btn-ghost:hover { color: var(--cf-text); background: var(--cf-surface-2); }
 
+.cf-btn-danger { background: var(--cf-score-low); color: #fff; }
+.cf-btn-danger:hover { background: #dc2626; }
+
+.cf-btn-ghost-danger { color: var(--cf-subtext); padding: 6px 8px; }
+.cf-btn-ghost-danger:hover { color: var(--cf-score-low); background: rgba(239,68,68,0.1); }
+
 .cf-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .cf-search {
@@ -306,7 +312,8 @@ a:hover { text-decoration: underline; }
 .col-stack  { width: 80px; text-align: center; }
 .col-dm     { width: 160px; }
 .col-status { width: 120px; }
-.col-act    { width: 72px; text-align: center; }
+.col-date   { width: 84px; }
+.col-act    { width: 96px; text-align: center; }
 
 /* ── Status badge / score chip ───────────────────────────────────────── */
 .cf-chip {
@@ -597,6 +604,15 @@ a:hover { text-decoration: underline; }
 @keyframes pulse-dot {
   0%, 100% { box-shadow: 0 0 0 0 rgba(79,110,247,0.4); }
   50% { box-shadow: 0 0 0 6px rgba(79,110,247,0); }
+}
+
+.cf-pulse-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cf-primary);
+  animation: pulse-dot 1.4s infinite;
 }
 
 .cf-step-content { flex: 1; min-width: 0; }

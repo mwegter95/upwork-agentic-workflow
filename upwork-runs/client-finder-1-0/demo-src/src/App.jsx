@@ -8,15 +8,14 @@ import WebGPUPanel from './components/WebGPUPanel.jsx';
 export default function App() {
   const [tab, setTab] = useState('crm');
   const [showDiscovery, setShowDiscovery] = useState(false);
-  const [auditLog, setAuditLog] = useState([]);
 
-  const { leads, loading, error, mode, stats, updateLead, addLeads, addSingleLead } = useLeads();
+  const { leads, loading, error, mode, stats, updateLead, addLeads, addSingleLead, deleteLead, deleteLeads, applyLeadPatch } = useLeads();
 
-  // WebGPU state lifted to App so the model is shared between Discovery drawer and AI Audit tab
+  // In-browser LLM shared between the Discovery drawer and the AI Engine tab.
   const {
     gpuInfo, backend, modelReady, loading: gpuLoading,
     progress, progressMsg, error: gpuError,
-    detectGPU, initModel, runAuditOnUrl,
+    detectGPU, initModel, generateQueries, reflectOnResults, generateNavPlan,
   } = useWebGPU();
 
   return (
@@ -32,9 +31,9 @@ export default function App() {
             <span className="cf-badge-count" style={{ marginLeft: 6, fontSize: 10 }}>{leads.length}</span>
           </button>
           <button className={`cf-nav-tab ${tab === 'webgpu' ? 'active' : ''}`} onClick={() => setTab('webgpu')}>
-            AI Audit
-            {auditLog.length > 0 && (
-              <span className="cf-badge-count" style={{ marginLeft: 6, fontSize: 10 }}>{auditLog.length}</span>
+            AI Engine
+            {modelReady && (
+              <span className="cf-badge-count" style={{ marginLeft: 6, fontSize: 10 }}>on</span>
             )}
           </button>
         </div>
@@ -60,6 +59,10 @@ export default function App() {
             mode={mode}
             updateLead={updateLead}
             addSingleLead={addSingleLead}
+            deleteLead={deleteLead}
+            deleteLeads={deleteLeads}
+            applyLeadPatch={applyLeadPatch}
+            generateNavPlan={modelReady ? generateNavPlan : null}
             onDiscovery={() => setShowDiscovery(true)}
           />
         )}
@@ -74,7 +77,6 @@ export default function App() {
             error={gpuError}
             detectGPU={detectGPU}
             initModel={initModel}
-            auditLog={auditLog}
           />
         )}
       </div>
@@ -86,9 +88,10 @@ export default function App() {
             addLeads(newLeads);
             setShowDiscovery(false);
           }}
-          runAudit={modelReady ? runAuditOnUrl : null}
+          reflectOnResults={modelReady ? reflectOnResults : null}
+          generateNavPlan={modelReady ? generateNavPlan : null}
+          generateQueries={modelReady ? generateQueries : null}
           gpuReady={modelReady}
-          setAuditLog={setAuditLog}
         />
       )}
     </div>

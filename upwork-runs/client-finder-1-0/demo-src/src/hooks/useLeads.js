@@ -102,6 +102,29 @@ export function useLeads() {
     }
   }, [mode]);
 
+  const deleteLeads = useCallback(async (ids) => {
+    const idSet = new Set(ids);
+    setLeads(prev => {
+      const next = prev.filter(l => !idSet.has(l.id));
+      saveToLS(next);
+      return next;
+    });
+    if (mode === 'api') {
+      await Promise.all([...idSet].map(id =>
+        fetch(`${API}/clientfinder/leads/${id}`, { method: 'DELETE' }).catch(() => {})
+      ));
+    }
+  }, [mode]);
+
+  // Apply a server-truth patch to a lead already updated remotely (e.g. after rescrape)
+  const applyLeadPatch = useCallback((id, patch) => {
+    setLeads(prev => {
+      const next = prev.map(l => l.id === id ? { ...l, ...patch, updated_at: new Date().toISOString() } : l);
+      saveToLS(next);
+      return next;
+    });
+  }, []);
+
   const addSingleLead = useCallback(async (lead) => {
     const newLead = { ...lead, id: Date.now(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     setLeads(prev => {
@@ -134,5 +157,5 @@ export function useLeads() {
     outdatedCount: leads.filter(l => l.outdated_stack).length,
   };
 
-  return { leads, loading, error, mode, stats, fetchLeads, updateLead, addLeads, addSingleLead, deleteLead };
+  return { leads, loading, error, mode, stats, fetchLeads, updateLead, addLeads, addSingleLead, deleteLead, deleteLeads, applyLeadPatch };
 }

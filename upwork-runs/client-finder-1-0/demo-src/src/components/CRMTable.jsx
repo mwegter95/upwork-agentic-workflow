@@ -4,6 +4,17 @@ import { ALL_INDUSTRIES, ALL_STATUSES, TWIN_CITIES, scoreColor, statusClass, dmI
 import { exportCSV } from '../utils/csvExport.js';
 import DrillDownModal from './DrillDownModal.jsx';
 
+const API = import.meta.env.DEV
+  ? 'http://localhost:5050'
+  : 'https://api.michaelwegter.com';
+
+function fmtShortDate(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d)) return '—';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+}
+
 const COLS = [
   { key: 'check', label: '', sort: false, cls: 'col-check' },
   { key: '_row', label: '#', sort: false, cls: 'col-num' },
@@ -15,10 +26,11 @@ const COLS = [
   { key: 'outdated_stack', label: 'Outdated', sort: true, cls: 'col-stack' },
   { key: 'dm_name', label: 'Decision Maker', sort: true, cls: 'col-dm' },
   { key: 'outreach_status', label: 'Status', sort: true, cls: 'col-status' },
+  { key: 'created_at', label: 'Added', sort: true, cls: 'col-date' },
   { key: '_actions', label: '', sort: false, cls: 'col-act' },
 ];
 
-export default function CRMTable({ leads, stats, loading, error, mode, updateLead, addSingleLead, onDiscovery }) {
+export default function CRMTable({ leads, stats, loading, error, mode, updateLead, addSingleLead, deleteLead, deleteLeads, applyLeadPatch, generateNavPlan, onDiscovery }) {
   const [search, setSearch] = useState('');
   const [filterIndustry, setFilterIndustry] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -31,6 +43,8 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
   const [drillLead, setDrillLead] = useState(null);
   const [bulkStatus, setBulkStatus] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);   // { ids: [...], label }
+  const [rescrape, setRescrape] = useState(null);             // { total, done, items, running }
 
   const filtered = useMemo(() => {
     let arr = leads;
@@ -49,10 +63,15 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
     if (filterRegion === 'Greater MN') arr = arr.filter(l => !TWIN_CITIES.has(l.city));
     if (filterOutdated === 'Y') arr = arr.filter(l => l.outdated_stack);
     if (filterOutdated === 'N') arr = arr.filter(l => !l.outdated_stack);
-    if (smb) arr = arr.filter(l => l.employee_count >= 5 && l.employee_count <= 200);
+    // SMB focus keeps 5-200 employee businesses AND any with unknown size
+    // (discovered leads have no employee count yet, so never hide them here).
+    if (smb) arr = arr.filter(l => !l.employee_count || (l.employee_count >= 5 && l.employee_count <= 200));
 
     const dir = sortDir === 'asc' ? 1 : -1;
     return [...arr].sort((a, b) => {
+      if (sortKey === 'created_at' || sortKey === 'updated_at') {
+        return ((new Date(a[sortKey] || 0).getTime()) - (new Date(b[sortKey] || 0).getTime())) * dir;
+      }
       const av = a[sortKey] ?? '';
       const bv = b[sortKey] ?? '';
       if (typeof av === 'number') return (av - bv) * dir;
@@ -85,6 +104,93 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
     }
     setSelected(new Set());
     setBulkStatus('');
+  }
+
+  function requestDeleteSelected() {
+    if (selected.size === 0) return;
+    setConfirmDelete({ ids: [...selected], label: `${selected.size} lead${selected.size !== 1 ? 's' : ''}` });
+  }
+
+  function requestDeleteOne(lead) {
+    setConfirmDelete({ ids: [lead.id], label: lead.company_name });
+  }
+
+  async function performDelete() {
+    if (!confirmDelete) return;
+    const { ids } = confirmDelete;
+    if (ids.length === 1) await deleteLead(ids[0]);
+    else await deleteLeads(ids);
+    setSelected(prev => {
+      const next = new Set(prev);
+      ids.forEach(id => next.delete(id));
+      return next;
+    });
+    setConfirmDelete(null);
+  }
+
+  async function rescrapeSelected() {
+    if (selected.size === 0) return;
+    const ids = [...selected];
+    setRescrape({ total: ids.length, done: 0, items: [], running: true });
+
+    // Ask the in-browser LLM which page types to prioritize (best-effort).
+    let navKeywords = [];
+    if (generateNavPlan) {
+      try { navKeywords = await generateNavPlan({ industry: '' }) || []; } catch {}
+    }
+
+    try {
+      const res = await fetch(`${API}/clientfinder/rescrape`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_ids: ids, nav_keywords: navKeywords }),
+        signal: AbortSignal.timeout(180000),
+      });
+      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const chunks = buf.split('\n\n');
+        buf = chunks.pop();
+        for (const chunk of chunks) {
+          const m = chunk.match(/^data: (.+)$/m);
+          if (!m) continue;
+          let evt; try { evt = JSON.parse(m[1]); } catch { continue; }
+          if (evt.event === 'lead') {
+            const d = evt.data;
+            const shots = Array.isArray(d.screenshots) && d.screenshots.length
+              ? d.screenshots
+              : (d.screenshot_url ? [d.screenshot_url] : []);
+            applyLeadPatch(d.id, {
+              screenshot_url: d.screenshot_url,
+              screenshots: shots,
+              quality_notes: d.quality_notes || [],
+              stack_flags: d.stack_flags,
+              outdated_stack: d.outdated_stack,
+              score_modernity: d.score_modernity,
+              score_mobile: d.score_mobile,
+              score_function: d.score_function,
+              composite_score: d.composite_score,
+              ...(d.email ? { email: d.email } : {}),
+              ...(d.phone ? { phone: d.phone } : {}),
+            });
+            setRescrape(prev => prev ? { ...prev, done: prev.done + 1, items: [...prev.items, { name: d.name, ok: true, score: d.composite_score, flags: d.stack_flags?.length || 0, shots: shots.length }] } : prev);
+          } else if (evt.event === 'lead_error') {
+            setRescrape(prev => prev ? { ...prev, done: prev.done + 1, items: [...prev.items, { name: evt.data.name, ok: false, error: evt.data.error }] } : prev);
+          } else if (evt.event === 'error') {
+            setRescrape(prev => prev ? { ...prev, error: evt.data.msg } : prev);
+          }
+        }
+      }
+    } catch (e) {
+      setRescrape(prev => prev ? { ...prev, error: e.message || 'Rescrape unavailable (backend offline)' } : prev);
+    } finally {
+      setRescrape(prev => prev ? { ...prev, running: false } : prev);
+    }
   }
 
   function handleExport() {
@@ -152,6 +258,14 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
               <button className="cf-btn cf-btn-secondary" onClick={applyBulkStatus} disabled={!bulkStatus}>
                 Apply ({selected.size})
               </button>
+              <button className="cf-btn cf-btn-secondary" onClick={rescrapeSelected} title="Re-run screenshot + tech audit for selected leads">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                Rescrape ({selected.size})
+              </button>
+              <button className="cf-btn cf-btn-danger" onClick={requestDeleteSelected} title="Delete selected leads">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                Delete ({selected.size})
+              </button>
             </div>
           )}
           <button className="cf-btn cf-btn-secondary" onClick={handleExport}>
@@ -196,7 +310,7 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
         <label className="cf-toggle">
           <input type="checkbox" checked={smb} onChange={e => setSmb(e.target.checked)} />
           <span className="cf-toggle-track" />
-          SMB only (5-200 emp)
+          SMB only (5-200 / unknown)
         </label>
         {mode === 'local' && (
           <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--cf-status-inprogress)' }}>
@@ -253,8 +367,9 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
                   <tr
                     key={lead.id}
                     className={isSelected ? 'selected' : ''}
-                    onClick={() => toggleSelect(lead.id)}
+                    onClick={() => setDrillLead(lead)}
                     style={{ cursor: 'pointer' }}
+                    title="Click row to view details"
                   >
                     <td className="col-check" onClick={e => e.stopPropagation()}>
                       <input type="checkbox" className="cf-checkbox" checked={isSelected} onChange={() => toggleSelect(lead.id)} />
@@ -309,16 +424,11 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
                         {ALL_STATUSES.map(s => <option key={s}>{s}</option>)}
                       </select>
                     </td>
+                    <td className="col-date" style={{ fontSize: 11, color: 'var(--cf-subtext)', whiteSpace: 'nowrap' }} title={lead.created_at || ''}>
+                      {fmtShortDate(lead.created_at)}
+                    </td>
                     <td className="col-act" onClick={e => e.stopPropagation()}>
                       <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
-                        <button
-                          className="cf-btn cf-btn-ghost"
-                          style={{ padding: '4px 6px' }}
-                          title="View details"
-                          onClick={() => setDrillLead(lead)}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </button>
                         <a
                           href={`https://${lead.website}`}
                           target="_blank"
@@ -329,6 +439,14 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                         </a>
+                        <button
+                          className="cf-btn cf-btn-ghost cf-btn-ghost-danger"
+                          style={{ padding: '4px 6px' }}
+                          title="Delete lead"
+                          onClick={() => requestDeleteOne(lead)}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -358,6 +476,122 @@ export default function CRMTable({ leads, stats, loading, error, mode, updateLea
           onAdd={addSingleLead}
         />
       )}
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          label={confirmDelete.label}
+          count={confirmDelete.ids.length}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={performDelete}
+        />
+      )}
+
+      {/* Rescrape progress */}
+      {rescrape && (
+        <RescrapeModal
+          state={rescrape}
+          onClose={() => { setRescrape(null); setSelected(new Set()); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ConfirmDeleteModal({ label, count, onCancel, onConfirm }) {
+  const [busy, setBusy] = useState(false);
+  async function confirm() {
+    setBusy(true);
+    await onConfirm();
+  }
+  return (
+    <div className="cf-modal-overlay cf-add-modal" onClick={e => e.target === e.currentTarget && onCancel()}>
+      <div className="cf-modal" style={{ maxWidth: 420 }}>
+        <div className="cf-modal-header">
+          <h2>Delete {count > 1 ? `${count} leads` : 'lead'}?</h2>
+          <button className="cf-close-btn" onClick={onCancel}>&#x2715;</button>
+        </div>
+        <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <div style={{
+              width: 36, height: 36, flexShrink: 0, borderRadius: '50%',
+              background: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cf-score-low)" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--cf-subtext)', lineHeight: 1.5 }}>
+              {count > 1
+                ? <>You're about to permanently remove <strong style={{ color: 'var(--cf-text)' }}>{count} leads</strong> from the CRM.</>
+                : <>You're about to permanently remove <strong style={{ color: 'var(--cf-text)' }}>{label}</strong> from the CRM.</>}
+              <div style={{ marginTop: 4 }}>This action cannot be undone.</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button className="cf-btn cf-btn-secondary" onClick={onCancel} disabled={busy}>Cancel</button>
+            <button className="cf-btn cf-btn-danger" onClick={confirm} disabled={busy}>
+              {busy ? 'Deleting…' : (count > 1 ? `Delete ${count}` : 'Delete')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RescrapeModal({ state, onClose }) {
+  const { total, done, items, running, error } = state;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  return (
+    <div className="cf-modal-overlay cf-add-modal" onClick={e => e.target === e.currentTarget && !running && onClose()}>
+      <div className="cf-modal" style={{ maxWidth: 480 }}>
+        <div className="cf-modal-header">
+          <div>
+            <h2>Rescraping leads</h2>
+            <div style={{ fontSize: 12, color: 'var(--cf-subtext)', marginTop: 2 }}>
+              Playwright captures the homepage, a full-page scroll &amp; key internal pages, and records website-quality notes
+            </div>
+          </div>
+          {!running && <button className="cf-close-btn" onClick={onClose}>&#x2715;</button>}
+        </div>
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--cf-subtext)', marginBottom: 5 }}>
+              <span>{running ? 'Capturing…' : 'Complete'}</span>
+              <span>{done} / {total}</span>
+            </div>
+            <div style={{ height: 6, background: 'var(--cf-surface-2)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: `${pct}%`, height: '100%', background: 'var(--cf-primary)', transition: 'width 0.3s' }} />
+            </div>
+          </div>
+
+          {error && (
+            <div style={{ fontSize: 12, color: 'var(--cf-score-mid)', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 'var(--cf-radius-md)', padding: '8px 10px' }}>
+              ⚠ {error}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 220, overflowY: 'auto' }}>
+            {items.map((it, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, padding: '6px 8px', background: 'var(--cf-surface-2)', borderRadius: 'var(--cf-radius-md)' }}>
+                <span style={{ color: it.ok ? 'var(--cf-score-high)' : 'var(--cf-score-low)' }}>{it.ok ? '✓' : '✗'}</span>
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</span>
+                {it.ok
+                  ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {it.shots > 1 && <span style={{ fontSize: 10, color: 'var(--cf-subtext)' }}>{it.shots} views</span>}
+                      <span style={{ color: scoreColor(it.score), fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{it.score} · {it.flags} flags</span>
+                    </span>
+                  : <span style={{ color: 'var(--cf-muted)', fontSize: 11 }}>{it.error}</span>}
+              </div>
+            ))}
+          </div>
+
+          {!running && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="cf-btn cf-btn-primary" onClick={onClose}>Done</button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

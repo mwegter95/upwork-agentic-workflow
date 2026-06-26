@@ -1,40 +1,32 @@
 import { useEffect } from 'react';
-import { scoreColor } from '../utils/auditUtils.js';
 
-const BROWSER_ARCH = `<span class="kw">import</span> { pipeline } <span class="kw">from</span> <span class="str">'@huggingface/transformers'</span>;
+const QUERY_ARCH = `<span class="kw">import</span> { pipeline } <span class="kw">from</span> <span class="str">'@huggingface/transformers'</span>;
 
-<span class="cm">// Lazy-loaded once — 256MB, cached in IndexedDB after first run</span>
-<span class="kw">const</span> pipe = <span class="kw">await</span> pipeline(
-  <span class="str">'image-text-to-text'</span>,
-  <span class="str">'HuggingFaceTB/SmolVLM-256M-Instruct'</span>,
+<span class="cm">// Lazy-loaded once, cached in the browser after first run</span>
+<span class="kw">const</span> llm = <span class="kw">await</span> pipeline(
+  <span class="str">'text-generation'</span>,
+  <span class="str">'onnx-community/Llama-3.2-1B-Instruct'</span>,
   { device: <span class="str">'webgpu'</span> }  <span class="cm">// fallback: 'wasm'</span>
 );
 
-<span class="cm">// Called for each Playwright screenshot during discovery:</span>
-<span class="kw">const</span> result = <span class="kw">await</span> pipe([{
-  role: <span class="str">'user'</span>,
-  content: [
-    { type: <span class="str">'image'</span>, image: screenshotUrl },
-    { type: <span class="str">'text'</span>,  text: auditPrompt },
-  ]
-}]);
-<span class="cm">// → { modernity, mobile, function, notes, outdated_signs }</span>`;
+<span class="cm">// At the start of a Discovery run:</span>
+<span class="kw">const</span> out = <span class="kw">await</span> llm([
+  { role: <span class="str">'system'</span>, content: <span class="str">'Write search queries…'</span> },
+  { role: <span class="str">'user'</span>,   content: <span class="str">'8 diverse MN business queries'</span> },
+]);
+<span class="cm">// → ["dental clinic Rochester MN", "auto repair Duluth MN", …]</span>`;
 
-const REFINEMENT_ARCH = `<span class="cm">// After auditing each batch of N screenshots:</span>
-<span class="kw">const</span> avgScore = batch.reduce((s,x) => s + x.composite, 0) / N;
+const NAV_ARCH = `<span class="cm">// Before rescraping a lead, the model picks which pages matter:</span>
+<span class="kw">const</span> navKeywords = <span class="kw">await</span> generateNavPlan({ industry });
+<span class="cm">// → ["about", "services", "contact", "pricing"]</span>
 
-<span class="cm">// If sites look too modern → refine toward older-stack targets</span>
-<span class="kw">if</span> (avgScore > <span class="str">5.5</span>) {
-  nextQuery = {
-    industry: <span class="str">'Manufacturing & Logistics'</span>,
-    city:     <span class="str">'St. Cloud MN'</span>,
-  };
-  <span class="cm">// Next Serper round uses these refined params…</span>
-}`;
+<span class="cm">// Playwright then visits + screenshots those pages and records</span>
+<span class="cm">// deterministic quality notes (HTTPS, responsive, stack, contacts).</span>
+<span class="cm">// The model never analyzes the screenshots — only guides navigation.</span>`;
 
 export default function WebGPUPanel({
   gpuInfo, backend, modelReady, loading, progress, progressMsg, error,
-  detectGPU, initModel, auditLog,
+  detectGPU, initModel,
 }) {
   useEffect(() => { detectGPU(); }, []);
   const isIframe = typeof window !== 'undefined' && window.self !== window.top;
@@ -81,13 +73,13 @@ export default function WebGPUPanel({
         {gpuInfo && !gpuInfo.available && (
           <div style={{ fontSize: 12, color: 'var(--cf-subtext)', marginTop: 8, lineHeight: 1.5 }}>
             {gpuInfo.reason}<br />
-            Audit falls back to <strong style={{ color: 'var(--cf-score-mid)' }}>CPU/WASM</strong>. Scores still guide search refinement.
+            The model falls back to <strong style={{ color: 'var(--cf-score-mid)' }}>CPU/WASM</strong> (slower). Discovery still works with the built-in query planner.
           </div>
         )}
 
         {!loading && (
           <button className="cf-btn cf-btn-primary" style={{ marginTop: 12, fontSize: 12 }} onClick={initModel}>
-            {modelReady ? '✓ SmolVLM ready — Re-initialize' : 'Initialize SmolVLM-256M for Discovery'}
+            {modelReady ? '✓ Language model ready — Re-initialize' : 'Initialize Llama-3.2-1B for AI queries'}
           </button>
         )}
         {loading && (
@@ -106,58 +98,17 @@ export default function WebGPUPanel({
 
       {/* How it's integrated */}
       <div className="cf-card">
-        <h3>How It Integrates into Discovery</h3>
+        <h3>How the AI Engine Is Used</h3>
         <div style={{ fontSize: 12, color: 'var(--cf-subtext)', lineHeight: 1.6, marginBottom: 12 }}>
-          During a Discovery run, SmolVLM audits each Playwright screenshot <strong style={{ color: 'var(--cf-text)' }}>live in this browser tab</strong> — zero server cost.
-          The resulting scores drive query refinement: if a batch of sites scores too high (modern sites),
-          the next Serper round targets older-skewing industries and smaller MN markets.
+          A small language model runs <strong style={{ color: 'var(--cf-text)' }}>entirely in this browser tab</strong> (WebGPU, zero server cost).
+          It does two things: it writes smarter, more varied search queries for Discovery, and it decides which
+          internal pages Playwright should visit and screenshot. It does <strong style={{ color: 'var(--cf-text)' }}>not</strong> analyze the
+          screenshots — website-quality notes come from deterministic Playwright checks.
         </div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--cf-subtext)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Per-screenshot inference</div>
-        <div className="cf-arch-code" dangerouslySetInnerHTML={{ __html: BROWSER_ARCH }} />
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--cf-subtext)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '14px 0 6px' }}>Search refinement</div>
-        <div className="cf-arch-code" dangerouslySetInnerHTML={{ __html: REFINEMENT_ARCH }} />
-      </div>
-
-      {/* Audit log */}
-      <div className="cf-card">
-        <h3>Audit Log <span className="cf-tag">{auditLog.length} sites</span></h3>
-        {auditLog.length === 0 ? (
-          <div style={{ fontSize: 12, color: 'var(--cf-muted)', textAlign: 'center', padding: '20px 0' }}>
-            No audits yet — run Discovery to see live results here.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {auditLog.map(entry => (
-              <div key={entry.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', background: 'var(--cf-surface-2)', border: '1px solid var(--cf-border)', borderRadius: 'var(--cf-radius-md)' }}>
-                {entry.screenshot_url && (
-                  <img
-                    src={entry.screenshot_url.startsWith('http') ? entry.screenshot_url : `https://api.michaelwegter.com${entry.screenshot_url}`}
-                    alt=""
-                    style={{ width: 64, height: 40, objectFit: 'cover', borderRadius: 3, flexShrink: 0 }}
-                    onError={e => { e.target.style.display = 'none'; }}
-                  />
-                )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 500, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.name}</div>
-                  <div style={{ fontSize: 10, color: 'var(--cf-subtext)', marginBottom: 4 }}>{entry.website}</div>
-                  <div style={{ display: 'flex', gap: 10, fontSize: 11 }}>
-                    {[{ label:'Modern', val:entry.modernity },{ label:'Mobile', val:entry.mobile },{ label:'Func', val:entry.function }].map(({ label, val }) => (
-                      <span key={label} style={{ color: 'var(--cf-subtext)' }}>
-                        {label}: <strong style={{ color: scoreColor(val) }}>{val}</strong>
-                      </span>
-                    ))}
-                  </div>
-                  {entry.notes && <div style={{ fontSize: 11, color: 'var(--cf-subtext)', marginTop: 4, lineHeight: 1.4 }}>{entry.notes.slice(0,120)}{entry.notes.length>120?'…':''}</div>}
-                  <div style={{ fontSize: 10, color: 'var(--cf-muted)', marginTop: 4 }}>{entry.backend?.toUpperCase()} · {new Date(entry.ts).toLocaleTimeString()}</div>
-                </div>
-                <div style={{ textAlign: 'center', width: 36, flexShrink: 0 }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: scoreColor(entry.composite), fontFamily: 'JetBrains Mono' }}>{entry.composite}</div>
-                  <div style={{ fontSize: 9, color: 'var(--cf-muted)' }}>/10</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--cf-subtext)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Smarter search queries</div>
+        <div className="cf-arch-code" dangerouslySetInnerHTML={{ __html: QUERY_ARCH }} />
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--cf-subtext)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '14px 0 6px' }}>AI-guided navigation</div>
+        <div className="cf-arch-code" dangerouslySetInnerHTML={{ __html: NAV_ARCH }} />
       </div>
     </div>
   );

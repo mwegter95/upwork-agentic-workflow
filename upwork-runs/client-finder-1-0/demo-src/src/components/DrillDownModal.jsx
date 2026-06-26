@@ -2,10 +2,21 @@ import { useState } from 'react';
 import { ScoreBar, ScoreChip } from './StatusBadge.jsx';
 import { dmInitials, ALL_STATUSES } from '../utils/auditUtils.js';
 
+const API = import.meta.env.DEV
+  ? 'http://localhost:5050'
+  : 'https://api.michaelwegter.com';
+
 export default function DrillDownModal({ lead, onClose, onUpdate }) {
   const [notes, setNotes] = useState(lead.notes || '');
   const [status, setStatus] = useState(lead.outreach_status || 'New');
   const [saving, setSaving] = useState(false);
+
+  // Captured screenshots (multi-view from rescrape) — fall back to the single one.
+  const shots = (Array.isArray(lead.screenshots) && lead.screenshots.length
+    ? lead.screenshots
+    : (lead.screenshot_url ? [lead.screenshot_url] : [])).filter(Boolean);
+  const [active, setActive] = useState(shots[0] || null);
+  const resolveShot = (s) => (s && s.startsWith('/')) ? `${API}${s}` : s;
 
   function fmtDate(s) {
     if (!s) return '—';
@@ -20,6 +31,9 @@ export default function DrillDownModal({ lead, onClose, onUpdate }) {
   }
 
   const flags = Array.isArray(lead.stack_flags) ? lead.stack_flags : (typeof lead.stack_flags === 'string' ? JSON.parse(lead.stack_flags || '[]') : []);
+  const qnotes = Array.isArray(lead.quality_notes)
+    ? lead.quality_notes
+    : (typeof lead.quality_notes === 'string' ? (() => { try { return JSON.parse(lead.quality_notes || '[]'); } catch { return []; } })() : []);
   const initials = dmInitials(lead.dm_name);
 
   return (
@@ -38,29 +52,58 @@ export default function DrillDownModal({ lead, onClose, onUpdate }) {
         <div className="cf-modal-body">
           {/* LEFT: screenshot + flags */}
           <div className="cf-modal-left">
-            {/* Screenshot */}
+            {/* Screenshot(s) */}
             <div className="cf-modal-section">
-              <h3>Homepage Screenshot</h3>
-              <div style={{
-                width: '100%',
-                aspectRatio: '4/3',
-                background: 'var(--cf-surface-2)',
-                border: '1px solid var(--cf-border)',
-                borderRadius: 'var(--cf-radius-md)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                color: 'var(--cf-muted)',
-                fontSize: 12,
-              }}>
-                <div style={{ fontSize: 28 }}>🖥️</div>
-                <div style={{ textAlign: 'center', lineHeight: 1.4 }}>
-                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11 }}>https://{lead.website}</div>
-                  <div style={{ marginTop: 4 }}>Screenshot captured during scrape</div>
+              <h3>{shots.length > 1 ? `Captured Views (${shots.length})` : 'Homepage Screenshot'}</h3>
+              {shots.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <img
+                    className="cf-screenshot"
+                    src={resolveShot(active)}
+                    alt={`${lead.company_name} view`}
+                    onError={e => { e.target.style.visibility = 'hidden'; }}
+                  />
+                  {shots.length > 1 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {shots.map((s, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActive(s)}
+                          style={{
+                            width: 52, height: 34, padding: 0, borderRadius: 4, overflow: 'hidden',
+                            border: `2px solid ${s === active ? 'var(--cf-primary)' : 'var(--cf-border)'}`,
+                            cursor: 'pointer', background: 'var(--cf-surface-2)',
+                          }}
+                          title={`View ${i + 1}`}
+                        >
+                          <img src={resolveShot(s)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  width: '100%',
+                  aspectRatio: '4/3',
+                  background: 'var(--cf-surface-2)',
+                  border: '1px solid var(--cf-border)',
+                  borderRadius: 'var(--cf-radius-md)',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  color: 'var(--cf-muted)',
+                  fontSize: 12,
+                }}>
+                  <div style={{ fontSize: 28 }}>🖥️</div>
+                  <div style={{ textAlign: 'center', lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11 }}>https://{lead.website}</div>
+                    <div style={{ marginTop: 4 }}>No screenshot yet — use Rescrape to capture views</div>
+                  </div>
+                </div>
+              )}
               <a className="cf-website-link" href={`https://${lead.website}`} target="_blank" rel="noreferrer">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 {lead.website}
@@ -74,6 +117,24 @@ export default function DrillDownModal({ lead, onClose, onUpdate }) {
                 <div className="cf-stack-flags">
                   {flags.map(f => <span key={f} className="cf-stack-flag">{f}</span>)}
                 </div>
+              </div>
+            )}
+
+            {/* Website quality notes from the Playwright navigation/testing */}
+            {qnotes.length > 0 && (
+              <div className="cf-modal-section">
+                <h3>Website Quality</h3>
+                <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5, margin: 0, padding: 0 }}>
+                  {qnotes.map((n, i) => {
+                    const bad = /no |missing|not |insecure|outdated|legacy|does not/i.test(n);
+                    return (
+                      <li key={i} style={{ display: 'flex', gap: 7, alignItems: 'flex-start', fontSize: 12, color: 'var(--cf-subtext)' }}>
+                        <span style={{ color: bad ? 'var(--cf-score-low)' : 'var(--cf-score-high)', flexShrink: 0, marginTop: 1 }}>{bad ? '⚠' : '✓'}</span>
+                        <span>{n}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             )}
 
