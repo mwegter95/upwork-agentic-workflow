@@ -39,6 +39,14 @@ plan/brief for what the demo is supposed to do.
 - Two-phase auth testing: (1) test the real login flow, then (2) use Playwright
   `page.route()` to inject a valid auth header and verify the app is functional
   when auth works — this separates "auth flow broken" from "app broken".
+- Design-cue / palette check: extract the stylesheet `href` from the page HTML,
+  then `curl` that CSS file and grep it for the expected color vars/fonts. Do NOT
+  search the page body for colors — themes (esp. WordPress) keep CSS in an
+  external file, so a body-search false-negatives. This is also cheaper than a
+  full Playwright load.
+- Credentials: test the EXACT login credential the proposal advertises (the one
+  in cover-letter/one-pager), not a different seeded account, so a downstream
+  reviewer need not re-test login.
 - Compare what you observe to what the brief says should happen.
 
 Actually run the flows (a Playwright script, e.g. via `scripts/capture.mjs`

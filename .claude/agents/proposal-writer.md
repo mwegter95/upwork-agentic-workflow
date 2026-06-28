@@ -51,8 +51,13 @@ Style the deck with the demo's design direction (its palette + fonts), so it
 reads as tailored to the client, not as a generic or portfolio-branded deck.
 Embed `hero.png` and the step stills.
 
+If demo-builder left a deck build script (e.g. `build-deck.py`) in the run dir,
+RUN it rather than regenerating the deck from scratch. If `python-pptx` is
+missing, `pip install python-pptx` once at step start.
+
 ## Hard rules
-- No em dashes and no en dashes anywhere. Before finishing, run ONE repo-wide
+- No em dashes and no en dashes anywhere. Avoid them while drafting (do not
+  rely on a post-hoc fix pass). Before finishing, run ONE repo-wide
   grep across ALL deliverable files (cover-letter.md, one-pager.html, deck source)
   for BOTH the literal chars U+2014/U+2013 AND the HTML entities `&mdash;`/`&ndash;`
   (also `&#8212;`/`&#8211;`), including inside HTML title/alt attributes, not just

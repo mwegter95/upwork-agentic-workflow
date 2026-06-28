@@ -11,6 +11,11 @@ orchestrator only ever sees your summary.
 
 Read `CLAUDE.md`, `upwork-runs/<slug>/brief.json`, and `plan.md` first.
 
+If `pre-researcher.out` already exists in the run dir, do NOT re-derive
+domain/competitor/pricing/imagery — those are settled there. Focus only on
+build-prep (scaffold pointer, any Docker/WP-CLI/theme specifics the builder
+needs).
+
 ## What to find
 - **Domain + client context:** enough to make the demo and cover letter specific
   (the client's industry, who their users are, the real-world workflow). If the

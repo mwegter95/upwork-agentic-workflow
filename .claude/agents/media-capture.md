@@ -36,3 +36,5 @@ and the hero flow steps.
 ## Rules
 - Do not edit the demo or any proposal file. Capture only.
 - Keep the recording short (the hero flow, a few seconds). Big media is wasteful.
+- Playwright keypresses: use `page.keyboard.press('Escape')`, not
+  `page.press('Escape')` (the latter needs a selector arg and errors).
