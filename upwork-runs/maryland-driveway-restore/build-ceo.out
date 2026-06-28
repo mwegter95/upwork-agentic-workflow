@@ -1,0 +1,27 @@
+# CEO (Build) Review v4 — Maryland Driveway Restore
+
+Re-verified the now-LIVE public demo (bridge has been pushed since v3; public URL returns 200, not 404).
+
+## Live verification (this pass — independently run, not assumed)
+- Flask `/health` ok; runner `/run/health` ok; public bridge live.
+- All 9 pages return 200 over the PUBLIC proxy: home, driveway-restoration, pricing, gallery, about, faq, contact, service-areas, free-estimate.
+- Homepage (45KB clean HTML, zero `<?php` leaks): H1 "Restore Your Driveway." present, before/after `img-comparison-slider` x4, sticky `tel:+14105550100` + `sms:+14105550100`, `HomeAndConstructionBusiness` JSON-LD, Playfair Display + Inter loaded.
+- SEO: unique `<title>` + `<meta name="description">` present (Rank Math active).
+- Pricing $299/$499/$849; reviews 4.9 / 47; /free-estimate has working form + inputs + Text-a-Photo.
+- Static assets main.css / main.js 200, no redirect loop.
+
+## Assessment vs 10/10 richness
+Meets it. Authentic production-shaped WordPress (Docker + MySQL, 14-template custom theme, Rank Math SEO, per-page schema, Fluent Forms + temp-login plugins, GA4 hooks, mobile-first sticky CTAs, before/after slider, two admin logins to explore). Matches brief §4-9 creative + SEO direction. Beyond a mock — exactly what Michael wanted.
+
+## Problems
+1. **Hard-gate (minor, do NOT rebuild): en dash in page `<title>` separator.** Titles render `Maryland Driveway Restore &#8211; Premium driveway restoration...`; `&#8211;` is an en dash, banned everywhere by gate #5 (evaluator-enforced), and it is on every page (WP/Rank Math default separator, not authored prose). One-line config fix: add `add_filter('document_title_separator', fn()=>'|');` to the theme `functions.php` on the host mount, or set Rank Math's title-separator option. Deploy/builder should apply this before final eval; not worth a full demo-builder loop for one character.
+
+No other defects.
+
+## handoff
+- produced: v4 build approval; public demo re-verified live (9 pages 200, content/SEO/schema/CTAs/forms/assets all confirmed); meets 10/10 richness.
+- decisions: PASS. Bridge is live; demo is full and working. New finding: en-dash title separator violates gate #5 — flag as trivial pre-eval fix, no loop.
+- next needs: deploy/builder swap WP title separator from `&#8211;` to `|` or `-`, then re-check a page `<title>`; deploy-test must confirm cross-origin AppFrame iframe renders (no CSP/X-Frame-Options block).
+- risks: en-dash gate must be closed before final-ceo/eval; Docker single point of failure but auto-restarted via services.json.
+
+VERDICT: pass

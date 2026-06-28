@@ -1,0 +1,527 @@
+# Researcher — Maryland Driveway Restore (Build-Prep)
+
+CEO decision locked: **Real WordPress site is PRIMARY**. Static HTML is fallback ONLY if Docker is unavailable on Surface.
+Demo URL: `https://api.michaelwegter.com/demos/maryland-driveway-restore/` (via Flask bridge)
+workSamples href: this bridge URL (NOT `import.meta.env.BASE_URL + "demos/..."`)
+
+---
+
+## 1. Docker Feasibility Gate (run FIRST via surface_run.py)
+
+Send this via `python scripts/surface_run.py --lang python` before any WP build step:
+
+```python
+import subprocess, sys
+r = subprocess.run(['docker', '--version'], capture_output=True, text=True)
+if r.returncode == 0:
+    print('DOCKER_OK:', r.stdout.strip())
+    rdc = subprocess.run(['docker', 'compose', 'version'], capture_output=True, text=True)
+    print('COMPOSE_OK:', rdc.returncode == 0, rdc.stdout.strip())
+else:
+    print('DOCKER_MISSING')
+    sys.exit(1)
+```
+
+**If DOCKER_MISSING**: fall back to static HTML plan (the 9-page HTML/CSS/JS build from planner.out is complete and correct; record which fallback condition tripped). Do not attempt WP path.
+
+---
+
+## 2. Port Assignment
+
+| Service | Port | Notes |
+|---------|------|-------|
+| WordPress container (Apache) | 8081 | bound to 127.0.0.1 only |
+| MySQL container | internal Docker network only | never expose to host |
+
+Use `127.0.0.1:8081` — not `0.0.0.0:8081` — to prevent external exposure.
+
+---
+
+## 3. Docker Compose Scaffold (create on Surface via runner)
+
+Write `docker-compose.yml` to `data/runner-workspace/mdr-wp/docker-compose.yml`:
+
+```yaml
+version: "3.8"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mdr-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: mdrroot2026
+      MYSQL_DATABASE: mdr_wp
+      MYSQL_USER: mdr_wp_user
+      MYSQL_PASSWORD: mdrwp2026!
+    volumes:
+      - mdr_mysql_data:/var/lib/mysql
+    networks:
+      - mdr-net
+
+  wordpress:
+    image: wordpress:php8.2-apache
+    container_name: mdr-wordpress
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "127.0.0.1:8081:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: mdr_wp_user
+      WORDPRESS_DB_PASSWORD: mdrwp2026!
+      WORDPRESS_DB_NAME: mdr_wp
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', 'https://api.michaelwegter.com/demos/maryland-driveway-restore');
+        define('WP_SITEURL', 'https://api.michaelwegter.com/demos/maryland-driveway-restore');
+        define('FORCE_SSL_ADMIN', false);
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+          $_SERVER['HTTPS'] = 'on';
+        } else {
+          $_SERVER['HTTPS'] = 'on'; // Always trust as HTTPS behind Flask/Cloudflare
+        }
+    volumes:
+      - mdr_wp_data:/var/www/html
+      - ./mdr-theme:/var/www/html/wp-content/themes/mdr-theme
+    networks:
+      - mdr-net
+
+volumes:
+  mdr_mysql_data:
+  mdr_wp_data:
+
+networks:
+  mdr-net:
+```
+
+Start with: `docker compose -f data/runner-workspace/mdr-wp/docker-compose.yml up -d`
+
+Wait ~20s for MySQL to be ready before running WP-CLI.
+
+---
+
+## 4. WP-CLI Setup
+
+Install WP-CLI inside the wordpress container (exec-based approach via Docker):
+
+```bash
+# Run via docker exec in the wordpress container
+docker exec mdr-wordpress bash -c "curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp"
+```
+
+Then all WP-CLI commands run as:
+```bash
+docker exec --user www-data mdr-wordpress wp --allow-root <subcommand>
+```
+
+---
+
+## 5. WordPress Core Installation
+
+```bash
+docker exec --user www-data mdr-wordpress wp core install \
+  --allow-root \
+  --url="https://api.michaelwegter.com/demos/maryland-driveway-restore" \
+  --title="Maryland Driveway Restore" \
+  --admin_user="mdr_admin" \
+  --admin_password="MDR_Restore_2026!" \
+  --admin_email="zweetztuph@gmail.com" \
+  --skip-email
+```
+
+**Demo client credentials** (for proposal + magic link fallback):
+- Admin user: `mdr_admin`
+- Admin password: `MDR_Restore_2026!`
+- WP admin URL: `https://api.michaelwegter.com/demos/maryland-driveway-restore/wp-admin/`
+
+---
+
+## 6. Plugin Stack — Exact Slugs for WP-CLI
+
+```bash
+# Install and activate in one pass
+docker exec --user www-data mdr-wordpress wp plugin install \
+  --allow-root \
+  rank-math-seo \
+  fluentform \
+  temporary-login-without-password \
+  --activate
+```
+
+Notes:
+- `rank-math-seo` — free version, full schema/sitemap/meta capability
+- `fluentform` — free version, handles estimate form + photo upload field
+- `temporary-login-without-password` — magic login link for client demo access
+- `google-site-kit` — optional (requires real GSC/GA4 property; install but don't configure in demo)
+- ShortPixel, UpdraftPlus, Wordfence — describe in proposal; skip install for demo (no API keys)
+
+Generate magic login link after installing temporary-login-without-password:
+```bash
+docker exec --user www-data mdr-wordpress wp tlwp create --allow-root \
+  --email="demo@marylanddrivewayrestore.com" \
+  --role="administrator" \
+  --expiry="3 days" \
+  --redirect="https://api.michaelwegter.com/demos/maryland-driveway-restore/wp-admin/"
+```
+Save the printed URL. Include in proposal cover letter: "Click here to log in and explore the dashboard — link expires in 3 days."
+
+---
+
+## 7. Custom Theme — mdr-theme (design-system faithful)
+
+Create theme at `data/runner-workspace/mdr-wp/mdr-theme/`. Volume-mounted into container at `/var/www/html/wp-content/themes/mdr-theme`.
+
+**style.css** (header only — WP theme identifier):
+```css
+/*
+Theme Name: MDR Theme
+Theme URI: https://api.michaelwegter.com/demos/maryland-driveway-restore
+Description: Custom theme for Maryland Driveway Restore demo
+Version: 1.0
+*/
+```
+
+**functions.php** — critical inclusions:
+```php
+<?php
+function mdr_enqueue() {
+    wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap', [], null);
+    wp_enqueue_style('mdr-style', get_template_directory_uri() . '/assets/css/main.css', [], '1.0');
+    wp_enqueue_script('img-comparison-slider', 'https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js', [], null, true);
+    wp_enqueue_script('mdr-main', get_template_directory_uri() . '/assets/js/main.js', [], '1.0', true);
+}
+add_action('wp_enqueue_scripts', 'mdr_enqueue');
+
+// Register nav menus
+register_nav_menus(['primary' => 'Primary Menu', 'footer' => 'Footer Menu']);
+
+// Add theme support
+add_theme_support('title-tag');
+add_theme_support('post-thumbnails');
+add_theme_support('html5', ['search-form', 'comment-form', 'gallery', 'caption']);
+add_theme_support('custom-logo');
+
+// JSON-LD schema output in <head>
+function mdr_schema_localbusiness() {
+    if (!is_front_page() && !is_page()) return;
+    $schema = [
+        "@context" => "https://schema.org",
+        "@type" => "HomeAndConstructionBusiness",
+        "name" => "Maryland Driveway Restore",
+        "url" => "https://api.michaelwegter.com/demos/maryland-driveway-restore",
+        "telephone" => "+14105550100",
+        "address" => [
+            "@type" => "PostalAddress",
+            "streetAddress" => "Annapolis, MD",
+            "addressLocality" => "Annapolis",
+            "addressRegion" => "MD",
+            "postalCode" => "21401",
+            "addressCountry" => "US"
+        ],
+        "areaServed" => ["Anne Arundel County", "Baltimore", "Howard County", "Prince George's County", "Montgomery County"],
+        "aggregateRating" => [
+            "@type" => "AggregateRating",
+            "ratingValue" => "4.9",
+            "reviewCount" => "47"
+        ],
+        "priceRange" => "\$\$"
+    ];
+    echo '<script type="application/ld+json">' . json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . '</script>' . "\n";
+}
+add_action('wp_head', 'mdr_schema_localbusiness');
+?>
+```
+
+**Design tokens (assets/css/main.css)**:
+```css
+:root {
+  --charcoal-deep:  #1A1D1A;
+  --charcoal-mid:   #2C302C;
+  --white:          #FFFFFF;
+  --off-white:      #F5F4F0;
+  --forest-green:   #2F5D3A;
+  --green-light:    #4A8C5C;
+  --gold-muted:     #C9A84C;
+  --font-heading:   'Playfair Display', Georgia, serif;
+  --font-body:      'Inter', system-ui, sans-serif;
+  --max-w:          1200px;
+  --section-pad:    80px 24px;
+  --section-pad-sm: 40px 16px;
+}
+/* Full styles: mobile-first, sticky CTA bar, before/after slider, nav, etc. */
+```
+
+---
+
+## 8. Page Creation (WP-CLI — all 9 pages)
+
+```bash
+# Delete default WP pages first
+docker exec --user www-data mdr-wordpress wp post delete --allow-root $(docker exec --user www-data mdr-wordpress wp post list --allow-root --post_type=page --format=ids) --force
+
+# Create all pages with slugs
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="Home" --post_name="home" --page-template="front-page.php"
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="Driveway Restoration" --post_name="driveway-restoration"
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="Pricing" --post_name="pricing"
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="Gallery" --post_name="gallery"
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="About" --post_name="about"
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="FAQ" --post_name="faq"
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="Contact / Free Estimate" --post_name="contact"
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="Service Areas" --post_name="service-areas"
+docker exec --user www-data mdr-wordpress wp post create --allow-root --post_type=page --post_status=publish --post_title="Free Estimate" --post_name="free-estimate"
+
+# Set homepage to static front page
+docker exec --user www-data mdr-wordpress wp option update --allow-root show_on_front page
+docker exec --user www-data mdr-wordpress wp option update --allow-root page_on_front $(docker exec --user www-data mdr-wordpress wp post list --allow-root --post_type=page --post_name=home --format=ids)
+
+# Set permalink structure (clean URLs)
+docker exec --user www-data mdr-wordpress wp rewrite structure --allow-root '/%postname%/' --hard
+docker exec --user www-data mdr-wordpress wp rewrite flush --allow-root --hard
+```
+
+---
+
+## 9. WP Theme Templates Required
+
+Theme folder structure:
+```
+mdr-theme/
+  style.css          # theme header
+  functions.php      # enqueues, schema, nav, theme support
+  index.php          # fallback
+  front-page.php     # homepage: hero before/after slider, benefits, process, pricing preview, gallery preview, testimonials, FAQ accordion, estimate form
+  page-driveway-restoration.php  # process, materials, restore-vs-replace cost compare, Service schema
+  page-pricing.php   # 3-tier pricing table, add-ons, CTA
+  page-gallery.php   # 16-24 image grid, lightbox, filter buttons
+  page-about.php     # mission, ethos, team, environmental commitment
+  page-faq.php       # accordion, FAQPage schema
+  page-contact.php   # Fluent Forms embed, Google Map iframe, response promise
+  page-service-areas.php  # MD county grid, embedded map, local keyword links
+  page-free-estimate.php  # QR target: before/after, 3-bullet value prop, CTAs, minimal form
+  header.php         # <head>, GA4 snippet (G-XXXXXXXX placeholder), sticky nav, sticky CTA bar
+  footer.php         # footer nav, address, copyright, internal links
+  assets/
+    css/main.css     # full design system
+    js/main.js       # before/after slider init, lightbox, FAQ accordion, mobile nav, GA4 events
+```
+
+Use `template_redirect` / `page-{slug}.php` WP template hierarchy — WP auto-selects `page-pricing.php` for the `/pricing/` page, etc. No custom page template header needed in PHP for this pattern to work.
+
+---
+
+## 10. Key Content (locked from prior research — use verbatim)
+
+**Homepage H1:** "Restore Your Driveway. Don't Replace It."
+**Homepage hero subhead:** "Every other driveway company in Maryland sells you a new driveway. We sell you the one you have, made better."
+**Primary CTAs (sticky bar + hero):** "Call Now" (tel:+14105550100) | "Text a Photo" (sms:+14105550100)
+**4-step process:** 1. Free Assessment → 2. Surface Preparation → 3. Premium Restoration → 4. Seal & Protect
+**Pricing anchor copy:** "A new driveway costs $3,000-$8,000. Our Complete Restore: $849."
+**Review section:** 4.9 stars / 47 reviews (placeholder). Sample review: "Looked brand new after one day. Saved us $4,000 vs a replacement quote." — Jennifer H., Annapolis MD
+**Service areas headline:** "Serving Annapolis and All of Central Maryland"
+**Covered counties:** Anne Arundel, Baltimore City, Baltimore County, Howard, Prince George's, Montgomery, Queen Anne's, Calvert, Charles
+**Free-estimate page H1:** "Get Your Free Estimate" — "No sales calls. Just an honest assessment and a fair quote."
+
+**Pricing tiers (planner-locked):**
+| Tier | Name | Includes | Price |
+|------|------|----------|-------|
+| Essential Restore | Power wash + 2-coat premium sealant | $299 |
+| Premium Restore | Power wash + crack fill + edge sealing + 2-coat sealant | $499 |
+| Complete Restore | Full assessment + all Premium + minor patching + UV topcoat + 3-year warranty | $849 |
+
+---
+
+## 11. Before/After Imagery (CSS filter approach — no real photos needed)
+
+Use a single high-quality residential asphalt driveway photo from Unsplash (no attribution required):
+- Recommended: https://unsplash.com/photos/cracked-asphalt-covers-the-entire-surface-MZgmNH6174Q (before)
+- Or any wide, clean residential driveway Unsplash photo
+
+**Before image:** `filter: grayscale(70%) brightness(1.35) contrast(1.1)` — makes it look faded/weathered
+**After image:** `filter: brightness(0.88) saturate(1.25) contrast(1.05)` — rich, deep, freshly sealed
+
+Use the `img-comparison-slider` web component (CDN: `https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js`):
+```html
+<img-comparison-slider>
+  <img slot="first" src="driveway.jpg" style="filter: grayscale(70%) brightness(1.35) contrast(1.1)" alt="Faded asphalt driveway before restoration">
+  <img slot="second" src="driveway.jpg" style="filter: brightness(0.88) saturate(1.25) contrast(1.05)" alt="Restored dark asphalt driveway after treatment">
+</img-comparison-slider>
+```
+
+---
+
+## 12. GA4 Event Hooks (include in main.js and header.php)
+
+```javascript
+// GA4 snippet: G-PLACEHOLDER (client provides real ID post-launch)
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PLACEHOLDER');
+
+// Track key events
+document.querySelectorAll('.cta-call').forEach(el => el.addEventListener('click', () => gtag('event', 'cta_click_call', {event_category: 'CTA'})));
+document.querySelectorAll('.cta-text').forEach(el => el.addEventListener('click', () => gtag('event', 'cta_click_text', {event_category: 'CTA'})));
+document.querySelector('.estimate-form')?.addEventListener('submit', () => gtag('event', 'form_submit', {event_category: 'Lead'}));
+document.querySelectorAll('.gallery-thumb').forEach(el => el.addEventListener('click', () => gtag('event', 'gallery_view', {event_category: 'Engagement'})));
+document.querySelector('[data-section="pricing"]')?.addEventListener('mouseenter', () => gtag('event', 'pricing_view', {event_category: 'Engagement'}), {once: true});
+```
+
+---
+
+## 13. SEO (Rank Math config via WP-CLI after plugin activation)
+
+```bash
+# Set unique titles/meta via Rank Math's post meta
+# For each page, set rank_math_title and rank_math_description via wp post meta
+
+# Homepage
+docker exec --user www-data mdr-wordpress wp post meta update --allow-root <homepage_id> rank_math_title "Maryland Driveway Restore | Premium Driveway Restoration Annapolis MD"
+docker exec --user www-data mdr-wordpress wp post meta update --allow-root <homepage_id> rank_math_description "Maryland's premium driveway restoration company. Restore your asphalt driveway for a fraction of replacement cost. Serving Annapolis, Baltimore, and all of Central Maryland. Get a free estimate today."
+
+# Repeat for each page (see planner.out for page-by-page keyword targets)
+```
+
+XML sitemap: Rank Math auto-generates at `https://api.michaelwegter.com/demos/maryland-driveway-restore/sitemap_index.xml` after activation — no manual step needed.
+
+---
+
+## 14. Flask Bridge Blueprint
+
+**File to create:** `mw-backend/maryland_driveway_wp_bridge_blueprint.py`
+
+```python
+import urllib.request, urllib.error
+from flask import Blueprint, request, Response
+
+PREFIX   = "demos/maryland-driveway-restore"
+UPSTREAM = "http://127.0.0.1:8081"
+
+bridge_bp = Blueprint("mdr_wp_bridge", __name__, url_prefix=f"/{PREFIX}")
+
+_HOP = {"connection","keep-alive","proxy-authenticate","proxy-authorization",
+        "te","trailers","transfer-encoding","upgrade","host","content-length","content-encoding"}
+_METHODS = ["GET","POST","PUT","PATCH","DELETE","OPTIONS"]
+
+@bridge_bp.route("/", defaults={"path": ""}, methods=_METHODS)
+@bridge_bp.route("/<path:path>", methods=_METHODS)
+def _proxy(path):
+    url = f"{UPSTREAM}/{path}"
+    if request.query_string:
+        url += "?" + request.query_string.decode()
+    data = request.get_data() or None
+    req = urllib.request.Request(url, data=data, method=request.method)
+    for k, v in request.headers:
+        if k.lower() not in _HOP:
+            req.add_header(k, v)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            body = r.read()
+            status = r.status
+            headers = [(k, v) for k, v in r.getheaders() if k.lower() not in _HOP]
+    except urllib.error.HTTPError as e:
+        body = e.read(); status = e.code
+        headers = [(k, v) for k, v in (e.headers.items() if e.headers else []) if k.lower() not in _HOP]
+    except Exception as e:
+        return Response(f"bridge upstream error: {e}", status=502, mimetype="text/plain")
+    return Response(body, status=status, headers=headers)
+```
+
+Register in `server.py`:
+```python
+from maryland_driveway_wp_bridge_blueprint import bridge_bp as mdr_wp_bridge_bp
+app.register_blueprint(mdr_wp_bridge_bp)
+```
+
+---
+
+## 15. Surface Service Registration
+
+Copy `scripts/surface_register_service.py`, set:
+```python
+NAME = "mdr-wordpress-docker"
+CMD  = "docker"
+ARGS = "compose -f data/runner-workspace/mdr-wp/docker-compose.yml up"
+CWD  = "."   # mw-backend folder root on Surface
+PORT = 8081
+```
+
+Note: `docker compose up` (without `-d`) keeps the process running, which is what `run-server.ps1` expects. The `-d` flag would exit immediately. Use foreground mode.
+
+Actually — `docker compose up` is a long-running blocking process. The launcher (run-server.ps1) expects to own it. Register it correctly; the launcher will restart it on crash and reboot.
+
+---
+
+## 16. workSamples.js Entry (UPDATED href — bridge URL, not static path)
+
+```js
+{
+  id: <next_id>,
+  slug: "maryland-driveway-restore",
+  title: "Maryland Driveway Restore",
+  description: "Full-featured WordPress demo for a premium Maryland driveway restoration company. Real WP dashboard login available. Mobile-first, 9 pages, before/after slider, Rank Math SEO, Fluent Forms lead capture.",
+  category: "Utility",
+  status: "live",
+  href: "https://api.michaelwegter.com/demos/maryland-driveway-restore/",
+  color: "#2F5D3A",
+  icon: "🛣️",
+  frameStyle: "walnut",
+  client: "Maryland Driveway Restore",
+  postingSummary: "Phase 1 WordPress site: 9 pages, mobile-first, local SEO, lead capture. Phase 2: 30-50 city pages, advanced SEO.",
+  builtFor: "Upwork RFP",
+  date: "2026-06-27",
+}
+```
+
+**IMPORTANT**: `href` is the live bridge URL (`api.michaelwegter.com/...`), NOT `import.meta.env.BASE_URL + "demos/..."`. AppFrame will iframe this URL. Update the AppFrame component if needed to allow cross-origin src from `api.michaelwegter.com`.
+
+---
+
+## 17. Fallback — Static HTML Path (if Docker fails)
+
+If the feasibility gate returns `DOCKER_MISSING`, immediately pivot to the static HTML build per the original planner.out. That plan is complete and unchanged:
+- 9-page static HTML/CSS/JS site in `../michaelwegter.com/public/demos/maryland-driveway-restore/`
+- Flask blueprint `maryland_driveway_blueprint.py` for form submissions
+- `img-comparison-slider` CDN, vanilla JS lightbox, GA4 hooks
+- Same design system, same content
+- `href: import.meta.env.BASE_URL + "demos/maryland-driveway-restore/"` (static path)
+Record `fallback_reason: docker_unavailable` in the build report.
+
+---
+
+## 18. Design Cues (confirmed locked from planner.out — no changes)
+
+```
+Palette:
+  --charcoal-deep:  #1A1D1A  (nav, footer, dark backgrounds)
+  --charcoal-mid:   #2C302C  (card backgrounds, alternate sections)
+  --white:          #FFFFFF
+  --off-white:      #F5F4F0  (light section backgrounds)
+  --forest-green:   #2F5D3A  (primary CTA, accents)
+  --green-light:    #4A8C5C  (hover states)
+  --gold-muted:     #C9A84C  (star ratings, premium badges)
+
+Typography:
+  Headings: Playfair Display (400/600/700) — Google Fonts
+  Body:     Inter (400/500/600/700) — Google Fonts
+  CTA text: Inter 600-700, slight letter-spacing, ALL CAPS for badges
+
+Layout:
+  Max width: 1200px centered
+  Section padding: 80px 24px desktop / 40px 16px mobile
+  Photography-led: full-bleed hero, large before/after slider
+  Whitespace-first: no cramming
+
+Mobile-first breakpoints:
+  Phone: 480px | Tablet: 768px
+  Sticky CTA bar: position:fixed bottom:0 (Call Now + Text a Photo), always visible on mobile
+  Touch targets: min 48x48px
+  Hamburger nav on mobile
+```
+
+---
+
+## handoff
+- produced: Build-prep research for real WP Docker demo on Surface — feasibility gate script, full Docker Compose scaffold, WP-CLI commands (core install, plugins, pages, permalinks), custom theme structure (`mdr-theme`), bridge blueprint code, Surface service registration config, magic login setup, design cues confirmed, content locked, fallback path documented
+- decisions: Primary = Docker WP at port 8081 behind Flask bridge at `demos/maryland-driveway-restore`; WP_SITEURL + WP_HOME = `https://api.michaelwegter.com/demos/maryland-driveway-restore`; magic login via `temporary-login-without-password` WP-CLI; workSamples href = bridge URL not static path; fallback = static HTML if `DOCKER_MISSING`
+- next needs: demo-builder runs feasibility gate first, then: compose up, WP-CLI core install + plugins + pages, build mdr-theme files, set Rank Math meta, generate magic login link; write bridge blueprint file; do NOT push yet (deploy step handles that)
+- risks: WP sub-path URL rewriting is handled by setting WP_HOME/WP_SITEURL in WORDPRESS_CONFIG_EXTRA but must verify no internal-IP redirects leak; `docker compose up` as foreground service registered correctly; Rank Math free tier may require WP admin UI setup for schema (cannot fully configure via WP-CLI); AppFrame may need cross-origin adjustment since `href` is `api.michaelwegter.com` not `michaelwegter.com`

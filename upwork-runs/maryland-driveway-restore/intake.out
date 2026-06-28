@@ -1,0 +1,40 @@
+# Intake — Maryland Driveway Restore
+
+## Brief Summary
+Structured `brief.json` created capturing all 9 explicit requirement categories:
+
+1. **8 Phase-1 Pages:** Homepage (with 9 sections), Driveway Restoration detail, Pricing, Gallery, About, FAQ, Contact/Free Estimate, Service Areas, plus dedicated /free-estimate QR landing page.
+2. **9 SEO Requirements:** Unique title/meta per page, H1–H3 hierarchy, LocalBusiness/FAQ/Service/Review schema, XML sitemap, image optimization, internal linking, GBP optimization, fast page speed.
+3. **8 Tech Stack Items:** WordPress (or static equivalent), Bricks Builder, Rank Math SEO, Fluent Forms, ShortPixel, Wordfence, UpdraftPlus, Google Site Kit—all noted with demo-equivalent implementations.
+4. **6 Mobile-First Requirements:** Phone-first design, sticky Call Now + Text a Photo, large touch targets, simple nav, fast loading, Core Web Vitals green.
+5. **6 Developer Questions (MUST answer point-by-point in cover letter):** Can you launch in 1 week? Stay in budget? Make it easy to edit? Optimize Core Web Vitals? Configure Analytics/Search Console/schema? Add Phase 2 without rebuild?
+6. **Proposal Requirements:** Fixed Phase-1 price ($850–$1,200 with Rocket hosting first couple months), separate Phase-2 estimate, timeline, portfolio (fortherecordmn.com cited), references, post-launch support.
+7. **Priority Keywords:** 7 Maryland/Annapolis driveway-restoration keywords, emphasis on "near me" + local intent.
+8. **Design Direction:** Premium modern (Apple/RH/luxury home builder aesthetic), deep charcoal + white + forest green, large before/after photography, generous whitespace. NOT michaelwegter.com's palette.
+9. **Phase 2 Scope:** 30–50 city landing pages, learning center, neighborhood pages, video library, interactive calculator, case studies, expanded gallery, advanced local SEO (framed as ongoing multi-state partnership).
+
+## Build Target Confirmed (Per Orchestrator)
+- Bespoke static premium demo in `public/demos/maryland-driveway-restore/`, served at michaelwegter.com/demos/maryland-driveway-restore/
+- All 8 pages + /free-estimate QR page, mobile-first, real Flask-backed estimate form for lead capture
+- No separate WordPress Docker tunnel (violates tunnel-is-sacred rule); real WP Docker is opt-in CEO-gated stretch via Flask bridge only
+- Feature richness 10/10: before/after slider, photo-upload form, embedded schema (LocalBusiness/Service/FAQ/Review), GA4 event hooks, service-area map, Lighthouse 90+
+
+## Budget & Timeline
+- Phase 1: $850–$1,200 fixed price, Rocket hosting included (first couple months)
+- Launch: 7 days
+- Phase 2: Separately quoted, framed as ongoing engagement (30–50 city pages, learning center, video, interactive calculator, case studies, advanced SEO)
+
+## Key Proof Point
+Michael's fortherecordmn.com work (SEO + Google Analytics implementation) to be cited in proposal. Researcher to gather concrete details.
+
+## Checklist for Downstream Steps
+- **Researcher:** Verify fortherecordmn.com proof; gather competitor visual conventions; source royalty-free/generated before/after asphalt imagery.
+- **Planner:** Lock design system (charcoal/white/forest-green, serif/sans, whitespace rules); map every brief requirement to a feature/claim.
+- **Demo-Builder:** Render all 8 pages + /free-estimate landing, sticky mobile CTAs, real estimate form (Flask backend), embedded schema, GA4 hooks, service map, before/after slider, Lighthouse 90+.
+- **Proposal-Writer:** Answer all 6 developer questions explicitly; fixed Phase-1 price + separate Phase-2 estimate; cite fortherecordmn.com; include demo link in cover letter and deck; Michael's voice, no dashes.
+
+## handoff
+- produced: comprehensive brief.json with all 9 explicit requirement categories (pages, SEO, tech, mobile, dev Qs, proposal asks, keywords, design, Phase 2), plus budget/timeline/proof/build-target confirmation.
+- decisions: build target = bespoke static premium demo (8 pages + /free-estimate QR page + Flask-backed form + schema + GA4 + service map); feature richness 10/10; Phase 2 opt-in CEO-gated WP-Docker-via-bridge only; fortherecordmn.com proof required.
+- next needs: researcher to validate fortherecordmn.com and gather SEO/GA details; planner to lock design system (charcoal/white/forest-green palette, serif/sans pairing, whitespace, luxury aesthetic); demo-builder to execute full 8-page build + QR page + real form.
+- risks: fortherecordmn.com details unconfirmed (researcher owns); client may expect real WordPress login (addressed in proposal description; static demo carries lead flow); Windows Docker complexity is optional stretch, not critical path.

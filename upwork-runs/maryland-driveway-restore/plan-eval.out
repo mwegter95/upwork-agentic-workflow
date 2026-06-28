@@ -1,0 +1,64 @@
+# Plan Eval — Maryland Driveway Restore
+
+## Rubric Scoring
+
+### 1. All Requirements Covered?
+
+**Phase 1 pages (8 + QR = 9):** ✓ All 9 pages specified with section-level detail.
+**Mobile-first (sticky CTAs, hamburger nav, 48px targets, lazy load):** ✓
+**Before/after hero slider:** ✓ img-comparison-slider CDN + vanilla JS fallback (~50 LOC)
+**Estimate form + photo upload -> Flask POST:** ✓
+**Schema (LocalBusiness, FAQPage, Service, AggregateRating, BreadcrumbList):** ✓ 5 JSON-LD types, all 4 brief-required types covered
+**GA4 event hooks (5 named gtag events):** ✓
+**XML sitemap:** ✓
+**Unique title/meta per page, H1-H3 hierarchy, ALT text, internal linking:** ✓
+**Service area map:** ✓ Google Maps iframe + SVG county fallback
+**Priority keywords in content/meta:** ✓
+**QR /free-estimate landing page:** ✓ distinct page, not homepage
+**6 developer questions answered:** ✓ cover letter
+**Phase 1 fixed price $1,100 + Rocket 2 months:** ✓
+**Phase 2 estimate $3,500-$6,500 itemized:** ✓
+**fortherecordmn.com proof (deliverables framing):** ✓ approved, no private metrics cited
+**WP/Bricks/Rank Math/plugin stack:** ✓ described in proposal
+**7-day timeline:** ✓
+**Premium Apple/RH aesthetic, charcoal/white/forest-green:** ✓ exact hex match to brief (#1A1D1A, #2F5D3A, #F5F4F0)
+
+**Gaps (minor — not fail-level):**
+
+1. **GSC verification not in demo.** Brief §2 lists "Google Search Console" as Phase 1 scope. Demo has no `<meta name="google-site-verification">` placeholder in `<head>`. Demo-builder should add this placeholder to demonstrate intent. → Note to demo-builder.
+
+2. **Post-launch support not in proposal package.** Brief §14 explicitly requires "post-launch support" in proposal. Plan's proposal table (cover letter / one-pager / deck) omits this. Proposal-writer must add a "First 30 days: included bug fixes + analytics review" bullet to cover letter. → Note to proposal-writer.
+
+3. **No explicit testing checklist.** Plan mentions "Lighthouse 90+" as a target but defines no acceptance test sequence (console error check, form POST test, mobile viewport, slider drag). At 10/10 richness this is a real need. Demo-builder should self-test: open in browser, check console, POST form, confirm Flask 200, run Lighthouse, test mobile breakpoint. Acceptable to not add it to plan — flagging for demo-builder.
+
+4. **Real WP request deferred.** User said "I want to create a real wordpress website hosted on my backend and at my michaelwegter.com domain." Plan correctly identifies this as technically impossible on GitHub Pages (static host only) and routes to: (a) static demo as primary, (b) Docker WP as CEO-gated stretch. The cover letter MUST explicitly explain the architecture: demo at `michaelwegter.com/demos/maryland-driveway-restore/` is the proof-of-skill; actual Phase 1 delivery is WordPress on Rocket.net as specified. This framing is critical so the client isn't confused. The plan's proposal section needs to address "easy for owner to edit" via WP dashboard (yes, the actual WP delivery). This is addressed in the 6 dev questions — acceptable.
+
+### 2. Right Technologies?
+Static HTML/CSS/JS for demo (GitHub Pages constraint): ✓ correct
+img-comparison-slider CDN + vanilla JS fallback: ✓
+Flask SQLite for real lead capture: ✓
+Playfair Display + Inter: ✓ appropriate for luxury home services
+Palette: exact match to brief (#1A1D1A, #2F5D3A, #F5F4F0): ✓
+
+### 3. Testing Approach?
+Implicit only (Lighthouse 90+ target mentioned). No explicit test checklist in plan. Gaps noted above. Not fail-level — demo-builder can self-test without a formal plan section.
+
+### 4. Scope Feasible for Richness 10?
+9 pages + Flask + drag slider + gallery lightbox + service map + 5 schema types + GA4 + sitemap = ambitious, buildable as static HTML. No single feature is technically risky (img-comparison-slider has fallback, Flask backend is simple, gallery lightbox is vanilla JS). Feasible within build budget. ✓
+
+### 5. Design Direction Fit for Industry?
+Premium residential home services + "Restore, Don't Replace" positioning. Charcoal/forest-green/white palette is exact brief match. Playfair Display (luxury serif editorial weight) + Inter (clean legible sans) is Apple/Restoration Hardware-appropriate. Large before/after photography, generous whitespace, minimal clutter — all aligned. No michaelwegter.com palette leak. ✓
+
+---
+
+## Summary
+
+Plan is complete, research-integrated, and buildable. All Phase 1 hard requirements are covered. Three minor gaps (GSC placeholder, post-launch support copy, no formal test checklist) are pass-through notes for downstream steps — none require replanning. Competitive differentiation is sharp. Pricing is locked and market-researched. Traceability matrix covers all brief items.
+
+## handoff
+- produced: plan-eval.out — rubric score, 4 minor gaps identified, VERDICT: pass
+- decisions: plan passes with notes; no replanning needed; gaps are forward-directed to demo-builder and proposal-writer
+- next needs: (1) demo-builder: add `<meta name="google-site-verification" content="PLACEHOLDER">` to every page `<head>`, self-test console/form/Lighthouse before marking done; (2) proposal-writer: add post-launch support section (first 30 days) to cover letter, clearly explain WP delivery vs. static demo architecture
+- risks: img-comparison-slider CDN availability (fallback plan in place); Docker WP stretch not on critical path (correct); client may ask about WP login — cover letter must preempt this with delivery architecture explanation
+
+VERDICT: pass

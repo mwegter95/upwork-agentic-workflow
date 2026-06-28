@@ -1,0 +1,36 @@
+# CEO Review (Plan) — Maryland Driveway Restore
+
+Verified planner.out + plan-eval.out against brief + user notes + target richness 10/10.
+
+## What's strong (keep)
+- 9-page architecture, mobile-first sticky CTAs, before/after slider, schema set, GA4 hooks, sitemap, internal linking: all complete and traceable.
+- Design system is exact brief match (charcoal/forest-green/off-white, Playfair + Inter), no portfolio-palette leak.
+- Pricing locked & market-researched; competitor gap analysis sharp; fortherecordmn.com proof framing is correct (no private metrics).
+- Eval's 3 forward notes (GSC meta placeholder, post-launch-support copy, self-test checklist) are valid pass-throughs.
+
+## The blocking problem: primary deliverable contradicts explicit user direction
+The user said, twice and with implementation detail (Option 3: Docker + WP-CLI + Cloudflare tunnel, temporary-login magic link): **"For this I want to create a real wordpress website hosted on my backend and at my michaelwegter.com domain."** This is a WordPress RFP (Bricks, Rank Math, Fluent Forms, Site Kit) where the single most persuasive demo is handing the client a **real WP dashboard login**.
+
+The plan demotes the real WP build to a "CEO-gated stretch" and ships a static HTML lookalike as primary. The eval waved this off as "impossible on GitHub Pages" — but that misses the point: GitHub Pages is irrelevant here. CLAUDE.md's Surface runner exists precisely to stand up real backends (Docker WP container, WP-CLI config, exposed via a Flask **bridge** blueprint at `/demos/maryland-driveway-restore/...` — NOT a separate tunnel ingress, per the sacred-tunnel rule). At 10/10 richness, against an explicit user request, a static mockup of a WordPress site is an under-delivery, not a winning demo.
+
+As CEO I am the gate the planner deferred to. Decision: **the real WordPress demo is the PRIMARY target.** Static HTML becomes the fallback only if Docker genuinely cannot run on the Surface.
+
+## REDIRECT
+REDIRECT: planner
+NOTE: Elevate the REAL WordPress site to the primary deliverable; demote the static HTML build to a fallback used ONLY if Docker proves infeasible on the Surface. Re-plan the primary path concretely:
+  1. FIRST build step is a feasibility gate: via scripts/surface_run.py (--lang python), confirm Docker is available/installable on the Surface. If it cannot run, fall back to the already-planned static build (which is otherwise good as-is) and record which fallback condition tripped in plan.md.
+  2. Stand up a WordPress + MySQL Docker container on the Surface; configure via WP-CLI (wp core install with defined admin creds — record them). Build the 9 pages from the existing page architecture/content (homepage, driveway-restoration, pricing, gallery, about, faq, contact, service-areas, free-estimate).
+  3. Install/activate the brief's plugin stack where free (Rank Math SEO, Fluent Forms, Site Kit; a free Bricks-equivalent or note Bricks as paid/described). Apply the locked design system (charcoal #1A1D1A / forest-green #2F5D3A / off-white #F5F4F0, Playfair Display + Inter), the before/after hero, schema (LocalBusiness/Service/FAQPage/AggregateRating/BreadcrumbList), GA4 hooks, XML sitemap, unique titles/meta, ALT text, internal linking — same requirement coverage already in the plan, delivered through WP.
+  4. Install "Temporary Login Without Password" and generate an expiring magic-login link so BOTH the Upwork client and deploy-test can enter the WP dashboard.
+  5. Expose publicly ONLY via a Flask bridge blueprint (copy bridge_blueprint_template.py; PREFIX=/demos/maryland-driveway-restore, UPSTREAM=http://127.0.0.1:<port>); register the container as a service via surface_register_service.py so run-server.ps1 owns/restarts it; do NOT touch ~/.cloudflared/config.yml.
+  6. Note the WP sub-path URL-rewriting risk (WP_HOME/WP_SITEURL must match the bridged sub-path) and the plan to handle it.
+  7. Update plan.md scope fence, traceability matrix, and proposal package so the cover letter/deck lead with "a real, login-able WordPress site I already built for you" (this directly answers the client's "will the site be easy for the owner to edit?" by letting them try the dashboard) — keep fortherecordmn.com SEO/GA proof framing unchanged.
+Keep everything else in the current plan (design, pricing, pages, competitive positioning, proof framing) intact.
+
+## handoff
+- produced: plan-ceo.out — plan is strong but primary-build choice contradicts the user's explicit real-WordPress request; redirecting to planner.
+- decisions: REAL WP (Surface Docker + WP-CLI + Flask bridge + temporary-login magic link) is now PRIMARY; static HTML is fallback only behind a Docker-feasibility gate; tunnel config untouched; bridge (not ingress) for exposure.
+- next needs: planner re-plans the WP-primary path per the 7-point NOTE, then engine resumes at plan-ceo for re-review.
+- risks: Docker unconfirmed on Surface (mitigated by step-1 feasibility gate + static fallback); WP sub-path URL rewriting; Bricks is paid (use free equivalent or describe-only); build-budget pressure from container setup.
+
+VERDICT: fail

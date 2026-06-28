@@ -1,0 +1,57 @@
+# Deploy — Maryland Driveway Restore
+
+## Actions taken
+
+### mw-backend (2 commits)
+1. `maryland_driveway_wp_bridge_blueprint.py` + `server.py` — bridge registered.
+   - Commit `8bddc2a` pushed; auto-deploy restarted Flask ~30s later.
+2. Gzip passthrough bug fixed — bridge was forwarding `Accept-Encoding: gzip` from browser
+   to WordPress, WP responded compressed, bridge stripped `Content-Encoding` header (hop-by-hop),
+   client received binary garbage. Fix: added `"accept-encoding"` to `_HOP` so upstream never
+   compresses. Commit `347356a` pushed; second Flask restart confirmed.
+
+### michaelwegter.com (1 commit, rebased)
+- `src/data/workSamples.js` — id:17 `maryland-driveway-restore` entry added.
+- GH Pages build: **completed / success** (run `28309630993`, 1m 4s).
+
+---
+
+## Live verification
+
+| Check | Result |
+|---|---|
+| `api.michaelwegter.com/health` | `{"status":"ok","version":"1.0.0"}` |
+| Bridge homepage HTML | 45 191 bytes, correct title, 73× "Driveway", 2× "sticky" |
+| All 9 WP pages + wp-login via bridge | **10/10 → 200** |
+| X-Frame-Options on bridge responses | None (iframe will load) |
+| CSP blocking | None |
+| `michaelwegter.com` site root | 200 |
+| GH Pages workflow | completed / success |
+| workSamples entry in live JS bundle | confirmed (`maryland-driveway-restore` + `Maryland Driveway`) |
+
+### Page-by-page 200 confirmation
+```
+200 /demos/maryland-driveway-restore/
+200 /demos/maryland-driveway-restore/driveway-restoration/
+200 /demos/maryland-driveway-restore/pricing/
+200 /demos/maryland-driveway-restore/gallery/
+200 /demos/maryland-driveway-restore/about/
+200 /demos/maryland-driveway-restore/faq/
+200 /demos/maryland-driveway-restore/contact/
+200 /demos/maryland-driveway-restore/service-areas/
+200 /demos/maryland-driveway-restore/free-estimate/
+200 /demos/maryland-driveway-restore/wp-login.php
+```
+
+---
+
+## Deployed URLs
+- **Demo:** `https://api.michaelwegter.com/demos/maryland-driveway-restore/`
+- **Portfolio frame:** `https://michaelwegter.com/work-samples/maryland-driveway-restore`
+- **WP admin:** `https://api.michaelwegter.com/demos/maryland-driveway-restore/wp-login.php`
+
+## handoff
+- produced: both repos pushed and live; bridge gzip bug fixed; all 10 routes 200; GH Pages rebuilt with workSamples id:17.
+- decisions: gzip fix via `accept-encoding` in hop-by-hop (prevents upstream compression, no body decoding needed); CORS header from WP is benign for iframes.
+- next needs: deploy-test — run Playwright against live URLs; confirm iframe renders in AppFrame at `/work-samples/maryland-driveway-restore`; test WP admin login (admin/admin@123 or demo-user); verify sticky CTAs, before/after slider, pricing, gallery lightbox, FAQ accordion, and estimate form submission all function.
+- risks: CORS allow-origin shows `http://localhost:3000` (WP misconfigured origin); safe for iframe nav but any JS fetch from michaelwegter.com to the bridge would be blocked — deploy-test should note if AppFrame makes fetch calls; Docker container is single point of failure but registered in services.json (auto-restart).

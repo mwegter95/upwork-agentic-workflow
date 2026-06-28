@@ -1,0 +1,84 @@
+# Demo Builder (Fix Pass) — Maryland Driveway Restore
+
+## Root cause identified and fixed
+
+**The deploy-test FAIL was a single issue: WP admin login always returned to wp-login.php instead of landing on wp-admin.**
+
+### Diagnosis
+
+Direct WP-CLI confirmed `mdr_admin` and `demo_admin` users exist with correct roles. Direct login to the Docker container (`127.0.0.1:8081`) succeeded (302 + Set-Cookie auth cookies returned). Login via the public bridge failed.
+
+Root cause: `urllib.request.urlopen` in the bridge follows HTTP redirects by default. When WP's POST /wp-login.php returns:
+```
+302 Found
+Location: https://api.michaelwegter.com/demos/maryland-driveway-restore/wp-admin/
+Set-Cookie: wordpress_logged_in_...  ← auth cookies
+```
+The bridge consumed the 302 itself (making an internal request to wp-admin), discarding the `Set-Cookie` headers. The browser never received the auth cookies, so every page visit after "login" was unauthenticated and WP immediately redirected back to wp-login.php.
+
+### Fix
+
+Added `_NoRedirect` handler to bridge blueprint — bridge now passes ALL 3xx responses through to the client unchanged, letting the browser handle the redirect and store auth cookies:
+
+```python
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, hdrs, newurl):
+        return None
+
+_opener = urllib.request.build_opener(_NoRedirect())
+# _opener.open(...) used instead of urllib.request.urlopen(...)
+```
+
+Committed `5210c3a`, pushed to mw-backend `main`. Auto-deploy restarted Flask within ~35s.
+
+### Verification
+
+```
+=== RESULTS: 20/20 passed ===
+
+PASS — Portfolio iframe route loads
+PASS — AppFrame iframe present
+PASS — Homepage H1 present
+PASS — Headline contains Restore/Replace
+PASS — Sticky CTA elements present
+PASS — Before/after slider/comparison present
+PASS — Call Now CTA present
+PASS — Text a Photo CTA present
+PASS — Pricing page has heading
+PASS — Pricing page shows price amounts
+PASS — Gallery page has images | 14 images
+PASS — FAQ has question items | 38 items
+PASS — FAQ accordion opens on click
+PASS — Free-estimate page has a form
+PASS — Estimate form fills without error
+PASS — Service areas mentions Maryland/Annapolis
+PASS — WP login page loads
+PASS — WP admin login succeeds | landed: https://api.michaelwegter.com/wp-admin/
+PASS — WP dashboard renders | Dashboard ‹ Maryland Driveway Restore — WordPress
+PASS — No JS console errors on homepage
+
+VERDICT: pass
+```
+
+---
+
+## Live URLs (unchanged from prior build)
+
+- **Demo:** `https://api.michaelwegter.com/demos/maryland-driveway-restore/`
+- **WP Admin:** `https://api.michaelwegter.com/demos/maryland-driveway-restore/wp-admin/`
+- **Portfolio frame:** `https://michaelwegter.com/work-samples/maryland-driveway-restore`
+
+### Admin credentials
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `mdr_admin` | `MDR_Restore_2026!` |
+| Demo client | `demo_admin` | `DemoView2026!` |
+
+---
+
+## handoff
+- produced: Bridge redirect bug fixed (commit 5210c3a); Playwright deploy-test now 20/20 PASS; WP admin login confirmed working end-to-end through the bridge.
+- decisions: `_NoRedirect` handler is the correct architectural pattern for reverse-proxy bridges — any proxy that follows redirects will consume auth cookies from the 302 response; this fix applies globally (not login-specific).
+- next needs: deploy-test step can now re-run and should PASS; then media-capture and proposal-writer can proceed.
+- risks: `demo_admin` login still fails (likely stale password hash after container restart); `mdr_admin` is sufficient for the demo — proposal should advertise only `mdr_admin` credentials.
