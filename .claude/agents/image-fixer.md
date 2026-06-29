@@ -17,10 +17,16 @@ report and stop (no changes).
   the reference. Use keyword-matched free sources (no API key needed):
   - `https://loremflickr.com/<W>/<H>/<keywords>` (keyword-matched CC photos), or
   - `https://picsum.photos/seed/<slug-word>/<W>/<H>` (stable, generic).
-  Pick `<keywords>` from the analyzer's "should show". Match the original's
-  dimensions/aspect. Download with `curl -L -o <path> "<url>"` (Bash), verify the
-  file is a real non-empty image, and point the markup at the local file (don't
-  hotlink). Reuse the existing filename or add a clear new one.
+  Pick `<keywords>` from the analyzer's exact attributes. Match the original's
+  dimensions/aspect. Download with `curl -L -o <path> "<url>"` (Bash).
+  The replacement must match EVERY attribute the analyzer listed — garment type,
+  sleeve length, EXACT color, count, etc. Free stock is approximate, so after each
+  download, `Read` the file and verify each attribute (long-sleeve really long, black
+  really black). If any attribute is off, refine the keywords and re-fetch (try a few
+  times / different seeds). Only when it matches all attributes, point the markup at
+  the local file (don't hotlink). If no free photo can match every attribute, use the
+  closest and record the exact residual mismatch in your report — never silently ship
+  an image that contradicts its label.
 - **Cropped / distorted → fix with CSS/markup, not a new image.** Add
   `object-fit: cover` + a fixed `aspect-ratio`/height, set a sensible
   `object-position`, or fix the container — so it displays cleanly.

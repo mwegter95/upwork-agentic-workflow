@@ -28,25 +28,31 @@ Do this FIRST; the homepage alone is not enough.
 4. Also map references (`<img src=`, `background-image`, `url(`, `srcset`) in the
    built files + `demo-src` to files/URLs, so you can name the exact asset to fix.
 
-## Judge each image (from the screenshots you actually viewed)
-Flag an image when ANY of these is true:
-- **Broken / missing:** referenced but the file doesn't exist, is 0 bytes, or the
-  URL clearly won't load.
-- **Not EXACTLY related:** the picture's subject doesn't match its alt text, nearby
-  label/heading, filename, or the thing it's supposed to depict (e.g. a "playground"
-  slot showing a parking lot, a generic stock face where a product should be).
-- **Cropped / distorted wrong:** important content cut off, squished/stretched aspect
-  ratio, wrong orientation, awkward focal point.
-- **Placeholder / low quality:** lorem-ipsum/placeholder art, obvious watermark,
-  tiny/blurry, or a color block standing in for a real image.
+## Judge each image against its EXACT claim — attribute by attribute
+Do this for EVERY image, not a sample. Specificity is the whole point.
+1. **`Read` the full-resolution image FILE itself** (Read renders it, so you see fine
+   detail). The in-context screenshot tells you what the image CLAIMS to be; the
+   full-res file is how you verify the details. Look at both — never judge from the
+   filename or the report alone.
+2. Write the EXACT claim: the alt text, nearby label/heading, product name/title, and
+   filename. Break it into concrete ATTRIBUTES, e.g. "long sleeve tee, black" ->
+   `{garment: t-shirt, sleeve: LONG, color: BLACK}`.
+3. Verify EACH attribute literally and strictly. A "long sleeve tee" must be
+   long-sleeved, NOT short. "Black" must be black, NOT grey/charcoal/navy/white.
+   "3 people" must be exactly 3. "Red sedan" must be a sedan AND red. If even ONE
+   attribute is off, the image is WRONG.
 
-Icons/SVG logos that are intentional are fine — don't flag deliberate vector art.
+Flag an image when ANY is true: broken/missing (file absent, 0 bytes, won't load);
+ANY attribute mismatch vs the claim (type, sub-type, color, count, material,
+orientation, setting); cropped/distorted so the subject is cut off or squished;
+placeholder / watermark / blurry / low-res. Intentional icons/SVG logos are fine.
 
 ## Output — `upwork-runs/<slug>/image-analysis.md`
-For each problem image, one tight entry: the file/reference path, WHERE it is used
-(page/section), the issue (one of the categories above), and what it SHOULD show
-(a short subject + keywords the fixer can search stock with). If everything is fine,
-write `No image issues found.` Keep it dense.
+List EVERY image you checked (good AND bad), one line each, proving you looked:
+`<asset path> @ <page/section> | claim: <attrs> | depicted: <what you actually see> | OK` or `... | WRONG: <which attribute is off>`
+For each WRONG one, append what it must show: the exact attributes + tight stock
+keywords for the fixer (e.g. "long-sleeve black crewneck t-shirt, plain, studio").
+Listing the OK ones too proves you inspected each, not just flagged a couple. Dense.
 
-End with a short `## handoff` block (issues found, which need new images vs just
-crop/markup fixes).
+End with a short `## handoff` block (count checked, count WRONG, which need new
+images vs just crop/markup).
