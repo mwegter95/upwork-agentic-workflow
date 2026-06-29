@@ -1,0 +1,59 @@
+# Orchestrator — Orschell Excavating e-commerce full-stack
+
+## Run identity
+- slug: `orschell-excavating-e-commerce-full`
+- demo URL (local): `../michaelwegter.com/public/demos/orschell-excavating-e-commerce-full/`
+- live demo: `https://michaelwegter.com/demos/orschell-excavating-e-commerce-full/`
+- work-sample route: `https://michaelwegter.com/work-samples/orschell-excavating-e-commerce-full`
+- run dir: `upwork-runs/orschell-excavating-e-commerce-full/`
+- github handle: `mwegter95` (confirmed via gh auth)
+
+## Posting in one line
+Fixed-price $1,700 backend build for an *existing* e-commerce site: auth/accounts, product catalog mgmt, inventory tracking, order processing, payment gateway, REST API, perf + DB optimization. Required stack: **Node.js + TypeScript + PostgreSQL + REST APIs**. Client is Orschell Excavating (West Harrison, IN — excavating/heavy-equipment contractor). Expert (5+ yrs). Asks for similar-project examples + timeline + approach.
+
+## Michael's directive (authoritative)
+Build a **fully functional frontend + backend** e-commerce store covering ALL specified functionalities, in **their exact stack** (Node + TS + Postgres + REST) — Michael's specialty. Must include a **CMS / admin** with catalog editing capabilities + inventory + order management. **Payment gateway is MOCKED**, and explicitly labeled as mocked in the UI. **Feature richness = 10/10**: production-quality, several genuinely working features, real persistence, polish.
+
+## What "done" looks like for this run (scope spine — pass to planner)
+Map every posting requirement to a working feature; nothing should be deck-only.
+
+| Posting requirement | Demo realization |
+|---|---|
+| User auth & account mgmt | Real signup/login (JWT), account page, order history; seeded demo customer + admin creds |
+| Product catalog management | Admin CMS: create/edit/delete products, categories, images, pricing, specs |
+| Inventory tracking | Stock counts decremented on order; low-stock flags; admin stock edits |
+| Order processing workflows | Cart → checkout → order; admin order status pipeline (pending→processing→shipped→delivered) |
+| Payment gateway integration | **Mocked** checkout (clearly labeled "Demo / mock payment"), fake card form, success/decline simulation |
+| REST API development | Documented REST endpoints (products, cart, orders, auth, admin) — the real backend |
+| Performance optimization | Pagination, indexed queries, caching where cheap; note in deck |
+| Database improvements | Proper Postgres schema w/ FKs, indexes, migrations/seed |
+
+## Architecture decision (recommended to planner/demo-builder)
+This warrants a **real backend**, not mock data — it is the whole point of the posting. Two viable hosting paths in this workflow:
+
+1. **Node/TS + Postgres service on the Surface** (matches their exact stack — strongest signal) exposed via a Flask **bridge blueprint** at `/demos/orschell-excavating-e-commerce-full/api/...`. Gotchas already known: use `node:sqlite` only if Postgres unavailable — but client explicitly wants **Postgres**, so stand up Postgres on the Surface (or an embedded pg) and keep the TS/Node service. Register the service via `surface_register_service.py`; never block on long installs in `/run/exec`. Use Node 22+ global `fetch`; no manual `Accept-Encoding`.
+2. Fallback only if Surface Postgres proves infeasible in-budget: Express+TS service backed by `node:sqlite` with a Postgres-shaped schema, and **call out in the deck that production target is Postgres** (the code/SQL is portable). Decide in planner; record which in plan.md.
+
+Prefer path 1 (real Postgres) because the client named Postgres explicitly and Michael wants to showcase exactly their stack. Frontend can be a self-contained app (React/htm via CDN or small Vite build) in `public/demos/<slug>/` calling the bridged REST API.
+
+## Design direction seed (researcher/planner refine)
+NOT michaelwegter.com's look. Orschell is an **excavating / heavy civil contractor**; the store likely sells parts, attachments, aggregate/materials, or branded gear. Industrial-rugged palette (steel grey, safety-amber/orange, asphalt black, hi-vis accents), strong sans-serif (e.g. industrial/condensed display + clean body), heavy-equipment imagery, utilitarian dense product grid. Make it look like a real contractor-supply storefront. Admin CMS = clean utilitarian dashboard.
+
+## Plan of attack (pipeline order — use with-deploy + with-ceo)
+intake → planner → **CEO** → researcher → demo-builder → deploy → deploy-test → media-capture → proposal-writer → evaluator → prompt-optimizer.
+- Backend is real: demo-builder builds+registers the Surface service + writes the bridge blueprint (no push); deploy pushes the bridge; deploy-test exercises the LIVE bridged API incl. login + order flow.
+- Seed an **admin** account and a **demo customer** account; record creds in the build report so deploy-test and the live demo can log in.
+
+## Quality gates to enforce (evaluator)
+- All 8 posting requirements addressed in cover letter AND present in demo/deck.
+- Demo builds, no console errors first paint; `/demos/<slug>/` resolves locally; live `/work-samples/<slug>` 200.
+- Demo link in BOTH cover letter and deck. Mock-payment clearly labeled.
+- Cohesive bespoke industrial design; **zero em/en dashes** in all prose.
+- Cover letter includes timeline + approach + similar-project examples (posting explicitly asks).
+- GitHub URLs use `mwegter95`.
+
+## handoff
+- produced: run identity (slug/URLs), requirement→feature traceability table, architecture recommendation (real Node/TS+Postgres on Surface via Flask bridge), industrial design seed, pipeline order + quality gates.
+- decisions: feature richness 10; real backend in client's exact stack (Node+TS+Postgres); payment MOCKED+labeled; design = rugged industrial contractor-supply storefront, NOT portfolio look; full admin CMS required.
+- next needs (intake): parse the 8 explicit requirements + required stack + "examples/timeline/approach" ask into brief.json; flag mock-payment and admin-CMS as hard requirements.
+- risks: Surface Postgres setup cost/time (have node:sqlite fallback with pg-shaped schema, note in deck); ~12-file/3-min build caps vs full storefront+admin scope — planner must fence hero (storefront+checkout) vs supporting (admin CMS, inventory) tightly.

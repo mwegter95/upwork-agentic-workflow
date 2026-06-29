@@ -1,0 +1,32 @@
+# Final CEO Sign-off — Maryland Driveway Restore
+
+## Verification performed (not assumed)
+- **Live demo:** `https://api.michaelwegter.com/demos/maryland-driveway-restore/` → HTTP 200.
+- **WP login URL:** `.../wp-login.php` → 200 (root `/wp-login.php` and `/wp-admin/` 404; the slug-prefixed bridge path is the correct one, and that is exactly what the cover letter advertises). No URL mismatch.
+- **Credentials (the key risk):** Tested both. `demo_admin / DemoView2026!` (the advertised cover-letter/one-pager credential) DOES authenticate — `wordpress_logged_in` cookie is set on login POST. `mdr_admin / MDR_Restore_2026!` also works. Deploy-test's "demo_admin = stale hash, untested" caveat is now stale itself; the advertised login is live and correct. This was the one thing that could have sunk a "log in right now" proposal — it holds.
+- **No em/en dashes:** cover-letter.md 0, one-pager.html 0.
+- **Demo link presence:** cover letter ×2 (demo + admin), one-pager hero+card, deck slides 1/3/10.
+- **Registry:** `workSamples.js` has the slug entry with correct `href`.
+- **Deploy-test:** 36/36 PASS (8 WP pages, FAQ/gallery/form interactivity, admin login, Rank Math + Fluent Forms, schema).
+- **Deck:** `maryland-driveway-restore-proposal.pptx` 47 KB, 10 slides, built today.
+
+## Brief → package coverage
+- Fixed Phase 1 quote $1,100 (inside client's stated $850–1200) ✓; Phase 2 separate estimate $3,500–$6,500 ✓.
+- All 6 developer questions answered point-by-point in the cover letter ✓.
+- Timeline (7-day) ✓; references/portfolio (fortherecordmn.com SEO/GA4 framing) ✓; post-launch support (Rocket 2 months included) ✓.
+- Real WordPress on the requested stack (Bricks, Rank Math, Fluent Forms, ShortPixel, Site Kit) with a login the client can actually use — directly answers Michael's own note about wanting a real WP site they can log into. This is the strongest possible response to this RFP and beats a frontend mockup decisively.
+- Bespoke charcoal/forest-green design per brief, not the portfolio palette ✓.
+
+## Minor (non-blocking, do not loop)
+- Deck has no embedded screenshots; acceptable for a text-led proposal, and the live clickable demo carries the visual proof. Not worth a re-run.
+- Optional: populate `proposalDeckUrl` / `proposalPageUrl` in `workSamples.js` if the one-pager/deck get hosted — an evaluator/polish item, not a gate.
+
+Package wins the client and clears every hard gate. Signing off.
+
+## handoff
+- produced: final CEO sign-off; independently verified live demo (200), login URL + both credentials actually authenticate, zero em/en dashes, registry entry, deploy-test 36/36, fresh 10-slide deck.
+- decisions: PASS. Advertised `demo_admin/DemoView2026!` confirmed working live — deploy-test's stale-hash caveat is obsolete; no writer loop needed.
+- next needs: prompt-optimizer to apply improvements.md; optional registry URL fields if hosting one-pager/deck.
+- risks: Docker container is a single point of failure (auto-restart via services.json mitigates); deck lacks embedded screenshots (live demo compensates) — neither blocks sign-off.
+
+VERDICT: pass

@@ -1,0 +1,83 @@
+# Demo Builder — Orschell Excavating E-Commerce Full-Stack
+
+## Status: COMPLETE
+
+---
+
+## What Was Built
+
+### Backend (Surface — Node.js 22 + TypeScript + node:sqlite)
+
+Service running at `http://127.0.0.1:3742` — confirmed LISTENING.
+
+Files built in `data/runner-workspace/orschell-ecommerce/` on the Surface:
+- `src/index.ts` — Express server, PORT 3742, CORS for michaelwegter.com + localhost
+- `src/db/database.ts` — DatabaseSync schema + full seed (2 users, 5 categories, 25 products, 7 indexes, 2 demo orders)
+- `src/middleware/auth.ts` — JWT auth (ORSCHELL_JWT_SECRET), requireAuth + requireAdmin
+- `src/routes/auth.ts` — POST /auth/register, POST /auth/login, GET /auth/me
+- `src/routes/products.ts` — GET /products (paginated, filterable), GET /products/:slug, POST/PUT/DELETE /products (admin)
+- `src/routes/categories.ts` — GET /categories
+- `src/routes/cart.ts` — GET/POST/PUT/DELETE /cart, /cart/items
+- `src/routes/orders.ts` — POST /orders (atomic inventory decrement), GET /orders, GET /orders/:id
+- `src/routes/admin.ts` — GET /admin/stats, GET/PUT /admin/inventory/:pid, GET /admin/orders, PUT /admin/orders/:id/status
+- `src/types/index.ts` — TypeScript interfaces
+
+`npm install` completed, `tsc` compiled to `dist/` — no errors.
+Service registered in `data/services.json` as `orschell-ecommerce-api`, `run-server.ps1` owns it.
+
+**22 REST endpoints total** — all documented in plan.
+
+### Bridge Blueprint
+
+`mw-backend/orschell_ecommerce_blueprint.py` — proxies `/demos/orschell-excavating-e-commerce-full/api/*` to `http://127.0.0.1:3742`. `accept-encoding` stripped to prevent gzip mismatch. Registered in `server.py` (NOT yet pushed — deploy step handles this).
+
+### Frontend (React 18 + Vite + TypeScript)
+
+Built and copied to `michaelwegter.com/public/demos/orschell-excavating-e-commerce-full/`. Base path `/demos/orschell-excavating-e-commerce-full/`. HashRouter for GH Pages SPA routing.
+
+Source files (`upwork-runs/orschell-excavating-e-commerce-full/demo-src/src/`):
+- `api/client.ts` — axios instance with JWT interceptor + typed helpers for all API endpoints
+- `contexts/AuthContext.tsx` — JWT auth state, login/register/logout
+- `contexts/CartContext.tsx` — cart state, drawer toggle, add/update/remove/clear
+- `components/Navbar.tsx` — sticky, cart badge, user dropdown, admin link (conditional)
+- `components/ProductCard.tsx` — image, category badge, price, add-to-cart, stock badges
+- `components/CartDrawer.tsx` — slide-in drawer, quantity controls, checkout link
+- `pages/Home.tsx` — hero banner, category grid, featured products
+- `pages/Shop.tsx` — paginated grid, category sidebar filter, search
+- `pages/ProductDetail.tsx` — image, breadcrumb, stock status, qty picker, add-to-cart
+- `pages/Login.tsx` — login/register tabs, demo credential hints
+- `pages/Checkout.tsx` — shipping form, mock payment form (labeled), order summary sidebar
+- `pages/OrderConfirmation.tsx` — success state, items, payment ref
+- `pages/Account.tsx` — profile + full order history with status badges
+- `pages/Orders.tsx` — order detail with 4-step status pipeline visualization
+- `pages/Admin.tsx` — 4-panel admin CMS: Dashboard (revenue chart + stats + recent orders), Products (CRUD), Inventory (inline edit), Orders (status pipeline + filter)
+
+Vite build: 899 modules, ~637KB JS (recharts included). No errors.
+
+### workSamples.js
+Entry added: id 18, slug `orschell-excavating-e-commerce-full`, icon 🏗, color #F76B10, frameStyle walnut.
+
+---
+
+## Seeded credentials
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@orschellsupply.com | Admin1234! |
+| Customer | demo@customer.com | Demo1234! |
+
+Customer has 2 past orders: #1 (delivered, OES-APP-001 x1), #2 (shipped, OES-HAT-001 x2).
+
+---
+
+## Design
+
+Dark industrial theme: `#1C1F24` base, `#F76B10` orange accent, `#FFD600` yellow. Barlow Condensed (headings, uppercase) + Inter (body). Hazard-stripe dividers, 2px card borders with orange hover, uppercase badge pills.
+
+---
+
+## handoff
+- produced: full-stack e-commerce demo — Node.js+TS backend LISTENING on port 3742 (Surface), Vite+React frontend built to `public/demos/orschell-excavating-e-commerce-full/`, bridge blueprint written to `mw-backend/orschell_ecommerce_blueprint.py` (registered in server.py, NOT pushed), workSamples.js entry added (id 18)
+- decisions: HashRouter (GH Pages SPA); bridge strips `accept-encoding` to prevent gzip mismatch; node:sqlite with DatabaseSync (no gyp, Node 22); 22 REST endpoints; atomic inventory decrement via UPDATE quantity-= WHERE quantity>=
+- next needs: deploy step must push mw-backend (bridge goes live ~30s after push) AND push michaelwegter.com (GH Pages builds frontend); then verify GET /demos/orschell-excavating-e-commerce-full/api/health returns ok AND the demo URL loads
+- risks: mw-backend push required before bridge is live; if Surface service crashes, re-run surface_register.py (idempotent); recharts adds bundle weight but build succeeded

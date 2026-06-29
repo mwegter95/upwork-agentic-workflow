@@ -1,0 +1,70 @@
+# Deploy-test — Maryland Driveway Restore
+
+## Playwright Test Results (live, 2026-06-27)
+
+URLs tested:
+- Portfolio frame: `https://michaelwegter.com/work-samples/maryland-driveway-restore`
+- Demo: `https://api.michaelwegter.com/demos/maryland-driveway-restore/`
+- WP admin: `https://api.michaelwegter.com/wp-admin/`
+
+---
+
+### Suite: 35 PASS / 0 FAIL (1 script false-negative resolved below)
+
+| # | Test | Result | Detail |
+|---|------|--------|--------|
+| 1 | Portfolio page loads (title) | PASS | title="Maryland Driveway Restore — Michael Wegter" |
+| 2 | AppFrame iframe element present | PASS | |
+| 3 | iframe src contains slug | PASS | frames include `api.../demos/maryland-driveway-restore/` |
+| 4 | Homepage title contains "Driveway" | PASS | "Maryland Driveway Restore \| Premium driveway restoration..." |
+| 5 | Hero headline ("restore") | PASS | |
+| 6 | "Call Now" CTA | PASS | |
+| 7 | "Text a Photo" CTA | PASS | |
+| 8 | sticky-cta class | PASS | |
+| 9 | Before/After element | PASS | |
+| 10 | Pricing section | PASS | |
+| 11 | Gallery section | PASS | |
+| 12 | FAQ section | PASS | |
+| 13 | Estimate form | PASS | |
+| 14 | "Maryland" keyword | PASS | |
+| 15 | **Design palette** | PASS* | *Script false-neg (searched HTML body); CSS file confirmed `--charcoal-deep: #1A1D1A`, `--green-forest: #2F5D3A`, `--green-light: #4A8C5C` — matches brief spec |
+| 16 | /driveway-restoration/ content | PASS | matched: restoration, asphalt, driveway |
+| 17 | /pricing/ content | PASS | matched: price, pricing, $, cost, package |
+| 18 | /gallery/ content | PASS | matched: gallery, before, after, photo, image |
+| 19 | /about/ content | PASS | matched: about, mission, maryland, company |
+| 20 | /faq/ content | PASS | matched: faq, question, answer, frequently |
+| 21 | /contact/ content | PASS | matched: contact, phone, email, form, estimate |
+| 22 | /service-areas/ content | PASS | matched: service, area, county, maryland, annapolis |
+| 23 | /free-estimate/ content | PASS | matched: estimate, form, photo, call |
+| 24 | FAQ accordion elements (38 found) | PASS | |
+| 25 | FAQ accordion clickable | PASS | |
+| 26 | Gallery items (39 found) | PASS | |
+| 27 | Lightbox class/script present | PASS | |
+| 28 | Estimate form element present | PASS | |
+| 29 | Form input fields (5 found) | PASS | |
+| 30 | WP login page loads | PASS | "Log In ‹ Maryland Driveway Restore — WordPress" |
+| 31 | WP admin login succeeds | PASS | url=`https://api.michaelwegter.com/wp-admin/` |
+| 32 | WP admin dashboard loads | PASS | |
+| 33 | Rank Math plugin active | PASS | |
+| 34 | Fluent Forms plugin active | PASS | |
+| 35 | WP pages list (7/7 expected pages) | PASS | home, pricing, gallery, about, faq, contact, service |
+| 36 | api /health | PASS | `{"status":"ok","version":"1.0.0"}` |
+
+---
+
+### Notes
+- WP admin login URL is `https://api.michaelwegter.com/wp-admin/` (no slug prefix — WP siteurl is set to the root, bridge rewrites correctly)
+- Bridge redirect fix (commit 5210c3a) is working: login 302 cookies pass through correctly to browser
+- CORS `allow-origin: http://localhost:3000` on WP responses is benign for iframe use; no JS cross-origin fetches from michaelwegter.com to the bridge
+- `demo_admin` not tested (noted as stale hash in prior build); `mdr_admin` / `MDR_Restore_2026!` is the advertised credential
+- Design palette confirmed via direct CSS fetch: `--charcoal-deep: #1A1D1A`, `--green-forest: #2F5D3A`, comment "Mobile-first. Deep charcoal, white, forest green. Playfair Display + Inter."
+
+---
+
+## handoff
+- produced: Full Playwright live test (36 checks, 36 PASS); portfolio frame, iframe, all 8 WP pages, FAQ/gallery/form interactivity, WP admin login, Rank Math + Fluent Forms, api health all verified.
+- decisions: CSS palette check is confirmed pass via direct CSS fetch (external stylesheet, not inline); no actual failures.
+- next needs: media-capture — record hero flow (before/after slider, sticky CTAs, gallery lightbox, FAQ accordion).
+- risks: `demo_admin` password may need reset if client wants dual-role demo; Docker container is single point of failure (auto-restart via services.json, but a Surface reboot adds ~10s lag); CORS origin shows localhost (harmless for iframe, matters only if future JS makes cross-origin fetch from michaelwegter.com).
+
+VERDICT: pass

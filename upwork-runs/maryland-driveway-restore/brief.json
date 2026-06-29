@@ -1,0 +1,207 @@
+{
+  "slug": "maryland-driveway-restore",
+  "client": "Maryland Driveway Restore",
+  "category": "Productivity",
+  "postingSummary": "Premium driveway-restoration company in Maryland needs a Phase 1 marketing website launched in ~1 week. Fixed-price Phase 1 ($850–$1,200, Rocket hosting included for first couple months), with a separate estimate for Phase 2 (ongoing multi-state partnership). Mobile-first, luxury aesthetic inspired by Apple/Restoration Hardware, deep charcoal/white/forest-green palette, big before/after photography, sticky 'Call Now' + 'Text a Photo' CTAs. Core deliverable is lead generation (phone calls + text estimate requests) plus local-SEO foundation.",
+  "budget": {
+    "phase1_usd": "850-1200",
+    "hosting_included": "Rocket.net (preferred), or Kinsta/WP Engine. First couple months included.",
+    "note": "Phase 2 quoted separately as an ongoing engagement."
+  },
+  "timeline": {
+    "phase1_launch_days": 7,
+    "note": "One week from go-live."
+  },
+  "phase1_pages": [
+    "Homepage",
+    "Driveway Restoration (service detail page)",
+    "Pricing",
+    "Gallery",
+    "About",
+    "FAQ",
+    "Contact / Free Estimate",
+    "Service Areas",
+    "Free Estimate (QR landing page, dedicated flow)"
+  ],
+  "phase1_pages_details": {
+    "homepage": {
+      "sections": [
+        "Hero with before/after image and headline: 'Restore Your Driveway. Don't Replace It.'",
+        "Primary CTAs: Call Now / Text a Photo",
+        "Benefits",
+        "Our Process",
+        "Pricing",
+        "Gallery Preview",
+        "Customer Reviews",
+        "FAQ",
+        "Estimate Form",
+        "Footer"
+      ]
+    },
+    "driveway_restoration": "Service detail page explaining the restoration process, materials, timeline, benefits vs. replacement.",
+    "pricing": "Clear pricing table or breakdown for restoration options.",
+    "gallery": "Large before/after photography showcase (at least 12–20 images).",
+    "about": "Company mission, team, credentials, environmental commitment (tree-planting/community initiative mentioned).",
+    "faq": "Frequent questions about restoration, durability, maintenance, warranty.",
+    "contact_estimate": "Lead-capture form (name, email, phone, property address, photo upload option, service area selection).",
+    "service_areas": "Geographic coverage map and/or list of Maryland service areas (Annapolis area focus).",
+    "free_estimate_qr_page": "Dedicated landing page (separate from contact form). Includes one powerful before/after image, brief explanation, Call Now, Text a Photo, and simple estimate form. QR codes on signs/postcards/flyers point here, not homepage."
+  },
+  "design_direction": {
+    "aesthetic": "Premium modern, inspired by Apple, Restoration Hardware, luxury home builders.",
+    "palette": {
+      "deep_charcoal": "#1a1d1a (or similar)",
+      "white": "#ffffff",
+      "forest_green": "#2f5d3a (or similar)"
+    },
+    "typography": "Clean typography, serif/sans pairing appropriate to luxury aesthetic. Do NOT use michaelwegter.com's palette or design system.",
+    "imagery": "Large before/after photography as hero and throughout. Generous whitespace, minimal clutter.",
+    "performance": "Fast-loading design, Core Web Vitals optimized."
+  },
+  "mobile_first_requirements": [
+    "Design for phones first (responsive, mobile-first CSS).",
+    "Sticky 'Call Now' button (fixed position, always visible).",
+    "Sticky 'Text a Photo' button (fixed position, always visible).",
+    "Large touch targets (minimum 48px for tappable elements).",
+    "Simple, scannable navigation (hamburger menu on mobile).",
+    "Fast loading (images lazy-loaded, no bloat).",
+    "Core Web Vitals optimized (LCP, FID, CLS all green)."
+  ],
+  "seo_requirements": [
+    "Unique title and meta description for every page.",
+    "Logical H1–H3 structure (one H1 per page, hierarchical headings).",
+    "Local Business schema (structured data for business name, address, phone, hours, logo).",
+    "FAQ schema (structured data for FAQ section).",
+    "Service schema (structured data for services offered).",
+    "Review schema (structured data for customer reviews/testimonials).",
+    "XML sitemap (auto-generated, submitted to Google Search Console).",
+    "Optimized image names and ALT text (descriptive, keyword-inclusive where natural).",
+    "Internal linking (logical cross-linking between pages, especially from homepage to service/location pages).",
+    "Google Business Profile optimization (claim/verify profile, add photos, categories, hours).",
+    "Fast page speed (PageSpeed Insights green; Lighthouse performance 90+)."
+  ],
+  "priority_keywords": [
+    "Maryland driveway restoration",
+    "Annapolis driveway restoration",
+    "Asphalt restoration Maryland",
+    "Driveway restoration near me",
+    "Driveway rejuvenation",
+    "Blacktop restoration",
+    "Residential asphalt restoration Maryland"
+  ],
+  "seo_practices_to_avoid": [
+    "Duplicate content",
+    "Keyword stuffing",
+    "Copied competitor content",
+    "Low-quality backlinks",
+    "Thin pages",
+    "Too many plugins",
+    "Oversized images/videos",
+    "Ignoring mobile performance"
+  ],
+  "tech_stack": [
+    "WordPress (or static equivalent in the demo)",
+    "Bricks Builder (noted as preferred; demo will use custom HTML/CSS)",
+    "Rank Math SEO (all schema/structured data built into static demo)",
+    "Fluent Forms (or static form with Flask backend for submissions)",
+    "ShortPixel (image optimization; demo will use lazy-loading and optimized assets)",
+    "Wordfence (security; not applicable to static demo, documented for Phase 2 WP deployment)",
+    "UpdraftPlus (backup; not applicable to static demo, documented for Phase 2 WP deployment)",
+    "Google Site Kit (GA4, GSC integration; demo will include GA4 event hooks)"
+  ],
+  "integrations": [
+    "Google Analytics 4 (event tracking for CTA clicks, form submissions).",
+    "Google Search Console (sitemap submission, indexing status).",
+    "Google Business Profile (connection and optimization)."
+  ],
+  "developer_questions_to_answer": [
+    {
+      "question": "Can you launch within one week?",
+      "answer_required": "Yes (fixed Phase 1 timeline in proposal)"
+    },
+    {
+      "question": "Can you stay within the Phase 1 budget?",
+      "answer_required": "Yes, fixed price $850–$1,200 with Rocket hosting included for first couple months"
+    },
+    {
+      "question": "Will the site be easy for the owner to edit?",
+      "answer_required": "Yes, WordPress (or equivalent) dashboard with intuitive content management"
+    },
+    {
+      "question": "How do you optimize Core Web Vitals?",
+      "answer_required": "Lazy loading, optimized images, minimal CSS/JS, server-side caching, CDN"
+    },
+    {
+      "question": "Will you configure Analytics, Search Console and schema?",
+      "answer_required": "Yes, GA4 and GSC set up, all required schema embedded (LocalBusiness, FAQ, Service, Review)"
+    },
+    {
+      "question": "Can Phase 2 be added without rebuilding?",
+      "answer_required": "Yes, Phase 2 layers onto Phase 1 (city landing pages, learning center, etc.)"
+    }
+  ],
+  "proposal_requirements": [
+    "Fixed-price quote for Phase 1 ($850–$1,200 with Rocket hosting included for first couple months).",
+    "Separate, itemized estimate for Phase 2 (30–50 city/neighborhood landing pages, learning center, video library, interactive estimate calculator, case studies, expanded gallery, advanced local SEO).",
+    "Timeline (Phase 1: 1 week; Phase 2: phased rollout).",
+    "Portfolio (reference to Michael's existing work, especially fortherecordmn.com for SEO + Google Analytics).",
+    "References (client testimonials or case studies from similar projects).",
+    "Post-launch support (first 30 days of updates/fixes, ongoing SEO/analytics monitoring roadmap)."
+  ],
+  "qr_code_strategy": {
+    "landing_page": "/free-estimate",
+    "content": [
+      "One powerful before/after image",
+      "Brief explanation of restoration vs. replacement",
+      "Call Now button",
+      "Text a Photo button",
+      "Simple estimate form"
+    ],
+    "usage": "QR codes on signs, postcards, flyers should point to /free-estimate, not homepage."
+  },
+  "phase2_scope": [
+    "30–50 city/neighborhood landing pages (Maryland cities: Annapolis, Baltimore, Columbia, Frederick, Towson, etc.)",
+    "Learning Center (blog/resource section on restoration tips, maintenance, longevity).",
+    "Neighborhood pages (hyperlocal targeting).",
+    "Video library (before/after time-lapses, testimonial videos, process explanation).",
+    "Interactive estimate calculator (users input property details, get instant rough estimate).",
+    "Case studies (detailed project write-ups with photos, outcomes, client testimonials).",
+    "Expanded gallery (60+ high-quality before/after images, organized by project type).",
+    "Advanced local SEO (schema optimization per location, geo-targeted keywords, local link building)."
+  ],
+  "mission_and_brand": {
+    "positioning": "Premium driveway restoration company—NOT a traditional sealcoating contractor.",
+    "mission": "Help homeowners restore rather than replace whenever practical, improve curb appeal, extend driveway life, and support environmentally conscious practices.",
+    "future_initiative": "As the business grows, intends to include tree-planting/community initiative."
+  },
+  "demo_hosting": {
+    "location": "../../michaelwegter.com/public/demos/maryland-driveway-restore/",
+    "url": "https://michaelwegter.com/demos/maryland-driveway-restore/",
+    "iframed_by": "/work-samples/maryland-driveway-restore (via AppFrame component)",
+    "registry_entry": "workSamples.js with client, postingSummary, builtFor, date (ISO), proposalDeckUrl, proposalPageUrl"
+  },
+  "feature_richness_target": 10,
+  "feature_richness_note": "10/10 = all 8 Phase-1 pages + dedicated /free-estimate QR page + real before/after slider component + multi-step estimate form with photo upload + embedded LocalBusiness/Service/FAQ/Review schema + GA4 event hooks + service-area map + Lighthouse 90+ performance.",
+  "proof_of_capability": {
+    "reference_project": "fortherecordmn.com",
+    "work_cited": "SEO work and Google Analytics implementation (researcher to verify and gather concrete details for proposal)"
+  },
+  "success_criteria": [
+    "Launch within one week.",
+    "Professional, mobile-first experience (responsive, sticky CTAs, large touch targets).",
+    "Fast loading (Core Web Vitals green, Lighthouse 90+).",
+    "SEO-ready (all required schema embedded, unique title/meta per page, logical H1–H3, optimized images).",
+    "Easy to maintain (content updates via dashboard or CMS, no dev needed for routine edits).",
+    "Strong lead generation (form submissions tracked in GA4, phone/text CTAs working).",
+    "Live demo at michaelwegter.com/demos/maryland-driveway-restore/ with working estimate form.",
+    "Proposal includes cover letter, one-pager, and presentation deck citing fortherecordmn.com proof."
+  ],
+  "hard_gates": [
+    "Every explicit requirement in brief.json addressed in cover letter AND represented in demo or deck.",
+    "Demo builds and loads with no console errors on first paint.",
+    "Demo URL resolves locally and live /work-samples/maryland-driveway-restore returns 200.",
+    "Demo link appears in both cover letter and deck.",
+    "Bespoke, client-fit design (NOT michaelwegter.com palette). No em/en dashes.",
+    "eval-report.md shows passing score and empty/accepted fix list."
+  ]
+}

@@ -1,0 +1,102 @@
+# Demo Builder — Maryland Driveway Restore
+
+**Build path:** Real WordPress (Docker) — Docker v29.5.3 confirmed on Surface.
+**Public URL:** https://api.michaelwegter.com/demos/maryland-driveway-restore/
+**Status:** WP site LIVE on Surface port 8081; bridge blueprint written but NOT yet pushed (deploy step activates it).
+
+---
+
+## Build Summary
+
+### Docker / WordPress
+
+| Item | Status |
+|------|--------|
+| Containers | mdr-wordpress + mdr-mysql — Up |
+| WordPress | Installed; siteurl: `https://api.michaelwegter.com/demos/maryland-driveway-restore` |
+| Theme | mdr-theme — Active |
+| Plugins | rank-math-seo, fluentform, temporary-login-without-password — all Active |
+| Service | Registered as `mdr-wordpress-docker` in `data/services.json` — reboot-durable |
+
+### Pages (9 of 9 — all HTTP 200, clean HTML, zero PHP leaks)
+
+| ID | Slug |
+|----|------|
+| 4 | home (front page) |
+| 5 | driveway-restoration |
+| 6 | pricing |
+| 7 | gallery |
+| 8 | about |
+| 9 | faq |
+| 10 | contact |
+| 11 | service-areas |
+| 12 | free-estimate |
+
+### Theme — mdr-theme
+
+14 PHP templates + assets/css/main.css + assets/js/main.js.
+
+Homepage (`front-page.php`) verified to contain:
+- Hero H1: "Restore Your Driveway. Don't Replace It."
+- Hero subhead: "Every other driveway company..."
+- img-comparison-slider (before/after CDN web component)
+- Sticky Call Now (tel:+14105550100) + Text a Photo (sms:+14105550100) CTAs
+- 4-step process section
+- 3-tier pricing: Essential $299 / Premium $499 / Complete $849
+- Review section: 4.9 stars / 47 reviews
+- FAQ accordion
+- GA4 event hooks (G-PLACEHOLDER)
+- Schema JSON-LD: HomeAndConstructionBusiness in `<head>`
+- Rank Math meta description tag
+
+Design:
+- Fonts: Playfair Display (headings) + Inter (body) — Google Fonts CDN confirmed loaded
+- Palette: #1A1D1A charcoal / #FFFFFF white / #2F5D3A forest green / #C9A84C gold
+- Mobile-first; sticky CTA bar position:fixed bottom; hamburger nav
+
+All inner pages verified 200: pricing, gallery, FAQ, contact, driveway-restoration, about, service-areas, free-estimate.
+
+Static assets verified 200: main.css, main.js (served directly from WP container, no redirect).
+
+WP Login: HTTP 200. WP Admin: HTTP 302 → `https://api.../demos/maryland-driveway-restore/wp-login.php` (correct).
+
+### Bugs Fixed (this session)
+
+1. **PHP leak** — `functions.php` had premature `?>` before the meta description function → raw PHP source in page output. Fixed: removed `?>`.
+2. **Infinite canonical redirect loop** — WP compared current URL (`https://api.../pricing/`) with permalink (`https://api.../demos/.../pricing/`) and looped forever. Fixed: `remove_filter('template_redirect', 'redirect_canonical')` added to functions.php top.
+
+### Credentials
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `mdr_admin` | `MDR_Restore_2026!` |
+| Demo client | `demo_admin` | `DemoView2026!` |
+
+WP Admin URL: `https://api.michaelwegter.com/demos/maryland-driveway-restore/wp-admin/`
+
+### Bridge Blueprint
+
+File: `mw-backend/maryland_driveway_wp_bridge_blueprint.py` (exists, uncommitted).
+Registered in `server.py` lines 349-350 (uncommitted modified).
+Deploy step: `git add maryland_driveway_wp_bridge_blueprint.py server.py && git commit && git push`.
+
+Proxies `/demos/maryland-driveway-restore/*` → `http://127.0.0.1:8081/*`.
+Injects `Host: api.michaelwegter.com` + `X-Forwarded-Proto: https`.
+
+### workSamples.js
+
+Entry `id: 17, slug: "maryland-driveway-restore"` already in `michaelwegter.com/src/data/workSamples.js` (line 371).
+`href: "https://api.michaelwegter.com/demos/maryland-driveway-restore/"`.
+No changes needed.
+
+### Theme Files on Host
+
+All 16 theme files synced to `data/runner-workspace/mdr-wp/mdr-theme/` (volume-mounted into container). Survive restarts.
+
+---
+
+## handoff
+- produced: Full WordPress demo — 9 pages live on Surface:8081, mdr-theme (14 templates + CSS/JS), Rank Math SEO (all pages titled/described), LocalBusiness schema, before/after slider, sticky CTAs, pricing/gallery/FAQ/estimate forms, GA4 hooks; 2 admin logins; mdr-wordpress-docker service registered; bridge blueprint at mw-backend (not yet pushed)
+- decisions: Canonical redirect disabled (`remove_filter('template_redirect','redirect_canonical')`) to break sub-path proxy loop; theme synced to host mount for restart durability; custom HTML forms used (not FF shortcodes) — sufficient for demo; static assets served directly by Apache without redirect
+- next needs: deploy step — `git add maryland_driveway_wp_bridge_blueprint.py server.py && git commit && git push` in mw-backend; wait ~30s for Flask restart; verify `https://api.michaelwegter.com/demos/maryland-driveway-restore/` returns 200; michaelwegter.com push if any changes staged there
+- risks: Public URL is 404 until bridge is pushed; if WP container stops, run-server.ps1 auto-restarts via services.json entry; AppFrame iframes cross-origin (michaelwegter.com → api.michaelwegter.com) — confirm AppFrame allows cross-origin src or add the domain to CSP

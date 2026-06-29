@@ -1,0 +1,30 @@
+# Deploy — Orschell Excavating e-commerce full-stack
+
+## Actions taken
+
+### mw-backend
+- Staged: `orschell_ecommerce_blueprint.py` + `server.py`
+- Commit: `c07fb8f` — "Add Orschell Excavating e-commerce bridge blueprint"
+- Pushed to `origin/main`; Surface auto-deploy restarted Flask within ~35s
+
+### michaelwegter.com
+- Staged: `src/data/workSamples.js` + `public/demos/orschell-excavating-e-commerce-full/` (index.html + assets/index-D2WHlCDi.js)
+- Commit: `0fb0825` — "Add Orschell Excavating e-commerce full-stack demo"
+- Pushed to `origin/main`; GH Pages workflow completed: **success**
+
+## Live verification (all pass)
+
+| Check | URL | Result |
+|---|---|---|
+| Flask health | https://api.michaelwegter.com/health | `{"status":"ok","version":"1.0.0"}` ✓ |
+| Bridge health | https://api.michaelwegter.com/demos/orschell-excavating-e-commerce-full/api/health | `{"ok":true,"service":"orschell-ecommerce-api","ts":"2026-06-28T18:48:24.142Z"}` ✓ |
+| Site root | https://michaelwegter.com/ | HTTP 200 ✓ |
+| Demo index | https://michaelwegter.com/demos/orschell-excavating-e-commerce-full/index.html | HTTP 200 ✓ |
+
+GH Pages deploy: `in_progress` → `success` (confirmed via `gh run list`).
+
+## handoff
+- produced: both repos pushed and live; bridge responding at /api/health; demo served at /demos/orschell-excavating-e-commerce-full/
+- decisions: no schema changes, no env changes; Node service (port 3742) already registered on Surface via prior step
+- next needs: deploy-test exercises live login + admin CMS + checkout against https://michaelwegter.com/demos/orschell-excavating-e-commerce-full/ and the bridged API; test accounts: admin@orschell.com / admin123, customer@example.com / customer123
+- risks: stray test order #3 (Test Buyer, pending) from build-CEO verification is in DB; cosmetic only, does not break flows

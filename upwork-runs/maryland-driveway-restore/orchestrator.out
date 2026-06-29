@@ -1,0 +1,114 @@
+# Orchestrator — Maryland Driveway Restore
+
+## Slug
+`maryland-driveway-restore` (run dir + demo dir + /work-samples route all use this)
+
+## Startup brief (one-paragraph)
+Premium driveway-restoration company in Maryland needs a Phase 1 marketing site
+launched in ~1 week, fixed-price ~$850–$1,200, hosted on Rocket.net, built in
+WordPress + Bricks + Rank Math + Fluent Forms + Site Kit. Mobile-first, luxury
+aesthetic (Apple / Restoration Hardware / luxury home-builder), deep charcoal +
+white + forest green, big before/after photography, sticky "Call Now" + "Text a
+Photo" CTAs. Core deliverable is lead generation (phone calls + text estimate
+requests) plus local-SEO foundation (GA4, Search Console, GBP, schema). Phase 2
+(separately quoted): 30–50 city/neighborhood landing pages, learning center,
+video library, interactive estimate calculator, case studies, advanced local
+SEO — framed as an ongoing multi-state relationship. Michael's note: wants a REAL
+WordPress demo on his backend at the michaelwegter.com domain, and wants to cite
+his SEO + Google Analytics work on **fortherecordmn.com** as proof.
+
+## Central architecture decision (FLAG for planner + CEO) — read carefully
+Michael's request (Docker WordPress + a dedicated Cloudflare tunnel subdomain) is
+in DIRECT tension with this repo's hard rule: `~/.cloudflared/config.yml` is
+sacred, routes 100% of traffic to Flask :5050, and `run-server.ps1` self-heals
+any separate ingress within ~10s. **A standalone `client-demo.yourdomain.com`
+tunnel route is NOT allowed and will be auto-killed.** Do NOT pursue Option 3 as
+written.
+
+Reconciled options, in priority order:
+
+1. **(Recommended default) Bespoke static premium demo** in
+   `../michaelwegter.com/public/demos/maryland-driveway-restore/`, served at
+   `michaelwegter.com/demos/maryland-driveway-restore/` and iframed by
+   `/work-samples/maryland-driveway-restore`. This is the workflow's proven
+   same-origin model: zero deploy friction, no tunnel risk, fully functional
+   (working estimate form, sticky CTAs, before/after sliders, FAQ schema, all 8
+   Phase-1 pages). It reproduces the WordPress *experience and design* faithfully
+   without needing WP itself. Lead-gen form posts to a small Flask blueprint
+   (mw-backend) so "Text a Photo / Free Estimate" actually captures and persists.
+   At feature richness 10: build all 8 pages + the dedicated `/free-estimate` QR
+   landing page, real before/after slider component, working multi-step estimate
+   form with photo upload, embedded schema (LocalBusiness/Service/FAQ/Review),
+   GA4-ready event hooks, and a service-area map. This is the safe, high-polish
+   path that satisfies every hard gate.
+
+2. **(Stretch, only if greenlit by CEO and time/budget allow) Real WordPress
+   container on the Surface, bridged through Flask** — NOT through a separate
+   tunnel. Run WP+MySQL in Docker on a loopback port, register it as a service in
+   `services.json`, and expose it via a Flask **bridge blueprint**
+   (`bridge_blueprint_template.py`, PREFIX `/demos/maryland-driveway-restore-wp/`
+   or similar). This gives a real admin login (use the "Temporary Login Without
+   Password" plugin for a magic link in the proposal) while obeying the
+   tunnel-is-sacred rule. Risks: WP path/URL rewriting behind a sub-path bridge,
+   Docker on Windows Surface, Bricks licensing. Treat as a bonus, not the
+   critical path; the proposal can DESCRIBE the real WP/Bricks/Rank Math stack as
+   the delivery plan while the static demo carries the live click-through.
+
+Planner: pick #1 as the build target, list #2 as an explicit optional stretch
+with a go/no-go gate. CEO: arbitrate if demo-builder wants to attempt #2.
+
+## Plan of attack (pipeline shape)
+intake → planner → CEO → researcher → demo-builder → deploy → deploy-test →
+media-capture → proposal-writer → evaluator. (with-deploy + with-ceo layout: a
+real lead-capture endpoint and a live-route gate both matter here.)
+
+## Quality guidance per downstream step
+- **intake:** Capture EVERY explicit requirement as a checklist item — the 8
+  Phase-1 pages, the 9 SEO requirements, the 8 tech-stack tools, the 6 mobile-first
+  items, the homepage blueprint sections, the QR `/free-estimate` landing page,
+  the 6 "Questions for Developers" (these MUST be answered point-by-point in the
+  cover letter), and the proposal requirements (fixed Phase-1 price, separate
+  Phase-2 estimate, timeline, portfolio, references, post-launch support). Record
+  the budget band ($850–$1,200, Rocket hosting included for first couple months)
+  and the 1-week launch constraint.
+- **researcher:** Pull real Maryland/Annapolis driveway-restoration + sealcoating
+  competitor sites for visual conventions and the premium gap. Confirm the
+  `construction-company-website` demo as the closest structural clone (multi-page
+  static home-services site already in `public/demos/`). Gather concrete details
+  of Michael's **fortherecordmn.com** SEO/GA work to cite as proof. Source
+  before/after asphalt imagery (royalty-free or generated).
+- **planner:** Define the bespoke design system NOW (charcoal #1a1d1a-ish, white,
+  forest green, big serif/clean-sans pairing à la Restoration Hardware; generous
+  whitespace; before/after photography hero). Do NOT use michaelwegter.com's
+  palette. Map every brief requirement → a demo feature or a deck claim.
+- **demo-builder:** Mobile-first. Sticky Call Now + Text a Photo. Real working
+  estimate form (Flask blueprint persists submissions; seed nothing sensitive).
+  Embed LocalBusiness/Service/FAQ/Review JSON-LD, unique title/meta per page,
+  logical H1–H3, ALT text. Build the dedicated `/free-estimate` QR landing page.
+  Lighthouse/Core-Web-Vitals conscious (lazy images, no bloat).
+- **proposal-writer:** Answer all 6 developer questions explicitly. Give a fixed
+  Phase-1 price inside $850–$1,200 with Rocket hosting noted, and a SEPARATE
+  Phase-2 estimate framed as an ongoing multi-state partnership. Cite
+  fortherecordmn.com for SEO + GA proof. Include the live demo link in both the
+  cover letter and deck. Michael's voice; no em/en dashes.
+
+## Hard constraints reminder
+- No em/en dashes anywhere. Bespoke client design, never the portfolio look.
+- GitHub handle `mwegter95`.
+- NEVER touch `~/.cloudflared/config.yml`. No separate tunnel ingress.
+- Demo lives at `public/demos/maryland-driveway-restore/`; card via `workSamples.js`.
+- Registry fields needed: client="Maryland Driveway Restore", category="Productivity"
+  (or "Creative"), date ISO, frameStyle, color = forest green (#2f5d3a-ish).
+
+## handoff
+- produced: slug, startup brief, reconciled architecture decision, pipeline shape,
+  per-step quality guidance for the Maryland Driveway Restore Phase 1 RFP.
+- decisions: build target = bespoke static premium same-origin demo (8 pages +
+  /free-estimate QR page + real Flask-backed estimate form); real-WP Docker is an
+  optional CEO-gated stretch via a Flask BRIDGE only, never a separate tunnel.
+- next needs: intake must enumerate all explicit requirements (pages, SEO items,
+  tech stack, mobile-first, dev questions, proposal asks, budget, 1-week timeline)
+  into brief.json.
+- risks: tunnel-is-sacred rule conflicts with Michael's Docker+tunnel request —
+  do NOT attempt separate ingress; WP-via-bridge has URL-rewrite + Windows-Docker
+  risk; must cite fortherecordmn.com accurately (researcher to verify details).

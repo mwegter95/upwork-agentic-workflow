@@ -1,0 +1,152 @@
+{
+  "project": {
+    "slug": "orschell-excavating-e-commerce-full",
+    "title": "Orschell Excavating E-Commerce Full-Stack",
+    "demoUrl": "https://michaelwegter.com/demos/orschell-excavating-e-commerce-full",
+    "workSampleUrl": "https://michaelwegter.com/work-samples/orschell-excavating-e-commerce-full"
+  },
+  "client": {
+    "name": "Orschell Excavating",
+    "location": "West Harrison, Indiana, United States",
+    "industry": "Excavating / heavy civil contractor",
+    "context": "Likely sells equipment parts, attachments, aggregate/materials, or branded gear for construction/contracting industry"
+  },
+  "posting": {
+    "jobType": "Fixed-price backend build",
+    "budget": 1700,
+    "postedDate": "Jun 23",
+    "summary": "Implement backend features for existing e-commerce website: auth, product catalog, inventory, order processing, payment gateway, REST API, optimization, database improvements",
+    "requiredExperience": "Expert (5+ years)",
+    "languageRequirement": "English"
+  },
+  "requirements": {
+    "explicit": [
+      {
+        "id": 1,
+        "requirement": "User authentication and account management",
+        "demoRealization": "Real signup/login with JWT; account page with profile + order history; seeded demo admin and customer accounts with credentials documented"
+      },
+      {
+        "id": 2,
+        "requirement": "Product catalog management",
+        "demoRealization": "Admin CMS: create/edit/delete products, categories, images, pricing, detailed specs; full CRUD interface"
+      },
+      {
+        "id": 3,
+        "requirement": "Inventory tracking",
+        "demoRealization": "Stock counts decremented on order; low-stock flags in admin; admin stock level edits; real persistence"
+      },
+      {
+        "id": 4,
+        "requirement": "Order processing workflows",
+        "demoRealization": "Full flow: cart add/update/remove, checkout, order creation; admin order status pipeline (pending→processing→shipped→delivered)"
+      },
+      {
+        "id": 5,
+        "requirement": "Payment gateway integration",
+        "demoRealization": "Mock checkout form (clearly labeled 'Demo / Mock Payment' in UI); simulated success/decline; no real charge processing"
+      },
+      {
+        "id": 6,
+        "requirement": "REST API development",
+        "demoRealization": "Documented REST endpoints: products, cart, orders, auth, admin operations; real backend service"
+      },
+      {
+        "id": 7,
+        "requirement": "Performance optimization",
+        "demoRealization": "Pagination on product lists, indexed database queries, client-side caching where beneficial; noted in deck"
+      },
+      {
+        "id": 8,
+        "requirement": "Database improvements",
+        "demoRealization": "Proper PostgreSQL schema with foreign keys, indexes, constraints; migrations + seed data; production-ready structure"
+      }
+    ],
+    "implicit": [
+      "Posting asks for 'examples of similar projects, estimated timeline, and approach' — must be included in cover letter",
+      "Frontend must accompany backend (full e-commerce UX, not just API)"
+    ]
+  },
+  "technicalStack": {
+    "required": [
+      "Node.js",
+      "TypeScript",
+      "PostgreSQL",
+      "REST APIs"
+    ],
+    "recommended": [
+      "Express or similar Node web framework",
+      "JWT for authentication",
+      "Database migrations tooling (e.g., Knex, TypeORM, Prisma)",
+      "React or similar for frontend UI"
+    ]
+  },
+  "designDirection": {
+    "doNotCopy": "michaelwegter.com portfolio aesthetic (dark gallery-wall, mustard/cyan, Space Grotesk)",
+    "industrialStorefrontGuidance": {
+      "palette": "Steel grey, safety-amber/orange, asphalt black, hi-vis accents",
+      "typography": "Industrial/condensed sans-serif (display) + clean body font",
+      "imagery": "Heavy-equipment, utilitarian dense product grid, contractor-supply aesthetic",
+      "tone": "Rugged, professional, utilitarian; built for busy contractors",
+      "adminDashboard": "Clean utilitarian design, data-heavy, accessible"
+    }
+  },
+  "scope": {
+    "featureRichness": 10,
+    "featureRichnessInterpretation": "Production-quality, several genuinely working features, real persistence, polish. Not a prototype.",
+    "architecture": {
+      "backend": "Node.js + TypeScript + PostgreSQL service on Surface (matches client's exact stack); exposed via Flask bridge blueprint at /demos/orschell-excavating-e-commerce-full/api/",
+      "frontend": "Self-contained React app (Vite or CDN) calling REST API; embedded in michaelwegter.com/public/demos/<slug>/",
+      "fallback": "If Surface Postgres infeasible: Express+TS + node:sqlite with Postgres-shaped schema; call out in deck that production target is Postgres"
+    },
+    "heroFeatures": [
+      "Customer storefront: product browsing + cart + checkout (mocked payment)",
+      "Customer auth + account + order history",
+      "Admin CMS: full product/inventory management"
+    ],
+    "supportingFeatures": [
+      "Order status pipeline (admin-side status transitions)",
+      "Stock level management + low-stock alerts",
+      "API documentation"
+    ]
+  },
+  "hardRequirements": {
+    "demoAccounts": "Seed admin account (for CMS demo) + demo customer account (for checkout flow); credentials recorded in build report for deploy-test and live use",
+    "mockPayment": "Explicitly labeled 'Demo / Mock Payment' or 'Sandbox' in UI; no real charges",
+    "adminCMS": "Fully functional admin interface for product, inventory, and order management — not a wireframe",
+    "persistence": "Real PostgreSQL database with proper schema, FKs, indexes; cart/orders survive page refresh",
+    "noConsoleErrors": "Demo loads cleanly on first paint; passes Lighthouse accessibility baseline"
+  },
+  "qualityGates": [
+    "All 8 posting requirements addressed in cover letter AND present as working features in demo or documented in deck",
+    "Demo builds, no console errors on first paint; /demos/<slug>/ resolves locally; live /work-samples/<slug> returns 200",
+    "Demo link appears in BOTH cover letter and deck",
+    "Cohesive bespoke industrial design (not portfolio aesthetic); zero em-dashes or en-dashes in all prose",
+    "Cover letter includes: timeline estimate, technical approach/architecture, 2-3 similar e-commerce or full-stack project examples (posting explicitly requests)",
+    "GitHub URLs use mwegter95",
+    "Mock-payment clearly labeled in UI",
+    "REST API endpoints documented (in demo or attached README)"
+  ],
+  "postingAsks": [
+    "Examples of similar e-commerce or web application projects",
+    "Estimated timeline",
+    "Technical approach and recommendations"
+  ],
+  "constraints": {
+    "buildTimeBudget": "~3 minutes (demo-builder phase)",
+    "filesTouch": "~12 files max (backend service + frontend app + bridge blueprint)",
+    "postingScope": "Existing e-commerce site — but Michael's directive is to build both frontend and backend from scratch, production-ready, showcasing all features",
+    "paymentGateway": "Must be mocked; no real Stripe/PayPal integration (too much scope), but UI must simulate a realistic flow"
+  },
+  "riskFlags": [
+    "Surface Postgres setup may be time-expensive; have node:sqlite fallback ready (schema is portable to Postgres)",
+    "Full storefront + admin + inventory + order mgmt = broad scope at feature-richness 10; planner must fence hero (storefront checkout) vs supporting (admin CMS, inventory edge cases) strictly",
+    "Demo accounts must be seeded and credentials stable for deploy-test and live demo"
+  ],
+  "handoff": {
+    "produced": "brief.json — structured parsing of 8 explicit requirements, technical stack (Node+TS+Postgres), industrial design direction, hard requirements (admin CMS, mocked payment, real DB), quality gates, and risk flags",
+    "decisions": "Feature richness 10; real Node+TS+Postgres backend on Surface via Flask bridge; full admin CMS required; payment mocked and labeled; industrial contractor-supply aesthetic (not portfolio look)",
+    "nextNeeds": "Planner: refine design direction per research, fence hero vs supporting, estimate timeline for proposal cover letter, decide Postgres vs sqlite fallback architecture",
+    "risks": "Scope is large (full storefront + admin + inventory + orders); planner must tightly scope hero features to fit 3-min build time and ~12-file limit. Surface Postgres availability (fallback: sqlite with note in deck)."
+  }
+}

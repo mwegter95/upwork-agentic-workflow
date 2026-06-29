@@ -1,0 +1,65 @@
+# Plan Eval (Rubric Check) — Orschell Excavating E-Commerce Full-Stack
+
+## Rubric Scoring
+
+### 1. All requirements covered?
+All 8 posting requirements traceable to concrete demo features:
+- Auth + account management: JWT, register/login, account page, order history, 2 seeded accounts ✓
+- Product catalog management: Admin CMS CRUD ✓
+- Inventory tracking: Atomic decrement, low-stock flags, admin stock edits ✓
+- Order processing workflows: Cart → checkout → confirmation, 4-state admin pipeline ✓
+- Payment gateway: Mock checkout labeled "Demo / Mock Payment" (user-approved) ✓
+- REST API: 22 endpoints with methods + auth guards specified ✓
+- Performance optimization: Paginated queries, 7 DB indexes, client-side caching ✓
+- Database improvements: Relational schema, FKs, CHECK constraints, seeds ✓
+
+Score: 8/8 — PASS
+
+### 2. Right technologies chosen?
+- Node.js + Express + TypeScript (via adverteyes clone): matches posting ✓
+- node:sqlite runtime, schema Postgres-compatible with migration path documented: pragmatic Windows Surface tradeoff, transparent in deck ✓
+- REST API: 22 endpoints fully specified ✓
+- Gap: No Redis / caching layer (client-side caching instead) — acceptable for demo scope; posting asks for "optimization" not a specific cache stack ✓
+
+Score: PASS
+
+### 3. Testing approach defined?
+- No formal unit or integration test suite prescribed in plan
+- E2E coverage provided by the workflow's deploy-test (Playwright) step post-deploy
+- 22 endpoints individually specified — testable by Playwright flows
+- Risk: no API-level contract tests; acceptable for a demo proposal at this budget
+
+Score: ACCEPTABLE (E2E covers the hard gate; unit tests would strengthen the pitch but aren't required by the rubric)
+
+### 4. Scope feasible for feature richness = 10?
+- 22 endpoints, admin CMS with 4 panels (tab-routed), 20 seeded products across 5 categories, order pipeline, JWT auth, inventory tracking — this is genuinely full-featured
+- Frontend 12-file cap is tight but mitigated by tabbed admin consolidation (planner-prescribed)
+- Estimated build complexity is high but follows a known clone pattern (adverteyes); no novel infrastructure
+- Backend registered as Surface service → reboot-durable per CLAUDE.md requirements
+
+Score: PASS
+
+### 5. Design direction fit for industry?
+- Dark steel palette + construction orange #F76B10, Barlow Condensed / Inter, rugged industrial identity confirmed against real orschellx.com brand
+- Explicitly NOT portfolio look (CLAUDE.md requirement met)
+- Tone and palette appropriate for an excavating/construction merch store
+
+Score: PASS
+
+---
+
+## Problems / Flags
+
+1. **No unit/integration test plan** — minor; deploy-test step covers behavioral correctness. Not a fail.
+2. **node:sqlite vs PostgreSQL** — documented tradeoff with Postgres-compatible schema. Builder must call this out in the demo UI or deck so client understands the production path. Verify planner's plan.md states this explicitly.
+3. **12-file frontend cap** — flagged by planner; builder must treat this as a hard constraint and consolidate admin into tabbed single-page.
+
+No blocking gaps. All 5 rubric dimensions pass.
+
+VERDICT: pass
+
+## handoff
+- produced: rubric eval confirming all 8 requirements covered, technologies sound, design fit for industry, scope appropriate for richness 10
+- decisions: pass verdict; no planner loop needed; node:sqlite tradeoff is acceptable and documented
+- next needs: CEO review; then demo-builder clones adverteyes, builds 22-endpoint Node/TS/SQLite backend, Vite+React frontend with construction-orange industrial design, registers Surface service, writes Flask bridge
+- risks: 12-file frontend cap is tight — builder must enforce tabbed admin; node:sqlite-vs-Postgres gap must be surfaced in deck/demo UI

@@ -1,0 +1,74 @@
+# Image Analyzer — Orschell Excavating e-commerce (post-deploy-test, second pass)
+
+**Date:** 2026-06-29
+**Demo:** https://michaelwegter.com/demos/orschell-excavating-e-commerce-full/
+**API endpoint:** https://api.michaelwegter.com/demos/orschell-excavating-e-commerce-full/api/
+
+---
+
+## QA Verification Post-DB Fixes
+
+### Image Status: ✓ ALL PASS
+
+**25 production products verified:**
+- All product images accessible (HTTP 200)
+- All URLs properly formatted: `https://images.unsplash.com/photo-{id}?w=400&h=300&fit=crop&auto=format`
+- 25 unique Unsplash photos (no duplicate image IDs)
+- All dimension parameters correct (w=400, h=300)
+- Auto-format parameter present on all URLs
+
+### Database Status: ✓ CLEAN
+
+- Product count: exactly 25 (test products 27 and 28 deleted)
+- No empty `image_url` fields
+- No picsum fallback images appearing
+- All products active (`active=1`)
+
+### Category Distribution
+
+| Category | Count | Image Status |
+|---|---|---|
+| Apparel | 7 | ✓ All OK |
+| Hats & Headwear | 4 | ✓ All OK |
+| Safety Gear | 5 | ✓ All OK |
+| Site Supplies | 5 | ✓ All OK |
+| Accessories | 4 | ✓ All OK |
+
+### Deployment Status
+
+| Component | Status |
+|---|---|
+| Demo URL (HTTP GET) | ✓ 200 |
+| API bridge health check | ✓ `{"ok":true,"service":"orschell-ecommerce-api"}` |
+| /work-samples route | ✓ SPA redirect works (404 on curl expected) |
+| No console errors reported | ✓ Per deploy-test.out |
+
+### Featured Products (Hero Page)
+
+Deploy-test reported "hero page: brand name visible, 4 images, CTA buttons" — PASS.
+Featured products in live API (featured=1):
+- OES-APP-001 (Dirt Hammers Tee Black)
+- OES-APP-004 (Pullover Hoodie Black)
+- OES-HAT-001 (Trucker Snapback Orange/Black)
+- OES-SAF-001 (Hi-Vis Safety Vest Class 2)
+
+All 4 featured product images verified 200 status.
+
+---
+
+## Summary
+
+✓ All 25 product images are production-ready
+✓ Database cleanup complete (no stray test products)
+✓ No broken images, no fallbacks, no placeholders
+✓ Hero page images verified
+✓ Image URLs properly formatted with correct dimensions
+✓ Unsplash photo library remains stable (all accessible)
+
+**Verdict: READY FOR MEDIA CAPTURE AND PROPOSAL**
+
+## handoff
+- produced: clean image audit post-DB fixes; 25/25 products with working Unsplash images; no broken/placeholder images
+- decisions: test products were successfully deleted; featured hero images (4 total) all verified 200; no image-side blockers remain
+- next needs: media-capture can proceed; screenshot hero page + shop page + admin dashboard with verified images
+- risks: Unsplash URLs subject to deletion without notice; frontend onError fallback (picsum placeholder) is acceptable but would indicate future Unsplash breakage

@@ -39,6 +39,14 @@ plan/brief for what the demo is supposed to do.
 - Two-phase auth testing: (1) test the real login flow, then (2) use Playwright
   `page.route()` to inject a valid auth header and verify the app is functional
   when auth works — this separates "auth flow broken" from "app broken".
+- Design-cue / palette check: extract the stylesheet `href` from the page HTML,
+  then `curl` that CSS file and grep it for the expected color vars/fonts. Do NOT
+  search the page body for colors — themes (esp. WordPress) keep CSS in an
+  external file, so a body-search false-negatives. This is also cheaper than a
+  full Playwright load.
+- Credentials: test the EXACT login credential the proposal advertises (the one
+  in cover-letter/one-pager), not a different seeded account, so a downstream
+  reviewer need not re-test login.
 - Compare what you observe to what the brief says should happen.
 
 Actually run the flows (a Playwright script, e.g. via `scripts/capture.mjs`
@@ -47,6 +55,19 @@ Before writing final selectors, do a quick DOM inspection pass (dump the relevan
 markup) rather than guessing aria-labels/ids — demos often use semantic class
 names (e.g. `.btn-transport`, `.song-chip`); prefer text-content matching as the
 primary fallback so checks survive markup differences.
+
+## Hand the image steps a screenshot script (so they can SEE every screen)
+The image-analyzer/eval steps must inspect images on EVERY screen, not just the
+homepage. As part of this step:
+- Cover ALL routes/views and key states in your Playwright run — every page in the
+  nav, post-login views, and modals/detail panes that show images — not only `/`.
+- Save a reusable capture script at `upwork-runs/<slug>/image-shots.mjs` that logs
+  in (if the demo has auth, using the same credentials) and screenshots each
+  route/state full-page into `upwork-runs/<slug>/image-shots/<route>.png`. Reuse
+  your real selectors and auth so the image steps don't re-derive them.
+- In your output, list every route/state it covers and the path to
+  `image-shots.mjs` (and the `image-shots/` folder) so image-analyzer can run it and
+  view the screenshots.
 
 ## Output
 List each flow you ran with pass/fail and the observed result. On failure, name

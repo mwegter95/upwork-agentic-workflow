@@ -1,0 +1,77 @@
+# Deploy-Test — Orschell Excavating e-commerce full-stack
+
+**Date:** 2026-06-29
+**Demo:** https://michaelwegter.com/demos/orschell-excavating-e-commerce-full/
+**API bridge:** https://api.michaelwegter.com/demos/orschell-excavating-e-commerce-full/api/
+**Credentials (deploy.out had wrong values):** admin@orschellsupply.com / Admin1234! · demo@customer.com / Demo1234!
+
+---
+
+## Test Results
+
+### Infrastructure
+| Check | Result |
+|---|---|
+| Demo index HTTP 200 | PASS |
+| Flask health `{"status":"ok","version":"1.0.0"}` | PASS |
+| Bridge health `{"ok":true,"service":"orschell-ecommerce-api"}` | PASS |
+| No browser console errors on first paint | PASS |
+| /work-samples/orschell-excavating-e-commerce-full loads in browser | PASS (SPA via 404.html redirect; curl gives 404, browser resolves correctly) |
+
+### Authentication
+| Check | Result |
+|---|---|
+| Admin login (admin@orschellsupply.com / Admin1234!) returns JWT role=admin | PASS |
+| Customer login (demo@customer.com / Demo1234!) returns JWT role=customer | PASS |
+| Register new customer → login → JWT | PASS |
+| Login form renders email+password at /#/login | PASS |
+| Customer login UI: submits, redirects to home, navbar shows user initials | PASS |
+| Admin login UI: submits, navbar shows "ADMIN" link | PASS |
+
+### Customer Shopping Flow (multi-step Playwright)
+| Check | Result |
+|---|---|
+| Hero page: brand name visible, 4 images, CTA buttons | PASS |
+| /shop: 26 products, prices, category filter buttons | PASS |
+| Add-to-cart button → cart drawer opens (item, subtotal $20, CHECKOUT) | PASS |
+| POST /api/cart/items `{product_id,quantity}` → items array | PASS |
+| GET /api/cart → items with stock info | PASS |
+| POST /api/orders `{shipping_name, shipping_address, ...}` → order#5 total=$62.06 payment_ref=MOCK-* | PASS |
+| GET /api/orders → customer order history shows new order | PASS |
+
+### Admin CMS (multi-step Playwright)
+| Check | Result |
+|---|---|
+| GET /api/admin/stats → {totalRevenue:$211.86, totalOrders:5, pendingOrders:3, lowStockCount:4, totalProducts:26, totalCustomers:2} | PASS |
+| Dashboard tab: revenue figure, orders count, revenue chart rendered | PASS |
+| Products tab: SKU/Name/Category/Price/Stock table, EDIT+DEACTIVATE+NEW PRODUCT buttons | PASS |
+| Orders tab: order list with customer email, status badge, UPDATE STATUS dropdown | PASS |
+| Order status update: dropdown PENDING→PROCESSING → PUT /api/admin/orders/:id/status → persisted after reload | PASS |
+| Inventory tab: stock table, LOW/OUT-OF-STOCK labels, EDIT buttons | PASS |
+| PUT /api/admin/inventory/:id `{quantity:50}` → inventory updated | PASS |
+| POST /api/products (admin JWT) → product created, id auto-assigned | PASS |
+| GET /api/categories → 5 categories | PASS |
+| GET /api/products/:slug → product detail | PASS |
+
+### Issues Found (non-blocking)
+1. **Credential mismatch in deploy.out**: deploy.out stated `admin@orschell.com / admin123`; actual credentials (shown on login page and in DB) are `admin@orschellsupply.com / Admin1234!`. All flows work with correct credentials.
+2. **`GET /api/products/categories`** conflicts with product-by-slug route (returns 404). Correct endpoint is `/api/categories`. Frontend uses the correct endpoint; no user-facing impact.
+3. **Stray test products** (CEO Test Widget, Deploy Test Product, Test Product) at 0 stock in inventory from QA runs; cosmetic only.
+
+---
+
+## Summary
+
+All hero flows verified live with Playwright against deployed demo and API bridge.
+- Customer: browse 26 products, add-to-cart (drawer with subtotal), checkout (mock payment, MOCK- ref), order history
+- Admin: dashboard (revenue chart, KPIs), product catalog management, order pipeline (status updates persist), inventory tracking
+- Auth: login, registration, role-based access (403 on admin routes with customer token)
+- No console errors; /work-samples route loads; all stated e-commerce features exercised
+
+## handoff
+- produced: full Playwright live test; all stated flows pass; credential correction documented
+- decisions: work-samples SPA 404 is expected GH Pages behavior (not a failure); order status update route is PUT /api/admin/orders/:id/status; cart uses product_id (snake_case) not productId
+- next needs: media-capture — screenshot /#/shop (hero) and /#/admin (dashboard); use admin@orschellsupply.com / Admin1234! for admin panel capture
+- risks: test order/product noise in DB (cosmetic); stale orders #3-#5 visible in admin orders list
+
+VERDICT: pass

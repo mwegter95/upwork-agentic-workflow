@@ -1,0 +1,22 @@
+# Prompt Optimizer — Maryland Driveway Restore
+
+## Pre-state
+- claude-workflow-studio: clean on `main` (nothing to checkpoint).
+- upwork-agentic-workflow: only untracked run dir pending → checkpointed (commit 32ff260).
+
+## Applied (safe, surgical, local commit 5dc0808; never pushed)
+- **CLAUDE.md** — new "WordPress Docker demos (recurring gotchas)" section consolidating the high-value reuse items: real WP IS possible via Surface runner (don't assume GitHub-Pages-static ceiling); large Docker pulls registered as services (not blocking in runner); ASCII-only runner scripts; no `?>` in WP PHP; sub-path canonical redirect filter; 3 login filters (wp_redirect/login_redirect/login_url); bridge must forward canonical Host + X-Forwarded-Proto:https, use a no-redirect opener, strip accept-encoding; self-test sub-pages through canonical Host.
+- **demo-builder.md** — ASCII-only runner scripts rule; WP-Docker pointer to the new CLAUDE.md section; self-test #6 (sub-pages through bridge + verify rendered PHP, not just 200).
+- **researcher.md** — if `pre-researcher.out` exists, do not re-derive domain/competitor/pricing/imagery; focus on build-prep.
+- **proposal-writer.md** — run a builder-supplied deck script (build-deck.py) instead of regenerating; `pip install python-pptx` once if missing; avoid em/en dashes while drafting (not just post-hoc).
+- **deploy-test.md** — palette check via external stylesheet curl+grep (not body search); test the EXACT advertised login credential so downstream reviewers needn't re-test.
+- **media-capture.md** — use `page.keyboard.press('Escape')` not `page.press('Escape')`.
+
+## Deferred for human review (NOT auto-edited)
+- `mw-backend/bridge_blueprint_template.py` code changes (no-redirect opener, strip accept-encoding, forward canonical Host). Out of this step's edit scope (agent prompts / CLAUDE.md only); the *requirements* are now documented in CLAUDE.md, but the template file edit is a backend code change for a human to apply + push.
+
+## handoff
+- produced: 6 prompt/CLAUDE.md edits + 1 consolidated CLAUDE.md WP-Docker section; checkpoint + edits committed locally (32ff260, 5dc0808).
+- decisions: scoped edits to agent prompts + CLAUDE.md only; folded WP-specific reuse items into one CLAUDE.md section to keep individual prompts lean.
+- next needs: human to apply the bridge_blueprint_template.py code fixes in mw-backend (documented requirement only).
+- risks: WP-Docker section is niche but recurring given user's stated multi-state WP ambitions; nothing pushed (per instructions).

@@ -1,0 +1,134 @@
+# Pre-Research: Maryland Driveway Restore
+## Answers to the 4 Plan-Blocked Research Items
+
+---
+
+### 1. fortherecordmn.com Proof Metrics (Publicly Accessible)
+
+**What's confirmed via public scrape:**
+- XML sitemap live at fortherecordmn.com/sitemap.xml — 6 pages, all indexed with priority weights (homepage 1.0, services/contact 0.9, about 0.8, gallery 0.7, FAQ 0.6)
+- URL structure is clean, logical, and SEO-standard (/about, /services, /gallery, /faq, /get-in-touch)
+- Title tag follows geo-targeted local SEO convention: "For The Record | Minnesota Wedding DJ & Audio Expert" (brand + location + primary service)
+- Site last-modified dates: 2026-03-01 across all pages (recent, signals active maintenance)
+- Sitemap itself is a strong SEO signal — many local service competitors don't have one
+
+**What cannot be publicly surfaced:** GA4 traffic data, GSC impressions/clicks, keyword rankings. These are private dashboard data. GA4 and GSC are confirmed integrated (sitemap submit implies GSC setup; client brief confirms GA was configured).
+
+**Proposal framing (cover letter proof point):**
+> "For a Minnesota wedding DJ, I built and SEO-configured a 6-page local service site — XML sitemap, geo-targeted title structure, logical URL hierarchy, and GA4/GSC integration — following the same on-page best practices this project requires."
+> Do NOT claim specific rankings or traffic. Hedge with: "Metrics are client-confidential; happy to share a screen share on a call."
+
+---
+
+### 2. Competitor Visual Context — Maryland Driveway Restoration
+
+**Identified competitors:**
+
+| Company | Design Quality | Differentiators | Weaknesses |
+|---|---|---|---|
+| Asphalt Star (asphaltstar.com) | 7.5/10 | Founded 1957, 3rd-gen, MD-focused, FAQ content, gallery, veteran discount, local schema | Generic contractor aesthetic, no pricing, placeholder retargeting pixel visible, no premium positioning |
+| SES Construction Group (sesconstructiongroup.com) | 3/10 | Phone number | Lead-gen aggregator, "domain for sale" notice, not a real business |
+| Got Paving | ~5/10 | Family-owned since 1990, competitive pricing | Standard contractor site |
+| Thomas & Son Asphalt Sealcoat, SEJ Paving, Goode Paving | 4-5/10 | Licensed, local | Generic, no visual differentiation |
+
+**CRITICAL MARKET GAP:** Zero competitors position as a premium, luxury-adjacent restoration brand. Every Maryland player uses the standard blue-collar contractor template: dark/light generic palette, phone CTAs, service bullet lists. No competitor uses:
+- Before/after hero slider
+- "Restore, don't replace" anti-replacement framing
+- Apple/Restoration Hardware aesthetic (generous white space, deep charcoal, forest green)
+- Environmental/sustainability angle
+- Large cinematic photography
+
+**MDR's design direction is a genuine blue ocean in this market.** The premium positioning is not just marketing — it is a real visual and messaging gap.
+
+**Positioning copy angle:** "Every other driveway company in Maryland sells you a new driveway. We sell you the one you have, made better." Differentiation: restoration-first ethos, premium materials, curb appeal focus, eco-conscious.
+
+---
+
+### 3. Realistic Pricing Data — 3-Tier Structure
+
+**Market benchmarks (Maryland/mid-Atlantic):**
+- Basic professional sealcoating: $0.30-$0.50/sq ft (Baltimore area, Angi/HomeGuide 2026)
+- National professional average: $0.25-$0.50/sq ft
+- Crack fill add-on: $0.35-$0.40/sq ft
+- Power wash add-on: $0.27-$0.39/sq ft
+- Minimum job charge: $150-$200
+- Typical double-car driveway (600 sq ft): $180-$300 basic seal; $350-$550 full treatment
+- Large residential (1,000 sq ft): $250-$500 basic; $550-$900 full
+
+**Recommended 3-tier pricing for demo Pricing page** (premium-positioned, slightly above market average to reinforce brand):
+
+| Tier | Name | What's Included | Price (avg 600 sq ft) | Per Sq Ft |
+|---|---|---|---|---|
+| 1 | Essential Restore | Power wash + 2-coat premium sealant | $299 | ~$0.45/sq ft |
+| 2 | Premium Restore | Power wash + crack fill + edge sealing + 2-coat sealant | $499 | ~$0.75/sq ft |
+| 3 | Complete Restore | Full assessment + all Premium + minor patching + UV protectant topcoat + 3-year warranty | $849 | ~$1.10/sq ft |
+
+These prices are above Angi averages (correct for premium positioning) and below full replacement cost ($3,000-$8,000 for a new asphalt driveway — the key comparison MDR should reference on the Pricing page).
+
+Add-on line items for the Pricing page:
+- Crack fill only: $75-$150
+- Oil stain treatment: $50-$100
+- Decorative edge banding: $2.50/linear ft
+- Driveway apron repair: quote required
+
+**Free Estimate CTA** should appear at bottom of pricing section — do not show price until estimate is requested (conversion best practice for premium service).
+
+---
+
+### 4. Before/After Imagery Sources — Demo-Ready
+
+**Free, no-attribution required (demo safe):**
+- Unsplash driveway collection: https://unsplash.com/s/photos/driveway (8K+ images)
+- Unsplash asphalt: https://unsplash.com/s/photos/asphalt (100+)
+- Unsplash asphalt paving: https://unsplash.com/s/photos/asphalt-paving
+- Unsplash cracked asphalt (ideal "before" image): https://unsplash.com/photos/cracked-asphalt-covers-the-entire-surface-MZgmNH6174Q
+- Pexels driveway: https://www.pexels.com/search/driveway/ (8K+ images)
+- Pexels asphalt: https://www.pexels.com/search/asphalt/ (20K+ images)
+
+**Demo build strategy (avoids needing two separate images per project):**
+Use CSS filter hack — single Pexels/Unsplash residential driveway photo; apply `filter: grayscale(80%) brightness(1.4)` for "before" (weathered/faded look) and full-color with `filter: brightness(0.85) saturate(1.2)` for "after" (fresh dark seal). The before-after slider JS library (e.g., `img-comparison-slider` web component or `before-after.js`) handles the drag interaction. This is hero-demo quality without needing real client photos.
+
+**Reference contractor for real before/after visual style:** https://www.maintainitall.com/before-and-afters/sealcoating — shows authentic restoration results, useful for design direction.
+
+**Production note (for proposal):** Tell client the live site will use their actual project photos; the demo uses stock imagery to illustrate the concept.
+
+---
+
+### 5. Additional Findings the Planner Should Know
+
+**WordPress/tech stack concerns:**
+- Client specified Bricks Builder + Rocket.net hosting — demo cannot replicate a real WP admin experience in a static iframe. The demo should be a pixel-accurate HTML/CSS/JS mockup of the FRONTEND (what visitors see), not a WP dashboard demo.
+- The original posting mentions "Option 3: Docker + Tunnel" for a live WP demo — this is the approach for a REAL login-accessible demo. Client explicitly wants this: "For this I want to create a real WordPress website hosted on my backend and at my michaelwegter.com domain."
+- This means demo-builder will need to: spin up WP via Docker on mw-backend's Surface machine, configure via WP-CLI, expose via Flask bridge tunnel, and deliver a real URL. This is significantly more complex than a static demo. Planner must explicitly scope this.
+
+**Docker WP feasibility on mw-backend Surface:**
+- Surface runner can execute Docker commands (Python script via surface_run.py)
+- WP + MySQL Docker containers are well-supported on Windows
+- WP-CLI available in the `wordpress:cli` Docker image
+- Cloudflare tunnel already in place — a Flask bridge proxying to WP Docker container port (e.g., 8080) would work, BUT the tunnel config must not be modified (CLAUDE.md hard rule). Bridge blueprint at /demos/maryland-driveway-restore/* -> 127.0.0.1:8080 is the correct approach.
+- Risk: Docker may not be installed on the Surface. Researcher cannot verify without running a surface_run check. Planner should flag this as a build-time verification step.
+
+**SEO schema types needed (confirmed for plan):**
+- LocalBusiness (or HomeAndConstructionBusiness subtype)
+- Service schema per service page
+- FAQPage schema (FAQ page)
+- Review/AggregateRating schema
+- BreadcrumbList
+- WebSite with SearchAction
+
+**Priority keywords confirmed (from brief):**
+- "Maryland driveway restoration" (primary)
+- "driveway restoration near me" (high-intent, mobile)
+- "asphalt restoration Maryland"
+- "driveway rejuvenation" (branded differentiator term)
+- "blacktop restoration"
+
+**QR Code landing page (/free-estimate):** Must be a distinct page/route, not the homepage. Include: 1 before/after image, 3-line value prop, phone CTA, text-a-photo CTA, minimal form. This is a Phase 1 deliverable per the brief (section 12).
+
+---
+
+## handoff
+- produced: Research covering all 4 plan-blocked items: fortherecordmn.com public SEO proof, Maryland competitor landscape, 3-tier pricing with real numbers, imagery sources + CSS demo strategy
+- decisions: fortherecordmn.com metrics are private dashboard data; cover letter should frame deliverables (sitemap, GA/GSC setup, URL structure) not traffic numbers; Docker WP route is what client actually wants per their "real WordPress website on my backend" instruction
+- next needs: Planner must (a) incorporate 3-tier pricing into Pricing page spec, (b) explicitly scope the Docker+WP approach vs static demo and make a build/risk decision, (c) note Docker availability on Surface as a build-time verification step, (d) add /free-estimate as a distinct page to the scope (it's in the brief, section 12)
+- risks: Docker not confirmed installed on Surface — could block live WP demo entirely; fallback = static HTML/CSS frontend mockup (still feature-richness-10 for what visitors see, but no real WP admin login); client may not have real before/after photos yet, demo uses stock imagery as placeholder

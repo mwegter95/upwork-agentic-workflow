@@ -306,6 +306,35 @@ Reboot durability is automatic: because the service lives in
 it if it crashes. The service files live in the runner workspace; the only repo
 change is the bridge blueprint.
 
+## WordPress Docker demos (recurring gotchas — bake these in, do not rediscover)
+
+A "real WordPress site the client can log into" IS achievable here via the Surface
+runner: a WP + MySQL Docker container, exposed publicly through a Flask bridge
+blueprint at `/demos/<slug>/...`. Do NOT treat GitHub Pages' static-only limits as
+the ceiling when the user explicitly asks for a real WP/admin login — weigh the
+user's stated implementation direction against the chosen host. Known issues:
+
+- **Large Docker image pulls** exceed Cloudflare's ~100s (524) timeout if done
+  inside a blocking runner script. Register the pull+start as a service so
+  `run-server.ps1` owns it; do not block on the pull in a `/run/exec` call.
+- **All runner scripts must be ASCII-only** (no Unicode/box-drawing in comments or
+  embedded PHP) — Windows charmap encoding throws otherwise.
+- **functions.php (and any WP PHP) must never use the `?>` closing tag** — a stray
+  one leaks PHP source to the page. Hard rule for all WP theme builds.
+- **Sub-path reverse proxy → canonical redirect loop:** add a `redirect_canonical`
+  filter that suppresses the redirect when `REQUEST_URI` is `/`.
+- **Admin login behind a sub-path bridge needs 3 filters**, not just `wp_redirect`:
+  `wp_redirect` (outer URL + embedded `redirect_to`), `login_redirect` (post-submit
+  destination), and `login_url` (the `auth_redirect` login URL).
+- **The bridge must forward the canonical public Host header (not strip it) plus
+  `X-Forwarded-Proto: https`**, use a no-redirect opener (never follow 302s — that
+  silently drops WP auth cookies), and strip `accept-encoding` on the way out (if
+  you strip `content-encoding` but not `accept-encoding`, the browser gets gzipped
+  bytes with no encoding header = garbage). These belong in
+  `bridge_blueprint_template.py`.
+- **Self-test sub-pages through the canonical Host**, not just `/` — canonical
+  redirects only break on non-root paths.
+
 ## Self-improvement (improvements.md + the optimizer step)
 
 Every step should briefly watch its own work and, **only when it noticed

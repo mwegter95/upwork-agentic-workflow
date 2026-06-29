@@ -1,0 +1,24 @@
+# CEO Review (Plan) — Orschell Excavating E-Commerce Full-Stack
+
+## Verification performed
+- Read plan-eval.out + planner.out (full).
+- Confirmed clone source on disk: `upwork-runs/adverteyes/backend/` (Express+TS, package.json/tsconfig/src) and `adverteyes/demo-src/` (Vite+React+TS) — both real completed-run artifacts, directly reusable as planner claims.
+
+## Assessment vs. richness 10
+Genuinely full-featured: full storefront (home/shop/detail/cart/checkout/account+order history) + 4-panel admin CMS (dashboard, product CRUD, inventory, order pipeline), 22 endpoints, JWT roles, atomic inventory decrement, relational schema with FKs/CHECK/indexes, 5 categories/20 real-brand products. All 8 posting requirements traceable. Design direction is bespoke and industry-fit (dark steel + #F76B10 from real orschellx.com), not portfolio look. This clears the bar for a winning demo.
+
+## Problems / flags (non-blocking — for builder, not a re-plan)
+1. **Endpoint count inconsistency**: heading says "20 endpoints" but the list and traceability say 22. Cosmetic; builder/deck should use the actual count built (the listed set = 22). Not worth a planner loop.
+2. **node:sqlite vs PostgreSQL**: acceptable, documented tradeoff. Builder MUST surface this in the deck "production migration" slide AND visibly in the demo (e.g. a small note/badge) so the client sees the Postgres production path — they explicitly asked for PostgreSQL.
+3. **12-file frontend cap is tight**: admin must be a single tab-routed page; consolidate aggressively. Builder treats the file cap as hard.
+4. **Mock payment must be clearly labeled** in the UI (planner has this — enforce at build).
+
+None of these require redoing an earlier step. The plan and research are sufficient to build.
+
+## handoff
+- produced: CEO pass on the plan; verified adverteyes clone source exists on disk
+- decisions: no planner/research loop; node:sqlite tradeoff accepted but must be visible in demo UI + deck; build to the 22-endpoint set
+- next needs: demo-builder clones adverteyes (swap better-sqlite3 → node:sqlite), wires 22 endpoints + seeds, builds industrial-themed Vite/React frontend (tabbed admin), registers Surface service, writes Flask bridge
+- risks: 12-file frontend cap (enforce tabbed admin); Postgres-vs-sqlite gap must be called out, not hidden; keep mock-payment labeling explicit
+
+VERDICT: pass

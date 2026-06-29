@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>E-Commerce Backend — Michael Wegter for Orschell Excavating</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1C1F24;
+    --surface: #25292F;
+    --border: #353A42;
+    --orange: #F76B10;
+    --yellow: #FFD600;
+    --text: #E8ECF0;
+    --muted: #9BA3AD;
+    --radius: 4px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6; }
+
+  /* HERO */
+  .hero {
+    background: var(--surface);
+    border-bottom: 3px solid var(--orange);
+    padding: 56px 48px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: repeating-linear-gradient(90deg, var(--orange) 0, var(--orange) 20px, var(--yellow) 20px, var(--yellow) 40px);
+  }
+  .hero-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+  .hero h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 52px;
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 1.05;
+    color: var(--text);
+  }
+  .hero h1 span { color: var(--orange); }
+  .hero-sub {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 620px;
+  }
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  .btn-primary {
+    background: var(--orange);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--radius);
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: #e05a00; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    display: inline-block;
+  }
+  .credentials-note {
+    background: rgba(247, 107, 16, 0.1);
+    border: 1px solid rgba(247, 107, 16, 0.3);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    display: inline-block;
+    margin-top: 4px;
+  }
+  .credentials-note strong { color: var(--orange); }
+
+  /* LAYOUT */
+  .page { max-width: 980px; margin: 0 auto; padding: 0 32px 80px; }
+  section { margin-top: 56px; }
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  /* FEATURE GRID */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+  .feature-card:hover { border-color: var(--orange); }
+  .feature-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  .feature-card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: rgba(247, 107, 16, 0.15);
+    color: var(--orange);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .badge.mock { background: rgba(255, 214, 0, 0.12); color: var(--yellow); }
+
+  /* SCREENSHOTS */
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .screenshot-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .screenshot-card img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    max-height: 220px;
+  }
+  .screenshot-caption {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* TECH STACK */
+  .stack-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .stack-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 6px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .stack-pill.accent { border-color: var(--orange); color: var(--orange); }
+
+  /* ENDPOINTS */
+  .endpoint-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .endpoint {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-family: 'Inter', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .method {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .method.get { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+  .method.post { background: rgba(247, 107, 16, 0.15); color: var(--orange); }
+  .method.put { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+  .method.delete { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+  /* TIMELINE */
+  .timeline { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 16px;
+    align-items: start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-row:last-child { border-bottom: none; }
+  .week-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-top: 2px;
+  }
+  .timeline-content h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .timeline-content p { font-size: 13px; color: var(--muted); }
+
+  /* BIO */
+  .bio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .proof-item { padding: 16px 0; border-bottom: 1px solid var(--border); }
+  .proof-item:last-child { border-bottom: none; }
+  .proof-item h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .proof-item p { font-size: 13px; color: var(--muted); }
+
+  /* FOOTER */
+  footer {
+    border-top: 2px solid var(--border);
+    margin-top: 64px;
+    padding-top: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .footer-links a:hover { color: var(--orange); }
+
+  /* PRICE BOX */
+  .price-box {
+    background: var(--surface);
+    border: 2px solid var(--orange);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .price-box .price {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--orange);
+    line-height: 1;
+  }
+  .price-box .price-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .price-box .includes {
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 420px;
+  }
+  .includes li { margin-bottom: 4px; padding-left: 16px; position: relative; }
+  .includes li::before { content: '✓'; position: absolute; left: 0; color: var(--orange); font-weight: 700; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 40px 24px 36px; }
+    .hero h1 { font-size: 36px; }
+    .page { padding: 0 20px 60px; }
+    .screenshot-grid { grid-template-columns: 1fr; }
+    .bio-grid { grid-template-columns: 1fr; }
+    .price-box { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">Proposal for Orschell Excavating</div>
+  <h1>Full-Stack<br /><span>E-Commerce</span><br />Backend</h1>
+  <p class="hero-sub">Node.js + TypeScript + PostgreSQL-compatible backend with JWT auth, a product catalog CMS, inventory tracking, and a complete order pipeline. Built to match your exact tech stack.</p>
+  <div class="cta-row">
+    <a class="btn-primary" href="https://michaelwegter.com/demos/orschell-excavating-e-commerce-full/" target="_blank">View Live Demo</a>
+    <a class="btn-secondary" href="https://michaelwegter.com" target="_blank">michaelwegter.com</a>
+  </div>
+  <div class="credentials-note">
+    Admin login: <strong>admin@orschellsupply.com</strong> / <strong>Admin1234!</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+    Customer: <strong>demo@customer.com</strong> / <strong>Demo1234!</strong>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- WHAT I BUILT -->
+  <section>
+    <div class="section-label">What I built</div>
+    <h2>Every feature on your list. Working now.</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="badge">Live</div>
+        <div class="feature-icon">🔐</div>
+        <h3>Auth + Accounts</h3>
+        <p>JWT-based auth with customer and admin roles. Register, login, password hashing (bcrypt). Role-gated admin routes return 403 on customer tokens. Account page shows full order history.</p>
+      </div>
+      <div class="feature-card">
+        <div class="badge">Live</div>
+        <div class="feature-icon">📦</div>
+        <h3>Product Catalog CMS</h3>
+        <p>Admin panel: create, edit, deactivate, and delete products. Name, SKU, price, description, category, image URL, featured flag, and active toggle. 26 seeded SKUs across 5 categories.</p>
+      </div>
+      <div class="feature-card">
+        <div class="badge">Live</div>
+        <div class="feature-icon">📊</div>
+        <h3>Inventory Tracking</h3>
+        <p>Per-SKU stock levels with LOW and OUT-OF-STOCK badges. Admin inline edit with atomic quantity updates. Inventory decrements on order submission. Stock status visible on product detail page.</p>
+      </div>
+      <div class="feature-card">
+        <div class="badge">Live</div>
+        <div class="feature-icon">🛒</div>
+        <h3>Order Processing</h3>
+        <p>Full cart-to-confirmation pipeline. Cart drawer with quantity controls, subtotal, and checkout flow. 4-step order status pipeline: Pending, Processing, Shipped, Delivered. Admin updates persist.</p>
+      </div>
+      <div class="feature-card">
+        <div class="badge mock">Mocked + labeled</div>
+        <div class="feature-icon">💳</div>
+        <h3>Payment Gateway</h3>
+        <p>Checkout form collects shipping + payment details. Payment step is clearly labeled as a simulation. Generates a realistic MOCK-XXXX reference number. Stripe integration is a one-day addition for production.</p>
+      </div>
+      <div class="feature-card">
+        <div class="badge">Live</div>
+        <div class="feature-icon">⚙️</div>
+        <h3>Admin Dashboard</h3>
+        <p>Revenue KPI, order count, 30-day revenue chart (recharts), recent order list. Products tab, Orders tab (filter by status), Inventory tab, all in one admin panel. No separate admin site.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREENSHOTS -->
+  <section>
+    <div class="section-label">Demo screens</div>
+    <h2>Customer + Admin flows</h2>
+    <div class="screenshot-grid">
+      <div class="screenshot-card">
+        <img src="01-hero.png" alt="Home page hero" loading="lazy" />
+        <div class="screenshot-caption">Home — Hero + Category Grid</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="02-shop.png" alt="Product shop" loading="lazy" />
+        <div class="screenshot-caption">Shop — 26 SKUs, Category Filter</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="06-admin-dashboard.png" alt="Admin dashboard" loading="lazy" />
+        <div class="screenshot-caption">Admin — Revenue Dashboard</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="07-admin-products.png" alt="Admin products" loading="lazy" />
+        <div class="screenshot-caption">Admin — Product CMS</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="08-admin-orders.png" alt="Admin orders" loading="lazy" />
+        <div class="screenshot-caption">Admin — Order Pipeline</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="09-admin-inventory.png" alt="Admin inventory" loading="lazy" />
+        <div class="screenshot-caption">Admin — Inventory Tracking</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REST API -->
+  <section>
+    <div class="section-label">REST API</div>
+    <h2>22 typed endpoints</h2>
+    <div class="endpoint-list">
+      <div class="endpoint"><span class="method post">POST</span>/api/auth/register</div>
+      <div class="endpoint"><span class="method post">POST</span>/api/auth/login</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/auth/me</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/products</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/products/:slug</div>
+      <div class="endpoint"><span class="method post">POST</span>/api/products (admin)</div>
+      <div class="endpoint"><span class="method put">PUT</span>/api/products/:id (admin)</div>
+      <div class="endpoint"><span class="method delete">DEL</span>/api/products/:id (admin)</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/categories</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/cart</div>
+      <div class="endpoint"><span class="method post">POST</span>/api/cart/items</div>
+      <div class="endpoint"><span class="method put">PUT</span>/api/cart/items/:id</div>
+      <div class="endpoint"><span class="method delete">DEL</span>/api/cart/items/:id</div>
+      <div class="endpoint"><span class="method delete">DEL</span>/api/cart (clear)</div>
+      <div class="endpoint"><span class="method post">POST</span>/api/orders (checkout)</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/orders (customer)</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/orders/:id</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/admin/orders</div>
+      <div class="endpoint"><span class="method put">PUT</span>/api/admin/orders/:id/status</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/admin/inventory</div>
+      <div class="endpoint"><span class="method put">PUT</span>/api/admin/inventory/:id</div>
+      <div class="endpoint"><span class="method get">GET</span>/api/admin/dashboard</div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section>
+    <div class="section-label">Tech stack</div>
+    <h2>Your exact requirements</h2>
+    <div style="display:flex; flex-direction:column; gap:16px; margin-top:8px;">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Backend</div>
+        <div class="stack-row">
+          <span class="stack-pill accent">Node.js 22</span>
+          <span class="stack-pill accent">TypeScript</span>
+          <span class="stack-pill accent">Express 4</span>
+          <span class="stack-pill accent">PostgreSQL (schema)</span>
+          <span class="stack-pill">JWT (PyJWT pattern)</span>
+          <span class="stack-pill">bcrypt</span>
+          <span class="stack-pill">REST API</span>
+          <span class="stack-pill">node:sqlite (demo)</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Frontend</div>
+        <div class="stack-row">
+          <span class="stack-pill">Vite 5</span>
+          <span class="stack-pill">React 18</span>
+          <span class="stack-pill">TypeScript</span>
+          <span class="stack-pill">React Router 6</span>
+          <span class="stack-pill">Recharts</span>
+          <span class="stack-pill">Axios</span>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:14px 18px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Production PostgreSQL path</div>
+        <p style="font-size:13px;color:var(--muted);">The demo runs on SQLite with a fully PostgreSQL-compatible schema (standard SQL types, no SQLite-isms, full foreign key and index definitions). Moving to a hosted Postgres instance is a driver swap from <code style="color:var(--text)">node:sqlite</code> to <code style="color:var(--text)">pg + pg-pool</code>. The schema and all queries transfer unchanged.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section>
+    <div class="section-label">Delivery plan</div>
+    <h2>2.5 to 3 weeks, fixed price</h2>
+    <div class="timeline">
+      <div class="timeline-row">
+        <div class="week-label">Week 1</div>
+        <div class="timeline-content">
+          <h4>Audit + Foundation</h4>
+          <p>Review your existing codebase. Identify what is production-ready and what is missing. Set up Postgres, migrate / clean the schema, wire auth (JWT), and stub remaining endpoints. TypeScript strict mode throughout.</p>
+        </div>
+      </div>
+      <div class="timeline-row">
+        <div class="week-label">Week 2</div>
+        <div class="timeline-content">
+          <h4>Core features</h4>
+          <p>Complete the product catalog API, inventory decrement logic, cart persistence, and the full order pipeline (cart-to-confirmation, status transitions). Admin CMS endpoints. Stripe integration if approved.</p>
+        </div>
+      </div>
+      <div class="timeline-row">
+        <div class="week-label">Week 3</div>
+        <div class="timeline-content">
+          <h4>Performance + QA</h4>
+          <p>Query analysis and indexing, connection pooling, rate limiting, input validation. Integration tests. Any frontend wiring needed to connect to the completed backend. Final handoff with documentation.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="price-box">
+      <div>
+        <div class="price">$1,700</div>
+        <div class="price-label">Fixed price, as posted</div>
+      </div>
+      <ul class="includes">
+        <li>All 8 stated backend features, fully implemented</li>
+        <li>Production-ready Node.js + TypeScript + PostgreSQL</li>
+        <li>22+ REST endpoints, JWT auth, admin CMS</li>
+        <li>Technical documentation + handoff notes</li>
+        <li>Stripe-ready checkout (integration on confirmation)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- WHY ME -->
+  <section>
+    <div class="section-label">Why me</div>
+    <h2>Shipped it before. Can own it fast.</h2>
+    <div class="bio-grid">
+      <div>
+        <div class="proof-item">
+          <h4>U.S. Bank / TDAAS (2.5 years)</h4>
+          <p>Became sole developer and SME on a React + Python + SQL internal platform within months of joining. 60k+ LOC. Led the app's Azure Cloud migration. If something broke, I fixed it, usually within 10 minutes.</p>
+        </div>
+        <div class="proof-item">
+          <h4>Optum RHRP 4 (current)</h4>
+          <p>Angular + .NET/C# + PostgreSQL enterprise project, onion architecture, strict Agile. 150+ story points delivered. Team's go-to for AI-assisted development. Contract started April 2026.</p>
+        </div>
+      </div>
+      <div>
+        <div class="proof-item">
+          <h4>TypeScript + Node.js daily</h4>
+          <p>TypeScript is my primary language for backend work. The demo backend here (22 endpoints, typed request/response interfaces, strict tsconfig) was built without scaffolding or boilerplate generators.</p>
+        </div>
+        <div class="proof-item">
+          <h4>Full-stack portfolio</h4>
+          <p>Multiple shipped apps at michaelwegter.com covering React, Python, PostgreSQL, Flask, Express, and real integrations (Spotify, Apple Music, Google APIs). Code at github.com/mwegter95.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page -->
+
+<div class="page">
+  <footer>
+    <div class="footer-name">Michael Wegter</div>
+    <div class="footer-links">
+      <a href="https://michaelwegter.com" target="_blank">Portfolio</a>
+      <a href="https://github.com/mwegter95" target="_blank">GitHub</a>
+      <a href="https://michaelwegter.com/demos/orschell-excavating-e-commerce-full/" target="_blank">Live Demo</a>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

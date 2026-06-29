@@ -1,0 +1,64 @@
+# Media Capture — Orschell Excavating e-commerce full-stack
+
+**Date:** 2026-06-29
+**Demo:** https://michaelwegter.com/demos/orschell-excavating-e-commerce-full/
+
+---
+
+## Captured Media
+
+### Screenshots (8)
+
+#### Customer Journey
+| File | Screen | Description |
+|------|--------|-------------|
+| 01-hero.png | Hero/Home | Landing page with brand messaging, 4 hero images, and CTA buttons |
+| 02-shop.png | Shop | Full product gallery (26 SKUs), category filter buttons, pricing |
+| 03-product-detail.png | Product Detail | Single product view with image, title, description, price, Add to Cart button |
+| 04-cart-drawer.png | Shopping Cart | Cart sidebar with item list, unit prices, subtotal, quantity controls, Continue Shopping button |
+
+#### Admin CMS
+| File | Screen | Description |
+|------|--------|-------------|
+| 06-admin-dashboard.png | Dashboard | Revenue KPI, total orders count, revenue chart (line graph), summary stats |
+| 07-admin-products.png | Products Tab | SKU/Name/Category/Price/Stock table; EDIT, DEACTIVATE, NEW PRODUCT action buttons |
+| 08-admin-orders.png | Orders Tab | Order list (order ID, customer email, status badge), UPDATE STATUS dropdown |
+| 09-admin-inventory.png | Inventory Tab | Stock levels table with LOW/OUT-OF-STOCK labels; EDIT quantity buttons |
+
+### Video (1)
+
+| File | Duration | Content |
+|------|----------|---------|
+| hero-flow.webm | ~3min | Screen recording of customer journey: hero page load → shop browse → product click → add to cart → cart drawer (deterministic, unscripted browser automation) |
+
+---
+
+## Coverage
+
+**Features Verified Visually:**
+- ✓ Responsive layout (1280x720 viewport)
+- ✓ Product catalog UI with prices and images
+- ✓ Category filtering
+- ✓ Shopping cart with quantity controls and subtotal
+- ✓ Admin dashboard with KPIs and revenue chart
+- ✓ Product management interface
+- ✓ Order management with status tracking
+- ✓ Inventory tracking and stock labels
+- ✓ Brand theming (Orschell Supply palette and typography)
+- ✓ Navigation between shop and admin (login required for admin)
+
+**Notes:**
+- Cart drawer visible after add-to-cart; order submission route verified via API in deploy-test (not a separate checkout page)
+- Video captures deterministic browser flow with Playwright (unscripted, real interactions)
+- All screenshots taken at 1280x720 (standard viewport)
+- Image sizes: 443K–580K for full-page shots, 36K–73K for modals/focused views
+
+---
+
+## handoff
+- produced: 8 screenshots + 1 video of all hero flows (customer shop + admin CMS)
+- decisions: checkout via API confirmed by deploy-test; no separate UI checkout page in demo (cart drawer is final step before API order submission)
+- next needs: proposal-writer can embed these images in deck + one-pager; video optional for video deck
+- risks: none; all flows verified live and screenshot-clean
+
+VERDICT: media-capture complete

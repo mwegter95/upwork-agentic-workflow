@@ -1,0 +1,254 @@
+# Plan — Maryland Driveway Restore
+## Status: READY (research integrated)
+
+---
+
+## Demo Concept
+
+**Type:** Full-featured static HTML/CSS/JS site (9 pages + assets), hosted at
+`michaelwegter.com/demos/maryland-driveway-restore/`. Flask blueprint receives
+and persists estimate form submissions. This is the PRIMARY build target — static
+demo reproduces the Phase 1 look, feel, and visitor experience exactly. The
+proposal describes how the same build pattern maps to WordPress + Bricks Builder
+for the actual delivery.
+
+**Core narrative:** "Restore, Don't Replace" — a premium lead-generation site for
+a Maryland driveway restoration company. The demo IS the proof: 9 fully navigable,
+mobile-first pages with working lead capture, before/after drag slider, filterable
+gallery lightbox, service-area map, embedded schema, and GA4 event hooks.
+
+**WP Docker stretch (CEO-gated only):** If CEO approves after reviewing the
+static demo quality, the builder MAY attempt a real WP container via Flask bridge
+blueprint at `/demos/maryland-driveway-restore-wp/`. Flask bridge only — no
+separate tunnel ingress. Risk: Docker not confirmed installed on Surface, URL
+rewriting behind a sub-path bridge is complex. Critical path does NOT depend on
+this.
+
+---
+
+## Design System (locked — do NOT use michaelwegter.com palette)
+
+```
+Palette:
+  charcoal-deep:   #1A1D1A   (nav, footer, primary dark backgrounds)
+  charcoal-mid:    #2C302C   (alternate sections, card backgrounds)
+  white:           #FFFFFF   (text on dark, pure backgrounds)
+  off-white:       #F5F4F0   (light section backgrounds)
+  forest-green:    #2F5D3A   (primary CTA color, accent, highlights)
+  green-light:     #4A8C5C   (hover states, secondary accents)
+  gold-muted:      #C9A84C   (star ratings, premium badges, subtle accents)
+
+Typography:
+  Headings:   Playfair Display (Google Fonts) — luxury serif, editorial weight
+  Body:       Inter (Google Fonts) — clean, legible sans
+  Labels/CTA: Inter 600-700, slight letter-spacing, uppercase for badge labels
+
+Layout:
+  Max content width: 1200px centered
+  Section vertical padding: 80px desktop / 40px mobile
+  Whitespace-first, photography-led — full-bleed hero, oversized before/after
+  No cramming; each section breathes
+
+Mobile (design-first breakpoints):
+  Primary: 480px (phone)
+  Secondary: 768px (tablet)
+  Sticky CTA bar: position:fixed bottom:0 (Call Now + Text a Photo), always visible
+  Touch targets: min 48x48px
+  Hamburger nav on mobile, full horizontal nav on desktop
+  Images: loading="lazy", width/height set to prevent layout shift
+```
+
+---
+
+## Page Architecture (9 pages)
+
+| File | Route | Key Features |
+|------|-------|-------------|
+| `index.html` | / (homepage) | Hero before/after drag slider, benefits strip, process steps (4 steps), pricing preview cards, gallery 6-thumbnail preview, testimonials/reviews, FAQ accordion, estimate form, footer |
+| `driveway-restoration.html` | /driveway-restoration | Process breakdown, materials, timeline, before/after comparison, "restore vs replace" cost comparison, Service schema JSON-LD |
+| `pricing.html` | /pricing | 3-tier pricing table (Essential/Premium/Complete), add-ons list, vs-replacement cost comparison, FAQ strip, CTA |
+| `gallery.html` | /gallery | 16-24 before/after image grid, JS lightbox (vanilla), filter buttons by project type |
+| `about.html` | /about | Company mission, restore-not-replace ethos, environmental/tree-planting commitment, credentials/experience, team headshots placeholder |
+| `faq.html` | /faq | Full FAQ accordion (20+ questions), FAQPage schema JSON-LD, sidebar CTA |
+| `contact.html` | /contact | Full lead-capture form (name, email, phone, address, project description, photo upload, service area select), embedded Google Map iframe, response-time promise |
+| `service-areas.html` | /service-areas | MD county/city grid list + embedded map, Annapolis base, coverage zones, local keyword anchor text |
+| `free-estimate.html` | /free-estimate | QR target page: single powerful before/after, 3-bullet value prop, Call Now CTA, Text a Photo CTA, minimal 5-field form |
+
+---
+
+## Feature Implementation Map
+
+| Brief Requirement | Demo Implementation |
+|------------------|-------------------|
+| Before/after hero slider | `img-comparison-slider` web component (CDN import) — drag handle, keyboard accessible |
+| Before/after images | Single Pexels/Unsplash residential driveway photo; CSS `filter: grayscale(80%) brightness(1.4)` for "before", `filter: brightness(0.85) saturate(1.2)` for "after" |
+| Sticky Call Now + Text a Photo | `position:fixed; bottom:0; z-index:1000` bar with two colored buttons, mobile-only via CSS |
+| Estimate form + photo upload | `<form>` with `<input type="file" accept="image/*">`, posts to Flask `POST /demos/maryland-driveway-restore/submit` |
+| Service area map | Embedded Google Maps iframe (Annapolis, MD center) with satellite view; fallback SVG Maryland county map |
+| LocalBusiness schema | JSON-LD in `<head>` of every page: `HomeAndConstructionBusiness` subtype, address, phone, service area |
+| FAQPage schema | JSON-LD on `faq.html` and in the homepage FAQ section |
+| Service schema | JSON-LD on `driveway-restoration.html` |
+| AggregateRating schema | JSON-LD on homepage (4.9 stars, 47 reviews placeholder) |
+| BreadcrumbList schema | JSON-LD on all inner pages |
+| GA4 event hooks | `gtag('event', ...)` calls: `form_submit`, `cta_click_call`, `cta_click_text`, `gallery_view`, `pricing_view` |
+| XML sitemap | `sitemap.xml` in demo root, all 9 pages with priority weights |
+| Unique title + meta per page | Each file: `<title>` with geo + keyword + brand, `<meta name="description">` 150-160 chars |
+| H1-H3 hierarchy | Single H1 per page aligned to target keyword, logical sub-headings |
+| Image ALT text | All `<img>` tags: descriptive keyword-inclusive alt attributes |
+| Internal linking | Nav, footer, in-page CTAs cross-link between all pages |
+| Gallery lightbox | Vanilla JS lightbox — click thumbnail, overlay opens with before/after pair, keyboard navigation |
+| Core Web Vitals | `loading="lazy"` on all below-fold images, minified inline CSS critical path, no render-blocking scripts |
+| /free-estimate QR page | Distinct `free-estimate.html`, linked from footer and contact page; not the homepage |
+
+---
+
+## Pricing Page Content (locked from research)
+
+**3-Tier Table:**
+
+| Tier | Name | Includes | Price (600 sq ft avg) | Per sq ft |
+|------|------|----------|----------------------|-----------|
+| 1 | Essential Restore | Power wash + 2-coat premium sealant | $299 | ~$0.45 |
+| 2 | Premium Restore | Power wash + crack fill + edge sealing + 2-coat sealant | $499 | ~$0.75 |
+| 3 | Complete Restore | Full assessment + Premium services + minor patching + UV topcoat + 3-year warranty | $849 | ~$1.10 |
+
+**Add-ons:** Crack fill only $75-$150 / Oil stain treatment $50-$100 / Decorative edge banding $2.50/lin ft / Apron repair: quote required
+
+**Key anchor copy:** "A new driveway costs $3,000-$8,000. Complete Restore: $849."
+
+---
+
+## Service Areas Content (locked)
+
+Annapolis base. Primary coverage: Anne Arundel County, Baltimore City, Baltimore County, Howard County, Prince George's County, Montgomery County, Queen Anne's County, Calvert County, Charles County. Key cities: Annapolis, Baltimore, Columbia, Ellicott City, Bowie, Laurel, Silver Spring, Rockville, Chesapeake Beach, Waldorf, Upper Marlboro.
+
+---
+
+## fortherecordmn.com Proof Framing (locked from research)
+
+**Do NOT claim specific rankings or traffic numbers** (private dashboard data).
+
+Cover letter framing:
+> "For a Minnesota wedding DJ, I configured a 6-page local service site with an XML sitemap (all pages indexed with priority weights), geo-targeted title structure ('Brand | Location | Primary Service'), logical /slug URL hierarchy, and GA4/GSC integration — the same on-page foundation this project requires. Metrics are client-confidential; happy to share a screen share on a call."
+
+---
+
+## Competitive Differentiation (from research)
+
+**Market gap identified:** Zero Maryland driveway competitors use a premium aesthetic. Asphalt Star (asphaltstar.com) is the strongest (7.5/10, 1957 heritage, local schema) but uses a generic contractor template. Every other player is 3-5/10. No competitor has:
+- Before/after hero slider
+- "Restore, don't replace" anti-replacement framing
+- Apple/RH aesthetic (whitespace, charcoal, forest green, serif headings)
+- Environmental/sustainability angle
+- Cinematic photography
+
+**Proposal positioning line:** "Every other driveway company in Maryland sells you a new driveway. Maryland Driveway Restore sells you the one you have, made better."
+
+This differentiation should appear in: cover letter intro, homepage hero subhead, About page mission statement, one-pager headline.
+
+---
+
+## Flask Blueprint
+
+`maryland_driveway_blueprint.py` in `mw-backend/`:
+- `POST /demos/maryland-driveway-restore/submit` — name, email, phone, address, description, optional file; stores in SQLite `mw.db` table `mdr_leads`; returns `{"ok": true}`
+- `GET /demos/maryland-driveway-restore/leads` — JWT-protected, returns all leads as JSON for Michael to review
+- CORS: open for `https://michaelwegter.com`
+
+---
+
+## Proposal Package
+
+| Deliverable | Notes |
+|------------|-------|
+| Cover letter | Michael's voice; answers all 6 dev questions point-by-point; cites fortherecordmn.com with the approved framing above; includes demo link; $850-$1,200 fixed Phase 1 + Rocket 2 months + separate Phase 2 estimate; no em/en dashes |
+| One-pager HTML | Charcoal/green/white design language (demo's palette); Phase 1 scope bullets + Phase 2 vision + timeline; demo screenshot + link |
+| PPTX deck | Matches demo aesthetic; slides: problem (Maryland asphalt decay), MDR solution, Phase 1 scope, Phase 2 roadmap (multi-state vision), pricing, proof (fortherecordmn.com framing), 7-day timeline, CTA |
+| Phase 1 price | $1,100 fixed (midpoint of $850-$1,200 band), Rocket.net hosting first 2 months included |
+| Phase 2 estimate | $3,500-$6,500 range; 30-50 city pages + learning center + video library + interactive estimate calculator + case studies + advanced local SEO; framed as "ongoing multi-state partnership as the business scales" |
+
+---
+
+## Scope Fence
+
+**Build (demo-builder does this):**
+- All 9 pages (8 + /free-estimate), mobile-first, sticky CTAs
+- Working estimate form (Flask backend, real lead storage)
+- Before/after drag slider (img-comparison-slider web component)
+- Gallery with lightbox
+- Service area map (Google Maps iframe)
+- All JSON-LD schema (LocalBusiness, Service, FAQPage, AggregateRating, BreadcrumbList)
+- GA4 event hooks (gtag snippets)
+- sitemap.xml
+- Unique title/meta/H1 per page, ALT text on all images
+- Flask blueprint in mw-backend
+
+**Describe in proposal only (not built in demo):**
+- Actual WordPress + Bricks Builder deployment
+- Rank Math, Fluent Forms, Wordfence, UpdraftPlus, ShortPixel, Site Kit (described as Phase 1 delivery tools)
+- Google Business Profile optimization
+- Actual Rocket.net hosting
+- Phase 2 features
+
+---
+
+## Traceability Matrix
+
+| Brief Requirement | Demo | Cover Letter | Deck |
+|------------------|------|-------------|------|
+| 8 Phase-1 pages | ✓ (9 files) | ✓ | ✓ |
+| /free-estimate QR landing page | ✓ | ✓ | ✓ |
+| Mobile-first + sticky CTAs | ✓ | ✓ | ✓ |
+| Before/after hero | ✓ | ✓ | ✓ |
+| Estimate form + photo upload | ✓ | ✓ | ✓ |
+| LocalBusiness/FAQ/Service/Review schema | ✓ | ✓ | ✓ |
+| GA4 event hooks | ✓ | ✓ | — |
+| XML sitemap | ✓ | ✓ | — |
+| Unique title/meta per page | ✓ | ✓ | — |
+| H1-H3 hierarchy | ✓ | ✓ | — |
+| Image ALT text + internal linking | ✓ | ✓ | — |
+| Service area map | ✓ | ✓ | ✓ |
+| Core Web Vitals / Lighthouse 90+ | ✓ | ✓ | ✓ |
+| Priority keywords in content | ✓ | ✓ | — |
+| Phase 1 fixed price ($850-$1,200) | — | ✓ | ✓ |
+| Phase 2 estimate + roadmap | — | ✓ | ✓ |
+| 6 developer questions answered | — | ✓ | — |
+| fortherecordmn.com SEO/GA proof | — | ✓ | ✓ |
+| WP/Bricks/Rank Math stack described | — | ✓ | ✓ |
+| 7-day launch timeline | — | ✓ | ✓ |
+| Premium Apple/RH aesthetic | ✓ | ✓ | ✓ |
+| Deep charcoal + white + forest green | ✓ | ✓ | ✓ |
+| Competitive differentiation | ✓ | ✓ | ✓ |
+
+---
+
+## workSamples.js Registry Entry
+
+```js
+{
+  id: <next id>,
+  slug: "maryland-driveway-restore",
+  title: "Maryland Driveway Restore",
+  description: "Premium mobile-first lead-gen site for a Maryland driveway restoration company. Before/after slider, real estimate form, 9-page SEO-structured build with embedded schema and GA4 hooks.",
+  category: "Utility",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/maryland-driveway-restore/",
+  color: "#2F5D3A",
+  icon: "🛣️",
+  frameStyle: "walnut",
+  client: "Maryland Driveway Restore",
+  postingSummary: "Phase 1 premium WordPress site, mobile-first, $850-$1,200, 1-week launch, local SEO focus.",
+  builtFor: "Lead generation + local SEO",
+  date: "2026-06-27",
+  proposalDeckUrl: "",
+  proposalPageUrl: "",
+}
+```
+
+---
+
+## handoff
+- produced: finalized 9-page plan (static demo + Flask backend), locked design system (charcoal #1A1D1A / forest-green #2F5D3A / off-white #F5F4F0, Playfair Display + Inter), feature map, traceability matrix, 3-tier pricing, competitor gap analysis, fortherecordmn.com proof framing, workSamples.js registry entry.
+- decisions: static demo is primary build target (no WP Docker on critical path); Docker WP stretch is CEO-gated only; img-comparison-slider for before/after; CSS filter trick for before/after imagery; Flask blueprint for real lead capture; fortherecordmn.com proof cites deliverables not traffic numbers; Phase 1 price $1,100 fixed + Rocket 2 months.
+- next needs: demo-builder to build all 9 pages (index.html + 8 inner) + sitemap.xml + Flask blueprint; proposal-writer to answer all 6 dev questions, use approved fortherecordmn.com framing, and set Phase 2 range at $3,500-$6,500.
+- risks: img-comparison-slider CDN availability (fallback: vanilla JS drag implementation ~50 LOC); Docker WP on Surface unconfirmed (not critical path); before/after stock imagery may need CSS filter simulation (strategy locked above); client may ask for real WP login (proposal addresses this by describing the full WP delivery plan clearly).

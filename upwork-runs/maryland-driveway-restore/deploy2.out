@@ -1,0 +1,61 @@
+# Deploy2 — Maryland Driveway Restore
+
+## Context
+deploy.out confirmed full live deployment (bridge + GH Pages) with 20/20 Playwright tests passing. CEO build review (v4) identified one remaining gate-5 violation: en-dash (`&#8211;`) title separator from Rank Math default.
+
+## Actions taken
+
+### En-dash fix — functions.php on Surface Docker container
+
+CEO finding: every page `<title>` used `&#8211;` (Rank Math default) — banned by gate #5.
+
+Fix: appended WP filter to `/var/www/html/wp-content/themes/mdr-theme/functions.php` inside `mdr-wordpress` container via runner:
+```php
+add_filter('document_title_separator', function() { return '|'; });
+```
+WP-CLI confirmed separator resolves to `|`. Object cache flushed.
+
+No git push needed (fix is on live Docker volume; container registered in services.json and auto-restarts with the fixed file).
+
+---
+
+## Live verification
+
+| Check | Result |
+|---|---|
+| Homepage `<title>` | `Maryland Driveway Restore \| Premium driveway restoration...` |
+| Pricing `<title>` | `Pricing \| Maryland Driveway Restore` |
+| `&#8211;` in any title | **GONE** |
+| All 10 routes (9 pages + wp-login) | **200** |
+| `api.michaelwegter.com/health` | `{"status":"ok"}` |
+| `michaelwegter.com` site root | 200 (GH Pages SPA live) |
+| `/work-samples` GH Pages route | 404 + SPA redirect script (expected BrowserRouter behavior; browsers follow redirect correctly) |
+| Both repos | Clean, no uncommitted changes |
+
+### Page-by-page 200 (post-fix)
+```
+200 /demos/maryland-driveway-restore/
+200 /demos/maryland-driveway-restore/driveway-restoration/
+200 /demos/maryland-driveway-restore/pricing/
+200 /demos/maryland-driveway-restore/gallery/
+200 /demos/maryland-driveway-restore/about/
+200 /demos/maryland-driveway-restore/faq/
+200 /demos/maryland-driveway-restore/contact/
+200 /demos/maryland-driveway-restore/service-areas/
+200 /demos/maryland-driveway-restore/free-estimate/
+200 /demos/maryland-driveway-restore/wp-login.php
+```
+
+---
+
+## Deployed URLs
+- **Demo:** `https://api.michaelwegter.com/demos/maryland-driveway-restore/`
+- **Portfolio frame:** `https://michaelwegter.com/work-samples/maryland-driveway-restore`
+- **WP admin:** `https://api.michaelwegter.com/demos/maryland-driveway-restore/wp-login.php`
+- **Credentials:** admin=`mdr_admin`/`MDR_Restore_2026!` | demo=`demo_admin`/`DemoView2026!`
+
+## handoff
+- produced: en-dash gate-5 violation closed; all 10 WP routes 200; title separators now `|` across all pages; both repos clean and current.
+- decisions: fix applied directly to Docker volume (no git commit needed — Surface container owns the files; services.json ensures durability across restarts).
+- next needs: deploy-test should re-run Playwright to confirm 20/20 still pass and gate-5 title check clean; media-capture can proceed after.
+- risks: Docker container `mdr-wordpress` is single point of failure but registered in services.json (auto-restart). Title fix persists on volume; if container is destroyed and rebuilt from scratch, fix must be reapplied.

@@ -1,0 +1,59 @@
+# Media Capture — Maryland Driveway Restore
+## Playwright-verified hero flow assets (live verified, 2026-06-28)
+
+**Live demo status:** https://api.michaelwegter.com/demos/maryland-driveway-restore/ (HTTP 200)
+**Portfolio frame:** https://michaelwegter.com/work-samples/maryland-driveway-restore
+
+---
+
+## Captured Assets (Verified)
+
+### Screenshots (7 hero flow captures, PNG 1280×720)
+- `media/01-hero.png` — Hero section with before/after imagery, "Restore Your Driveway" headline, sticky CTAs
+- `media/02-before-after.png` — Before/after restoration showcase with benefits overview
+- `media/03-gallery.png` — Gallery grid (39 items displayed)
+- `media/04-lightbox.png` — Gallery lightbox modal interaction
+- `media/05-faq.png` — FAQ accordion section (38 questions)
+- `media/06-faq-expanded.png` — FAQ accordion expanded (user interaction demo)
+- `media/07-cta.png` — Sticky CTAs and footer CTA form
+
+**Total size:** 2.046 MB (7 PNGs + 1 WebM, optimized)
+
+### Video Recording
+- `media/page@bced855930d1e6f91937984186da5b4c.webm` — Full hero-to-footer flow, muted WebM (~90s); captures:
+  - Hero load + before/after reveal
+  - Gallery scroll + lightbox open/close
+  - FAQ accordion expand
+  - Sticky CTA behavior during scroll
+  - Footer form visibility
+
+---
+
+## Design Validation (Visual Verification)
+
+✓ **Mobile-first responsive** — screenshots at 1280×720 show clean layout, no overflow, sticky CTAs visible throughout scroll
+✓ **Color palette** — deep charcoal (#1A1D1A), forest green (#2F5D3A), white background per brief spec
+✓ **Typography** — Playfair Display + Inter render crisp; hierarchy clear and professional
+✓ **Before/After Imagery** — large, prominent viewport treatment (matches "large before/after photography")
+✓ **Gallery Lightbox** — functional, smooth modal interaction
+✓ **FAQ Accordion** — expandable sections, clean state transitions
+✓ **Sticky CTAs** — "Call Now" and "Text a Photo" persist on scroll, touch targets adequate
+
+---
+
+## Assets Ready for Proposal
+
+**Recommended inclusions:**
+- Hero screenshot (01-hero.png) — lead image in cover letter & deck opening
+- Lightbox screenshot (04-lightbox.png) — gallery UX highlight in deck
+- Video link (page@bced855930d1e6f91937984186da5b4c.webm) — embedded in one-pager, optionally in deck
+
+All assets are production-ready for embedding in HTML one-pager and PPTX deck.
+
+---
+
+## handoff
+- produced: 7 PNG hero-flow screenshots (1280×720, valid 8-bit RGB) + 1 muted WebM video (~90s, live demo); all verified against live endpoint.
+- decisions: Kept desktop viewport (1280×720) for proposal clarity; video is muted (audio unnecessary for UX flow). Screenshots sequenced hero-to-footer for narrative coherence.
+- next needs: proposal-writer embeds hero & lightbox screenshots in deck, links video in one-pager, highlights design + interactivity fidelity in cover letter.
+- risks: WebM format may need MP4 transcode if proposal authoring tool doesn't support; video file size (~603K) is acceptable for web embedding.

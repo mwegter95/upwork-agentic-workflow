@@ -77,6 +77,13 @@ integrations, server-side compute). When the plan calls for it, build it:
   the bridge prefix in your build report so deploy can verify and re-start it.
 - Frontend-only with realistic mock data is fine for simple demos that gain
   nothing from a server.
+- **Surface runner scripts must be ASCII-only** (no box-drawing chars, no Unicode
+  in comments/strings) — Windows charmap encoding throws on non-ASCII, costing a
+  retry. Applies to embedded PHP/template content too.
+- **WordPress (Docker) demos:** see CLAUDE.md "WordPress Docker demos" for the
+  recurring gotchas (large image pulls registered as services, sub-path canonical
+  redirect filter, the 3 login filters, bridge Host/encoding handling, no `?>` in
+  functions.php). Bake those in rather than rediscovering them.
 - **Live-streaming / progress demos:** do NOT use a single long streaming GET.
   Start the job with a `POST` that returns a `job_id`, then stream results from a
   separate `GET /stream/<job_id>` (SSE). This decouples kickoff from the stream
@@ -109,6 +116,10 @@ loosely-anchored Edit can drop the item outside the array and break the build.
    silently mask a 502, so assert the response is real, non-empty data. NEVER
    label fallback/mock data as "Live" in the UI without a visible offline badge.
 5. Stay within the caps: at most ~12 files touched, build timeout 3 min.
+6. For a reverse-proxied/WordPress demo, self-test SUB-PAGES through the bridge
+   (the canonical public Host), not just `/` — canonical redirects only surface on
+   non-root paths, so the homepage can pass while every other page breaks. Also
+   verify rendered PHP output (no leaked source), not just HTTP 200.
 
 ## Output
 Do not stop at intermediate artifacts (e.g. downloaded files/assets sitting on
