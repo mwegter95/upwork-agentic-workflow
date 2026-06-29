@@ -1,0 +1,124 @@
+# Pre-Research — Orschell Excavating E-Commerce Full-Stack
+
+Answers to the 5 planner research questions, plus additional findings.
+
+---
+
+## Q1: Orschell's actual business
+
+Services-only excavating company (septic systems, ponds, driveways/road building, land clearing/forestry mulching, demolition, building pads). They do NOT sell excavation equipment or parts. They currently operate a **branded merchandise store at orschellx.com** (apparel + accessories). The e-commerce posting is most plausibly to build a proper backend for their existing/planned merch store, or a planned supply store expansion.
+
+**Implication for demo**: Frame "Orschell Supply Co." as their merch + construction supply store. Hero products = their actual branded apparel; supporting categories = realistic supply expansions (safety gear, site supplies). This is truthful AND demonstrates a full feature set.
+
+---
+
+## Q2: Product taxonomy — confirmed categories and seed products
+
+Based on orschellx.com actual product line + realistic expansion:
+
+| Category | Slug | Sample Products |
+|---|---|---|
+| **Apparel** | `apparel` | Dirt Hammers Tee Black $20, Keep Banging Em Tee Black $20, YouTube Tee Grey $20, Pullover Hoodie Black $38, Zip-Up Hoodie Dark Grey $40, Long Sleeve Tee $12, Shatter Tri Tee White $5 |
+| **Hats & Headwear** | `hats-headwear` | Trucker Snapback Orange/Black $20, Flat Bill Snapback Grey $20, Fleece Beanie Black $15, New Era Knit Beanie $15 |
+| **Safety Gear** | `safety-gear` | Hi-Vis Safety Vest Class 2 $18, Hard Hat Yellow $24, Safety Glasses Clear $8, Leather Work Gloves $16, Hi-Vis Rain Jacket $55 |
+| **Site Supplies** | `site-supplies` | Marking Paint Orange $12, Caution Tape 300ft $9, Surveying Stakes 50-pack $22, Heavy Duty Tarp 10x12 $28, Flagging Ribbon $6 |
+| **Accessories** | `accessories` | Orschell Mouse Pad $10, Sticker Pack $5, Decal Set $8, Keychain $7 |
+
+20 products across 5 categories. Prices are realistic. SKUs: `OES-APP-001` through `OES-ACC-005` pattern.
+
+---
+
+## Q3: Visual/design direction — confirmed and refined
+
+orschellx.com confirms: **dark background, black/grey/neon orange** — their product colorways are "flow orange/black" and grey. Brand phrases: "Dirt Hammers", "Keep Banging Em" — rugged working-class identity.
+
+**Refined palette** (adjust planner's draft):
+| Token | Proposed | Refined | Note |
+|---|---|---|---|
+| Accent primary | `#F5A623` (amber) | `#F76B10` (construction orange) | Matches their actual "flow orange" brand |
+| Accent hi-vis | `#FFD600` (caution yellow) | `#FFD600` | Keep — valid safety color |
+| All other tokens | (as planned) | unchanged | Steel background palette confirmed correct |
+
+Typography (Barlow Condensed + Inter) — confirmed correct for industrial/construction aesthetic.
+
+---
+
+## Q4: Existing Node.js+TS+Express boilerplate to clone
+
+**`upwork-runs/adverteyes/backend/`** — direct structural reference. Pattern is exact match:
+- `src/index.ts` → Express app setup, CORS, route registration, error handler, app.listen
+- `src/middleware/auth.ts` → `requireAuth`, `requireRole`, `makeToken` (JWT Bearer, bcryptjs) — **copy verbatim, swap table prefix**
+- `src/routes/auth.ts` → login + /me pattern — **reuse directly**
+- `src/db.ts` → schema DDL + seed-if-empty pattern — **reuse structure**
+
+**CRITICAL difference**: adverteyes uses `better-sqlite3` which **FAILS on Surface (Windows Node 22+, gyp)**. Planner correctly identified `node:sqlite`. API differences:
+```ts
+// better-sqlite3 (DO NOT USE)
+import Database from 'better-sqlite3';
+const db = new Database(path);
+db.prepare('SELECT...').get(id)
+
+// node:sqlite (USE THIS)
+import { DatabaseSync } from 'node:sqlite';
+const db = new DatabaseSync(path);
+db.prepare('SELECT...').get(id)  // same .prepare()/.get()/.run()/.all() API
+db.exec(`CREATE TABLE...`)       // same .exec() for DDL
+```
+The synchronous API is near-identical. `.pragma()` same. Drop `@types/better-sqlite3`, no new type package needed (built-in types available in Node 22 `@types/node`).
+
+**package.json for this project** (based on adverteyes, adjusted):
+```json
+{
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.5"
+  }
+}
+```
+No `better-sqlite3`, no `node-fetch` (Node 22 global `fetch` is sufficient if any outbound HTTP needed).
+
+---
+
+## Q5: art-print-storefront frontend pattern
+
+`public/demos/art-print-storefront/` is **vanilla HTML + plain JS** (2 files: `index.html`, `product.html` + `assets/`). No bundler. This pattern is **NOT appropriate** for a complex multi-page SPA with cart state, auth, admin CMS.
+
+Planner's choice of **Vite + React + TS** (`demo-src/` → build → `public/demos/<slug>/`) is confirmed correct. The `adverteyes/demo-src/` (Vite config + React) is the right frontend analog to follow.
+
+---
+
+## Additional findings
+
+**Testing approach** (not in planner's draft — client will want this):
+- Deck should call out: Jest + Supertest for API route tests; React Testing Library for component tests; Playwright for E2E checkout flow.
+- Demo does not need full test suites built, but mention the approach in the proposal.
+
+**PostgreSQL migration path** (client target is Postgres, demo uses SQLite):
+- The `node:sqlite` schema should be written to be Postgres-compatible (no SQLite-isms: use `TEXT` not `BLOB`, `REAL` not `NUMERIC`, avoid SQLite-only functions).
+- Deck notes: "SQLite for demo; production migration to PostgreSQL is a config swap — same schema, same queries."
+
+**Performance optimization specifics** (client requirement):
+- The 5 indexes planned are sufficient. Add: `products(featured)`, `products(active)` for storefront queries.
+- Note in deck: connection pooling (pg-pool) for production PostgreSQL upgrade.
+
+**Inventory concurrency** (risk):
+- Stock decrement on order should use a `CHECK (quantity >= 0)` constraint + single SQL `UPDATE inventory SET quantity = quantity - ? WHERE product_id = ? AND quantity >= ?` — check rowsAffected = 0 → out-of-stock error. Prevents oversell without transactions.
+
+---
+
+## handoff
+- produced: answers to all 5 planner research questions; confirmed product taxonomy (5 categories, 20 products, real Orschell brand); refined accent color (#F76B10 orange); identified adverteyes backend as clone source with node:sqlite swap; confirmed Vite+React+TS as correct frontend pattern
+- decisions: demo = "Orschell Supply Co." merch + supplies store (matches real orschellx.com business); construction orange (#F76B10) over amber; node:sqlite not better-sqlite3; adverteyes auth/route middleware is directly reusable
+- next needs: planner integrates product seed data (20 products above), corrects accent to #F76B10, removes "TBD" placeholders, adds testing approach section to plan
+- risks: node:sqlite built-in requires Node 22+ — confirm Surface is Node 22 before build (it is per CLAUDE.md); adverteyes db.ts seed pattern uses better-sqlite3 pragma calls — verify node:sqlite supports same pragma syntax (it does)

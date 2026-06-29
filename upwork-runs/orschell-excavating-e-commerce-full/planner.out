@@ -1,0 +1,266 @@
+# Plan — Orschell Excavating E-Commerce Full-Stack
+
+## Status: READY
+All 5 research questions answered. Plan is finalized below.
+
+---
+
+## Demo concept
+
+**"Orschell Supply Co."** — production-grade e-commerce platform matching Orschell Excavating's real brand (orschellx.com merch store) expanded with safety gear and site supplies. Full storefront + full admin CMS. Mock payment clearly labeled.
+
+Slug: `orschell-excavating-e-commerce-full`
+
+---
+
+## Architecture
+
+| Layer | Choice | Rationale |
+|---|---|---|
+| Backend runtime | Node.js 22 + TypeScript + Express | Client's exact stack |
+| Database | `node:sqlite` on Surface | `better-sqlite3` fails on Windows Node 22+ (gyp); Postgres-shaped schema; deck notes production target is PostgreSQL |
+| Frontend | React 18 + Vite + TypeScript | Bundled to `public/demos/<slug>/`; source in `upwork-runs/<slug>/demo-src/` |
+| API exposure | Flask bridge blueprint at `/demos/orschell-excavating-e-commerce-full/api/` | Standard Surface pattern |
+| Auth | JWT (Bearer header), admin + customer roles, bcrypt hashes | Client requires auth system |
+| Payment | Mock checkout — fake card form, success/decline simulation | Clearly labeled "Demo / Mock Payment" in UI |
+| Clone source | `upwork-runs/adverteyes/backend/` (Express+TS+JWT structure); `adverteyes/demo-src/` (Vite+React pattern) | Direct structural reuse; swap `better-sqlite3` → `node:sqlite` |
+
+---
+
+## Feature scope (richness 10)
+
+### Hero feature
+**Full e-commerce storefront + admin CMS**
+
+Customer-facing:
+- Home: hero banner, featured products, category grid
+- Shop: product catalog with category filter + search + pagination
+- Product detail: specs, stock status, size/variant selector, add-to-cart
+- Cart: drawer + cart page, quantity adjust, remove
+- Checkout: shipping address + mock payment form (labeled), order confirmation page
+- Account: login/register (JWT), profile, full order history with status badges
+
+Admin CMS (role-gated `/admin`):
+- Dashboard: revenue summary, order counts, low-stock alerts
+- Product management: create/edit/delete (name, price, SKU, category, description, specs, image URL, featured flag, active toggle)
+- Inventory: stock count edits, low-stock threshold per product, flag view
+- Order management: all orders list, status pipeline (pending→processing→shipped→delivered), order detail
+
+### Supporting features
+1. **Inventory tracking**: stock decrements atomically on order placement; low-stock badges on product cards (storefront + admin)
+2. **REST API with documented endpoints**: structured JSON, proper HTTP codes, admin-only guards — documented in proposal deck as the technical deliverable
+
+### Explicitly out of scope (deck notes as production extensions)
+- Stripe or real payment processor
+- Email notifications
+- Image file uploads (URL-based, seeded with realistic URLs)
+- Shipping carrier integration
+- Analytics beyond order/revenue counts
+
+---
+
+## Database schema (SQLite, PostgreSQL-compatible)
+
+```sql
+users         (id INTEGER PK, email TEXT UNIQUE, password_hash TEXT, name TEXT, role TEXT CHECK(role IN ('admin','customer')), created_at TEXT)
+categories    (id INTEGER PK, name TEXT, slug TEXT UNIQUE, description TEXT, display_order INTEGER)
+products      (id INTEGER PK, category_id INTEGER FK, name TEXT, slug TEXT UNIQUE, description TEXT, price REAL, sku TEXT UNIQUE, image_url TEXT, specs_json TEXT, featured INTEGER DEFAULT 0, active INTEGER DEFAULT 1, created_at TEXT)
+inventory     (id INTEGER PK, product_id INTEGER UNIQUE FK, quantity INTEGER CHECK(quantity >= 0), low_stock_threshold INTEGER DEFAULT 5, updated_at TEXT)
+cart_items    (id INTEGER PK, user_id INTEGER FK, product_id INTEGER FK, quantity INTEGER, UNIQUE(user_id, product_id))
+orders        (id INTEGER PK, user_id INTEGER FK, status TEXT DEFAULT 'pending', subtotal REAL, tax REAL, total REAL, shipping_name TEXT, shipping_address_json TEXT, payment_ref TEXT, created_at TEXT)
+order_items   (id INTEGER PK, order_id INTEGER FK, product_id INTEGER FK, quantity INTEGER, unit_price REAL)
+```
+
+Indexes: `products(category_id)`, `products(featured)`, `products(active)`, `inventory(product_id)`, `orders(user_id)`, `orders(status)`, `cart_items(user_id)`.
+
+Inventory decrement: `UPDATE inventory SET quantity = quantity - ?, updated_at = ? WHERE product_id = ? AND quantity >= ?` — check rowsAffected = 0 for out-of-stock error (prevents oversell without transactions).
+
+---
+
+## REST API surface (20 endpoints)
+
+```
+POST   /auth/register              create account
+POST   /auth/login                 JWT response
+GET    /auth/me                    current user (auth required)
+
+GET    /products                   list (category, search, page, limit, featured)
+GET    /products/:slug             detail
+GET    /categories                 all
+
+GET    /cart                       user's cart (auth)
+POST   /cart/items                 add item
+PUT    /cart/items/:id             update qty
+DELETE /cart/items/:id             remove
+DELETE /cart                       clear cart
+
+POST   /orders                     checkout (auth) — decrements inventory atomically
+GET    /orders                     user's orders (auth)
+GET    /orders/:id                 order detail (auth: owns or admin)
+
+GET    /admin/stats                dashboard metrics (admin)
+POST   /products                   create product (admin)
+PUT    /products/:id               update product (admin)
+DELETE /products/:id               soft delete (admin)
+GET    /admin/inventory            all stock levels (admin)
+PUT    /admin/inventory/:pid       update stock + threshold (admin)
+GET    /admin/orders               all orders paginated + status filter (admin)
+PUT    /admin/orders/:id/status    update order status (admin)
+```
+
+---
+
+## Design direction (confirmed by research)
+
+orschellx.com confirms: dark background, black/grey/neon orange brand. Rugged working-class identity ("Dirt Hammers", "Keep Banging Em").
+
+| Token | Value |
+|---|---|
+| Background | `#1C1F24` (dark steel) |
+| Surface | `#2B2E35` (mid steel) |
+| Card | `#33373F` |
+| Accent primary | `#F76B10` (construction orange — matches orschellx.com "flow orange") |
+| Accent hi-vis | `#FFD600` (caution yellow) |
+| Text primary | `#EAEAEA` |
+| Text muted | `#9AA0AB` |
+| Danger/Out-of-stock | `#E84040` |
+| Success/In-stock | `#27AE60` |
+| Headings | "Barlow Condensed" (Google Fonts), bold, uppercase |
+| Body | "Inter" (Google Fonts) |
+| Motifs | Diagonal hazard-stripe dividers, heavy 2px borders, uppercase pill badges, dense product grid |
+
+---
+
+## Seeded data (confirmed by research)
+
+**Admin**: `admin@orschellsupply.com` / `Admin1234!` (role: admin)
+**Demo customer**: `demo@customer.com` / `Demo1234!` (role: customer, 2 past orders seeded)
+
+**5 categories + 20 products:**
+
+| Category | Slug | Products (name / SKU / price / initial stock) |
+|---|---|---|
+| Apparel | `apparel` | Dirt Hammers Tee Black OES-APP-001 $20/qty:50, Keep Banging Em Tee Black OES-APP-002 $20/qty:45, YouTube Tee Grey OES-APP-003 $20/qty:30, Pullover Hoodie Black OES-APP-004 $38/qty:25, Zip-Up Hoodie Dark Grey OES-APP-005 $40/qty:20, Long Sleeve Tee OES-APP-006 $12/qty:60, Shatter Tri Tee White OES-APP-007 $5/qty:15 |
+| Hats & Headwear | `hats-headwear` | Trucker Snapback Orange/Black OES-HAT-001 $20/qty:40, Flat Bill Snapback Grey OES-HAT-002 $20/qty:35, Fleece Beanie Black OES-HAT-003 $15/qty:50, New Era Knit Beanie OES-HAT-004 $15/qty:45 |
+| Safety Gear | `safety-gear` | Hi-Vis Safety Vest Class 2 OES-SAF-001 $18/qty:100, Hard Hat Yellow OES-SAF-002 $24/qty:75, Safety Glasses Clear OES-SAF-003 $8/qty:200, Leather Work Gloves OES-SAF-004 $16/qty:80, Hi-Vis Rain Jacket OES-SAF-005 $55/qty:30 |
+| Site Supplies | `site-supplies` | Marking Paint Orange OES-SIT-001 $12/qty:150, Caution Tape 300ft OES-SIT-002 $9/qty:200, Surveying Stakes 50-pack OES-SIT-003 $22/qty:60, Heavy Duty Tarp 10x12 OES-SIT-004 $28/qty:40, Flagging Ribbon OES-SIT-005 $6/qty:250 |
+| Accessories | `accessories` | Orschell Mouse Pad OES-ACC-001 $10/qty:30, Sticker Pack OES-ACC-002 $5/qty:100, Decal Set OES-ACC-003 $8/qty:75, Keychain OES-ACC-004 $7/qty:60 |
+
+Low-stock threshold: 5 for all products. Featured: APP-001, APP-004, HAT-001, SAF-001.
+
+---
+
+## Package.json (backend — confirmed by research)
+
+```json
+{
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.5"
+  }
+}
+```
+
+No `better-sqlite3`. Use `node:sqlite` (`import { DatabaseSync } from 'node:sqlite'`). Node 22 global `fetch` for any outbound HTTP.
+
+---
+
+## File structure
+
+**Backend** (Surface runner workspace):
+```
+server.ts, package.json, tsconfig.json
+routes/auth.ts, products.ts, categories.ts, cart.ts, orders.ts, admin.ts
+middleware/auth.ts  (clone from adverteyes; swap table prefix)
+db/database.ts      (schema DDL + seed-if-empty; clone from adverteyes db.ts pattern)
+types/index.ts
+```
+
+**Bridge** (mw-backend repo):
+```
+orschell_ecommerce_blueprint.py  (registered in server.py)
+```
+
+**Frontend source** (`upwork-runs/<slug>/demo-src/`):
+```
+package.json, vite.config.ts, tsconfig.json, index.html
+src/main.tsx, App.tsx
+src/api/client.ts
+src/contexts/AuthContext.tsx, CartContext.tsx
+src/pages/Home.tsx, Shop.tsx, ProductDetail.tsx, Cart.tsx
+         Checkout.tsx, OrderConfirmation.tsx, Account.tsx, Admin.tsx
+src/components/Navbar.tsx, ProductCard.tsx, CartDrawer.tsx
+               AdminSidebar.tsx, StatusBadge.tsx, MockPaymentForm.tsx
+```
+
+**Deployed demo**: `public/demos/<slug>/index.html` + `assets/` (Vite build output, ~3 files)
+
+---
+
+## Testing approach (for deck — not built in demo)
+
+- **Unit + integration**: Jest + Supertest for all 20 API routes
+- **Component**: React Testing Library for ProductCard, CartDrawer, MockPaymentForm
+- **E2E**: Playwright for full checkout flow (browse → add to cart → checkout → order confirmation)
+- Note in deck: production CI/CD would gate deploys on all three suites
+
+---
+
+## PostgreSQL migration path (for deck)
+
+Demo uses SQLite (`node:sqlite`). Schema is written to be Postgres-compatible (no SQLite-isms: `TEXT`, `REAL`, standard SQL functions). Production migration: swap driver to `pg` + `pg-pool`, keep schema identical. Connection pooling via `pg-pool` already accounted for in production architecture slide.
+
+---
+
+## Timeline estimate (for cover letter)
+
+- **Week 1**: Database schema + Express API (auth, products, inventory, cart, orders) + seed data
+- **Week 2**: React storefront (home, shop, product detail, cart, checkout flow)
+- **Week 3**: Admin CMS, integration testing, performance indexing, deployment
+- Total: 2.5 to 3 weeks for production-ready delivery
+
+---
+
+## Requirement-to-feature traceability
+
+| Posting requirement | Demo implementation | Status |
+|---|---|---|
+| User auth & account mgmt | JWT signup/login, account page, order history; 2 seeded accounts | Planned |
+| Product catalog management | Admin CMS: CRUD products + categories, pricing, specs, featured flag | Planned |
+| Inventory tracking | Stock decrements atomically on order; low-stock flags; admin stock edits | Planned |
+| Order processing workflows | Cart to checkout to order; admin 4-state status pipeline | Planned |
+| Payment gateway integration | Mock checkout, fake card form, success/decline simulation, clearly labeled | Planned |
+| REST API development | 22 documented endpoints, proper HTTP codes, admin guards | Planned |
+| Performance optimization | Paginated queries, 7 indexes, client-side cart+auth state caching | Planned |
+| Database improvements | Relational schema, FKs, CHECK constraints, 7 indexes, seeds | Planned |
+
+---
+
+## Risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| Scope (richness 10, large feature set) | Admin CMS + storefront unified — hero covers all 8 requirements |
+| Surface node:sqlite Node 22 check | CLAUDE.md confirms Surface is Node 22; node:sqlite built-in, no gyp |
+| Oversell race condition | Atomic UPDATE with quantity >= ? check; CHECK(quantity >= 0) constraint |
+| Demo file count cap | Vite bundles frontend to ~3 files; backend on Surface not counted |
+| Build timeout | Backend and frontend built in separate Surface runner scripts |
+
+---
+
+## handoff
+- produced: finalized plan integrating all 5 research answers; confirmed product taxonomy (5 cats, 20 products, real Orschell brand + realistic supply expansion); accent corrected to #F76B10; adverteyes named as clone source with node:sqlite swap; testing + Postgres migration sections added for deck
+- decisions: "Orschell Supply Co." merch+supply framing matches real orschellx.com business; construction orange #F76B10 over amber; node:sqlite not better-sqlite3; adverteyes auth/route/db pattern is directly reusable
+- next needs: demo-builder clones adverteyes backend structure, swaps node:sqlite, wires 22 endpoints, seeds 20 products, builds Vite+React frontend matching industrial design; registers service; writes bridge blueprint
+- risks: Vite frontend is ~12 src files (tight against file cap); admin CMS is wide (4 panels) — builder should consolidate admin into one page with tab routing to stay within scope

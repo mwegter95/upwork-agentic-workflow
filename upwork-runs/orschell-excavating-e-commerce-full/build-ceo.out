@@ -1,0 +1,27 @@
+# Build CEO review — Orschell Excavating e-commerce (target richness 10/10)
+
+Verified the actual running build, not just the report. Flask healthy, runner up. Tested the backend service live on the Surface (127.0.0.1:3742) end-to-end.
+
+## What I verified (all PASS)
+- `GET /products`, `GET /categories` → 200, real seeded data (25 products, 5 categories).
+- Admin auth (`POST /auth/login` admin) → 200 + JWT.
+- Admin CMS: `GET /admin/stats` (revenue/orders/lowStock/customers), `/admin/inventory`, `/admin/orders` → all 200.
+- Product CMS write path: `POST /products` (create) → 201; `DELETE /products/26` (cleanup) → 200. Catalog management works.
+- Customer flow: login → `POST /cart/items` → `POST /orders` → **201** (order #3, atomic inventory decrement, 7% tax, MOCK payment ref). `GET /orders` history → 200.
+- Frontend: Vite build artifacts present in `public/demos/orschell-excavating-e-commerce-full/` (index.html + assets, correct base path). workSamples.js entry id 18 present. Bridge blueprint written + registered in `server.py` (not yet pushed — deploy's job).
+
+## Assessment vs feature richness 10/10
+Genuinely full-featured: full storefront (home, shop w/ category filter + search + pagination, product detail, cart drawer, checkout w/ labeled mock payment, order confirmation), full account area (profile + order history + order-detail status pipeline), and a real admin CMS (dashboard w/ revenue chart + stats, product CRUD, inline inventory edit, order status management). 22 REST endpoints, JWT auth, atomic inventory. Every explicit brief requirement (auth/account, catalog mgmt, inventory, order workflows, payment [mocked+labeled], REST API, perf via pagination, DB schema) is represented and working. Meets 10/10.
+
+## Notes for downstream (not blockers)
+1. **PostgreSQL vs SQLite (must be addressed honestly in proposal-writer).** Brief specifies PostgreSQL; the demo uses `node:sqlite` because `better-sqlite3` gyp-compile fails on the Surface (Windows/Node 22, per CLAUDE.md). The data layer uses parameterized SQL and a clean schema that ports to Postgres directly. proposal-writer MUST call this out: demo runs on SQLite for zero-friction hosting, production targets PostgreSQL with the same parameterized queries. Do not claim the live demo runs on Postgres.
+2. **deploy must push BOTH repos** — mw-backend (bridge goes live ~30s after push; until then `/demos/.../api/*` 404s, confirmed) and michaelwegter.com (GH Pages). Then verify `GET /demos/orschell-excavating-e-commerce-full/api/health` → ok.
+3. **Minor/cosmetic:** my test left order #3 ("Test Buyer", pending) in the seed and decremented product 1 stock by 1. deploy-test will add more test orders anyway, so leaving as-is; optionally reset seed before media-capture if a pristine admin dashboard screenshot is wanted.
+
+## handoff
+- produced: build-CEO verdict — full-stack demo verified working end-to-end against the live Surface service (storefront + account + admin CMS + order flow all 200/201).
+- decisions: PASS at 10/10; backend functionally complete, frontend built, bridge registered (unpushed).
+- next needs: deploy pushes both repos and confirms bridge `/api/health` live; deploy-test exercises live site incl. login + admin CMS + checkout; proposal-writer must honestly frame SQLite-demo / PostgreSQL-production.
+- risks: bridge not live until mw-backend push; SQLite-vs-Postgres framing is the one honesty item; stray test order #3 in seed (cosmetic).
+
+VERDICT: pass

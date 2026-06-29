@@ -1,0 +1,344 @@
+# Researcher — Orschell Excavating E-Commerce Full-Stack
+
+## Build-prep: scaffold pointer, exact libraries, image URLs, design tokens
+
+---
+
+## 1. Clone source (verified on disk)
+
+| What | Source path | Change for this project |
+|---|---|---|
+| `index.ts` (entry) | `upwork-runs/adverteyes/backend/src/index.ts` | Rename service `orschell-ecommerce-api`, PORT `3742`, remove weather/traffic imports, add auth/products/categories/cart/orders/admin routers |
+| `db.ts` | `upwork-runs/adverteyes/backend/src/db.ts` | Swap `better-sqlite3` -> `node:sqlite` (`DatabaseSync`); new schema + seed (see plan); remove ae_ prefix; enable WAL + FK pragmas |
+| `middleware/auth.ts` | `upwork-runs/adverteyes/backend/src/middleware/auth.ts` | Change JWT_SECRET var name to `ORSCHELL_JWT_SECRET`; swap `ae_users` -> `users`; role check: `'admin'` only (no ops/sales/client) |
+| `AuthContext.tsx` | `upwork-runs/adverteyes/demo-src/src/contexts/AuthContext.tsx` | Change localStorage key `ae_token` -> `orschell_token`; use `oes_` prefix; wire to new `/auth/me` |
+| `vite.config.ts` | `upwork-runs/adverteyes/demo-src/vite.config.ts` | `base: '/demos/orschell-excavating-e-commerce-full/'` |
+| `package.json` (backend) | `upwork-runs/adverteyes/backend/package.json` | Remove `better-sqlite3`, `node-fetch`, `@types/better-sqlite3`, `@types/node-fetch`; `@types/node` -> `^22.0.0` |
+| `package.json` (frontend) | `upwork-runs/adverteyes/demo-src/package.json` | Remove `leaflet`, `react-leaflet`, `@types/leaflet`; keep `axios`, `react-router-dom`, `recharts` |
+
+---
+
+## 2. Exact backend package.json (ready to paste)
+
+```json
+{
+  "name": "orschell-ecommerce-api",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.5"
+  }
+}
+```
+
+---
+
+## 3. node:sqlite import pattern (replaces better-sqlite3)
+
+```typescript
+import { DatabaseSync } from 'node:sqlite';
+import * as bcrypt from 'bcryptjs';
+import path from 'path';
+import fs from 'fs';
+
+const DATA_DIR = path.join(__dirname, '..', 'data');
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+
+const DB_PATH = path.join(DATA_DIR, 'orschell.db');
+export const db = new DatabaseSync(DB_PATH);
+db.exec("PRAGMA journal_mode = WAL");
+db.exec("PRAGMA foreign_keys = ON");
+```
+
+**node:sqlite API differences from better-sqlite3:**
+- `db.prepare(sql).get(...args)` returns row or `undefined` (same)
+- `db.prepare(sql).all(...args)` returns array (same)
+- `db.prepare(sql).run(...args)` returns `{ changes, lastInsertRowid }` (same)
+- No `.pragma()` method — use `db.exec("PRAGMA ...")` instead
+- No transaction helper — use `db.exec("BEGIN"); ... db.exec("COMMIT")`
+- Constructor: `new DatabaseSync(path)` not `new Database(path)`
+- Import: `import { DatabaseSync } from 'node:sqlite'` (no `@types/...` needed — built-in)
+
+**Atomic inventory decrement pattern (no transaction helper):**
+```typescript
+const stmt = db.prepare(
+  `UPDATE inventory SET quantity = quantity - ?, updated_at = datetime('now')
+   WHERE product_id = ? AND quantity >= ?`
+);
+const result = stmt.run(qty, productId, qty);
+if (result.changes === 0) throw new Error('INSUFFICIENT_STOCK');
+```
+
+---
+
+## 4. Surface service config
+
+- **Port**: `3742` (adverteyes = 3741; no conflict)
+- **Service name**: `orschell-ecommerce-api`
+- **CMD**: `node`
+- **ARGS**: `dist/index.js`
+- **CWD**: `data/runner-workspace/orschell-ecommerce` (build here first)
+
+surface_register_service.py CONFIG block:
+```python
+NAME = "orschell-ecommerce-api"
+CMD  = "node"
+ARGS = "dist/index.js"
+CWD  = "data/runner-workspace/orschell-ecommerce"
+PORT = 3742
+```
+
+---
+
+## 5. Flask bridge (mw-backend)
+
+File: `mw-backend/orschell_ecommerce_blueprint.py`
+
+Copy `bridge_blueprint_template.py`, set:
+```python
+PREFIX   = "demos/orschell-excavating-e-commerce-full/api"
+UPSTREAM = "http://127.0.0.1:3742"
+```
+
+Register in `server.py` after the last blueprint:
+```python
+# Orschell E-Commerce demo bridge
+from orschell_ecommerce_blueprint import bridge_bp as orschell_bp
+app.register_blueprint(orschell_bp)
+```
+
+Public API base URL: `https://api.michaelwegter.com/demos/orschell-excavating-e-commerce-full/api`
+
+Frontend `src/api/client.ts` base URL:
+```typescript
+const BASE = 'https://api.michaelwegter.com/demos/orschell-excavating-e-commerce-full/api';
+```
+
+---
+
+## 6. Frontend package.json (exact deps — no leaflet)
+
+```json
+{
+  "name": "orschell-ecommerce-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}
+```
+
+---
+
+## 7. Product image URLs (seeded, all render reliably)
+
+Use `https://picsum.photos/seed/<sku>/400/300` — deterministic by SKU, returns real images.
+
+| SKU | URL |
+|---|---|
+| OES-APP-001 | https://picsum.photos/seed/OES-APP-001/400/300 |
+| OES-APP-002 | https://picsum.photos/seed/OES-APP-002/400/300 |
+| OES-APP-003 | https://picsum.photos/seed/OES-APP-003/400/300 |
+| OES-APP-004 | https://picsum.photos/seed/OES-APP-004/400/300 |
+| OES-APP-005 | https://picsum.photos/seed/OES-APP-005/400/300 |
+| OES-APP-006 | https://picsum.photos/seed/OES-APP-006/400/300 |
+| OES-APP-007 | https://picsum.photos/seed/OES-APP-007/400/300 |
+| OES-HAT-001 | https://picsum.photos/seed/OES-HAT-001/400/300 |
+| OES-HAT-002 | https://picsum.photos/seed/OES-HAT-002/400/300 |
+| OES-HAT-003 | https://picsum.photos/seed/OES-HAT-003/400/300 |
+| OES-HAT-004 | https://picsum.photos/seed/OES-HAT-004/400/300 |
+| OES-SAF-001 | https://picsum.photos/seed/OES-SAF-001/400/300 |
+| OES-SAF-002 | https://picsum.photos/seed/OES-SAF-002/400/300 |
+| OES-SAF-003 | https://picsum.photos/seed/OES-SAF-003/400/300 |
+| OES-SAF-004 | https://picsum.photos/seed/OES-SAF-004/400/300 |
+| OES-SAF-005 | https://picsum.photos/seed/OES-SAF-005/400/300 |
+| OES-SIT-001 | https://picsum.photos/seed/OES-SIT-001/400/300 |
+| OES-SIT-002 | https://picsum.photos/seed/OES-SIT-002/400/300 |
+| OES-SIT-003 | https://picsum.photos/seed/OES-SIT-003/400/300 |
+| OES-SIT-004 | https://picsum.photos/seed/OES-SIT-004/400/300 |
+| OES-SIT-005 | https://picsum.photos/seed/OES-SIT-005/400/300 |
+| OES-ACC-001 | https://picsum.photos/seed/OES-ACC-001/400/300 |
+| OES-ACC-002 | https://picsum.photos/seed/OES-ACC-002/400/300 |
+| OES-ACC-003 | https://picsum.photos/seed/OES-ACC-003/400/300 |
+| OES-ACC-004 | https://picsum.photos/seed/OES-ACC-004/400/300 |
+
+---
+
+## 8. Design tokens (exact CSS custom properties)
+
+```css
+:root {
+  /* Backgrounds */
+  --bg-base:    #1C1F24;
+  --bg-surface: #2B2E35;
+  --bg-card:    #33373F;
+  --bg-input:   #22262D;
+
+  /* Brand */
+  --accent-orange: #F76B10;
+  --accent-orange-hover: #D95E0D;
+  --accent-yellow: #FFD600;
+
+  /* Text */
+  --text-primary: #EAEAEA;
+  --text-muted:   #9AA0AB;
+  --text-inverse: #0D0F12;
+
+  /* Status */
+  --color-danger:  #E84040;
+  --color-success: #27AE60;
+  --color-warning: #F5A623;
+
+  /* Borders */
+  --border-default: 1px solid #3E434D;
+  --border-accent:  2px solid #F76B10;
+  --radius: 3px;
+
+  /* Motifs */
+  --hazard-stripe: repeating-linear-gradient(
+    -45deg,
+    #F76B10,
+    #F76B10 10px,
+    #1C1F24 10px,
+    #1C1F24 20px
+  );
+}
+```
+
+Google Fonts import (in `index.html` `<head>`):
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+```
+
+```css
+font-family headings: 'Barlow Condensed', sans-serif;  /* bold, uppercase, letter-spacing: 0.04em */
+font-family body:     'Inter', sans-serif;
+```
+
+Motif usage patterns:
+- **Hazard dividers**: `<div style="background: var(--hazard-stripe); height: 4px">` between hero + content sections
+- **Category badge pills**: `border: 1px solid var(--accent-orange); border-radius: 2px; text-transform: uppercase; font-size: 11px; font-family: Barlow Condensed; letter-spacing: 0.08em; padding: 2px 8px; color: var(--accent-orange)`
+- **Price tag**: `color: var(--accent-orange); font: 700 22px 'Barlow Condensed'`
+- **CTA button**: `background: var(--accent-orange); color: #fff; border: none; font: 700 14px 'Barlow Condensed'; text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 24px; border-radius: var(--radius)`
+- **Low-stock badge**: `background: var(--color-danger); color: #fff; font-size: 11px; padding: 2px 6px`
+- **Stock-OK badge**: `background: var(--color-success); color: #fff`
+- **2px card borders**: `border: 2px solid #3E434D` with `:hover` -> `border-color: var(--accent-orange)`
+- **Admin sidebar**: dark `#1C1F24` with `border-right: 2px solid var(--accent-orange)` active state
+
+---
+
+## 9. tsconfig.json (backend — confirmed works with Node 22 built-ins)
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "lib": ["ES2022"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+Note: `node:sqlite` (`DatabaseSync`) requires `target: ES2022` minimum and `@types/node` `^22.0.0`.
+
+---
+
+## 10. Seeded credentials (for deploy-test)
+
+| Role | Email | Password |
+|---|---|---|
+| admin | admin@orschellsupply.com | Admin1234! |
+| customer | demo@customer.com | Demo1234! |
+
+Customer seed: create 2 past orders (1 delivered, 1 shipped) covering OES-APP-001 x1 and OES-HAT-001 x2 to populate order history page.
+
+---
+
+## 11. Demo workSamples.js entry (for demo-builder)
+
+```js
+{
+  id: <next available id>,
+  slug: 'orschell-excavating-e-commerce-full',
+  title: 'Orschell Supply Co.',
+  description: 'Full-stack e-commerce platform: storefront, cart, checkout, JWT auth, and admin CMS with product/inventory/order management.',
+  category: 'Data',
+  status: 'live',
+  href: import.meta.env.BASE_URL + 'demos/orschell-excavating-e-commerce-full/',
+  color: '#F76B10',
+  icon: '🏗',
+  frameStyle: 'walnut',
+  client: 'Orschell Excavating',
+  postingSummary: 'Backend for existing e-commerce site: auth, catalog, inventory, orders, payment gateway, REST API, PostgreSQL',
+  builtFor: 'Upwork proposal',
+  date: '2026-06-28',
+  proposalDeckUrl: '',
+  proposalPageUrl: '',
+}
+```
+
+---
+
+## 12. SQLite-to-Postgres delta (for deck slide)
+
+The demo schema is already Postgres-compatible. Driver swap for production:
+- Remove `node:sqlite` import
+- `npm install pg @types/pg`
+- Replace `DatabaseSync` with `new Pool({ connectionString: process.env.DATABASE_URL })`
+- `.all()` -> `(await pool.query(sql, params)).rows`
+- `.get()` -> `(await pool.query(sql, params)).rows[0]`
+- `.run()` -> `await pool.query(sql, params)` (uses `result.rowCount` for changes)
+- `db.exec()` -> `await pool.query(ddl)`
+
+---
+
+## handoff
+- produced: exact clone pointers (adverteyes file -> change), package.json (both), node:sqlite import pattern + API diff vs better-sqlite3, Surface service config (port 3742, name orschell-ecommerce-api), bridge config (PREFIX/UPSTREAM), 25 product image URLs (picsum by SKU), full CSS token set + Google Fonts import, motif patterns, demo workSamples.js entry, Postgres migration delta for deck
+- decisions: port 3742 (adverteyes = 3741, no conflict); bridge prefix = `demos/orschell-excavating-e-commerce-full/api`; tsconfig target ES2022 for node:sqlite; picsum.photos seed by SKU for images
+- next needs: demo-builder reads this file + planner.out for schema/endpoints/seed data; builds Surface backend first (npm install, tsc, register service), then Vite frontend, then bridge blueprint
+- risks: node:sqlite requires Node 22 (Surface confirmed Node 22+); bridge PREFIX contains slashes — Flask url_prefix handles this fine but builder must not add a leading `/api` in the frontend base URL that would double the path

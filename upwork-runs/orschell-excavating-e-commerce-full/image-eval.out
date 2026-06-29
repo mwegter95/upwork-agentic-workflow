@@ -1,0 +1,32 @@
+# Image Eval — Orschell Excavating e-commerce
+Last verified: 2026-06-29 (re-confirmed same date, second eval pass)
+
+## Verification Method
+- Pulled all 25 products from live API: `GET /demos/orschell-excavating-e-commerce-full/api/products?limit=50`
+- Issued live HTTP GET to every image URL (curl, max-time 5s)
+- Checked for picsum fallback URLs
+- Checked context match: product name vs image subject for all 25 SKUs
+
+## Results
+
+| Check | Result |
+|-------|--------|
+| Total products | 25 |
+| Unsplash URLs | 25 |
+| Picsum fallback URLs | 0 |
+| Broken (non-200) URLs | 0 |
+| Missing/blank image_url | 0 |
+| Stray test products (IDs 27/28) | deleted by fixer |
+
+All 25 product image URLs return HTTP 200 (re-confirmed 2026-06-29). Zero picsum.photos fallbacks. The image-fixer replaced all 21 deleted Unsplash IDs in the prior pass and deleted 2 stray test DB entries (IDs 27, 28) with blank image_url in the current pass. Category-to-photo context match verified: tees→t-shirt photos, hoodies→hoodie photos, hats/beanies→hat/beanie photos, PPE (vest/hard hat/glasses/gloves/jacket)→matching safety gear photos, site supplies (paint/tape/stakes/tarp/ribbon)→matching supply photos, accessories (mouse pad/stickers/decal/keychain)→matching accessory photos.
+
+## Issues Found
+None.
+
+## handoff
+- produced: image-eval.out re-confirmed 2026-06-29; all 25 product images resolve HTTP 200 with correct context, zero picsum fallbacks, zero empty URLs
+- decisions: pass verdict; stray test products deleted at API level; no loops back to analyzer/fixer needed
+- next needs: media-capture can proceed
+- risks: Unsplash URLs can expire without notice; frontend onError fallback to picsum is in place as safety net
+
+VERDICT: pass

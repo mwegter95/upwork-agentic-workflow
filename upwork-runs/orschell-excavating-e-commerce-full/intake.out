@@ -1,0 +1,44 @@
+# Intake — Orschell Excavating E-Commerce Full-Stack
+
+## Summary
+
+Parsed Upwork posting + Michael's directive into `brief.json`. Fixed-price $1,700 backend build for excavating contractor (Orschell Excavating, West Harrison IN). Client explicitly requires Node.js, TypeScript, PostgreSQL, REST APIs. Michael's directive: fully functional frontend + backend e-commerce store covering all 8 posting requirements, production-quality (feature richness 10), admin CMS with catalog editing, mocked payment (explicitly labeled), real Postgres DB.
+
+## 8 explicit requirements mapped to demo realization
+
+| Posting Requirement | Demo Feature |
+|---|---|
+| User auth & account mgmt | Real JWT signup/login, account page, order history; seeded demo + admin creds |
+| Product catalog management | Admin CMS: create/edit/delete products, categories, images, pricing, specs |
+| Inventory tracking | Stock counts decremented on order; low-stock flags; admin stock edits |
+| Order processing workflows | Cart → checkout → order; admin order status pipeline (pending→processing→shipped→delivered) |
+| Payment gateway integration | Mocked checkout (labeled "Demo / Mock Payment"), fake card form, success/decline simulation |
+| REST API development | Documented REST endpoints for products, cart, orders, auth, admin ops |
+| Performance optimization | Pagination, indexed queries, client-side caching where beneficial |
+| Database improvements | Proper Postgres schema with FKs, indexes, constraints, migrations, seeds |
+
+## Architecture recommendation
+
+**Real Node.js + TypeScript + PostgreSQL service on Surface** (matches client's exact stack) exposed via Flask bridge blueprint at `/demos/orschell-excavating-e-commerce-full/api/`. Frontend: self-contained React app (Vite or CDN build) calling REST API, deployed to `michaelwegter.com/public/demos/<slug>/`. **Fallback only if Postgres unavailable**: Express+TS + node:sqlite with Postgres-shaped schema; call out in deck that production target is Postgres.
+
+## Hard gates
+
+- Admin CMS fully functional (not wireframe)
+- Mock payment clearly labeled in UI
+- All 8 requirements working in demo or documented in deck
+- Seeded admin + demo customer accounts with credentials stable for deploy-test
+- Cohesive industrial-rugged design (steel grey, safety-amber, hi-vis accents; utilitarian dense grid; NOT portfolio aesthetic)
+- Cover letter includes examples of similar projects, timeline estimate, and technical approach (posting explicitly requests)
+- Zero em/en dashes in all prose
+
+## Constraints & risks
+
+- Build timeout 3 min; ~12 files max; scope is large (storefront + admin + inventory + orders) → planner must tightly fence hero vs supporting
+- Surface Postgres setup may be time-expensive; fallback to sqlite ready with note in deck
+- Must include demo accounts + credentials in build report for live test + proposal
+
+## handoff
+- produced: brief.json with 8-requirement traceability table, technical stack (Node+TS+Postgres), architecture recommendation (real backend on Surface + Flask bridge), industrial design seeds, hard gates, risk flags
+- decisions: feature richness 10; real Postgres backend in client's exact stack; full admin CMS required; payment mocked+labeled; industrial contractor-supply aesthetic (no portfolio look)
+- next needs: planner refine design direction + scope hero vs supporting features + estimate timeline for cover letter; researcher gather competitor sites + brand direction
+- risks: large scope (storefront + admin + inventory + orders) vs ~12-file/3-min caps; Surface Postgres time-cost (sqlite fallback with note in deck ready)

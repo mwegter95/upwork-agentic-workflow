@@ -1,0 +1,47 @@
+# Proposal Writer — Orschell Excavating E-Commerce Full-Stack
+
+## Deliverables produced
+
+### 1. Cover letter (`cover-letter.md`)
+- Hook: names their problem + outcome immediately, no filler opener
+- Demo link in sentence 2 with admin credentials for instant access
+- Concrete approach: codebase audit first, then layered feature implementation, Stripe as additive
+- Proof: USBank TDAAS (solo SME, 60k LOC), Optum (PostgreSQL daily), TypeScript primary language
+- Warm low-pressure close; github.com/mwegter95 (correct handle)
+- Zero em/en dashes; no banned phrasing
+
+### 2. One-pager (`one-pager.html`)
+- Industrial design: #1C1F24 bg, #F76B10 orange accent, #FFD600 yellow, Barlow Condensed + Inter (matches demo)
+- Sections: hero with live demo CTA + credentials, 6 feature cards (badges: Live / Mocked+labeled), 8 screenshot grid (customer + admin flows), 22 REST endpoint list with method color coding, tech stack (backend / frontend / DB design / production path), 3-week timeline with $1,700 price box, 4 proof-point bio grid, footer links
+- All 8 posting requirements represented with traceability to live features
+- Screenshots embedded as relative paths (same directory as screenshots)
+- Responsive breakpoints at 640px
+
+### 3. Deck (`deck.pptx`)  — 8 slides, 13.33 x 7.5 in
+| Slide | Content |
+|-------|---------|
+| 1 | Title: split panel, demo URL + credentials on right |
+| 2 | 8 requirements grid, each mapped to a live feature |
+| 3 | Demo screenshots (home, shop, admin dashboard, admin products) with live URL |
+| 4 | Tech stack: backend / frontend / DB / production Postgres path |
+| 5 | Admin CMS screenshots (dashboard, products, orders, inventory) |
+| 6 | 3-week timeline with price highlight bar |
+| 7 | 4 proof-point cards (USBank, Optum, TypeScript, portfolio) |
+| 8 | Close slide with demo link + credentials |
+
+Design: BG #1C1F24, accent #F76B10, SURFACE #25292F, text #E8ECF0, muted #9BA3AD. Hazard stripe bars on title/close slides. Orange left-bar cards for credibility/stack sections. Real screenshots embedded.
+
+## Key content decisions
+- Mock payment: called out as "Mocked + labeled" badge in one-pager feature card and explicitly named in cover letter as "a Stripe integration would be a one-day addition"
+- node:sqlite vs PostgreSQL: production migration path explained on one-pager and in deck slide 4; schema compatibility stated concretely (driver swap, no SQL changes)
+- Admin credentials visible in all three deliverables so reviewer can immediately test the admin panel
+- Timeline framed as "audit existing codebase first" (not "build from scratch") to match the posting which says site is already in development
+- Price: $1,700 as posted, no negotiation hedge
+
+---
+
+## handoff
+- produced: cover-letter.md (800 words, Michael's voice, no banned phrasing), one-pager.html (22KB, industrial design, screenshots embedded, all 8 requirements), deck.pptx (8 slides, 1.9MB, screenshots embedded, dark industrial theme)
+- decisions: design matches demo palette (#F76B10 / #1C1F24), not portfolio palette; screenshots referenced as relative paths from same directory; mocked payment flagged explicitly in all three; github.com/mwegter95 used throughout
+- next needs: evaluator can verify all 8 requirements addressed in cover letter AND demo; check no em/en dashes; verify demo link and github handle
+- risks: one-pager screenshot paths are relative (work in browser opened from the run directory; may need adjustments if served from a different path)
