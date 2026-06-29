@@ -21,6 +21,18 @@ plan/brief for what the demo is supposed to do.
   `build-report.md` for "credentials" or "login" — only attempt a login flow if
   they appear. If it has auth, log in (use the seeded demo credentials the
   demo-builder noted) and run a representative multi-step workflow.
+- **Exercise EVERY interactive control, not just the hero flow.** On each route
+  and state (including post-login and any role-specific views), enumerate every
+  interactive element — buttons, links, tabs, nav items, toggles, dropdowns,
+  filters, form submits, pagination, cards/rows that open a detail or modal, menu
+  openers, add-to-cart / quantity steppers, etc. A reliable way: query the DOM
+  for `button, [role=button], a[href], [onclick], input[type=submit], [role=tab],
+  summary, select` and iterate. Click/activate each one, wait for its effect, and
+  assert it did something real (navigation, a modal/panel opened, data changed, a
+  request fired) rather than throwing or no-op'ing. Track which controls you have
+  hit so none are skipped, and report any that error or do nothing. Do not stop at
+  the first happy path — a button that is never clicked is a button that ships
+  broken.
 - Playwright is already installed in this repo; import it by ABSOLUTE path to
   avoid a module-resolution loop:
   `/Users/michaelwegter/Desktop/Projects/upwork-agentic-workflow/node_modules/playwright/index.mjs`.
@@ -56,18 +68,24 @@ markup) rather than guessing aria-labels/ids — demos often use semantic class
 names (e.g. `.btn-transport`, `.song-chip`); prefer text-content matching as the
 primary fallback so checks survive markup differences.
 
-## Hand the image steps a screenshot script (so they can SEE every screen)
-The image-analyzer/eval steps must inspect images on EVERY screen, not just the
-homepage. As part of this step:
-- Cover ALL routes/views and key states in your Playwright run — every page in the
-  nav, post-login views, and modals/detail panes that show images — not only `/`.
-- Save a reusable capture script at `upwork-runs/<slug>/image-shots.mjs` that logs
-  in (if the demo has auth, using the same credentials) and screenshots each
-  route/state full-page into `upwork-runs/<slug>/image-shots/<route>.png`. Reuse
-  your real selectors and auth so the image steps don't re-derive them.
-- In your output, list every route/state it covers and the path to
-  `image-shots.mjs` (and the `image-shots/` folder) so image-analyzer can run it and
-  view the screenshots.
+## Hand the image steps your EXACT exercised script (so they SEE every screen)
+The image-analyzer/eval steps must inspect images on EVERY screen and state, not
+just the homepage. They can only do that if they reproduce the same states you
+reached. So do NOT write a separate, thinner screenshot script — derive the
+screenshot script from the SAME flow you just ran:
+- Save the exact script you used (same selectors, auth, and full click sequence,
+  including every control you exercised and every modal/detail/menu state it
+  opened) as `upwork-runs/<slug>/image-shots.mjs`. It must log in (if the demo has
+  auth, using the same credentials) and, at each route AND each interacted state,
+  take a full-page screenshot into `upwork-runs/<slug>/image-shots/<route-or-state>.png`.
+  Reuse your real selectors so the image steps don't re-derive them and so they
+  land on the identical post-click views (a modal/detail pane that only appears
+  after a click is exactly where mismatched images hide).
+- Confirm `image-shots.mjs` runs clean and the `image-shots/` folder fills with one
+  PNG per route/state before you finish.
+- In your output, list every route/state it covers (matching the controls you
+  exercised above) and the path to `image-shots.mjs` and the `image-shots/`
+  folder, so image-analyzer can run it and view the screenshots.
 
 ## Output
 List each flow you ran with pass/fail and the observed result. On failure, name
