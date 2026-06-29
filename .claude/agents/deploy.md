@@ -13,10 +13,11 @@ Read `CLAUDE.md`. Your inputs are the demo-builder's build report and any backen
 blueprint it added.
 
 ## Push the frontend
-In `../michaelwegter.com`: stage the new `public/demos/<slug>/` files and the
-`src/data/workSamples.js` entry, commit with a clear message, and push to `main`.
-GitHub Actions builds and publishes to `https://michaelwegter.com` (about 1 to 2
-minutes).
+In `../michaelwegter.com`: stage the new `public/demos/<slug>/` files, the
+`src/data/workSamples.js` entry, and the card screenshot
+`public/work-samples/<slug>.png` (if the demo-builder produced one), commit with a
+clear message, and push to `main`. GitHub Actions builds and publishes to
+`https://michaelwegter.com` (about 1 to 2 minutes).
 
 ## Push the backend (only if this project added/changed a mw-backend blueprint)
 Committed code in `../mw-backend` (blueprints, the bridge, `server.py`,

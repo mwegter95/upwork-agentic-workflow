@@ -62,11 +62,38 @@ clone its mechanics:
   color: "#rrggbb",        // pick from the palette below
   icon: "🧩",              // single emoji
   frameStyle: "baroque" | "walnut",
+  tags: ["React", "Dashboard", ...],   // see "Work-sample tags" below
+  screenshot: import.meta.env.BASE_URL + "work-samples/<slug>.png" | null,
 }
 ```
 
 `workSamples.js` adds these fields on top: `client`, `postingSummary`,
 `builtFor`, `date` (ISO), `proposalDeckUrl`, `proposalPageUrl`.
+
+### Work-sample tags (filterable on the /work-samples gallery)
+
+The gallery has a tag filter: tags are grouped into sections (Frontend, Backend,
+Data & Infra, AI, Auth & Security, Type & Features) defined by `tagSections` in
+`../michaelwegter.com/src/data/workSamples.js`. Every registry entry carries a
+`tags: [...]` array used to filter the cards.
+
+Rules for the `tags` you put on a new entry:
+- List the demo's ACTUAL stack (languages, frameworks, libraries it really uses,
+  e.g. `React`, `Node.js`, `Flask`, `PostgreSQL`, `Tailwind CSS`, `Leaflet`)
+  PLUS app-style/feature descriptors (e.g. `Dashboard`, `Landing Page`,
+  `E-commerce`, `CRM`, `Maps`, `Full-Stack`, `Auth`-style tags like `JWT Auth`).
+- Prefer an existing tag from `tagSections`. Only introduce a NEW tag when no
+  current one fits, and when you do, ALSO add it to the correct section in
+  `tagSections` (same edit) so the filter shows it. Keep tag labels canonical
+  (match casing exactly: `Node.js`, `Next.js`, `JWT Auth`, `Data Viz`).
+- 4 to 10 tags is the right range. Be accurate, not exhaustive.
+
+### Work-sample card screenshot
+
+Each card shows a hero still from `public/work-samples/<slug>.png` (16:9, scaled
+to cover, top-aligned). The demo-builder captures it at build time (see its prompt)
+and sets `screenshot: import.meta.env.BASE_URL + "work-samples/<slug>.png"`. If no
+capture is produced, set `screenshot: null` and the card renders without an image.
 
 ### Demo design — do NOT copy michaelwegter.com's look
 

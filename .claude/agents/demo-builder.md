@@ -93,7 +93,21 @@ integrations, server-side compute). When the plan calls for it, build it:
 Add one entry to `../michaelwegter.com/src/data/workSamples.js` using the schema
 in CLAUDE.md: `slug`, `title`, `description`, `category`, `status: "live"`,
 `href: import.meta.env.BASE_URL + "demos/<slug>/"`, `color` (from the palette),
-`icon`, `frameStyle`, plus `client`, `postingSummary`, `builtFor`, `date`.
+`icon`, `frameStyle`, `tags`, `screenshot`, plus `client`, `postingSummary`,
+`builtFor`, `date`.
+
+- `tags`: the demo's real stack + app-style descriptors (4 to 10). Reuse existing
+  tags from `tagSections` in `workSamples.js`; only add a new tag when none fits,
+  and when you do, add it to the right section in `tagSections` in the SAME edit.
+  See CLAUDE.md "Work-sample tags" for the rules and canonical casing.
+- `screenshot`: capture one hero still of the running demo into
+  `../michaelwegter.com/public/work-samples/<slug>.png` and set
+  `screenshot: import.meta.env.BASE_URL + "work-samples/<slug>.png"`. Use
+  `node scripts/capture.mjs --url <preview-url> --slug <slug> --out /tmp/<slug>-card`
+  then copy its `hero.png` to that path (or take a single full-viewport shot of
+  the hero/dashboard view). Pick the frame that best shows the app with real
+  content (a populated dashboard beats an empty landing/login). If capture is not
+  possible, set `screenshot: null`.
 
 When inserting a new item into an existing JS array/registry, read the exact
 array boundaries first; for structural inserts prefer a full `Write` of the file
