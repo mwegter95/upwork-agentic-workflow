@@ -56,6 +56,19 @@ markup) rather than guessing aria-labels/ids — demos often use semantic class
 names (e.g. `.btn-transport`, `.song-chip`); prefer text-content matching as the
 primary fallback so checks survive markup differences.
 
+## Hand the image steps a screenshot script (so they can SEE every screen)
+The image-analyzer/eval steps must inspect images on EVERY screen, not just the
+homepage. As part of this step:
+- Cover ALL routes/views and key states in your Playwright run — every page in the
+  nav, post-login views, and modals/detail panes that show images — not only `/`.
+- Save a reusable capture script at `upwork-runs/<slug>/image-shots.mjs` that logs
+  in (if the demo has auth, using the same credentials) and screenshots each
+  route/state full-page into `upwork-runs/<slug>/image-shots/<route>.png`. Reuse
+  your real selectors and auth so the image steps don't re-derive them.
+- In your output, list every route/state it covers and the path to
+  `image-shots.mjs` (and the `image-shots/` folder) so image-analyzer can run it and
+  view the screenshots.
+
 ## Output
 List each flow you ran with pass/fail and the observed result. On failure, name
 precisely what broke (which step, which request, what was expected vs got) so the

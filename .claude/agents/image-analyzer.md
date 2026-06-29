@@ -9,14 +9,26 @@ You audit the IMAGES the finished demo shows a client — only the demo's own im
 (logos, hero, content photos, icons in `../michaelwegter.com/public/demos/<slug>/`
 and the demo-src assets it references). Not proposal media. Be fast and concrete.
 
-## Find the images
-1. List image files under `../michaelwegter.com/public/demos/<slug>/` (png, jpg,
-   jpeg, webp, gif, svg, avif).
-2. Grep the demo's built files + `demo-src` for references: `<img src=`,
-   `background-image`, `url(`, `srcset`, and any image URLs. Map each reference to a
-   file (or external URL).
+## See the demo the way a client does — Playwright screenshots, then VIEW them
+Do this FIRST; the homepage alone is not enough.
+1. Reuse deploy-test's capture: run `upwork-runs/<slug>/image-shots.mjs` (deploy-test
+   built it; it logs in if needed and screenshots every route/state full-page into
+   `upwork-runs/<slug>/image-shots/`). Read deploy-test's output for the route list
+   and the script path.
+2. If that script is missing or only covers a screen or two, write/extend a
+   Playwright script that visits EVERY page and state where images appear — every
+   nav route, post-login views, and modals/detail panes — and screenshots each one.
+   Import Playwright by ABSOLUTE path to avoid a resolution loop:
+   `/Users/michaelwegter/Desktop/Projects/upwork-agentic-workflow/node_modules/playwright/index.mjs`.
+   Reuse deploy-test's selectors/auth; capture full-page screenshots.
+3. **Actually look:** use `Read` on each screenshot PNG (Read renders the image so
+   you can see it) and judge every image IN CONTEXT — next to its label, heading,
+   and the section it sits in. This is how you catch off-context images. Read the
+   raw asset file too when you need to inspect the source closely.
+4. Also map references (`<img src=`, `background-image`, `url(`, `srcset`) in the
+   built files + `demo-src` to files/URLs, so you can name the exact asset to fix.
 
-## Judge each image (VIEW it — use Read on the file to actually see it)
+## Judge each image (from the screenshots you actually viewed)
 Flag an image when ANY of these is true:
 - **Broken / missing:** referenced but the file doesn't exist, is 0 bytes, or the
   URL clearly won't load.

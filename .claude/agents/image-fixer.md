@@ -34,6 +34,12 @@ static demo, you edited it in place. Then commit + push `../michaelwegter.com` s
 the corrected images are live before media-capture screenshots them. (Pushing the
 site is routine here.)
 
+## Verify visually before claiming done
+Re-run `upwork-runs/<slug>/image-shots.mjs` (or screenshot the pages you changed
+with Playwright), then `Read` the new screenshots and actually LOOK: confirm each
+replaced image is on-topic for its label/section, not broken, and well-cropped in
+context. If a swap still looks off, pick a better stock query and redo it.
+
 ## Rules
 - Touch only images and their styling/markup — never app logic or data.
 - Stay within caps; keep edits surgical (use Edit). Be token-frugal.
