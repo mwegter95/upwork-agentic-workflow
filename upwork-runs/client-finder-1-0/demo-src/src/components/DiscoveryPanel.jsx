@@ -205,7 +205,10 @@ export default function DiscoveryPanel({ onClose, onLeadsAdded, reflectOnResults
             const m = chunk.match(/^data: (.+)$/m);
             if (!m) continue;
             let evt; try { evt = JSON.parse(m[1]); } catch { continue; }
-            if (evt.event === 'site') {
+            if (evt.event === 'progress') {
+              const p = evt.data || {};
+              addLog('info', `  ↳ visiting ${p.name || p.website || 'site'} (${(p.idx ?? 0) + 1}/${p.total || '?'})…`);
+            } else if (evt.event === 'site') {
               const d = evt.data;
               const meta = byDomain.get((d.website || '').toLowerCase()) || {};
               const site = { ...d, industry: meta.industry || industry || '' };
