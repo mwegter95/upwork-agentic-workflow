@@ -1,0 +1,123 @@
+{
+  "slug": "card-shopper",
+  "title": "Card Shopper - curated trading card marketplace (web + app)",
+  "client": {
+    "name": null,
+    "industry": "Trading card collectibles marketplace (sports, Pokemon, MTG)",
+    "signals": "Non-technical founder with a clear product vision and a named brand (Card Shopper). Has done market thinking: a fee-savings pitch doc already exists and a founding-seller outreach plan (10 to 20 sellers) is in place. Values trust/curation (manual seller verification, not an open marketplace). Budget-conscious and pragmatic: explicitly wants phased delivery so a usable core ships within budget. Wants the online experience to feel like an in-person card show."
+  },
+  "summary": "A curated online marketplace that recreates the feel of an in-person card show for collectors of sports cards, Pokemon, and Magic: The Gathering. Buyers browse verified shops on a US map, then dig through inventory via a face-down card flip experience or a grid, and can watchlist, message, offer, or buy instantly. Sellers are manually verified, get a booth dashboard, upload cards through a 4-step AI-assisted flow, build drop announcements, and pay one flat monthly subscription with zero per-sale fees.",
+  "domain": "trading card collectibles marketplace (sports, Pokemon, MTG)",
+
+  "explicit_requirements": [
+    { "id": "R1", "text": "Home/Map screen: a US map showing verified card shops as pins, color-coded by category.", "must": true },
+    { "id": "R2", "text": "Home screen shows drop announcement banners.", "must": true },
+    { "id": "R3", "text": "Home screen has search.", "must": true },
+    { "id": "R4", "text": "Home screen has category tiles.", "must": true },
+    { "id": "R5", "text": "Tapping a shop pin opens that shop's profile page.", "must": true },
+    { "id": "R6", "text": "Shop profile offers a value-box flip view: cards appear face-down and flip over one at a time with a fan animation, like digging through a bin at a real show.", "must": true },
+    { "id": "R7", "text": "Shop profile also offers a standard grid view of inventory.", "must": true },
+    { "id": "R8", "text": "Buyers can search inventory by player, team, or set.", "must": true },
+    { "id": "R9", "text": "Buyers can filter inventory by price and by category.", "must": true },
+    { "id": "R10", "text": "Buyers can save cards to a watchlist.", "must": true },
+    { "id": "R11", "text": "Buyers can message sellers directly (per-listing buyer/seller threads).", "must": true },
+    { "id": "R12", "text": "Buyers can make an offer on a listing (offer status tracked: pending/accepted/declined).", "must": true },
+    { "id": "R13", "text": "Buyers can buy instantly at the asking price.", "must": true },
+    { "id": "R14", "text": "Sellers apply and are manually verified before they can list anything (curation gate, not an open marketplace).", "must": true },
+    { "id": "R15", "text": "Approved sellers get a booth dashboard showing active listings, monthly sales total, open offers, and follower count.", "must": true },
+    { "id": "R16", "text": "Guided 4-step AI-assisted upload flow: (1) take a photo, (2) CollX API auto-detects player/set/year/grade, (3) seller reviews and sets a price with a market price suggestion shown, (4) publish as a standalone listing or add into a value box.", "must": true },
+    { "id": "R17", "text": "Drop announcement builder: seller sets title, date/time, and teaser description.", "must": true },
+    { "id": "R18", "text": "Drop announcement builder shows a live preview.", "must": true },
+    { "id": "R19", "text": "Drops are pushed to all of a seller's followers via in-app notification and email.", "must": true },
+    { "id": "R20", "text": "Flat monthly seller subscription billing via Stripe, recurring (not one-time), with zero fees on individual sales.", "must": true },
+    { "id": "R21", "text": "User role distinction between buyer and seller.", "must": true },
+    { "id": "R22", "text": "Buyers can follow a shop (follow relationship that feeds drop notifications).", "must": true },
+    { "id": "R23", "text": "Web plus mobile-responsive, with the ability to wrap for App Store/Google Play later via Median.co.", "must": false }
+  ],
+
+  "requested_stack": {
+    "core": "Bubble.io for the core app (web + mobile-responsive, wrappable for App Store/Google Play later via Median.co)",
+    "payments": "Stripe recurring subscriptions (flat monthly seller fee, NOT one-time charges)",
+    "map": "Google Maps or Mapbox plugin for the pin-based map",
+    "email": "Klaviyo or similar for email notifications",
+    "ai": "CollX API for card auto-detection (player/set/year/grade) in the upload flow"
+  },
+
+  "data_model": {
+    "entities": [
+      { "name": "Users", "key_fields": ["role (buyer/seller)", "profile", "auth"], "relationships": ["a seller owns one Shop", "a buyer has Watchlist, Follows, Offers, Messages"] },
+      { "name": "Shops", "key_fields": ["location", "category", "specialty", "verified status"], "relationships": ["belongs to a verified seller (User)", "has many Listings, Value boxes, Drops, Followers"] },
+      { "name": "Listings", "key_fields": ["photos", "player", "set", "year", "grade", "price", "category", "status"], "relationships": ["belongs to a Shop", "optionally part of a Value box", "has many Offers, Messages, Watchlist saves"] },
+      { "name": "Value boxes", "key_fields": ["title", "order/sequence for flip"], "relationships": ["belongs to a Shop", "groups many Listings for the flip browsing experience"] },
+      { "name": "Offers", "key_fields": ["amount", "status (pending/accepted/declined)"], "relationships": ["links a Listing and a buyer (User)"] },
+      { "name": "Messages", "key_fields": ["body", "timestamp", "thread"], "relationships": ["buyer-seller thread linked to a specific Listing"] },
+      { "name": "Drops", "key_fields": ["title", "date/time", "teaser"], "relationships": ["created by a Shop", "fan-out to that shop's Followers for in-app + email notification"] },
+      { "name": "Follows", "key_fields": [], "relationships": ["buyer (User) follows a Shop"] },
+      { "name": "Watchlist", "key_fields": [], "relationships": ["buyer (User) saved Listings"] }
+    ]
+  },
+
+  "implicit_needs": [
+    "Trust and curation are the product's spine: the manual verification gate must visibly signal a vetted, non-open marketplace.",
+    "Founding-seller onboarding flow: smooth seller application + approval, since the launch plan depends on signing 10 to 20 founding sellers (a fee-savings pitch doc already exists).",
+    "Phased delivery that ships a usable core (accounts, listings, map, Stripe) within budget, with the flip animation and AI upload as fast-follows.",
+    "Mobile-first responsive feel that emulates the tactile, browse-a-bin energy of an in-person card show.",
+    "Clear value-prop messaging around zero per-sale fees vs. competitor marketplaces (this is the headline differentiator).",
+    "A path to a native app later (Median.co wrap) without rebuilding."
+  ],
+
+  "tech_hints": ["Bubble.io", "Stripe (recurring subscriptions)", "Google Maps", "Mapbox", "Klaviyo", "Median.co", "CollX API"],
+
+  "budget": { "raw": "$2,500 to $4,500 for MVP", "tier": "mid" },
+  "timeline": "6 to 10 weeks to launch",
+  "engagement": "Open to fixed price or hourly, prefers phased delivery: core first (accounts, listings, map, Stripe), with flip animation + AI upload as a fast-follow if needed to hit budget.",
+
+  "constraints": ["US-only freelancers (only freelancers located in the U.S. may apply)"],
+
+  "success_signals": [
+    "A live, clickable demo that makes the value-box flip experience feel real and delightful (the signature feature).",
+    "A US map with color-coded shop pins that opens a shop profile, proving the core browse loop.",
+    "Concrete acknowledgement of the zero-per-sale-fee subscription model and a credible Stripe recurring plan.",
+    "A clear phased delivery plan that hits the core within the 6 to 10 week window and the 2.5k to 4.5k budget.",
+    "Evidence we understand the trading-card domain and the in-person card-show vibe.",
+    "Comfort with the Bubble.io + CollX + Stripe + maps integration path (or a credible, justified equivalent)."
+  ],
+
+  "red_flags": [
+    "Budget (2.5k to 4.5k) is modest for the full scope described; phasing is essential and must be framed honestly.",
+    "Client requests Bubble.io specifically; our demo platform is static React (michaelwegter.com), so the demo must be framed as a high-fidelity interactive prototype of the experience, not the Bubble build itself.",
+    "CollX API access/terms and live card-grade detection are an integration dependency outside our control (assume mock detection in the demo).",
+    "US-only freelancer requirement is a hard gate to confirm we meet."
+  ],
+
+  "demo_concepts": [
+    {
+      "id": "D1",
+      "name": "The Value Box - flip-through-the-bin experience",
+      "what": "A shop profile where a value box of face-down cards fans out and flips over one at a time, with grid-view toggle, player/team/set search, price + category filters, and watchlist/offer/buy/message actions on each card.",
+      "hero_feature": "The tactile face-down-to-face-up card flip with a fan animation that recreates digging through a bin at a real card show.",
+      "backend_needed": false,
+      "why_wins": "It nails the client's single most distinctive, hardest-to-imagine feature in a way a Bubble screenshot never could, proving we can deliver the signature delight that sets Card Shopper apart."
+    },
+    {
+      "id": "D2",
+      "name": "Card Shopper Map - find a shop, open the booth",
+      "what": "An interactive US map with color-coded category pins, drop-announcement banners, search and category tiles, where tapping a pin opens a shop profile that flows into the value-box/grid browse.",
+      "hero_feature": "The color-coded pin map that opens straight into a live shop profile, demonstrating the full buyer browse loop end to end.",
+      "backend_needed": false,
+      "why_wins": "It shows the entire buyer entry experience (the home screen the client described first) working as a cohesive flow, with mock shop/listing data, no backend required."
+    },
+    {
+      "id": "D3",
+      "name": "Seller Booth - AI upload + drop builder + zero-fee dashboard",
+      "what": "A seller dashboard with stats (active listings, monthly sales, open offers, followers), the guided 4-step AI-assisted upload (photo to mock auto-detected player/set/year/grade to price-with-market-suggestion to publish/add-to-box), a drop announcement builder with live preview, and a Stripe-style flat-monthly subscription panel highlighting zero per-sale fees.",
+      "hero_feature": "The 4-step AI-assisted upload that auto-fills card details and suggests a market price, paired with the zero-fee subscription framing.",
+      "backend_needed": false,
+      "why_wins": "It speaks directly to the people the client must recruit first (founding sellers) and showcases the business-model differentiator; an optional Flask blueprint could stub a CollX-style detect endpoint, but mock data carries it fine.",
+      "optional_backend": "A small Flask blueprint could mock a CollX-style /detect endpoint returning player/set/year/grade + market price, if we want a live round-trip."
+    }
+  ],
+
+  "recommended_demo": "D1",
+  "notes_from_michael": null
+}

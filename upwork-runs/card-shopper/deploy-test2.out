@@ -1,0 +1,47 @@
+# deploy-test2.out - Card Shopper (improve pass, LOCAL)
+
+Terminal-bound deploy-test that the first run could not perform. Verified against a
+LOCAL preview only (python3 -m http.server 4178 over
+michaelwegter.com/public/demos/card-shopper/). Never polled the live URL.
+
+## Build
+- `cd michaelwegter.com && npm install && npm run build` -> PASS (vite v6.4.2, 46
+  modules, built in ~5s, no errors). Demo is static under public/, copied verbatim.
+
+## Fix applied during this pass (root cause: demo would not load)
+- The demo loaded React/react-dom/htm from `unpkg.com`, which is BLOCKED (403) by
+  this environment (Zscaler). First paint threw `React is not defined` /
+  `htm is not defined` and rendered nothing.
+- Vendored the three UMD libs locally into
+  `public/demos/card-shopper/assets/vendor/` (react@18, react-dom@18, htm@3,
+  sourced from jsdelivr) and pointed `index.html` at the local copies. The demo is
+  now truly self-contained with zero CDN dependency, which also protects real users
+  from any future unpkg outage. No app logic changed.
+
+## Playwright results (22/22 PASS, headless chromium, localhost:4178)
+- first paint: root rendered, NO console errors, NO page errors.
+- hero value-box flip: pin -> shop -> face-down flipcard click reveals the card
+  face (`.reveal-actions`).
+- make-offer 85% threshold: offer of 469 (>= 85% of asking) -> `.status-accepted`;
+  offer of 1 (< 85%) -> `.status-declined`. Matches `amount >= price*0.85` in app.js.
+- AI upload accept/override: subscription activated via mock Stripe -> AI-detect
+  reaches the editable review -> Override unlocks the price field -> Accept re-locks
+  to the suggested market price -> Publish shows "Listing published".
+- localStorage persistence: `cardshopper:v1` written and survives a full reload.
+- no console errors across the entire run.
+
+Script: `upwork-runs/card-shopper/deploy-test.mjs` (re-runnable;
+`BASE_URL` env overrides the target, defaults to http://localhost:4178/).
+
+## handoff
+- produced: deploy-test2.out (VERDICT pass) + deploy-test.mjs.
+- changed: index.html now loads vendored React/react-dom/htm from
+  `assets/vendor/` instead of unpkg (unpkg is 403 here); added 3 vendor files.
+- verified: clean build, 22/22 Playwright checks, no console errors, all four hero
+  flows + persistence exercised on localhost.
+- next needs: media-capture grabs hero stills + recording and the 16:9 card png;
+  registry screenshot flips from null; proposal embeds the stills. deploy must push
+  the new vendor/ files + index.html change too.
+- risks: none open locally; live verification not possible from this environment.
+
+VERDICT: pass

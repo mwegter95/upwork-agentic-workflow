@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Card Shopper Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --felt: #0E3B2E;
+    --felt-deep: #0A2A21;
+    --navy: #10131C;
+    --gold: #D4AF37;
+    --gold-soft: #E7CE7F;
+    --ivory: #F5F0E6;
+    --ink: #1A1B18;
+    --sports: #1E66FF;
+    --pokemon: #FFCB05;
+    --mtg: #7B3FA0;
+    --multi: #2DB67D;
+    --success: #2DB67D;
+    --danger: #E63946;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    color: var(--ivory);
+    background: var(--navy);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; line-height: 1.1; font-weight: 600; }
+  a { color: inherit; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    background:
+      radial-gradient(1200px 500px at 80% -10%, rgba(212,175,55,0.18), transparent 60%),
+      linear-gradient(160deg, var(--felt) 0%, var(--felt-deep) 60%, var(--navy) 100%);
+    padding: 76px 0 64px;
+    overflow: hidden;
+    border-bottom: 2px solid rgba(212,175,55,0.35);
+  }
+  .hero::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 22px);
+    pointer-events: none;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold-soft); font-weight: 600;
+    border: 1px solid rgba(212,175,55,0.4);
+    padding: 6px 12px; border-radius: 999px; margin-bottom: 22px;
+    background: rgba(16,19,28,0.35);
+  }
+  .hero h1 { font-size: clamp(34px, 6vw, 60px); color: var(--ivory); max-width: 16ch; }
+  .hero h1 .foil {
+    background: linear-gradient(95deg, var(--gold) 0%, #FBF1C7 45%, var(--gold) 90%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.lede { font-size: clamp(17px, 2.2vw, 21px); max-width: 60ch; margin-top: 20px; color: rgba(245,240,230,0.86); }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 15px; text-decoration: none;
+    padding: 14px 22px; border-radius: 12px; border: 1px solid transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.gold {
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color: var(--navy);
+    box-shadow: 0 10px 28px rgba(212,175,55,0.32);
+  }
+  .btn.ghost { border-color: rgba(245,240,230,0.4); color: var(--ivory); }
+  .btn.ghost:hover { border-color: var(--gold); color: var(--gold-soft); }
+
+  /* Fanned card motif (CSS only) */
+  .fan { position: relative; height: 200px; margin-top: 44px; }
+  .fan .card {
+    position: absolute; left: 50%; top: 10px;
+    width: 120px; height: 168px; border-radius: 12px;
+    background: linear-gradient(150deg, #1b2433, #0d1119);
+    border: 1px solid rgba(212,175,55,0.45);
+    box-shadow: 0 16px 30px rgba(0,0,0,0.4);
+    transform-origin: bottom center;
+    display: flex; align-items: flex-end; padding: 10px;
+  }
+  .fan .card span {
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold-soft); font-weight: 600;
+  }
+  .fan .card::before {
+    content: ""; position: absolute; top: 12px; left: 12px; right: 12px; height: 70px;
+    border-radius: 8px;
+    background: linear-gradient(120deg, rgba(212,175,55,0.22), rgba(255,255,255,0.04));
+  }
+  .fan .c1 { transform: translateX(-50%) rotate(-18deg) translateY(8px); }
+  .fan .c2 { transform: translateX(-50%) rotate(-9deg) translateY(2px); border-color: var(--sports); }
+  .fan .c3 { transform: translateX(-50%) rotate(0deg); border-color: var(--gold); }
+  .fan .c4 { transform: translateX(-50%) rotate(9deg) translateY(2px); border-color: var(--pokemon); }
+  .fan .c5 { transform: translateX(-50%) rotate(18deg) translateY(8px); border-color: var(--mtg); }
+
+  /* Sections */
+  section { padding: 64px 0; }
+  section.alt { background: linear-gradient(180deg, var(--navy), #0c1018); }
+  .kicker { color: var(--gold-soft); font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
+  h2.title { font-size: clamp(26px, 4vw, 38px); color: var(--ivory); max-width: 22ch; }
+  .muted { color: rgba(245,240,230,0.74); }
+  .lead-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+  @media (max-width: 820px) { .lead-grid { grid-template-columns: 1fr; } }
+
+  .proof-card {
+    background: var(--ivory); color: var(--ink); border-radius: 16px; padding: 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    border-top: 4px solid var(--gold);
+  }
+  .proof-card h3 { color: var(--navy); font-size: 22px; margin-bottom: 10px; }
+  .proof-card ul { list-style: none; margin-top: 14px; }
+  .proof-card li { padding: 8px 0 8px 26px; position: relative; border-bottom: 1px solid rgba(26,27,24,0.08); }
+  .proof-card li:last-child { border-bottom: 0; }
+  .proof-card li::before { content: "\2713"; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+  .proof-card .cta-inline { margin-top: 20px; }
+
+  /* Feature -> requirement coverage */
+  .cov { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 32px; }
+  @media (max-width: 720px) { .cov { grid-template-columns: 1fr; } }
+
+  /* Prototype screenshot gallery */
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 32px; }
+  @media (max-width: 860px) { .shots { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .shots { grid-template-columns: 1fr; } }
+  .shot {
+    border-radius: 14px; overflow: hidden; background: #0c1018;
+    border: 1px solid rgba(212,175,55,0.28); box-shadow: 0 16px 36px rgba(0,0,0,0.4);
+  }
+  .shot img { display: block; width: 100%; height: auto; }
+  .shot .cap { padding: 12px 14px; font-size: 13px; color: rgba(245,240,230,0.82); border-top: 1px solid rgba(245,240,230,0.08); }
+  .shot .cap b { color: var(--gold-soft); font-weight: 600; }
+  .shots-note { margin-top: 22px; font-size: 14px; color: rgba(245,240,230,0.72); }
+  .shots-note a { color: var(--gold-soft); text-decoration: none; font-weight: 600; }
+  .cov .item {
+    background: rgba(245,240,230,0.04); border: 1px solid rgba(245,240,230,0.1);
+    border-radius: 14px; padding: 20px;
+  }
+  .cov .item h4 { font-family: 'Inter Tight', sans-serif; font-size: 16px; color: var(--gold-soft); margin-bottom: 6px; }
+  .cov .item p { font-size: 14.5px; color: rgba(245,240,230,0.78); }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; margin: 2px 4px 2px 0; }
+  .tag.sports { background: rgba(30,102,255,0.18); color: #9DBDFF; }
+  .tag.pokemon { background: rgba(255,203,5,0.16); color: #FFE08A; }
+  .tag.mtg { background: rgba(123,63,160,0.22); color: #CBA7E6; }
+  .tag.multi { background: rgba(45,182,125,0.18); color: #8FE3BE; }
+
+  /* Architecture */
+  .arch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 30px; }
+  @media (max-width: 760px) { .arch { grid-template-columns: 1fr; } }
+  .stack-card {
+    border-radius: 14px; padding: 22px; background: linear-gradient(165deg, #141a26, #0d1119);
+    border: 1px solid rgba(212,175,55,0.22);
+  }
+  .stack-card .pin { width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .stack-card h4 { font-family: 'Inter Tight', sans-serif; font-size: 15px; color: var(--ivory); margin-bottom: 6px; display: flex; align-items: center; }
+  .stack-card p { font-size: 13.5px; color: rgba(245,240,230,0.72); }
+
+  /* Phases */
+  .phase { display: grid; grid-template-columns: 130px 1fr; gap: 20px; padding: 22px 0; border-bottom: 1px solid rgba(245,240,230,0.1); }
+  @media (max-width: 640px) { .phase { grid-template-columns: 1fr; gap: 8px; } }
+  .phase .num { font-family: 'Fraunces', serif; font-size: 40px; color: var(--gold); line-height: 1; }
+  .phase h3 { font-size: 20px; color: var(--ivory); font-family: 'Inter Tight', sans-serif; font-weight: 700; margin-bottom: 6px; }
+  .phase p { color: rgba(245,240,230,0.78); font-size: 14.5px; }
+  .budget-bar {
+    margin-top: 30px; display: flex; flex-wrap: wrap; gap: 14px;
+  }
+  .budget-pill {
+    background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 12px; padding: 14px 20px;
+  }
+  .budget-pill strong { display: block; font-family: 'Fraunces', serif; font-size: 22px; color: var(--gold-soft); }
+  .budget-pill span { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(245,240,230,0.7); }
+
+  /* Why Michael */
+  .why { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 30px; }
+  @media (max-width: 760px) { .why { grid-template-columns: 1fr; } }
+  .why .w { background: rgba(245,240,230,0.04); border-radius: 14px; padding: 22px; border-left: 3px solid var(--gold); }
+  .why .w strong { font-family: 'Fraunces', serif; font-size: 26px; color: var(--gold-soft); display: block; margin-bottom: 6px; }
+
+  /* CTA band */
+  .band {
+    background:
+      radial-gradient(800px 300px at 50% 120%, rgba(212,175,55,0.22), transparent 60%),
+      linear-gradient(160deg, var(--felt), var(--felt-deep));
+    text-align: center; padding: 70px 0; border-top: 2px solid rgba(212,175,55,0.35);
+  }
+  .band h2 { font-size: clamp(26px, 4vw, 40px); color: var(--ivory); }
+  .band p { color: rgba(245,240,230,0.82); max-width: 52ch; margin: 16px auto 0; }
+  footer { text-align: center; padding: 30px 0 50px; color: rgba(245,240,230,0.55); font-size: 13px; }
+  footer a { color: var(--gold-soft); text-decoration: none; }
+  .demo-url { font-weight: 600; color: var(--gold-soft); word-break: break-all; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Proposal for Card Shopper</span>
+    <h1>The card show, <span class="foil">online</span>. Dig through the box, no per-sale fees.</h1>
+    <p class="lede">A curated marketplace where collectors browse verified shops on a US map, flip through a value box of cards like they are at a real show, and sellers pay one flat monthly fee with zero fees on every sale. I built a working prototype of the signature interactions so you can feel it before the build begins.</p>
+    <div class="cta-row">
+      <a class="btn gold" href="https://michaelwegter.com/work-samples/card-shopper">Try the live prototype</a>
+      <a class="btn ghost" href="#coverage">See requirement coverage</a>
+    </div>
+    <div class="fan" aria-hidden="true">
+      <div class="card c1"><span>Face down</span></div>
+      <div class="card c2"><span>Sports</span></div>
+      <div class="card c3"><span>The flip</span></div>
+      <div class="card c4"><span>Pokemon</span></div>
+      <div class="card c5"><span>Magic</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap lead-grid">
+    <div>
+      <div class="kicker">The problem and the vision</div>
+      <h2 class="title">Collectors miss the show. Sellers resent the fees.</h2>
+      <p class="muted" style="margin-top:16px">The magic of an in-person card show is tactile: you walk the floor, find a shop you trust, and dig through a value box one card at a time. Today's online marketplaces lose that feeling and take a cut of every sale on top of it.</p>
+      <p class="muted" style="margin-top:14px">Card Shopper rebuilds the experience for the web: a US map of manually verified shops, a value box you actually flip through, and a flat monthly subscription that lets sellers keep 100 percent of every sale. Curation is the spine. This is a vetted marketplace, not an open free-for-all, and that trust is what convinces founding sellers to move their inventory here.</p>
+    </div>
+    <div class="proof-card">
+      <h3>What the prototype proves</h3>
+      <p class="muted" style="color:rgba(26,27,24,0.72)">Mock data, real interactions. Every flow works and your state survives a refresh.</p>
+      <ul>
+        <li>The US map with color-coded shop pins, opening into a verified shop</li>
+        <li>The signature value-box flip: a real 3D card flip, not a slideshow</li>
+        <li>Search, multi-facet filters, watchlist, messaging, offers, instant buy</li>
+        <li>The seller booth: dashboard, 4-step AI-assisted upload, drop builder</li>
+        <li>The zero-fee flat subscription, framed for founding sellers</li>
+      </ul>
+      <div class="cta-inline">
+        <a class="btn gold" href="https://michaelwegter.com/work-samples/card-shopper">Open the prototype</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="wrap">
+    <div class="kicker">Inside the prototype</div>
+    <h2 class="title">Real screens from the working build.</h2>
+    <p class="muted" style="margin-top:14px;max-width:62ch">These are captured from the live prototype, not mockups. Every screen below is clickable in the demo.</p>
+    <div class="shots">
+      <div class="shot"><img src="media/01-map-home.png" alt="US map of verified card shops with color-coded pins" loading="lazy" /><div class="cap"><b>Map home.</b> Verified shops as category-colored pins, drop banners, and global search.</div></div>
+      <div class="shot"><img src="media/04-card-revealed.png" alt="Value box with a card flipped face up" loading="lazy" /><div class="cap"><b>The value-box flip.</b> Dig the bin and flip a face-down card to reveal it.</div></div>
+      <div class="shot"><img src="media/05-grid-filters.png" alt="Shop grid view with price, grade, and sort filters" loading="lazy" /><div class="cap"><b>Browse and filter.</b> Grid view with price, grade, and sort, plus per-shop search.</div></div>
+      <div class="shot"><img src="media/12-ai-review-price.png" alt="AI-assisted upload review step with detected card details and market price" loading="lazy" /><div class="cap"><b>4-step AI upload.</b> Auto-detected details and a market price you accept or override.</div></div>
+      <div class="shot"><img src="media/13-drop-builder-email.png" alt="Drop builder with a live Klaviyo-style email preview" loading="lazy" /><div class="cap"><b>Drop builder.</b> A live email preview that fans out to followers in-app and by email.</div></div>
+      <div class="shot"><img src="media/07-seller-dashboard.png" alt="Seller booth dashboard with live stats" loading="lazy" /><div class="cap"><b>Seller booth.</b> Live stats and the zero per-sale fee model front and center.</div></div>
+    </div>
+    <p class="shots-note">Prefer to watch it move? A short screen recording of the hero flow ships with this proposal (<a href="media/card-shopper-hero-flow.webm">card-shopper-hero-flow.webm</a>), or just <a href="https://michaelwegter.com/work-samples/card-shopper">open the live prototype</a>.</p>
+  </div>
+</section>
+
+<section class="alt" id="coverage">
+  <div class="wrap">
+    <div class="kicker">Feature to requirement coverage</div>
+    <h2 class="title">Everything you asked for, mapped to something you can click.</h2>
+    <div class="cov">
+      <div class="item">
+        <h4>Map home and discovery</h4>
+        <p>US map with category-colored pins, drop banners, global search, and category tiles. Tap a pin to open a verified shop.</p>
+        <span class="tag sports">Sports</span><span class="tag pokemon">Pokemon</span><span class="tag mtg">Magic</span><span class="tag multi">Multi</span>
+      </div>
+      <div class="item">
+        <h4>The value-box flip (the signature)</h4>
+        <p>Face-down cards fan out and flip over one at a time, recreating the dig through a bin. Toggle to a standard grid view anytime.</p>
+      </div>
+      <div class="item">
+        <h4>Browse, search, and filter</h4>
+        <p>Search inventory by player, team, or set. Filter by price and category, sort by price, grade, or newest. Results recompute live.</p>
+      </div>
+      <div class="item">
+        <h4>Buyer actions</h4>
+        <p>Save to a watchlist, message a seller per listing, make an offer with pending, accepted, and declined states, or buy instantly.</p>
+      </div>
+      <div class="item">
+        <h4>Curation and trust gate</h4>
+        <p>Sellers apply and are manually verified before they can list. The approval gate is built into the booth, so curation is visible.</p>
+      </div>
+      <div class="item">
+        <h4>Seller booth dashboard</h4>
+        <p>Active listings, monthly sales, open offers, and follower count, all updating live from real actions in the prototype.</p>
+      </div>
+      <div class="item">
+        <h4>4-step AI-assisted upload</h4>
+        <p>Photo, then CollX-style auto-detect of player, set, year, and grade, then a market-price suggestion you can accept or override, then publish standalone or into a value box.</p>
+      </div>
+      <div class="item">
+        <h4>Drops, follows, and notifications</h4>
+        <p>Build a drop with a live preview, fan it out to followers by in-app notification and email, and follow shops to receive them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Proposed architecture</div>
+    <h2 class="title">Built on Bubble.io, wired to the services you named.</h2>
+    <p class="muted" style="margin-top:14px;max-width:62ch">The prototype is a high-fidelity preview of the experience. The real product gets built on Bubble.io so you own a visual platform you can iterate on, with each integration handling exactly the job you specified.</p>
+    <div class="arch">
+      <div class="stack-card">
+        <h4><span class="pin" style="background:var(--gold)"></span>Bubble.io core</h4>
+        <p>The full web app and data model: users, shops, listings, value boxes, offers, messages, drops, follows, and watchlists. Mobile-responsive from day one.</p>
+      </div>
+      <div class="stack-card">
+        <h4><span class="pin" style="background:var(--success)"></span>Stripe subscriptions</h4>
+        <p>True recurring billing for the flat monthly seller fee, not one-time charges, with zero fees on individual sales. Billing state gates seller listing.</p>
+      </div>
+      <div class="stack-card">
+        <h4><span class="pin" style="background:var(--sports)"></span>Maps</h4>
+        <p>Google Maps or Mapbox plugin for the pin-based map of verified shops, color-coded by category.</p>
+      </div>
+      <div class="stack-card">
+        <h4><span class="pin" style="background:var(--pokemon)"></span>CollX API</h4>
+        <p>Photo-to-details auto-detection in the upload flow: player, set, year, and grade, plus a market-price reference for the seller.</p>
+      </div>
+      <div class="stack-card">
+        <h4><span class="pin" style="background:var(--mtg)"></span>Klaviyo</h4>
+        <p>Drop announcement emails that fan out to a shop's followers, paired with in-app notifications.</p>
+      </div>
+      <div class="stack-card">
+        <h4><span class="pin" style="background:var(--multi)"></span>Median.co</h4>
+        <p>Wraps the responsive web app for the App Store and Google Play later, with no rebuild needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="kicker">Phased delivery</div>
+    <h2 class="title">Ship a usable core first, then the signature, inside your budget.</h2>
+    <div style="margin-top:20px">
+      <div class="phase">
+        <div class="num">01</div>
+        <div>
+          <h3>Phase 1, the core</h3>
+          <p>Buyer and seller accounts, the seller application and manual verification gate, the map home with pins, banners, search, and tiles, shop profiles with grid view and inventory search and filters, watchlist, messaging, offers, instant buy, follow, and the Stripe recurring flat-fee subscription. This is the usable core that proves the model and fits the budget.</p>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="num">02</div>
+        <div>
+          <h3>Phase 2, the signature and seller power</h3>
+          <p>The value-box flip, the 4-step CollX-assisted upload with market-price suggestion, the booth dashboard stats, and the drop builder with live preview and follower fan-out by in-app notification and Klaviyo email.</p>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="num">03</div>
+        <div>
+          <h3>Phase 3, native wrap</h3>
+          <p>Median.co App Store and Google Play wrap of the responsive web app, when you are ready to go native.</p>
+        </div>
+      </div>
+    </div>
+    <div class="budget-bar">
+      <div class="budget-pill"><strong>2,500 to 4,500</strong><span>MVP budget</span></div>
+      <div class="budget-pill"><strong>6 to 10 weeks</strong><span>To launch</span></div>
+      <div class="budget-pill"><strong>Phase 1 first</strong><span>Core ships inside budget</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Why Michael</div>
+    <h2 class="title">A US-based engineer who ships, and who already built your hardest screen.</h2>
+    <div class="why">
+      <div class="w"><strong>2.5 yrs</strong>Built and then solely owned a React, Python, and SQL platform serving 600 users a month at U.S. Bank, becoming the go-to person when something broke.</div>
+      <div class="w"><strong>Daily AI</strong>I use AI-assisted development in real delivery every day, which is exactly the speed advantage a phased build on this budget rewards.</div>
+      <div class="w"><strong>US-based</strong>I meet your US-only requirement, and I already built the flip and the AI upload so the riskiest parts are de-risked before we start.</div>
+    </div>
+  </div>
+</section>
+
+<div class="band">
+  <div class="wrap">
+    <h2>Click the box. Flip a card. See the booth.</h2>
+    <p>The prototype does the persuading. Try every flow, then let us lock Phase 1 scope against your budget on a short call.</p>
+    <div class="cta-row" style="justify-content:center;margin-top:26px">
+      <a class="btn gold" href="https://michaelwegter.com/work-samples/card-shopper">Open the live prototype</a>
+    </div>
+    <p style="margin-top:18px"><span class="demo-url">https://michaelwegter.com/work-samples/card-shopper</span></p>
+  </div>
+</div>
+
+<footer>
+  Michael Wegter &middot; <a href="https://github.com/mwegter95">github.com/mwegter95</a> &middot; US-based full-stack engineer
+</footer>
+
+</body>
+</html>
