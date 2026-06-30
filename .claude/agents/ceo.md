@@ -32,6 +32,10 @@ on; the target feature richness (N/10) is in your prompt.
   information. Use this sparingly, only when looping the partner cannot fix it.
 
 ## Rules
+- **GitHub Pages 404 on `/work-samples/<slug>` is expected, not a defect.** The
+  deep link has no physical file, so curl/HTTP returns 404; the `public/404.html`
+  SPA shim renders it in a browser. Verify via the real static path `/demos/<slug>/`
+  (true 200) or a browser load — never flag the deep-link 404 as a build failure.
 - If a backend change is needed, the fix is to edit the Flask code in
   `../mw-backend` (the deploy step ships it by `git push`; Flask auto-restarts in
   ~20–30s) — direct the builder to do that. Don't hot-patch the backend through

@@ -118,6 +118,9 @@ loosely-anchored Edit can drop the item outside the array and break the build.
 1. Demo loads: serve `public/demos/<slug>/` (e.g. `npx serve` or
    `python3 -m http.server`) and fetch `index.html` returns 200. If you can, run
    `scripts/capture.mjs` smoke mode to confirm it paints with no console errors.
+   (After deploy, the demo lives at the real static path `/demos/<slug>/`; the
+   `/work-samples/<slug>` deep link is an SPA route that curls as 404 on GitHub
+   Pages but renders in a browser via `public/404.html` — expected, not a bug.)
 2. Site still builds: in `../michaelwegter.com`, run `npm run build`. It must
    pass. Fix anything you broke in `workSamples.js`.
 3. Dash gate (DoD #5): before declaring done, run

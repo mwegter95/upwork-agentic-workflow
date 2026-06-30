@@ -44,9 +44,15 @@ This is fully your job to finish — get it answering publicly, no user help:
    not complete until this passes. See CLAUDE.md "Surface runner".
 
 ## Verify live (required)
-- Poll `https://michaelwegter.com/work-samples/<slug>` and the demo at
-  `/demos/<slug>/` until they return 200 with the expected content, or time out
-  (~3 min) and report the failure. Use `scripts/link-check.mjs` or curl.
+- **GitHub Pages 404 on deep links is EXPECTED, not a failure.** `/work-samples/<slug>`
+  has no physical file, so curl/HTTP returns 404; the `public/404.html` SPA shim
+  still renders it correctly in a real browser. So poll the REAL static file
+  `/demos/<slug>/` (a true 200) for liveness, and confirm `/work-samples/<slug>`
+  only via a browser/Playwright load where the client-side router resolves it.
+  Do NOT retry the curl against the deep link expecting 200 or burn tokens on it.
+- Poll `https://michaelwegter.com/demos/<slug>/` until it returns 200 with the
+  expected content, or time out (~3 min) and report the failure. Use
+  `scripts/link-check.mjs` or curl.
 - If the backend changed (or any time you push to mw-backend), verify Flask is
   actually running — NOT a managed service. Correct Flask response:
   `{"ok": true, ...}` WITHOUT a `"service"` field. If you see

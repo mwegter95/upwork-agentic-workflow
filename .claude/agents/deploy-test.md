@@ -15,7 +15,11 @@ plan/brief for what the demo is supposed to do.
 
 ## What to test (devise the checks from the brief if not given explicit ones)
 - Load the live demo at `https://michaelwegter.com/work-samples/<slug>` and
-  `/demos/<slug>/`. No console errors on first paint.
+  `/demos/<slug>/`. No console errors on first paint. **Note:** a curl/HTTP check
+  of the `/work-samples/<slug>` deep link returns 404 on GitHub Pages (no physical
+  file; the `public/404.html` SPA shim renders it client-side) — that is expected,
+  not a failure. Playwright loads it fine via the router; for a plain HTTP 200
+  check use `/demos/<slug>/`. Don't flag the deep-link 404 or retry curl on it.
 - Run the hero flow end to end with Playwright against the LIVE site (not a local
   build). Determine whether the demo HAS auth first: grep `deploy.out` /
   `build-report.md` for "credentials" or "login" — only attempt a login flow if
