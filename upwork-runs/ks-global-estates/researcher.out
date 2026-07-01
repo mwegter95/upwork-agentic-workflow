@@ -1,0 +1,312 @@
+# Researcher — KS Global Estates
+## Status: COMPLETE (build-prep only; domain/design/images settled in pre-researcher.out)
+
+---
+
+## A — Domain / Client (settled — do not re-derive)
+
+See pre-researcher.out §A–C. Summary:
+- KS Global Estates: no live brand assets (ksglobalestates.com 403). Identity invented from scratch.
+- Palette locked: `--ink: #12100E` / `--canvas: #F5F1EB` / `--gold: #B8975A` / `--mid: #6B6560` / `--surface: #FFFFFF` / `--dark-section: #1C1917`
+- Typography locked: Cormorant Garamond (display, 300–500) + DM Sans (body/UI, 300–600)
+- 28 AI-tell exclusions + 8 human-craft signals all documented in pre-researcher.out §C
+
+---
+
+## B — Scaffold: Exact Clone Path + Strip List
+
+**Source to clone:**
+```
+upwork-agentic-workflow/upwork-runs/mn-state-park-tracker/demo-src/
+```
+
+**Confirmed directory structure (from live read):**
+```
+demo-src/
+  index.html
+  vite.config.js
+  package.json
+  src/
+    main.jsx
+    App.jsx          ← gut entirely; replace with KS Global App
+    App.css          ← gut; replace with global design-system vars
+    index.css        ← gut; replace with reset + base typography
+    components/
+      MapView.jsx     ← KEEP architecture, replace park logic with property logic
+      ParkList.jsx    → rename PropertyList.jsx; full rework
+      ParkDrawer.jsx  → rename PropertyDetail.jsx; full rework
+      AuthModal.jsx   → DELETE (no auth in this demo)
+      SettingsPanel.jsx → DELETE
+      VisitLogForm.jsx  → DELETE
+    data/
+      parks.js        → rename properties.js; replace content
+    api/
+      client.js       → DELETE or replace with favorites.js (localStorage only)
+    assets/           → keep folder, empty contents
+    styles/           → keep folder; add design-system.css here
+    utils/
+      haversine.js    → DELETE (not needed for RE demo)
+```
+
+**New files to add (not in scaffold):**
+- `src/components/FilterPanel.jsx` — faceted filter/sort/search (price, type, beds, baths, sqft range, status, region)
+- `src/components/PropertyCard.jsx` — horizontal card (image 35% / text 65%), used in PropertyList + Favorites
+- `src/components/FavoritesView.jsx` — saved properties grid + empty state
+- `src/components/Navbar.jsx` — wordmark, nav tabs (Browse/Favorites + badge), mobile menu
+- `src/styles/design-system.css` — CSS custom properties, typography scale, component tokens
+- `src/data/properties.js` — 25-property mock DB (details in §D below)
+
+**Total expected files:** ~13–15 (CEO memo relaxed 13-file cap; add what quality needs)
+
+---
+
+## C — Package.json Changes Required
+
+**Drop these (not needed, bloat bundle):**
+```
+"heic-to": "^1.5.2"
+"heic2any": "^0.0.4"
+```
+
+**Keep as-is (confirmed versions):**
+```json
+"leaflet": "^1.9.4"
+"react": "^18.3.1"
+"react-dom": "^18.3.1"
+"vite": "^8.0.12"
+"@vitejs/plugin-react": "^6.0.1"
+```
+
+**No new runtime dependencies needed.** All filtering, sorting, favorites = vanilla JS + React state + localStorage. No router lib needed (view state in App.jsx).
+
+---
+
+## D — Vite Config (exact, confirmed from pre-researcher §F)
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/demos/ks-global-estates/',
+  build: {
+    outDir: '../../../../michaelwegter.com/public/demos/ks-global-estates',
+    emptyOutDir: true
+  }
+})
+```
+
+---
+
+## E — Map Tech: Confirmed Working Patterns (from live source read of MapView.jsx)
+
+**Tile URL (exact, confirmed working):**
+```
+https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png
+```
+Attribution: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>`
+
+**Init pattern (StrictMode-safe, confirmed):**
+```js
+useEffect(() => {
+  if (leafletRef.current) return;
+  const map = L.map('map-container', { center: [25, 12], zoom: 3, zoomControl: true });
+  L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(map);
+  map.zoomControl.setPosition('bottomright');
+  leafletRef.current = map;
+  return () => { map.remove(); leafletRef.current = null; };
+}, []);
+```
+Start at `zoom: 3` (not 2) — shows global spread clearly without world-repeat tiles.
+
+**Price-pin DivIcon (from pre-researcher §E, carry forward exactly):**
+```js
+const createPricePin = (price, active = false) => L.divIcon({
+  className: '',
+  html: `<div style="background:${active ? '#B8975A' : '#12100E'};color:#fff;
+         font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
+         padding:4px 8px;border-radius:3px;white-space:nowrap;
+         box-shadow:0 2px 6px rgba(0,0,0,0.3);letter-spacing:0.02em">${price}</div>`,
+  iconSize: [null, null], iconAnchor: [0, 0]
+});
+```
+
+**Marker sync pattern (from live App.jsx + MapView.jsx read):**
+- `selectedProperty` state in App.jsx; passed as prop to both `<MapView>` and `<PropertyList>`
+- `onSelectProperty` callback triggers `map.flyTo([lat, lng], 13, { duration: 0.8 })`; also update all pin icons via `markers.forEach(m => m.setIcon(createPricePin(price, m._propId === id)))`
+- List scrolls selected card into view: `cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })`
+- `markersRef.current` = object keyed by property id (same pattern as mn-state-park-tracker)
+
+**Critical gotcha confirmed from source:** Must `import 'leaflet/dist/leaflet.css'` at top of MapView.jsx. `L.divIcon` requires `className: ''`. Both confirmed working in scaffold.
+
+---
+
+## F — Mock DB Schema + Sample Data (25 properties)
+
+**Schema for `src/data/properties.js`:**
+```js
+export const PROPERTIES = [
+  {
+    id: 1,
+    slug: 'palm-jumeirah-villa',
+    title: 'Palm Jumeirah Waterfront Villa',
+    type: 'villa',            // luxury-home | condo | penthouse | villa | estate
+    status: 'for-sale',       // for-sale | sold | leased
+    price: 8500000,
+    priceLabel: '$8,500,000',
+    beds: 6, baths: 7, sqft: 9200,
+    lat: 25.1124, lng: 55.1390,  // Dubai, slightly jittered
+    city: 'Dubai', country: 'UAE', region: 'Middle East',
+    description: 'Commanding panoramic views of the Arabian Gulf...',
+    features: ['Private beach access', 'Infinity pool', 'Smart home automation',
+               'Cinema room', 'Staff quarters', 'Six-car garage'],
+    images: [
+      'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1600&q=80',
+      'https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=1600&q=80',
+      'https://images.unsplash.com/photo-1616137466211-f939a420be84?auto=format&fit=crop&w=1600&q=80',
+    ],
+  },
+  // ...24 more following same shape
+];
+```
+
+**25-property city/type spread (builder must seed all 25):**
+
+| # | Title | Type | City | Country | Price | lat/lng |
+|---|-------|------|------|---------|-------|---------|
+| 1 | Palm Jumeirah Waterfront Villa | villa | Dubai | UAE | $8.5M | 25.1124, 55.1390 |
+| 2 | Downtown Dubai Penthouse | penthouse | Dubai | UAE | $4.2M | 25.1972, 55.2744 |
+| 3 | Mayfair Georgian Townhouse | luxury-home | London | UK | $12.0M | 51.5074, -0.1495 |
+| 4 | Canary Wharf Glass Penthouse | penthouse | London | UK | $3.8M | 51.5054, -0.0235 |
+| 5 | South Beach Ocean Drive Condo | condo | Miami | USA | $2.1M | 25.7825, -80.1300 |
+| 6 | Coconut Grove Waterfront Estate | estate | Miami | USA | $9.7M | 25.7295, -80.2480 |
+| 7 | Upper East Side Townhouse | luxury-home | New York | USA | $15.5M | 40.7731, -73.9554 |
+| 8 | Tribeca Loft Penthouse | penthouse | New York | USA | $7.2M | 40.7163, -74.0086 |
+| 9 | Cap Ferrat Belle Époque Villa | villa | Nice | France | $18.0M | 43.6900, 7.3340 |
+| 10 | 7th Arrondissement Haussmann Apt | condo | Paris | France | $5.5M | 48.8566, 2.3100 |
+| 11 | Zona Sul Beachfront Penthouse | penthouse | São Paulo | Brazil | $3.1M | -23.9800, -46.3000 |
+| 12 | Ipanema Luxury Apartment | condo | Rio de Janeiro | Brazil | $2.4M | -22.9868, -43.2048 |
+| 13 | Sentosa Cove Bungalow | luxury-home | Singapore | Singapore | $11.2M | 1.2489, 103.8278 |
+| 14 | Marina Bay Glass Tower Penthouse | penthouse | Singapore | Singapore | $6.8M | 1.2834, 103.8607 |
+| 15 | Toorak Grand Estate | estate | Melbourne | Australia | $8.9M | -37.8453, 145.0152 |
+| 16 | Mosman Harbourfront Villa | villa | Sydney | Australia | $14.5M | -33.8264, 151.2437 |
+| 17 | Marbella Golden Mile Villa | villa | Marbella | Spain | $7.3M | 36.5143, -4.8950 |
+| 18 | Palma Hillside Stone Finca | luxury-home | Palma | Spain | $4.6M | 39.6142, 2.7350 |
+| 19 | Niseko Ski Chalet Retreat | luxury-home | Niseko | Japan | $3.9M | 42.8027, 140.6867 |
+| 20 | Phuket Beachfront Villa | villa | Phuket | Thailand | $2.8M | 7.8804, 98.3923 |
+| 21 | Bel-Air Hillside Compound | estate | Los Angeles | USA | $22.0M | 34.0820, -118.4620 |
+| 22 | Noe Valley Modern Home | luxury-home | San Francisco | USA | $4.1M | 37.7502, -122.4337 |
+| 23 | Zurich Lake House | luxury-home | Zurich | Switzerland | $9.2M | 47.3686, 8.5391 |
+| 24 | Porto Waterfront Palazzo | luxury-home | Porto | Portugal | $3.4M | 41.1579, -8.6291 |
+| 25 | Harbour City Tower Penthouse | penthouse | Hong Kong | Hong Kong | $5.9M | 22.3024, 114.1722 |
+
+**Jitter note:** Properties in same city should have ~0.01–0.03 lat/lng offset from each other so pins don't stack on world view.
+
+**Image assignment (recycle freely — 25 images, 25 properties, 2–4 images each):**
+Use images 1–5 (exteriors) as primary for villas/estates; 10–13 (condos) for penthouses/condos; 14–18 (interiors) as secondary gallery images; 22–25 (estates/villas) for high-end entries. Hero image for app: image #1 (modern villa, curved architecture) or #24 (oceanfront villa with infinity pool).
+
+All 25 Unsplash URLs in pre-researcher.out §D (confirmed 200 OK).
+
+---
+
+## G — Filter System Spec
+
+**Filter dimensions (6 + search + sort):**
+1. `type`: luxury-home | condo | penthouse | villa | estate (checkbox group)
+2. `status`: for-sale | sold | leased (radio/pill)
+3. `priceRange`: [min, max] slider — $500K to $25M (step $250K)
+4. `beds`: 1+ | 2+ | 3+ | 4+ | 5+ (pill group)
+5. `baths`: 1+ | 2+ | 3+ | 4+ (pill group — CEO guidance to restore)
+6. `region`: All | Middle East | Europe | North America | Asia Pacific | South America (select/pill)
+7. `search`: text input against title + city + country (debounced 200ms)
+8. `sort`: Price High–Low | Price Low–High | Newest | Sqft Largest (select)
+
+**Filter state shape (in App.jsx):**
+```js
+const [filters, setFilters] = useState({
+  type: [],        // [] = all
+  status: 'all',
+  priceMin: 0,
+  priceMax: 25000000,
+  bedsMin: 0,
+  bathsMin: 0,
+  region: 'all',
+  search: '',
+  sort: 'price-desc',
+});
+```
+
+---
+
+## H — App Architecture (state-only, no routing)
+
+**View state in App.jsx:**
+```js
+const [view, setView] = useState('browse');         // 'browse' | 'favorites'
+const [selectedProperty, setSelectedProperty] = useState(null);
+const [detailOpen, setDetailOpen] = useState(false);
+const [favorites, setFavorites] = useState(() => {
+  try { return JSON.parse(localStorage.getItem('ks_favorites') || '[]'); } catch { return []; }
+});
+```
+
+**Favorites persist:**
+```js
+useEffect(() => {
+  localStorage.setItem('ks_favorites', JSON.stringify(favorites));
+}, [favorites]);
+```
+
+**Mobile layout:** Split-pane stacks (map on top, list below) below 768px. Filter panel collapses to a floating "Filters" button. Detail modal goes full-screen. Navbar shows burger menu. CEO mandate: build and QA this.
+
+---
+
+## I — workSamples.js Entry (builder must append)
+
+**Next ID: 11** (current max is id: 10 for card-shopper).
+
+```js
+{
+  id: 11,
+  slug: "ks-global-estates",
+  title: "KS Global Estates",
+  description:
+    "A full-featured luxury real estate platform: synchronized split-pane map and list, faceted filtering across 6 dimensions, custom Leaflet price-pin markers, property detail modals with gallery carousel and inquiry form, and a persisted favorites system. 25 properties across 14 global cities.",
+  category: "Real Estate",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/ks-global-estates/",
+  color: "#B8975A",
+  icon: "🏛️",
+  frameStyle: "baroque",
+  tags: ["React", "Leaflet", "Maps", "JavaScript", "Full-Stack", "E-commerce", "Dashboard", "Mobile App"],
+  screenshot: import.meta.env.BASE_URL + "work-samples/ks-global-estates.png",
+  client: "KS Global Estates",
+  postingSummary:
+    "Professional website for a global real estate firm: premium design, property listings in list and map view, and a mock database of properties.",
+  builtFor: "Website Design and Development for KS Global Estates (Upwork)",
+  date: "2025-07-14",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+}
+```
+
+---
+
+## J — Open Risks (for builder)
+
+1. **World-zoom pin overlap (zoom 3):** ~2 Dubai pins + ~2 London pins + ~2 NYC pins will overlap at zoom 3. Mitigation: jitter each city pair by 0.01–0.02 lat/lng. Builder must visually QA pin spread on local preview.
+2. **Cormorant Garamond weight 300:** Renders thin on Windows Chrome. Test at weight 300 vs 400 locally; if 300 renders weak, use 400 for hero display text.
+3. **Leaflet + React StrictMode:** `if (leafletRef.current) return;` guard is confirmed in mn-state-park-tracker and must be preserved in KS Global MapView.
+4. **Price slider on mobile:** Dual-handle range slider is awkward on touch. Consider pill presets ($0–5M / $5M–10M / $10M+) as fallback on narrow viewports.
+5. **heic-to / heic2any must be removed** from package.json before `npm install`; leaving them in inflates bundle and risks install errors unrelated to this demo.
+
+---
+
+## handoff
+
+- **Produced:** `researcher.out` with exact scaffold paths, confirmed package.json diffs, confirmed MapView.jsx architecture (from live source read), 25-property mock DB schema + full data table, filter state shape, App.jsx state architecture, and workSamples.js entry (id: 11).
+- **Decisions:** Clone `mn-state-park-tracker/demo-src/`; drop heic deps; keep leaflet ^1.9.4 + react ^18.3.1 + vite ^8.0.12; zoom 3 start; no new runtime deps needed.
+- **Next needs:** Builder reads this file + pre-researcher.out §D (25 image URLs) + §E (Leaflet snippets). Must build mobile-responsive split-pane (CEO mandate). Must QA Cormorant 300 vs 400 locally.
+- **Risks:** (1) Pin overlap at zoom 3 -- use lat/lng jitter per city. (2) Cormorant-300 on Windows. (3) Price slider mobile UX. (4) heic deps must be stripped before npm install.

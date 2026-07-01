@@ -1,0 +1,138 @@
+# Intake — KS Global Estates
+
+## Brief
+
+Encoded structured requirements for downstream validation.
+
+**Slug:** `ks-global-estates`
+
+**Client:** KS Global Estates (Global Real Estate / Luxury Properties)
+
+**Posting Summary:** "KS Global Estates is seeking a qualified web developer or agency to design and develop a professional website. The project involves creating a visually appealing and user-friendly site that effectively communicates our brand and services. The ideal candidate will have experience in web design and development, with a strong portfolio showcasing previous work. We are looking for someone who can deliver high-quality results within a reasonable timeframe and budget."
+
+### Explicit Requirements (Acceptance Criteria)
+
+| # | Requirement | Acceptance Criteria |
+|---|-------------|-------------------|
+| 1 | **Professional frontend + backend website** | Full-stack application with real or mock backend architecture; both frontend and backend functional on first paint |
+| 2 | **Visually appealing design** that communicates brand and services | Cohesive, distinctive visual identity; color palette, typography, and layout intentional and on-brand for luxury real estate; zero cookie-cutter elements |
+| 3 | **User-friendly interface and experience** | Intuitive navigation, logical information hierarchy, responsive desktop + mobile, no cognitive friction |
+| 4 | **Mock database of real estate properties** | 20–30+ properties seeded (houses, condos, estates, penthouses, global locations); property data includes name, type, location, price, beds/baths, sqft, images, details |
+| 5 | **List view for property browsing** | All properties visible in a filterable, sortable list; clicking a property shows details; updates in real-time when filters/sorts applied |
+| 6 | **Map view for property discovery** | Interactive Leaflet map with OpenStreetMap tiles; properties displayed as clickable map markers with price pins or custom icons; map syncs with list in real-time; no console errors on first paint |
+| 7 | **Synchronized list-map interaction** | Filtering, sorting, or searching in list updates map immediately; clicking map pin highlights/opens corresponding list item; clicking list item centers/highlights map pin and shows detail |
+| 8 | **Property imagery only** (no unrelated stock) | All property images are houses, condos, estates, interiors, skylines, or luxury property-related; no generic stock photography or filler images |
+| 9 | **Design must NOT appear AI-generated** | Deliberately avoids known AI-site tell-tales: no generic centered hero + three-icon feature row, no purple/indigo gradient blobs, no Lorem/filler copy, no cookie-cutter Inter-everywhere type, no identical rounded cards in rigid grids, no fake logo strips, no emoji bullets, no symmetric "AI slop" spacing; instead, bespoke luxury design with asymmetric/editorial layouts, distinctive typography, intentional whitespace, refined motion, specific brand palette |
+| 10 | **Production-quality feature richness (10/10)** | Multiple real working features beyond a prototype: faceted filtering (price, beds/baths, type, location, sqft, status), sorting, map-list sync, property detail pages with image galleries, favorites/saved properties (persisted), responsive design, polished interactions; NOT a minimal 1-5/10 demo |
+| 11 | **High-quality portfolio work** | Code is clean and well-structured; design is bespoke and deliberate; no em or en dashes in UI, cover letter, or deck; responsive and performant on desktop and mobile; no console errors on first paint |
+
+### Design Direction
+
+**Aesthetic:** Premium Global Real Estate — inspired by luxury property marketing and editorial design (NOT michaelwegter.com's portfolio palette)
+
+**Key Anti-AI Directives:**
+- NO generic centered hero sections
+- NO purple/indigo gradient blobs
+- NO "Lorem ipsum" or filler copy
+- NO cookie-cutter rounded-card grids (3-col rigid layout)
+- NO excessive Inter/system-font everywhere
+- NO fake logo strips
+- NO emoji bullets or pseudo-social proof
+- YES asymmetric/editorial layouts, distinctive type pairings, real content, intentional whitespace, refined micro-interactions
+
+**Design System (TBD by Planner):**
+- Primary Palette: Sophisticated neutrals (charcoal, cream, soft grays) + one or two luxury accent colors (gold, deep teal, matte black) — refined and timeless
+- Typography: Editorial serif or slab for headlines (e.g., Playfair, Fraunces) + humanist sans for body (e.g., Inter, Sohne, Graphik)
+- Texture/Mood: Minimal, editorial, uncluttered; breathing room; property images as hero content
+- Motion: Subtle, intentional; hover states that feel responsive, not decorative
+
+### Build Scope
+
+**Richness Level:** 10/10 → Genuinely full-featured, production-quality app with several real working features
+
+**Hero Feature:** Synchronized split-view Leaflet map (with custom price-pin markers, hover/click sync, clustering or fly-to) beside a live, filterable property listings grid — filtering, sorting, searching update both map and list in real-time; clicking a pin opens a rich property detail view with image gallery and inquiry form
+
+**Supporting Features:**
+1. **Faceted Filtering:** price range, beds/baths, property type (house/condo/estate/penthouse), city/country, sqft range, listing status
+2. **Sorting:** by price, newest, type, sqft, distance (if applicable)
+3. **Full-Text Search:** search property names, locations, or descriptions
+4. **Favorites / Saved Properties:** click to save; persists in localStorage; separate favorites view
+5. **Property Detail Pages:** full image gallery with carousel, amenity list, location map embed, price and specs, description, inquiry/contact form (CTA)
+6. **Responsive Design:** mobile-first; all features work on mobile, tablet, desktop
+
+**Out of Scope:** Advanced analytics, social sharing, agent profiles, mortgage calculators, advanced route planning
+
+### Technology Stack
+
+**Maps:**
+- Primary: Leaflet.js + OpenStreetMap tiles (proven from mn-state-park-tracker; no API key dependency)
+- Markers: Custom price-pin markers or clustering; hover/click events sync to list
+- Constraint: Map MUST render on first paint; zero console errors
+
+**Backend:**
+- Approach: Mock property DB (realistic for this environment) — can be seeded JSON or a Flask blueprint with mock data
+- If Flask blueprint: run locally during dev, point deployed build at `https://api.michaelwegter.com/ks-global-estates/properties` (or equivalent prefix)
+- If pure frontend: mock data embedded in JS or loaded from static JSON file
+- Data model: each property = { id, name, type, location, lat/lng, price, beds, baths, sqft, images[], description, amenities[] }
+- Favorites: localStorage with property ID array
+
+**Imagery:**
+- Property images sourced from free stock (Unsplash, Pexels, Pixabay) filtered for houses, condos, estates, luxury interiors only
+- All imagery relevant to real estate; ZERO generic or unrelated stock
+
+**Persistence:**
+- Favorites/saved searches: localStorage (no backend required)
+- Page state: React state or vanilla JS; filter/sort state does not need to persist across sessions for MVP
+
+**Responsive:**
+- Mobile-first design; breakpoints for tablet and desktop
+- Map may stack or scale based on viewport
+
+### Hard Gates (Acceptance)
+
+1. Every requirement (1–11) visibly addressed in demo AND mentioned in cover letter
+2. Map renders Leaflet + OSM on first paint with zero console errors
+3. All 20–30 properties visible on map and in list
+4. Filter/sort/search updates both map and list in real-time
+5. Clicking map pin highlights list item and opens detail; vice versa
+6. Property detail page displays image gallery, specs, and inquiry CTA
+7. Favorites system works (add/remove, persists in localStorage)
+8. Design is bespoke, visually distinctive, and deliberately avoids AI tells (no gradient blobs, generic grids, filler copy, etc.)
+9. Property imagery only (no unrelated stock)
+10. Responsive on mobile, tablet, desktop; no console errors on first paint
+11. Zero em or en dashes anywhere (UI, cover letter, deck)
+12. Live `/demos/ks-global-estates/` route loads locally with full functionality; deployed version at `https://michaelwegter.com/demos/ks-global-estates/` after `git push` (verified via push confirmation, not live poll)
+
+### Constraints
+
+- **Feature scope:** 1 hero (map-list sync) + 5–6 supporting features (filter, sort, search, favorites, detail, responsive)
+- **Property count:** 20–30 realistic listings minimum
+- **File budget:** ≤20 demo files (inclusive of images)
+- **Build time:** ≤5 minutes local build + ≤2 minutes map/list interactive smoke test
+- **Typography:** No em or en dashes anywhere
+- **Design:** Bespoke only; zero reuse of michaelwegter.com theme, components, or portfolio palette
+- **Imagery:** Property-only; 100% real estate related
+- **Map tiles:** Leaflet + OpenStreetMap (no Mapbox token)
+
+### Risks & Notes
+
+| Risk | Mitigation |
+|------|-----------|
+| Vague client brief (no budget/timeline/pages) | Treat orchestrator startup brief as the canonical requirement set; brief.json captures all stated and inferred needs; cover letter references each explicitly |
+| No confirmed KS Global Estates brand assets (logo, palette, fonts) | Researcher confirms whether KS GE has a live site or brand identity; if none, planner invents a credible bespoke luxury identity and notes it in the demo intro |
+| Anti-AI design is subjective | Researcher gathers concrete tell-tale signs (gradient blobs, cookie-cutter cards, pseudo-content patterns) and planner deliberately excludes each; design review flags any suspicious patterns |
+| Property imagery sourcing and consistency | Researcher curates a cohesive set of 20–30 high-quality house/condo/estate images; planner applies consistent filters (color grade, aspect ratio, mood) for visual unity |
+| Leaflet map rendering performance at scale | Leaflet with OSM tiles + 20–30 markers is trivial; no performance risk; test clustering or simple marker layer |
+| List-map sync complexity | Standard React state or vanilla JS event binding; sync pattern proven in mn-state-park-tracker; low risk |
+| Responsive design on mobile for map | Leaflet is mobile-aware; use CSS grid/flex to stack or side-scroll map on small viewport; test on real mobile or DevTools |
+| Deployed build pointing to correct API base | If using Flask blueprint, dev build points at `http://localhost:5000/ks-global-estates/...`; deployed build points at `https://api.michaelwegter.com/ks-global-estates/...` via environment variable or conditional base URL; mock fallback ensures local preview always works |
+| Live URL verification disabled from this environment | Verify locally: build, run `npx serve` or Vite preview, Playwright against `http://localhost:...`, full smoke test. Deploy via `git push` (confirm push succeeded). State plainly in cover letter that live verification not possible from this machine; trust the auto-deploy mechanism |
+
+## handoff
+
+- **Produced:** `brief.json` with 11 explicit requirements + implicit needs + 3 demo concepts; structured requirements table with acceptance criteria; anti-AI directives explicit; design direction and tech stack defined.
+- **Decision:** Hero = synchronized Leaflet map + filterable listings grid over 20–30 mock-property DB; 10/10 feature richness; bespoke luxury design deliberately avoiding AI tells; property imagery only; Leaflet + OpenStreetMap (no API key); mock backend or Flask blueprint.
+- **Next needs (researcher):** Gather AI tell-tale checklist (gradient blobs, cookie-cutter grids, pseudo-content, symmetric spacing, etc.) and concrete avoidance strategies; pull luxury real estate visual conventions (editorial design, refined palettes, asymmetric layouts); curate 20–30 property images (houses, condos, estates, interiors, skylines) all high-quality and on-brand; confirm KS Global Estates existing brand assets or note that identity is invented bespoke.
+- **Next needs (planner):** Design a bespoke luxury palette (hex values), editorial font pairing (Google Fonts), and asymmetric component library that deliberately avoids AI tells; sketch map + list split layout; define filter/sort/search UX; clarify property detail modal design; specify favorites interaction; confirm responsive breakpoints.
+- **Risks:** Brief is vague (no budget/timeline in posting); no confirmed brand assets (mitigated by bespoke invention); live URLs unverifiable from this environment (all verification local; deploy via push + trust).
+- **Constraint:** Leaflet + OSM tiles (no Mapbox token), zero console errors on first paint, property imagery only, no em/en dashes anywhere, GitHub handle mwegter95, design must fit global luxury real estate (not michaelwegter.com portfolio palette).

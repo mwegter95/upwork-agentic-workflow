@@ -1,0 +1,129 @@
+/* ============================================================
+   KS GLOBAL ESTATES — Design System
+   ============================================================ */
+
+:root {
+  --ink: #12100E;
+  --canvas: #F5F1EB;
+  --gold: #B8975A;
+  --gold-light: #D4B278;
+  --mid: #6B6560;
+  --surface: #FFFFFF;
+  --dark-section: #1C1917;
+  --border: rgba(184, 151, 90, 0.2);
+  --border-strong: rgba(184, 151, 90, 0.5);
+  --shadow-card: 0 2px 16px rgba(18, 16, 14, 0.08), 0 1px 4px rgba(18, 16, 14, 0.04);
+  --shadow-elevated: 0 8px 40px rgba(18, 16, 14, 0.15), 0 2px 8px rgba(18, 16, 14, 0.08);
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-ui: 'DM Sans', system-ui, sans-serif;
+
+  --nav-h: 60px;
+  --filter-w: 280px;
+  --detail-w: 420px;
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --transition: 0.2s ease;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+/* Utility */
+.label-caps {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.gold-rule {
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.35;
+}
+
+/* Pill badges */
+.status-badge {
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+}
+.status-badge.for-sale { background: rgba(184,151,90,0.15); color: var(--gold); border: 1px solid var(--border-strong); }
+.status-badge.sold { background: rgba(18,16,14,0.06); color: var(--mid); border: 1px solid rgba(18,16,14,0.1); }
+.status-badge.leased { background: rgba(50,90,60,0.1); color: #2D5A3D; border: 1px solid rgba(50,90,60,0.2); }
+
+/* Buttons */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold);
+  color: var(--surface);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 9px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.btn-gold:hover { background: #A8873A; transform: translateY(-1px); }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 8px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Fade-in animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease-out both; }

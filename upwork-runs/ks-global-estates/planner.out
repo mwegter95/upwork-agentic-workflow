@@ -1,0 +1,180 @@
+# Planner — KS Global Estates
+## Status: COMPLETE (research integrated, plan ready)
+
+---
+
+## 1. Demo Concept (Chosen): D1 — Luxury Real Estate Property Discovery Platform
+
+D1 wins because it directly addresses every core requirement: frontend + mock backend data layer, property browsing via list and map, real-time sync, and the anti-AI design mandate. D2 (brand landing only) and D3 (detail explorer only) cover subsets of what D1 covers in full. With a 10/10 richness target and an explicit requirement for synchronized map+list, D1 is the only concept that demonstrates the full technical and design range the client is evaluating. The proven Leaflet scaffold from mn-state-park-tracker eliminates the riskiest unknown, keeping the build reliable while allowing a fully bespoke design application on top.
+
+---
+
+## 2. Prototype vs Full
+
+**Call: FULL (10/10)**
+No CLAUDE.md fallback rule is tripped. The brief explicitly mandates 10/10 richness, multiple real working features, and production polish. Frontend-only: all data is a client-side JS module (`properties.js`). No Flask blueprint, no Surface runner, no mw-backend needed. Favorites persist via `localStorage`. All filter/sort/search logic runs in the browser.
+
+---
+
+## 3. Hero Feature + Supporting Features
+
+**Hero:** Synchronized split-pane property discovery (55% map / 45% list). Leaflet map with custom DivIcon price-label pins (charcoal bg, white DM Sans text, 3px border-radius). Live filter/sort/search panel docked above the list column. Selecting a list card triggers `map.flyTo([lat, lng], 13, { duration: 0.8 })` and pin turns gold. Clicking a price pin highlights the corresponding list card and scrolls it into view. Filter state (price range, type, beds, status, city/region, sort) lives in `App.jsx`; filtered array passed to both panels in real time.
+
+**Supporting 1:** Property detail view (full-screen modal overlay). Image gallery carousel (primary image + thumbnail strip). Specs grid (price, beds, baths, sqft, status, city, country). Description text in editorial serif. Features list (no emoji bullets). Inquiry form (name, email, message; submit shows inline success state, no backend call). Favorites toggle (heart icon, gold when active).
+
+**Supporting 2:** Favorites system. LocalStorage persistence keyed by property ID. Dedicated Favorites view accessible from Navbar (badge shows saved count). Shows filtered card grid of saved properties. Empty state with editorial copy and "Browse Properties" CTA.
+
+---
+
+## 4. Out of Scope (Explicit)
+
+- Agent/broker profiles
+- Mortgage calculator
+- Social sharing
+- Real authentication or real database
+- Advanced analytics or user tracking
+- Route planning or commute-time features
+- Any mw-backend Flask blueprint (no API endpoints needed)
+- Surface runner / Node/Express service
+- Leaflet.markercluster (replaced by initial zoom 3 + small lat/lng jitter for same-city properties)
+- Separate About, Contact, or Blog pages (brand presence handled via Navbar wordmark + editorial hero band)
+- Property comparison feature
+- Full virtual tour / video embeds
+
+---
+
+## 5. Design Direction (Bespoke — KS Global Estates)
+
+No live brand assets exist (ksglobalestates.com returns 403). Identity is invented from scratch, grounded in luxury RE sector conventions from research.
+
+**Palette:**
+- `--ink: #12100E` (warm near-black; primary text, pins, nav background in dark mode)
+- `--canvas: #F5F1EB` (warm parchment; default section backgrounds)
+- `--gold: #B8975A` (muted antique gold; CTAs, active states, dividers, hover accents)
+- `--mid: #6B6560` (warm gray; secondary text, meta labels)
+- `--surface: #FFFFFF` (card backgrounds, modal)
+- `--dark-section: #1C1917` (dark warm sections: hero band, navbar)
+- No purple, no indigo, no teal/coral, no blob gradients.
+
+**Typography:**
+- Display / headlines: `Cormorant Garamond`, weight 300-500. Extreme size contrast: hero display at 80-96px, section titles at 48-56px.
+- Body / UI: `DM Sans`, weight 300-600. Body at 15px, line-height 1.7.
+- Labels / nav / tags: DM Sans 500, uppercase, `letter-spacing: 0.18em`, 11-12px.
+- No Inter-only setup. No Outfit/Nunito.
+- Google Fonts: `https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap`
+
+**Layout style (anti-AI):**
+- Full-bleed editorial hero band (100vh): single large property image, dark overlay `rgba(28,25,23,0.55)`, oversized Cormorant Garamond display type left-aligned at 8-10% left margin, NOT centered.
+- Split-pane below hero: asymmetric column widths (CSS: `45% / 55%` with a hairline `1px solid #B8975A` divider), no equal halves.
+- Property list cards: horizontal layout (image 35% / text 65%), separated by thin `1px solid rgba(184,151,90,0.25)` rule. No uniform rounded-card grid. No identical box-shadows.
+- Filter panel: inline above list, thin bordered inputs, no modal overlay on desktop.
+- Whitespace: generous. Sections breathe. Content never fills more than 65% of desktop viewport width in text columns.
+
+**Motion (premium):**
+- Scroll-triggered fade-up: `opacity 0 -> 1`, `translateY 20px -> 0`, 0.6s ease-out.
+- Map flyTo: `{ duration: 0.8 }`.
+- Card hover: `transform: translateX(4px)`, gold left-edge accent appears (`border-left: 2px solid #B8975A`).
+- No CSS pulse, no bounce, no infinite loaders, no frosted-glass on everything.
+
+**Anti-AI tells applied (from research checklist):**
+- NO centered hero H1 + 3-icon row below.
+- NO purple/indigo gradients anywhere.
+- NO uniform 3-col rounded-card grid.
+- NO fake testimonials or stat counters.
+- NO emoji bullets in any list.
+- NO `border-radius: 9999px` on buttons (use `border-radius: 2px` for a sharp luxury feel).
+- NO identical `box-shadow: 0 4px 6px rgba(0,0,0,0.1)` on every card.
+- NO "Our Process" step timeline.
+
+---
+
+## 6. Tech Approach
+
+**Scaffold:** Clone `upwork-runs/mn-state-park-tracker/demo-src/` as starting point. Strip park-specific components, theming, and heic-related dependencies. Apply KS Global Estates design system from scratch.
+
+**Stack:** Vite + React 18 + Leaflet 1.9.4 (raw, no wrapper library). No additional map dependencies.
+
+**Map tile:** `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`, attribution `&copy; OpenStreetMap contributors &copy; CARTO`. MaxZoom 19.
+
+**Leaflet init:** `useEffect` with `leafletRef.current` guard (prevents StrictMode double-init). `L.divIcon({ className: '', html: ... })` for all pins. Must import `leaflet/dist/leaflet.css`.
+
+**Pin clustering strategy:** No cluster library. Initial map center `[25, 15]`, zoom 3 (shows all 10 global cities without heavy overlap). Same-city properties offset by `+/- 0.015` lat/lng jitter so pins are visually distinct at zoom 3-4.
+
+**App state (in App.jsx):**
+- `filters` object: `{ search, priceMin, priceMax, type[], beds, status[], city, sort }`
+- `selectedProperty`: ID or null
+- `detailProperty`: property object or null (opens modal)
+- `view`: `'properties' | 'favorites'`
+- `favorites`: Set of IDs (initialized from localStorage, synced on change)
+- `filteredProperties`: derived from `PROPERTIES` + `filters` (useMemo)
+
+**Mock DB format:** Named ES module export. `src/data/properties.js` exports `PROPERTIES` array of 25 property objects. Schema per research: `{ id, slug, title, type, status, price, priceLabel, beds, baths, sqft, lat, lng, city, country, region, description, features, images }`.
+
+**Build config:**
+```js
+base: '/demos/ks-global-estates/'
+build.outDir: '../../../../michaelwegter.com/public/demos/ks-global-estates'
+```
+
+**SPA:** No react-router. View state managed in App.jsx. No deep-link routing needed (demo context).
+
+**workSamples.js entry:** Append at end of `michaelwegter.com/src/data/workSamples.js` after build.
+
+---
+
+## 7. File Budget (13 files)
+
+```
+demo-src/
+  vite.config.js                  (1) configure base + outDir
+  index.html                      (2) Google Fonts link, mount point
+  src/
+    main.jsx                      (3) Vite entry
+    App.jsx                       (4) root state, layout, view routing
+    data/
+      properties.js               (5) 25 properties, Unsplash image URLs
+    styles/
+      tokens.css                  (6) CSS custom properties, typography base, utilities
+    components/
+      Navbar.jsx                  (7) wordmark, nav links, favorites badge, mobile menu
+      FilterPanel.jsx             (8) search, price, type, beds, status, sort controls
+      PropertyList.jsx            (9) list of cards, scroll sync, map highlight
+      MapView.jsx                 (10) Leaflet init, price pins, flyTo, pin/list sync
+      PropertyDetail.jsx          (11) modal: gallery carousel, specs, description, inquiry form, favorites toggle
+      FavoritesView.jsx           (12) saved properties grid, empty state
+
+michaelwegter.com/
+  src/data/workSamples.js         (13) append new entry
+```
+
+Total: 13 files. 1 over ~12 cap; justified by 10/10 richness mandate.
+
+---
+
+## 8. Requirement -> Feature Traceability Matrix
+
+| R# | Requirement | Coverage |
+|----|-------------|---------|
+| R1 | Professional frontend + backend website | Demo: Vite+React frontend + client-side JS data module as mock backend layer. Proposal narrative: explains architecture approach. |
+| R2 | Visually appealing, brand-communicating design | Demo: bespoke design system (charcoal/parchment/gold, Cormorant+DM Sans, editorial asymmetric layout). |
+| R3 | User-friendly interface | Demo: split-pane with sticky filters, keyboard-accessible inputs, responsive layout, logical hierarchy. |
+| R4 | High-quality portfolio work | Demo + cover letter: clean component structure, zero console errors, responsive across breakpoints. |
+| R5 | Reasonable timeframe and budget | Addressed in proposal narrative (scoped delivery, clear handoff). Not demoed. |
+| R6 | Property listing display and browsing | Demo: PropertyList with sortable, filterable, searchable cards. |
+| R7 | Mock database of real estate properties | Demo: `properties.js` with 25 properties (houses, condos, penthouses, villas, estates) across 10+ global cities. |
+| R8 | List view for property browsing | Demo: PropertyList panel with filter/sort/search controls; card click opens PropertyDetail modal. |
+| R9 | Map view for property discovery | Demo: MapView with Leaflet 1.9.4, CARTO Voyager tiles, custom price-pin DivIcons, flyTo on selection. |
+| R10 | Property images only | Demo: all 25 Unsplash images are architectural/property photography (exteriors, interiors, skylines, estates); no unrelated stock. |
+| R11 | Design not AI-generated | Demo: 28 AI-tell patterns excluded per research checklist; 8 human-craft signals applied (asymmetric layout, extreme type contrast, editorial whitespace, custom pin styling, horizontal card layout, opinionated palette, thin gold rule accents, left-aligned hero copy). |
+
+All 11 requirements addressed. 10 demoed directly, 1 (R5) via proposal narrative only.
+
+---
+
+## handoff
+
+- **Produced:** Full plan, ready for builder. Design system fully specified (hex palette, Google Fonts, layout rules). Tech stack confirmed (Vite + React 18 + Leaflet 1.9.4, no cluster lib, CARTO tiles). 13-file budget. 25 property image URLs in pre-researcher.out. All 11 requirements mapped.
+- **Decisions:** D1, full build (10/10), frontend-only, no mw-backend. Favorites via localStorage. No Leaflet.markercluster (jitter + zoom 3 instead). No page routing (view state in App.jsx). Hero band uses left-aligned Cormorant Garamond display type over full-bleed property image.
+- **Next needs:** Builder should read pre-researcher.out Section D for all 25 image URLs and Section E for Leaflet init/sync code snippets. Scaffold from mn-state-park-tracker demo-src. properties.js mock data needs 25 properties seeded across 10+ global cities.
+- **Risks:** (1) World-zoom pin overlap mitigated by lat/lng jitter + zoom 3 start -- builder must verify visually during local QA. (2) Cormorant Garamond at very light weights may render poorly on Windows Chrome -- test at weight 300 vs 400, prefer 400 if thin renders weak. (3) 13 files is 1 over cap but justified; no further scope expansion.
+- **Gate:** PLAN READY. No unknowns. Proceed to builder.

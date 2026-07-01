@@ -1,0 +1,24 @@
+# CEO Review (Plan) — KS Global Estates
+
+## Verification performed
+- Read plan-eval, planner, plan-gate, pre-researcher, intake, brief.json.
+- Confirmed the scaffold the plan depends on exists: `mn-state-park-tracker/demo-src/package.json` = Leaflet ^1.9.4, React ^18.3.1, Vite ^8. Matches plan's claimed stack exactly. Leaflet risk is genuinely near-zero.
+- Cross-checked all 11 R# in brief.json against the traceability matrix: 11/11 mapped, 10 demoed + R5 narrative. No requirement dropped.
+- Confirmed image research is real (25 property-only Unsplash URLs, gate HEAD-checked 3 = 200) and Leaflet init/sync/pin snippets are concrete in pre-researcher §E.
+
+## Judgment vs. 10/10 bar
+Plan is build-ready and genuinely full-featured: synchronized split-pane (flyTo + two-way pin/list sync + price DivIcons), 6-dimension faceted filtering + search + sort, detail modal (gallery carousel, specs, inquiry form, favorites toggle), and a persisted favorites view. Bespoke luxury design system is specified to the token level (warm ink/parchment/gold, Cormorant + DM Sans, asymmetric editorial layout) with 28 anti-AI exclusions operationalized. This clears the 10/10 bar and the frontend-only call is correct for this environment. No re-plan or redirect warranted.
+
+## Builder guidance to carry forward (non-blocking, must be honored)
+1. **File cap must not cap polish.** The "13-file firm ceiling" is a self-imposed budget, not a requirement. At 10/10, do NOT sacrifice polish or split per-component CSS to stay at 13; add files if quality needs them. Quality > file count.
+2. **Mobile responsive is a REQUIREMENT, not a deferral.** R3 + tech_hints explicitly demand desktop AND mobile. Split-pane must stack or tab below ~768px, and the detail modal + filter panel must be usable on a phone. Build and QA this locally on a narrow viewport; do not ship desktop-only.
+3. **Restore full faceted filtering.** Intake listed sqft range and baths; planner's filter object dropped them. Adding baths + a sqft range strengthens the 10/10 "faceted filtering" story at low cost. Optional but recommended.
+4. Verify the two documented risks locally: world-zoom pin overlap (jitter working) and Cormorant weight-300 rendering (fall back to 400 if thin).
+
+## handoff
+- **Produced:** plan-ceo.out — plan approved for build at 10/10.
+- **Decisions:** PASS. No loop, no redirect. Scaffold + stack + image research independently verified as real.
+- **Next needs:** Builder reads planner §3-7 + pre-researcher §D/§E; must build+QA mobile responsive locally and treat 13-file budget as soft.
+- **Risks:** (1) Mobile split-pane left to builder — now mandated, not optional. (2) File cap could starve polish — explicitly relaxed. (3) Pin overlap + Cormorant-300 need local QA.
+
+VERDICT: pass

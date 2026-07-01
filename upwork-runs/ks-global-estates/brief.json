@@ -1,0 +1,128 @@
+{
+  "slug": "ks-global-estates",
+  "title": "Premium Global Real Estate Website with Property Discovery",
+  "client": {
+    "name": "KS Global Estates",
+    "industry": "Global Real Estate / Luxury Properties",
+    "signals": "Global real estate firm seeking professional, high-quality web presence; values brand communication, user experience, and portfolio-quality work; willing to invest in custom design and development"
+  },
+  "summary": "KS Global Estates wants a visually striking, user-friendly professional website that communicates their brand and showcases real estate services and listings. The ideal candidate combines strong web design and development skills with a portfolio demonstrating high-quality work. Delivery should be timely and within a reasonable budget.",
+  "explicit_requirements": [
+    {
+      "id": "R1",
+      "text": "Professional website design and development (frontend and backend)",
+      "must": true
+    },
+    {
+      "id": "R2",
+      "text": "Visually appealing design that effectively communicates brand and services",
+      "must": true
+    },
+    {
+      "id": "R3",
+      "text": "User-friendly interface and experience",
+      "must": true
+    },
+    {
+      "id": "R4",
+      "text": "High-quality results and strong portfolio showcase",
+      "must": true
+    },
+    {
+      "id": "R5",
+      "text": "Reasonable timeframe and budget",
+      "must": true
+    },
+    {
+      "id": "R6",
+      "text": "Property listing display and browsing capability",
+      "must": true
+    },
+    {
+      "id": "R7",
+      "text": "Mock database of real estate properties (houses, condos, estates)",
+      "must": true
+    },
+    {
+      "id": "R8",
+      "text": "List view for property browsing",
+      "must": true
+    },
+    {
+      "id": "R9",
+      "text": "Map view for property discovery (using map technology similar to reference projects)",
+      "must": true
+    },
+    {
+      "id": "R10",
+      "text": "Property images only (houses, condos, estates, interiors, skylines) - no unrelated stock photography",
+      "must": true
+    },
+    {
+      "id": "R11",
+      "text": "Design must not appear to be AI-generated; must read as human-crafted with intentional design choices",
+      "must": true
+    }
+  ],
+  "implicit_needs": [
+    "Synchronized list and map interaction for seamless property discovery",
+    "Filtering and sorting capabilities for property browsing",
+    "Rich property details with images and information",
+    "Bespoke luxury design aesthetic tailored to high-end real estate",
+    "Production-quality polish and multiple real working features",
+    "Distinctive visual design that avoids common AI-generated site patterns"
+  ],
+  "domain": "Luxury Real Estate Digital Marketing & Property Discovery",
+  "tech_hints": [
+    "Frontend + backend architecture",
+    "Interactive map technology (Leaflet + OpenStreetMap suggested pattern)",
+    "Property database and filtering",
+    "List and map view synchronization",
+    "Responsive design for desktop and mobile"
+  ],
+  "success_signals": [
+    "Client immediately sees their brand elevated with premium, human-crafted design",
+    "Visitors can effortlessly browse properties via map and list, with real-time sync",
+    "Property imagery is high-quality, professional, and consistent",
+    "Design avoids obvious AI tells (generic gradients, cookie-cutter layouts, pseudo-content)",
+    "App feels like a full-featured, production-ready property discovery platform",
+    "Client confidence that this demo represents genuine design and development expertise"
+  ],
+  "budget": {
+    "raw": "unspecified",
+    "tier": "unknown"
+  },
+  "timeline": "unspecified",
+  "red_flags": [
+    "Vague scope: no explicit budget, timeline, or feature list provided in posting",
+    "Standard recruiter posting pattern (may indicate lower engagement post-selection)",
+    "U.S.-only location requirement (Michael qualifies, no blocker)"
+  ],
+  "demo_concepts": [
+    {
+      "id": "D1",
+      "name": "Luxury Real Estate Property Discovery Platform",
+      "what": "Full-featured property browsing app with synchronized Leaflet map and interactive listings grid, backed by a mock DB of 20-30 global properties with rich filtering, sorting, and detail views.",
+      "hero_feature": "Synchronized split-view: interactive map with custom property-price pins beside a live-filtered listings grid; filter/sort/search updates both views in real-time; clicking a pin opens a rich detail modal with image gallery and inquiry form.",
+      "backend_needed": false,
+      "why_wins": "Directly addresses the core requirement (property browsing with map + list), demonstrates 10/10 feature richness and production polish, showcases human-crafted design expertise and intentional UX choices that avoid AI tells. Proven tech pattern (Leaflet from MN State Park Tracker) ensures reliability. Property imagery only, no filler content. This is the app that sells the client on genuine expertise."
+    },
+    {
+      "id": "D2",
+      "name": "Luxury Brand Landing + Property Gallery",
+      "what": "Homepage with editorial brand story and hero imagery, plus a property showcase gallery with hover effects, filtering by type/location, and click-through to detail pages.",
+      "hero_feature": "Asymmetric, editorial layout with custom typography and refined motion; property grid with intelligent masonry and hover reveal; bespoke color palette and whitespace that reads as intentional, not auto-generated.",
+      "backend_needed": false,
+      "why_wins": "Emphasizes the 'not AI-built' differentiator through deliberate design choices (asymmetry, editorial spacing, custom type). Showcases brand voice and visual identity alongside property showcase. Slightly less feature-rich than D1 but stronger on design polish and anti-AI messaging."
+    },
+    {
+      "id": "D3",
+      "name": "Property Detail Explorer + Favorites",
+      "what": "Deep property detail pages with full image galleries, amenity lists, location maps, and a favorites system (local persisted storage).",
+      "hero_feature": "Rich detail pages with carousel galleries, bespoke typography, and interactive location embedding; favorites persist in localStorage; clean, uncluttered layout that feels premium and intentional.",
+      "backend_needed": false,
+      "why_wins": "Demonstrates attention to detail and UX craft; favorites system adds interactivity and engagement. Focuses on the 'human-crafted' narrative through meticulous design. Lighter on feature scope but strong on polish."
+    }
+  ],
+  "notes_from_michael": "Build a premium website that deliberately avoids AI-generated site tell-tales. Research concrete anti-AI patterns (generic gradients, cookie-cutter layouts, pseudo-content, etc.) and exclude them from design. Must feature property imagery only. Full frontend + backend with mock DB. Target 10/10 feature richness: a genuinely full-featured, production-quality app with several working features. Use Leaflet + OpenStreetMap (proven pattern from mn-state-park-tracker) for the map. Design must fit high-end global real estate, not michaelwegter.com's portfolio look."
+}

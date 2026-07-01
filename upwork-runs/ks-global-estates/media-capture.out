@@ -1,0 +1,19 @@
+# Media Capture — KS Global Estates
+
+## Captured media
+- `hero.png` (779KB) — landing state with map and full property list
+- `step-1.png` (775KB) — filtered view after clicking property-type pill (Villa selected)
+- `step-2.png` (1.1MB) — detail panel open with property info, features, and image gallery
+- `step-3.png` (1.8MB) — detail panel scrolled to image gallery with thumbnail carousel
+- `demo.webm` (1.1MB) — 6-second recording of the hero flow (filter → select → detail)
+
+All PNG frames verified distinct (MD5 hashes unique), sizes >700KB, confirming real content capture.
+
+## Flow
+Capture-flow.json provided: wait for page render → click type filter → click property card → scroll to gallery → capture stills and record video. No console errors. Record captures the flow naturally (Playwright video with real interactions).
+
+## handoff
+- **Produced:** 5 media files (hero + 3 key flow stills + short demo video) in `proposal/media/`
+- **Verified:** All frames distinct, sizes non-blank, recording captured full flow
+- **No issues:** ffmpeg unavailable (expected, keep webm only)
+- **Next:** Writer uses media for deck and one-pager layouts

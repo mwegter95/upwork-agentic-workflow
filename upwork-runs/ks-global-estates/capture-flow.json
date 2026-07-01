@@ -1,0 +1,50 @@
+[
+  {
+    "action": "wait",
+    "ms": 1200
+  },
+  {
+    "action": "click",
+    "selector": ".pill:nth-of-type(2)"
+  },
+  {
+    "action": "wait",
+    "ms": 600
+  },
+  {
+    "action": "shot",
+    "name": "1-filtered"
+  },
+  {
+    "action": "wait",
+    "ms": 300
+  },
+  {
+    "action": "click",
+    "selector": ".prop-card:first-of-type"
+  },
+  {
+    "action": "wait",
+    "ms": 700
+  },
+  {
+    "action": "shot",
+    "name": "2-detail"
+  },
+  {
+    "action": "wait",
+    "ms": 300
+  },
+  {
+    "action": "scroll",
+    "to": ".detail-gallery"
+  },
+  {
+    "action": "wait",
+    "ms": 400
+  },
+  {
+    "action": "shot",
+    "name": "3-gallery"
+  }
+]

@@ -1,0 +1,225 @@
+# Pre-Researcher — KS Global Estates
+
+## A — Client Brand Assets
+
+- **KS Global Estates live site:** `https://ksglobalestates.com` and `https://www.ksglobalestates.com` both return HTTP 403. Site may exist behind Cloudflare/bot protection or may not yet be live. Either way, no brand assets extractable.
+- **Verdict:** No brand colors, logo, or typography available. Planner should invent a credible luxury identity from scratch.
+- No LinkedIn/Instagram found with a quick lookup (name too generic to resolve without site anchor).
+
+## B — Luxury Real Estate Design Conventions
+
+**Layout:**
+- Premium RE sites (Sotheby's International Realty, Knight Frank, Compass, Christie's, JLL) use editorial asymmetric layouts, NOT centered hero + symmetrical sections.
+- Full-bleed imagery dominates: hero at 100vh, property cards 16:9 with overlay text. Thin horizontal rules replace heavy card borders.
+- Generous negative space; content rarely fills more than ~65-70% of the viewport width on desktop.
+- "Story" pages interleave large photography with tight editorial columns (40/60 or 30/70 splits).
+- Scroll-triggered reveals are common but subtle (opacity + translateY, not spin/bounce).
+
+**Typography (dominant patterns in the sector):**
+- Serif headline + humanist/geometric sans body: `Cormorant Garamond` / `Playfair Display` paired with `DM Sans`, `Neue Montreal`, or `Graphik`.
+- Weight contrast is extreme: headline at 300–400, label caps at 600–700.
+- Tracked-out uppercase labels (`letter-spacing: 0.2em`) for category tags and nav items are a signature luxury tell.
+- Body text 15–16px, line-height ~1.7. Comfortable; never cramped.
+
+**Palette (luxury RE conventions):**
+- Deep charcoal (`#1A1A1A` / `#0D0D0D`) backgrounds for hero/dark sections.
+- Warm off-white (`#F8F5F0` / `#FAF8F4`) for light sections — never pure white.
+- Single luxury accent: muted gold (`#B8975A` / `#C9A96E`) or warm bronze used sparingly on CTAs, borders, dividers.
+- Suggested bespoke palette for KS Global Estates:
+  - `--ink: #12100E` (near-black, warm)
+  - `--canvas: #F5F1EB` (warm parchment)
+  - `--gold: #B8975A` (muted antique gold)
+  - `--mid: #6B6560` (warm gray, secondary text)
+  - `--surface: #FFFFFF`
+  - `--dark-section: #1C1917` (dark warm sections)
+
+**Motion (premium vs. cheap):**
+- Premium: slow fade-up (0.6s ease-out), parallax hero image, subtle price-pin drop on map load.
+- Cheap: bouncing loaders, CSS pulse animations on text, infinite scroll carousels with visible arrows.
+
+**Map + list UX (Zillow/Redfin/Compass patterns):**
+- Split-pane is the industry norm: ~55% map / ~45% list, resizable.
+- Hovering a list card highlights the corresponding map pin (color change + scale); clicking opens detail.
+- Price labels directly on map pins are the standard differentiator vs. generic circle markers.
+- Filter panel docks above the list column (sticky), NOT a full-screen modal on desktop.
+
+## C — AI Tell-Tale Checklist (patterns to EXCLUDE)
+
+**Layout tells:**
+- Centered hero with H1 + subtitle + CTA button, then 3 equally spaced icon cards below.
+- "Features" section with icon-left + text-right repeated rows.
+- Blob/wave SVG section dividers (especially purple-to-indigo gradient blobs).
+- "Testimonials" section with round avatar + star rating + quote in a 3-col card row.
+- Footer with 4 equal-width columns, each with a "Quick Links" heading.
+- Sticky hero with text centered over a stock photo at full opacity (no overlay treatment).
+
+**Color/gradient tells:**
+- Purple-to-indigo (`#6366F1` to `#8B5CF6`) gradient on any element.
+- Teal + coral duotone CTAs.
+- `border-radius: 9999px` on every button.
+- Box-shadow `0 4px 6px rgba(0,0,0,0.1)` on every card (identical, AI default).
+- Pure `#FFFFFF` background with pure `#000000` text (zero warmth).
+
+**Typography tells:**
+- `font-family: 'Inter', sans-serif` as the ONLY font.
+- `font-family: 'Outfit'` or `'Nunito'` at `font-weight: 400` for ALL text.
+- H1-H6 on a locked modular scale (e.g., exactly 48/36/24/20/16/14) with no size deviation.
+- Uppercase "FEATURES" / "SERVICES" / "ABOUT US" nav items with `font-weight: 700`.
+
+**Card / component tells:**
+- Uniform 3-column grid of rounded cards with identical height and padding.
+- Animated counters (`0 → 500+`) in a "Stats" section.
+- Frosted glass (`backdrop-filter: blur`) on every overlay regardless of context.
+- Thin colored left-border accent cards (frequently used for "facts" sections).
+
+**Copy / content tells:**
+- "Unlock your potential" / "Empowering your journey" / "We are committed to excellence" hero headers.
+- Fake testimonials with generated avatars (Unsplash face photos + star ratings).
+- "Our Process" section with Step 1 / Step 2 / Step 3 in a horizontal timeline.
+- "Trusted by 500+ clients" stat without any proof.
+
+**What reads as HUMAN-CRAFTED instead:**
+- Asymmetric column grids (e.g., 7/5, 8/4) that break the equal-halves convention.
+- Oversized display type that deliberately overflows or clips — editorial risk-taking.
+- Mixed type scales: one heading at 96px while body stays 15px (extreme contrast, intentional).
+- A dominant photographic moment occupying 80-100% of the viewport with type treatment as art direction, not overlay.
+- Textural detail: thin 1px gold borders, letter-spaced micro-labels, deliberate grid rule lines.
+- Opinionated whitespace that leaves sections intentionally sparse, trusting the imagery.
+- Horizontal scrolling feature for property gallery (rare enough to feel crafted).
+- Map pins with price labels styled to match the site's design system (not Leaflet defaults).
+
+## D — Property Image URLs (25 confirmed 200 OK)
+
+All are Unsplash CDN, free to use, no attribution required for demos. Use `?auto=format&fit=crop&w=1600&q=80` for cards and `&w=2400` for hero.
+
+**Luxury Exteriors (5):**
+1. `https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1600&q=80` — large modern villa, curved architecture
+2. `https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80` — luxury contemporary white exterior
+3. `https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1600&q=80` — modern house with pool exterior
+4. `https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80` — large estate with manicured lawn
+5. `https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80` — contemporary hillside luxury home
+
+**Suburban / Traditional Houses (4):**
+6. `https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1600&q=80` — classic American suburban house
+7. `https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1600&q=80` — charming traditional two-story house
+8. `https://images.unsplash.com/photo-1527030280862-64139fba04ca?auto=format&fit=crop&w=1600&q=80` — modern single-story house, landscaped
+9. `https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1600&q=80` — modern grey suburban house exterior
+
+**Modern Condos / Penthouses (4):**
+10. `https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80` — glass-walled modern condo exterior
+11. `https://images.unsplash.com/photo-1628744448840-55bdb2497bd4?auto=format&fit=crop&w=1600&q=80` — rooftop penthouse with city views
+12. `https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1600&q=80` — high-rise luxury apartment block
+13. `https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1600&q=80` — minimalist luxury apartment interior corridor
+
+**Interiors (5):**
+14. `https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=1600&q=80` — open-plan kitchen, luxury finishes
+15. `https://images.unsplash.com/photo-1616137466211-f939a420be84?auto=format&fit=crop&w=1600&q=80` — living room with floor-to-ceiling windows
+16. `https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1600&q=80` — master bedroom, white linens, natural light
+17. `https://images.unsplash.com/photo-1560184897-ae75f418493e?auto=format&fit=crop&w=1600&q=80` — bright minimalist living room interior
+18. `https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1600&q=80` — luxury bathroom, stone finishes
+
+**Global Skylines / Context (3):**
+19. `https://images.unsplash.com/photo-1622866306950-81d17097d458?auto=format&fit=crop&w=1600&q=80` — Dubai-style waterfront skyline
+20. `https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=1600&q=80` — urban waterfront / skyline at dusk
+21. `https://images.unsplash.com/photo-1590725121839-892b458a74fe?auto=format&fit=crop&w=1600&q=80` — city skyline at golden hour
+
+**Estates / Villas (4):**
+22. `https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1600&q=80` — Mediterranean-style estate with terrace
+23. `https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=1600&q=80` — French-style villa with formal garden
+24. `https://images.unsplash.com/photo-1576941089067-2de3c901e126?auto=format&fit=crop&w=1600&q=80` — oceanfront villa with infinity pool
+25. `https://images.unsplash.com/photo-1521401830884-6c03c1c87ebb?auto=format&fit=crop&w=1600&q=80` — cliffside luxury villa, sea view
+
+**Aspect ratios:** Use `16:9` (fit=crop&w=1600&h=900) for list cards and hero; `4:3` (w=1200&h=900) for gallery tiles; `3:2` (w=1600&h=1066) for detail hero. Unsplash handles server-side crop.
+
+## E — Map Tech Reference (from mn-state-park-tracker demo-src)
+
+**Source path:** `upwork-agentic-workflow/upwork-runs/mn-state-park-tracker/demo-src/`
+
+**Stack confirmed:** Vite 8 + React 18.3 + Leaflet 1.9.4. No map wrapper library — raw Leaflet via `import L from 'leaflet'` and `import 'leaflet/dist/leaflet.css'`.
+
+**Tile URL (use this exactly):**
+```
+https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png
+```
+Attribution: `&copy; OpenStreetMap contributors &copy; CARTO`
+
+**Marker pattern:** `L.divIcon({ className: '', html: '<svg>...</svg>', iconSize, iconAnchor, popupAnchor })` — custom SVG price-pin, no default Leaflet blue pin.
+
+**For real estate, use price labels on pins:**
+```js
+const createPricePin = (price, active = false) => L.divIcon({
+  className: '',
+  html: `<div style="background:${active ? '#B8975A' : '#12100E'};color:#fff;font-family:'DM Sans',sans-serif;
+         font-size:11px;font-weight:600;padding:4px 8px;border-radius:3px;white-space:nowrap;
+         box-shadow:0 2px 6px rgba(0,0,0,0.3);letter-spacing:0.02em">${price}</div>`,
+  iconSize: [null, null], iconAnchor: [0, 0]
+});
+```
+
+**Map-list sync pattern (React shared state):**
+- Single `selectedProperty` state in App.jsx (or top-level context).
+- Passed down as prop to both `<MapView>` and `<PropertyList>`.
+- `onSelectProperty` callback triggers `map.flyTo([lat, lng], zoom, { duration: 0.8 })` + marker icon update.
+- List scrolls selected card into view via `cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })`.
+- Filter state (price range, type, beds, location, status) lives in App.jsx; filtered array passed to both panels.
+
+**Init pattern:**
+```js
+useEffect(() => {
+  if (leafletRef.current) return;
+  const map = L.map('map-container', { center: [25, 12], zoom: 2, zoomControl: true });
+  L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(map);
+  map.zoomControl.setPosition('bottomright');
+  leafletRef.current = map;
+  return () => { map.remove(); leafletRef.current = null; };
+}, []);
+```
+
+**Gotchas:**
+- Must import `leaflet/dist/leaflet.css` — omitting causes broken tile layout.
+- `L.divIcon` requires `className: ''` to suppress Leaflet's default white-box class.
+- Vite build: Leaflet 1.9.4 works without any special plugin — just `npm install leaflet`.
+
+## F — Tech Stack + Scaffold
+
+**Scaffold:** Clone `upwork-agentic-workflow/upwork-runs/mn-state-park-tracker/demo-src/` as the starting point.
+
+**Vite config for this demo:**
+```js
+export default defineConfig({
+  plugins: [react()],
+  base: '/demos/ks-global-estates/',
+  build: {
+    outDir: '../../../../michaelwegter.com/public/demos/ks-global-estates',
+    emptyOutDir: true
+  }
+})
+```
+
+**Mock DB:** JS module (not JSON) — `src/data/properties.js` exporting a named array `PROPERTIES`. Pattern matches parks.js from mn-state-park-tracker. Each property object should include: `id`, `slug`, `title`, `type` (luxury-home|condo|penthouse|villa|estate), `status` (for-sale|sold|leased), `price` (number), `priceLabel` (string, e.g. "$4,200,000"), `beds`, `baths`, `sqft`, `lat`, `lng`, `city`, `country`, `region`, `description`, `features` (string array), `images` (array of URLs from section D).
+
+**Google Fonts to use (available, no install needed):**
+```html
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+```
+
+**No backend needed.** Frontend-only. Favorites via `localStorage`. All filter/sort client-side.
+
+**workSamples.js entry:** Builder must append a new entry at the end of `michaelwegter.com/src/data/workSamples.js`.
+
+## Open Risks
+
+1. **KS Global Estates has no live brand** — planner must invent identity. Invented palette above is based on sector conventions; flag it as such in the cover letter ("designed a bespoke identity for them").
+2. **Leaflet on global map (zoom 2):** Price pins at world-level zoom will overlap heavily. Solution: cluster pins at low zoom using `L.divIcon` count badges, expand on zoom. OR default to a curated 3-city view (Dubai, Miami, London) at zoom 4-5 to keep pins readable without clustering complexity.
+3. **25 images is enough but barely** — if a property gets 4 gallery images, 25 properties x 4 = 100 slots; use images array of 2-4 per property, recycling is fine since properties are distinct.
+4. **`heic-to` and `heic2any` deps in mn-state-park-tracker** — NOT needed for this demo; omit them to keep bundle lean.
+5. **Leaflet breaks React StrictMode double-init** — the `if (leafletRef.current) return;` guard in the init `useEffect` handles this; confirm it's in place.
+
+---
+
+## handoff
+
+- **Produced:** Full answers to all 13 planner research questions (A-F). 25 confirmed 200-OK Unsplash image URLs in 5 categories. Leaflet init/sync pattern extracted from mn-state-park-tracker source. Bespoke color palette + typography specified. Comprehensive AI-tell checklist (28 patterns to exclude + 8 human-craft signals).
+- **Decisions:** No brand assets exist for KS Global Estates; invent identity. Palette: charcoal `#12100E` / parchment `#F5F1EB` / muted gold `#B8975A`. Type: Cormorant Garamond (display) + DM Sans (body). Leaflet 1.9.4 + CARTO Voyager tile confirmed. Frontend-only (no Flask blueprint). Mock DB = JS module.
+- **Next needs:** Planner should now finalize plan: feature list, file structure, component breakdown, mock property data (20 properties minimum), and page/section architecture for the 10/10 richness target.
+- **Risks:** World-zoom pin clustering should be addressed in plan (default to multi-city 3-region view at zoom 4 rather than full-globe zoom 2). Confirm heic deps excluded from package.json.

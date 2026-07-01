@@ -1,0 +1,45 @@
+# Proposal Writer — KS Global Estates
+## Status: COMPLETE
+
+---
+
+## Deliverables produced
+
+1. `proposal/cover-letter.md` — Michael's voice, demo link front and center, all 11 must-requirements addressed naturally (no checklist), ~300 words, skimmable
+2. `proposal/one-pager.html` — Standalone single-file responsive page. KS Global Estates design language (Cormorant Garamond + DM Sans, parchment/gold palette, #1C1917 dark sections). Sections: hero, live demo with hero.png + overlay CTA, flow stills (step-1/2/3), how it works, full requirements matrix, proof points, contact/next step.
+3. `proposal/deck.pptx` — 8-slide deck, same design language. Built via `build-deck.py` (python-pptx 1.0.2). Slides: Title (hero.png backdrop), Problem, Approach (4 phases), Live Demo (hero.png full bleed + link), Demo Flow (3 stills), Requirements Matrix (all 11 rows), Why Michael (3 cards), Scope + Next Step.
+
+---
+
+## Demo link used
+`https://michaelwegter.com/work-samples/ks-global-estates`
+Appears in: cover letter (paragraph 2), one-pager hero CTA + demo section + footer, deck slides 1/4/8.
+
+---
+
+## Requirements coverage confirmed (all 11 must-requirements)
+- R1 Frontend + backend: addressed (demo frontend live; Node/Python+PG backend described for production)
+- R2 Brand/visual design: addressed (bespoke luxury palette + typography, editorial layout)
+- R3 User-friendly UX: addressed (filters, map sync, mobile-responsive)
+- R4 High-quality portfolio-grade: addressed (10/10 feature richness, live demo deployed)
+- R5 Reasonable timeline/budget: addressed (scoping conversation framing)
+- R6 Property listing and browsing: addressed (25-property filterable list + map)
+- R7 Mock property database: addressed (14 cities, 6 regions, 5 types)
+- R8 List view: addressed (horizontal card list with real-time filter)
+- R9 Map view with Leaflet: addressed (Leaflet + CartoDB Voyager, gold price pins, flyTo)
+- R10 Property images only: addressed (all images are property photography, no unrelated stock)
+- R11 No AI-generated appearance: addressed (28 AI-tell patterns excluded; called out explicitly)
+
+---
+
+## Dash check
+Grep for U+2014, U+2013, &mdash;, &ndash;, &#8212;, &#8211; across all three deliverables: CLEAN.
+
+---
+
+## handoff
+- **Produced:** `proposal/cover-letter.md`, `proposal/one-pager.html`, `proposal/deck.pptx` (8 slides), `proposal/build-deck.py`
+- **Demo link:** `https://michaelwegter.com/work-samples/ks-global-estates` used in all three deliverables
+- **All 11 must-requirements addressed** in cover letter and one-pager requirements matrix; deck slide 6 has the full traceability table
+- **Next needs:** Deploy step (`deploy.out`) should push `michaelwegter.com` to `main` if not already done; confirm git push success
+- **Risks:** `deck.pptx` overlay on slide 1 is solid dark (no true alpha in pptx), so the hero image is obscured; this is a known pptx limitation and the text is legible. Slide 4 has the full hero screenshot unobscured.

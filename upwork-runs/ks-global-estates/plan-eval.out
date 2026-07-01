@@ -1,0 +1,109 @@
+# Plan Eval — KS Global Estates
+
+## Rubric Evaluation
+
+### 1. Requirement Coverage (all 11 R# from brief.json)
+
+| R# | Requirement | Plan Coverage | Status |
+|----|-------------|---------------|--------|
+| R1 | Frontend + backend website | Vite+React frontend + `properties.js` as client-side data layer (mock backend). Proposal narrative addresses architecture. | PASS |
+| R2 | Visually appealing, brand-communicating design | Full bespoke design system: #12100E/#F5F1EB/#B8975A palette, Cormorant Garamond + DM Sans, editorial asymmetric layout, specified down to `letter-spacing` and `line-height`. | PASS |
+| R3 | User-friendly interface | Split-pane with sticky FilterPanel, keyboard-accessible inputs, responsive layout noted in traceability, scroll sync on list/map interaction. | PASS (minor: mobile breakpoint left to builder — acceptable) |
+| R4 | High-quality portfolio work | 13 named files, clean component structure, zero-console-error goal, Leaflet scaffold from proven mn-state-park-tracker baseline. | PASS |
+| R5 | Reasonable timeframe and budget | Proposal narrative only (no demo coverage). Acceptable — this is a business communication point, not a technical feature. | PASS |
+| R6 | Property listing / browsing | PropertyList with sortable, filterable, searchable cards; live filter state in App.jsx passed to both panels. | PASS |
+| R7 | Mock DB (houses, condos, estates) | `properties.js`: 25 properties spanning houses, condos, penthouses, villas, estates across 10+ global cities. Schema specified. | PASS |
+| R8 | List view | PropertyList panel; card click opens PropertyDetail modal with gallery, specs, inquiry form, favorites toggle. | PASS |
+| R9 | Map view with map technology | Leaflet 1.9.4 + CARTO Voyager tiles, custom DivIcon price pins, `flyTo`, pin/list two-way sync. Direct pattern from mn-state-park-tracker. | PASS |
+| R10 | Property images only | 25 Unsplash URLs confirmed as architectural/property photography. Verified by plan-gate via HTTP HEAD. | PASS |
+| R11 | Anti-AI design | 28 AI-tell exclusions explicitly enumerated, 8 human-craft signals documented. Backed by pre-researcher research. | PASS |
+
+**All 11 must-requirements addressed. 10 demoed, 1 (R5) narrative-only (appropriate).**
+
+---
+
+### 2. Technology Choices
+
+- **Vite + React 18:** Appropriate. Established toolchain, fast local build/preview, compatible with Leaflet DivIcon pattern.
+- **Leaflet 1.9.4:** Direct re-use of mn-state-park-tracker scaffold eliminates the highest-risk unknown. CARTO Voyager tiles suit the luxury aesthetic better than default OSM tile style.
+- **Client-side JS mock DB:** Correct call. No Surface runner, no Flask needed. localStorage for favorites is well-scoped.
+- **Google Fonts (Cormorant Garamond + DM Sans):** Industry-appropriate. Cormorant is a recognized luxury editorial serif; DM Sans provides clean UI contrast. CDN is accessible from this environment.
+- **CSS custom properties (tokens.css):** Solid approach for design-token consistency across 13 files.
+- **No Leaflet.markercluster:** Replaced by lat/lng jitter + zoom-3 start. Simpler, avoids an extra dependency, and 25 global properties do not genuinely need clustering.
+
+**Tech stack is sound, industry-fit, and leverages proven patterns.**
+
+---
+
+### 3. Testing Approach
+
+Explicit in plan:
+- Local build + local preview server (QA against localhost, not live URL) — correct for this environment.
+- Visual QA pass specifically called out for pin overlap at world zoom.
+- Cormorant Garamond weight-300 Windows rendering flagged as a builder risk with concrete mitigation (test at 300 vs 400, prefer 400 if thin).
+- Zero console errors on first paint as acceptance criterion.
+
+Gap: No explicit responsive breakpoint testing strategy (mobile split-pane behavior left to builder). Non-blocking; this is an implementation detail, not a planning unknown. Builder should target 768px threshold (noted in plan-gate).
+
+**Testing approach: adequate for a frontend-only demo. Explicit risks and mitigations documented.**
+
+---
+
+### 4. Scope Feasibility at 10/10 Richness
+
+13 files covering: Navbar, FilterPanel (6+ filter dimensions), PropertyList (scroll sync, highlight), MapView (Leaflet, price pins, flyTo, reverse sync), PropertyDetail (image carousel, specs grid, inquiry form, favorites toggle), FavoritesView (localStorage persistence, empty state), design tokens, mock data module.
+
+This is a genuinely full-featured frontend. Scope is large but:
+- Scaffold re-use from mn-state-park-tracker reduces Leaflet risk to near-zero.
+- No backend, no routing library, no auth — complexity is in the UI layer only.
+- All features are well-defined; no vague requirements left to interpret mid-build.
+
+**Feasible at 10/10. The 13-file budget is tight but disciplined.**
+
+---
+
+### 5. Design Direction — Industry Fit
+
+Luxury global real estate calls for: editorial gravitas, restrained palette, serif display type, generous whitespace, asymmetric composition, and subtle premium motion. The plan delivers all of these:
+- Warm ink/parchment/gold palette (no purple, indigo, teal, or blob gradients).
+- Extreme type scale contrast (96px display vs 15px body) reads as editorial, not auto-generated.
+- Asymmetric hero (left-aligned copy at 8-10% margin, full-bleed image) vs. centered-hero AI default.
+- Horizontal card layout with thin gold rule separators vs. uniform rounded-card grid.
+- Motion is subtle and purposeful (flyTo, translateX hover, scroll fade-up) — no bounce, no pulse.
+- 28 documented AI-tell exclusions backed by research.
+
+**Design direction is strongly industry-fit and the anti-AI mandate is operationalized concretely.**
+
+---
+
+### Problems Found
+
+None blocking. Three minor notes:
+
+1. **Mobile responsive spec incomplete.** Split-pane behavior at <768px is undefined. Builder must choose independently (tabs or stacked). Low risk — builder has context and a standard threshold to work from.
+2. **Hero image URL not pinned.** Builder defaults to any of the 25 confirmed URLs. Acceptable — no quality risk.
+3. **workSamples.js schema not spelled out.** Builder infers from existing entries. Acceptable — this is a one-line append.
+
+---
+
+## Verdict Summary
+
+| Criterion | Result |
+|-----------|--------|
+| All requirements covered | PASS (11/11) |
+| Right technologies chosen | PASS |
+| Testing approach defined | PASS (adequate for frontend demo) |
+| Scope feasible for 10/10 | PASS |
+| Design fit for industry | PASS |
+
+---
+
+## handoff
+
+- **Produced:** plan-eval.out with rubric scores across all 5 criteria; no blocking problems found.
+- **Decisions:** Plan approved as written. No re-plan loop needed. All 11 R# mapped with concrete demo coverage.
+- **Next needs:** Builder reads planner.out Sections 3-7 + pre-researcher.out Section D (25 image URLs) and Section E (Leaflet init snippets). Builder owns mobile breakpoint decision (~768px, stacked or tabbed).
+- **Risks carried forward:** (1) Pin overlap at world zoom -- builder must verify locally. (2) Cormorant Garamond weight 300 on Windows Chrome -- builder tests and falls back to 400 if needed. (3) 13-file ceiling is firm.
+- **Next step:** CEO review (cover letter, proposal framing, send decision).
+
+VERDICT: pass

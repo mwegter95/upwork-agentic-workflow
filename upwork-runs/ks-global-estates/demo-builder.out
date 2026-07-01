@@ -1,0 +1,41 @@
+# Demo Builder -- KS Global Estates
+
+## Status: COMPLETE
+
+Hero feature delivered: full split-pane luxury real estate platform with Leaflet world map, 25-property mock DB, price-pin markers, 6-dimension filter panel, detail drawer with gallery + inquiry form, and persisted favorites.
+
+## Build summary
+
+- **Hero feature:** Leaflet world map (zoom 3, global spread) with custom price-pin DivIcon markers (gold = active, ink = default), flyTo on selection, synchronized property list with card-scroll. Filter panel: type, status, price preset pills, beds, baths, region, text search, sort. Detail slide-in panel: gallery carousel with thumbnails, features list, inquiry form. Favorites: heart per card + localStorage persistence + dedicated Saved view.
+- **Local preview URL:** `http://localhost:4090/` (serve `public/demos/ks-global-estates/`)
+- **Files touched:** 16 (14 new source files, 2 site files -- workSamples.js entry + screenshot)
+- **`npm run build` (demo-src):** PASS (503ms)
+- **`npm run build` (michaelwegter.com):** PASS (5.67s)
+- **Backend touched:** No
+- **Dash gate:** PASS -- no em/en dashes in source or built output
+- **Screenshot:** `public/work-samples/ks-global-estates.png` captured
+
+## Design decisions
+
+- Cormorant Garamond 400 (not 300 -- avoids thin-render on Windows as warned) + DM Sans
+- Palette: ink/canvas/gold/mid (as locked in pre-researcher)
+- CartoDB Voyager tiles: clean, editorial, suits luxury brand
+- Filter uses price preset pills (not range slider) -- mobile-friendly as recommended for touch
+- Property detail slides in from right (not a centered modal) -- editorial pattern
+- No AI-tell patterns: no blob dividers, no Inter-only font, no uniform grid, no frosted glass on everything
+
+## Files produced
+
+- `upwork-runs/ks-global-estates/demo-src/` (full Vite + React source, 14 files)
+- `michaelwegter.com/public/demos/ks-global-estates/` (built output)
+- `michaelwegter.com/public/work-samples/ks-global-estates.png`
+- `michaelwegter.com/src/data/workSamples.js` (id: 11 entry prepended)
+- `upwork-runs/ks-global-estates/build-report.md`
+
+## handoff
+
+- **Produced:** Full Vite/React demo built and deployed to `public/demos/ks-global-estates/`; workSamples.js entry (id: 11) inserted; screenshot captured; `build-report.md` written.
+- **Decisions:** Frontend-only (no backend needed); price preset pills over slider (mobile UX); Cormorant 400 not 300 (Windows render); CartoDB Voyager tiles; detail slides in from right.
+- **Next needs:** CEO review (`build-ceo.out`), then cover letter writer. Demo link is `/demos/ks-global-estates/`. No credentials needed (all mock data).
+- **Risks:** Leaflet markers overlap at zoom 3 for same-city pairs (Dubai, London, NYC) -- mitigated by lat/lng jitter per researcher spec. Unsplash images load from CDN; offline QA will show placeholder only if Unsplash blocks.
+- **Build gate:** Both `npm run build` passes confirmed. Dash gate clean. Site entry valid.

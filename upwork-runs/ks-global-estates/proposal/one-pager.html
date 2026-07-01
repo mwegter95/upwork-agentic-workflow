@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KS Global Estates — Web Development Proposal | Michael Wegter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #12100E;
+    --canvas: #F5F1EB;
+    --gold: #B8975A;
+    --mid: #6B6560;
+    --surface: #FFFFFF;
+    --dark: #1C1917;
+    --border: rgba(184,151,90,0.3);
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--dark);
+    padding: 1.25rem 8%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.25rem;
+    color: var(--canvas);
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+  .wordmark span { color: var(--gold); }
+  nav .tagline {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    background: var(--dark);
+    padding: 5rem 8% 4.5rem;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 38%;
+    background: linear-gradient(to right, var(--dark) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  .hero-img {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 42%;
+    object-fit: cover;
+    opacity: 0.35;
+  }
+  .kicker {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: var(--canvas);
+    line-height: 1.15;
+    max-width: 55%;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .hero p {
+    color: rgba(245,241,235,0.7);
+    max-width: 48%;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  .btn-primary {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.85rem 2rem;
+    border-radius: 2px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #cca96b; }
+  .btn-ghost {
+    display: inline-block;
+    border: 1px solid rgba(184,151,90,0.5);
+    color: var(--canvas);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.85rem 2rem;
+    border-radius: 2px;
+    text-decoration: none;
+    margin-left: 1rem;
+    transition: border-color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--gold); }
+
+  /* SECTION BASE */
+  section { padding: 4rem 8%; }
+  section + section { border-top: 1px solid var(--border); }
+  .section-kicker {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+  .prose { max-width: 64ch; color: var(--ink); }
+  .prose p { margin-bottom: 1rem; }
+
+  /* DEMO SECTION */
+  .demo-section { background: var(--dark); }
+  .demo-section .section-kicker { color: var(--gold); }
+  .demo-section h2 { color: var(--canvas); }
+  .demo-section .prose { color: rgba(245,241,235,0.75); }
+
+  .demo-frame-wrap {
+    margin-top: 2rem;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .demo-frame-wrap a { display: block; }
+  .demo-frame-wrap img {
+    width: 100%;
+    display: block;
+  }
+  .demo-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(18,16,14,0.55);
+    transition: background 0.2s;
+  }
+  .demo-overlay:hover { background: rgba(18,16,14,0.4); }
+  .demo-play {
+    background: var(--gold);
+    color: var(--dark);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.85rem 2.5rem;
+    border-radius: 2px;
+    text-decoration: none;
+  }
+  .demo-url {
+    margin-top: 1.25rem;
+    font-size: 13px;
+    color: rgba(245,241,235,0.55);
+  }
+  .demo-url a { color: var(--gold); text-decoration: none; }
+  .demo-url a:hover { text-decoration: underline; }
+
+  /* STILLS GRID */
+  .stills {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin-top: 2rem;
+    border: 1px solid var(--border);
+  }
+  .stills img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    opacity: 0.88;
+    transition: opacity 0.2s;
+  }
+  .stills img:hover { opacity: 1; }
+
+  /* HOW IT WORKS */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2.5rem;
+    margin-top: 2.5rem;
+  }
+  .step { border-left: 2px solid var(--gold); padding-left: 1.25rem; }
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .step h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+  .step p { font-size: 14px; color: var(--mid); }
+
+  /* REQUIREMENTS TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2rem;
+    font-size: 14px;
+  }
+  thead tr { border-bottom: 1px solid var(--gold); }
+  th {
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.6rem 1rem 0.6rem 0;
+    color: var(--mid);
+    text-align: left;
+  }
+  td {
+    padding: 0.7rem 1rem 0.7rem 0;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(184,151,90,0.15);
+    color: var(--ink);
+  }
+  .check {
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .req-id {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--mid);
+  }
+
+  /* WHY MICHAEL */
+  .why-section { background: var(--surface); }
+  .proof-points {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+  .proof {
+    padding: 1.75rem;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: var(--canvas);
+  }
+  .proof h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 0.6rem;
+  }
+  .proof p { font-size: 14px; color: var(--mid); }
+
+  /* CONTACT */
+  .contact-section { background: var(--dark); }
+  .contact-section h2 { color: var(--canvas); }
+  .contact-section .section-kicker { color: var(--gold); }
+  .contact-section .prose { color: rgba(245,241,235,0.7); }
+  .contact-row {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .contact-detail {
+    font-size: 13px;
+    color: rgba(245,241,235,0.55);
+    margin-top: 1rem;
+  }
+  .contact-detail a { color: var(--gold); text-decoration: none; }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid rgba(184,151,90,0.15);
+    padding: 1.25rem 8%;
+    font-size: 11px;
+    color: rgba(245,241,235,0.35);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .hero h1, .hero p { max-width: 100%; }
+    .hero-img { display: none; }
+    .stills { grid-template-columns: 1fr 1fr; }
+    .stills img:last-child { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="wordmark" href="#">KS Global Estates <span>/</span> Proposal</a>
+  <span class="tagline">Michael Wegter &bull; Web Developer</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <img class="hero-img" src="media/hero.png" alt="KS Global Estates property discovery platform demo">
+  <p class="kicker">Web Design &amp; Development Proposal</p>
+  <h1>A property discovery platform built for <em>global reach</em></h1>
+  <p>I designed and built a fully working demo of your site, live today, with synchronized map and list property browsing, faceted filters, image galleries, and a favorites system.</p>
+  <a class="btn-primary" href="https://michaelwegter.com/work-samples/ks-global-estates" target="_blank" rel="noopener">Open the Live Demo</a>
+  <a class="btn-ghost" href="#requirements">See Requirements Coverage</a>
+</section>
+
+<!-- DEMO -->
+<section class="demo-section">
+  <p class="section-kicker">Live Demo</p>
+  <h2>See it working now</h2>
+  <p class="prose">This is not a mockup. Every filter, map interaction, detail panel, gallery, and favorites toggle is live and functional. Click through to explore it yourself.</p>
+
+  <div class="demo-frame-wrap">
+    <a href="https://michaelwegter.com/work-samples/ks-global-estates" target="_blank" rel="noopener">
+      <img src="media/hero.png" alt="KS Global Estates demo landing state with map and property list">
+      <div class="demo-overlay">
+        <span class="demo-play">Open Live Demo</span>
+      </div>
+    </a>
+  </div>
+  <p class="demo-url">Live at: <a href="https://michaelwegter.com/work-samples/ks-global-estates" target="_blank" rel="noopener">michaelwegter.com/work-samples/ks-global-estates</a></p>
+
+  <div class="stills">
+    <img src="media/step-1.png" alt="Filtered view with Villa type selected">
+    <img src="media/step-2.png" alt="Property detail panel with specs and inquiry form">
+    <img src="media/step-3.png" alt="Image gallery with thumbnail carousel in detail panel">
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <p class="section-kicker">Approach</p>
+  <h2>How I would build the real thing</h2>
+  <p class="prose">The demo demonstrates the full frontend architecture. For production, I would extend it with a backend API, a CMS for managing listings, and real authentication for agents.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Design &amp; Design System</h3>
+      <p>Brand identity (palette, typography, spacing tokens) locked in a CSS design system. Every page derives from it. No AI-tell patterns.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Frontend Build</h3>
+      <p>React app with Leaflet map, faceted filter state, synchronized list/map, property detail views, image galleries, favorites, and responsive mobile layout.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Backend &amp; Data Layer</h3>
+      <p>Node or Python API with a real database (PostgreSQL). CMS or admin panel for managing property listings. Property image upload and management.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>QA &amp; Deploy</h3>
+      <p>Cross-browser testing, mobile QA, performance audit, then CI/CD pipeline to your hosting. Staged review before any production deploy.</p>
+    </div>
+  </div>
+</section>
+
+<!-- REQUIREMENTS -->
+<section id="requirements">
+  <p class="section-kicker">Requirements Coverage</p>
+  <h2>Every requirement, addressed</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Requirement</th>
+        <th>Covered</th>
+        <th>How</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="req-id">R1</td>
+        <td>Professional frontend and backend development</td>
+        <td class="check">Yes</td>
+        <td>React frontend built; backend plan (Node/Python + PostgreSQL) spec'd for production</td>
+      </tr>
+      <tr>
+        <td class="req-id">R2</td>
+        <td>Visually appealing, brand-communicating design</td>
+        <td class="check">Yes</td>
+        <td>Bespoke luxury palette (warm parchment + antique gold), Cormorant Garamond display type, editorial layout</td>
+      </tr>
+      <tr>
+        <td class="req-id">R3</td>
+        <td>User-friendly interface and experience</td>
+        <td class="check">Yes</td>
+        <td>Faceted filter panel, synchronized map/list, smooth flyTo animations, mobile-responsive layout</td>
+      </tr>
+      <tr>
+        <td class="req-id">R4</td>
+        <td>High-quality results and portfolio showcase</td>
+        <td class="check">Yes</td>
+        <td>Live, fully functional demo with 10 of 10 feature richness; deployed today for your review</td>
+      </tr>
+      <tr>
+        <td class="req-id">R5</td>
+        <td>Reasonable timeframe and budget</td>
+        <td class="check">Yes</td>
+        <td>Discuss scope, phasing, and timeline once you have reviewed the demo</td>
+      </tr>
+      <tr>
+        <td class="req-id">R6</td>
+        <td>Property listing display and browsing</td>
+        <td class="check">Yes</td>
+        <td>25-property mock DB; scrollable, filterable, sortable list; synchronized map pins</td>
+      </tr>
+      <tr>
+        <td class="req-id">R7</td>
+        <td>Mock database of real estate properties</td>
+        <td class="check">Yes</td>
+        <td>25 properties across 14 global cities (Dubai, London, NYC, Paris, Singapore, Sydney, LA, and more)</td>
+      </tr>
+      <tr>
+        <td class="req-id">R8</td>
+        <td>List view for property browsing</td>
+        <td class="check">Yes</td>
+        <td>Horizontal card list with image, price, specs, and favorite toggle; updates in real time with filters</td>
+      </tr>
+      <tr>
+        <td class="req-id">R9</td>
+        <td>Map view with Leaflet-style map technology</td>
+        <td class="check">Yes</td>
+        <td>Leaflet + CartoDB Voyager tiles; custom gold price-label pins; flyTo on selection; real-time marker sync</td>
+      </tr>
+      <tr>
+        <td class="req-id">R10</td>
+        <td>Property images only (houses, condos, estates)</td>
+        <td class="check">Yes</td>
+        <td>All images sourced as property photography (exteriors, interiors, waterfront villas, penthouses)</td>
+      </tr>
+      <tr>
+        <td class="req-id">R11</td>
+        <td>Design must not appear AI-generated</td>
+        <td class="check">Yes</td>
+        <td>28 AI-tell patterns explicitly excluded (no blob dividers, no uniform card grids, no Inter-only, no centered hero icon rows)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- WHY MICHAEL -->
+<section class="why-section">
+  <p class="section-kicker">About Michael</p>
+  <h2>Why this comes out right</h2>
+
+  <div class="proof-points">
+    <div class="proof">
+      <h3>Sole developer, 600 users/month</h3>
+      <p>At U.S. Bank (via Turnberry) I owned a React and Python internal platform of around 60,000 lines of code. When something broke I could fix it, often within 10 minutes. I became the SME within months and led its full Azure Cloud migration.</p>
+    </div>
+    <div class="proof">
+      <h3>Full-stack across the real stack</h3>
+      <p>React, Angular, Python, .NET/C#, Node, PostgreSQL, SQL, Docker, CI/CD. Currently delivering 150 story points per sprint at Optum on a large Angular plus .NET project. I write the backend, own the frontend, and ship.</p>
+    </div>
+    <div class="proof">
+      <h3>I build demos, not decks</h3>
+      <p>Every proposal I write comes with a working app. The demo for this posting was built to production standard, deployed, and live before you read this. That is how I operate on real projects too.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section">
+  <p class="section-kicker">Next Step</p>
+  <h2>Ready when you are</h2>
+  <p class="prose">Explore the demo, then send a message here on Upwork. I am happy to talk through scope, timeline, and what the full production build would involve.</p>
+  <div class="contact-row">
+    <a class="btn-primary" href="https://michaelwegter.com/work-samples/ks-global-estates" target="_blank" rel="noopener">Open Live Demo</a>
+  </div>
+  <div class="contact-detail">
+    michaelwegter.com &nbsp;|&nbsp;
+    <a href="https://github.com/mwegter95" target="_blank" rel="noopener">github.com/mwegter95</a>
+  </div>
+</section>
+
+<footer>
+  <span>Proposal for KS Global Estates &bull; Michael Wegter</span>
+  <span>michaelwegter.com/work-samples/ks-global-estates</span>
+</footer>
+
+</body>
+</html>

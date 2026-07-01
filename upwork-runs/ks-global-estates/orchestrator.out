@@ -1,0 +1,87 @@
+SLUG: ks-global-estates
+
+# Startup Brief — KS Global Estates
+
+## Project
+Premium marketing + property-discovery website for KS Global Estates, a global
+real estate firm. They want a visually striking, user-friendly site that
+communicates their brand and services and showcases listings. Michael's framing:
+a full frontend + backend property app with a mock DB of real estate listings
+browsable as a LIST and on a MAP (same map tech as the MN State Park Tracker:
+Leaflet + OpenStreetMap tiles). It must read as human-crafted, deliberately NOT
+"AI-built." Target feature richness: 10/10 — a genuinely full-featured,
+production-quality demo with several real working features.
+
+## Recommended demo direction (high level; planner to refine)
+Build a bespoke luxury-real-estate web app: a branded landing/brand section plus
+a full property-discovery experience. Single most impressive thing: a
+synchronized split view where an interactive Leaflet map (custom price-pin
+markers, hover/click sync, cluster or fly-to) sits beside a live, filterable
+listings grid — filtering, sorting, and searching update BOTH the list and the
+map in real time, and clicking a pin opens a rich property detail view. Back it
+with a mock property DB (20–30+ listings: houses, condos, estates, penthouses,
+global cities) driving list/map/detail. Scale to 10/10 with real working
+features: full-text + faceted filters (price, beds/baths, property type,
+city/country, sqft, status), sort, map<->list sync, saved/favorites (persisted),
+detail pages with image galleries, an inquiry/contact flow, and a polished
+responsive luxury layout. Property IMAGERY ONLY — houses, condos, estates,
+interiors, skylines — never unrelated stock. Backend as a Flask blueprint or
+realistic mock data (this environment cannot use the Surface runner); point the
+demo at a mock/local source with an api.michaelwegter.com base for the deployed
+build.
+
+## Anti-AI-tells guidance (explicit client requirement — respect it)
+Researcher must gather concrete tell-tale signs of AI-generated sites and the
+planner/demo-builder must EXCLUDE them. Known offenders to avoid: generic
+centered hero + three-icon feature row, purple/indigo gradient blobs, "Lorem"
+vibes and empty filler copy, cookie-cutter Inter-everywhere type, identical
+rounded cards in a rigid 3-col grid, fake logo strips, emoji bullets, symmetric
+"AI slop" spacing. Counter with a bespoke luxury design system: distinctive
+editorial typography, asymmetric/edvertorial layouts, real property content,
+intentional whitespace, refined motion, a specific brand palette. Design must NOT
+resemble michaelwegter.com's look; it must fit high-end global real estate.
+
+## Constraints / risks / red flags
+- U.S.-only applicants — Michael qualifies; the cover letter should read as a
+  U.S.-based developer. No blocker.
+- Vague brief (no explicit budget/timeline/pages). Intake must still extract
+  every stated requirement; treat "professional, visually appealing,
+  user-friendly, strong portfolio, high quality, reasonable timeframe/budget,
+  frontend+backend, mock property DB, list + map, property imagery only, not
+  AI-looking, 10/10 richness" as the concrete requirement set.
+- Environment: live site/API/Surface unreachable here — verify the demo LOCALLY
+  (build + localhost Playwright/QA) and deploy blind via git push.
+- No real brand assets known yet — researcher confirms whether KS Global Estates
+  has an existing site/logo/colors; if none, planner invents a credible bespoke
+  luxury identity and says so.
+- Map: reuse the proven Leaflet + OpenStreetMap approach from
+  mn-state-park-tracker (no Mapbox token dependency). Ensure map tiles/markers
+  load with no console errors on first paint.
+
+## Quality + naming guidance for downstream
+- intake: extract every explicit requirement precisely and near-verbatim into
+  brief.json (see requirement set above); flag the anti-AI and property-imagery
+  constraints as hard acceptance criteria.
+- demo-builder: use slug `ks-global-estates` for the demo folder
+  (../michaelwegter.com/public/demos/ks-global-estates/) and the workSamples.js
+  entry. Property images ONLY. Include Leaflet + list/map sync as the hero.
+- researcher: pull real luxury-real-estate visual conventions + AI-tell
+  checklist; source property-only imagery (free stock: houses/condos/estates).
+- planner: define a bespoke luxury palette (hex), editorial font pairing (Google
+  Fonts), and asymmetric layout that deliberately avoids AI tells.
+
+## handoff
+- Produced: startup brief at orchestrator.out; slug locked to `ks-global-estates`
+  (matches run folder + demo folder + workSamples entry).
+- Decision: hero = synchronized Leaflet map <-> filterable listings grid over a
+  20–30 mock-property DB; 10/10 feature scope; bespoke luxury design, property
+  imagery only, engineered to avoid AI tells.
+- Next needs (intake): brief.json capturing every stated requirement + the
+  anti-AI and property-only-imagery hard constraints.
+- Next needs (researcher): AI-tell checklist to exclude; luxury RE brand/visual
+  conventions; property-only image sources; confirm any real KS Global Estates
+  brand assets.
+- Risks: brief is vague (no budget/timeline); no confirmed brand assets; live
+  URLs unverifiable from this env (verify locally, deploy via push).
+- Constraint: Leaflet + OSM tiles (no Mapbox token), zero console errors on first
+  paint, no em/en dashes anywhere, GitHub handle mwegter95.

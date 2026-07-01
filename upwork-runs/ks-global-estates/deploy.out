@@ -1,0 +1,31 @@
+# Deploy -- KS Global Estates
+
+## Actions taken
+
+### Frontend (michaelwegter.com)
+- Staged: `public/demos/ks-global-estates/` (3 files: index.html + 2 assets), `public/work-samples/ks-global-estates.png`, `src/data/workSamples.js`
+- Commit: `4dabdbd` -- "feat: add KS Global Estates demo (full-featured property discovery platform, 25 properties, Leaflet map, faceted filters, favorites, inquiry form)"
+- Push: `git pull --rebase` (remote had 1 ahead commit from prior run), then `git push origin main` -> **SUCCESS** (`3dcd4c7..4dabdbd`)
+- GitHub Pages rebuild triggered; live in ~1-2 min.
+
+### Backend (mw-backend)
+- No changes. CEO review confirmed frontend mock-DB satisfies all requirements; no Flask blueprint needed.
+
+## Live URLs
+- **Demo:** `https://michaelwegter.com/demos/ks-global-estates/`
+- **Work sample card:** `https://michaelwegter.com/work-samples/ks-global-estates`
+
+## Verification status
+Per environment constraints (Zscaler), live URL polling is not possible from this machine. Push confirmed on remote (`4dabdbd` on `main`). GitHub Pages auto-deploy is trusted. Live verification is fire-and-trust: the demo will be accessible after the Pages rebuild (~1-2 min from push time).
+
+No Flask verification needed (no backend changes).
+
+## Summary
+Frontend pushed successfully (`4dabdbd`). No backend changes. Demo at `https://michaelwegter.com/demos/ks-global-estates/` will be live after Pages rebuild. Work-sample card at `/work-samples/ks-global-estates`. Deploy complete.
+
+## handoff
+- **Produced:** `4dabdbd` pushed to `michaelwegter.com` main; demo + card screenshot + workSamples entry all live on remote.
+- **Decisions:** No mw-backend push needed; frontend mock-DB covers all requirements per CEO review.
+- **Next needs:** Proposal-writer references `https://michaelwegter.com/demos/ks-global-estates/` as the live demo link.
+- **Risks:** Live URL not verifiable from this environment (Zscaler); Pages rebuild trusted (~1-2 min). Unsplash CDN dependency for property images (verified 200 locally; requires internet on client side).
+- **Notes:** Had to rebase (remote was 1 commit ahead from a prior run); push succeeded cleanly after rebase.
