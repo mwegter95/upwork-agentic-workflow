@@ -1,0 +1,26 @@
+# Plan CEO Review — AgriPro (target 10/10)
+
+## What I verified (not assumed)
+Read plan.md, plan-eval.out, plan-gate.out, planner.out, intake.out, orchestrator.out, brief.json, researcher.out. Independently re-traced the 23 requirements against the plan's matrix and the demo concept.
+
+## Verdict on the plan
+Strong and genuinely build-ready for a 10/10. The plan picks the right hero (AI inspection layer: Tesseract.js OCR -> keyword classifier -> rule-based anomaly flag), which is the exact thing the client called out three separate ways (OCR, classification, anomaly detection) and the hardest to fake. Two pillars (procurement board + 6-stage approval pipeline; role-aware dashboards + PDF/Excel export) cover the operational spine. Design system is bespoke agri-industrial (parchment/forest-green/amber, IBM Plex Sans/Mono), distinct from the portfolio, correct for a power-user internal tool. File budget, out-of-scope, and tech choices are all concrete. No rework needed; researcher stub is genuinely non-blocking because orchestrator.out carried the competitive/design context (AgriDigital, Cropin, Bushel, grain-grading conventions).
+
+## Where I'm raising the bar for the build (carry to demo-builder; not plan blockers)
+1. **Stop under-selling "mocks" — make them real.** Three of the five "convincing mocks" are already interactive logic, not static tables: R8 search/filter (in-memory filter is a real working feature — make it cross-module, not just the inspection table), R11 notifications (mark-read), R12 audit log. **Make the audit log append on EVERY state-changing action across the app** (approve/flag/reject, role switch, export). That single wiring turns the whole app into one coherent system and is the strongest "this is a real ops tool" signal for the price.
+2. **Give R6 warehouse one real interaction.** A purely static allocation grid reads as filler at 10/10. Add one action — allocate/assign a passed lot to a bin (updates fill rate + writes an audit entry). Keeps it inside the file budget, removes the only truly dead screen.
+3. **Hero must never dead-end.** Mandatory: lazy-load Tesseract on tab open + visible progress bar, AND a seeded "use sample result" fallback so a slow/failed WASM load still shows the extract -> classify -> anomaly flow. The demo's entire credibility hook lives here.
+4. **D3 admin portal cannot look absent.** Render the Management/Admin role with a visible user/role management surface (even seeded: users, roles, last active), not just KPI cards. The cover letter must also name admin portal as a full-build deliverable. This closes the one "thin" item eval flagged.
+5. **Carry the hard flags:** pin `xlsx@0.18.5` (Apache-2.0; do not `npm install xlsx` unpinned); zero em/en dashes in any client-facing text; verify mobile bottom-tab/field view on a real localhost viewport pass (field UX is an explicit requirement, not a nice-to-have).
+
+## Decision
+Plan meets the 10/10 bar. Proceed to build with the five elevations above. No earlier step needs redoing.
+
+## handoff
+- **Produced:** `plan-ceo.out` — plan approved; 5 build-level elevations to push it from "passes" to "wins."
+- **Decisions:** PASS, no REDIRECT, no plan rework; researcher stub accepted (orchestrator.out covered it).
+- **Next needs:** demo-builder must wire app-wide audit logging, elevate search to cross-module, add one warehouse interaction, build a seeded admin/user-management surface, and ship the Tesseract progress bar + sample-result fallback.
+- **Hard constraints:** pin `xlsx@0.18.5`; no em/en dashes in client text; mobile field view must pass a real localhost check.
+- **Risks:** Tesseract WASM cold-load (mitigated by lazy-load + fallback); over-cramming Shared.jsx (acceptable, watch readability).
+
+VERDICT: pass

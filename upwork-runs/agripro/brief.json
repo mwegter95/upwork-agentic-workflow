@@ -1,0 +1,98 @@
+{
+  "slug": "agripro",
+  "title": "AI-Powered Internal Operations Platform for Agricultural Procurement",
+  "client": {
+    "name": "AgriPro",
+    "industry": "Agricultural Procurement & Commodity Trading",
+    "signals": "Established multi-state business with operational scale issues; seeks to replace manual spreadsheet/email workflows with centralized platform; values AI-powered intelligence on real business problems (document processing, data quality flagging)"
+  },
+  "summary": "AgriPro is an established agricultural procurement business managing field inspections, lab testing, approvals, and warehouse logistics across multiple states, today via spreadsheets, email, and manual reporting. They need a single, internal, role-based operations platform that centralizes procurement campaigns, inspection workflows, laboratory grading, multi-stage approvals, warehouse allocation, and document management, with AI layered on top for OCR, document classification, and anomaly detection to flag data quality issues.",
+  "explicit_requirements": [
+    { "id": "R1", "text": "Secure user authentication with role-based access", "must": true },
+    { "id": "R2", "text": "Procurement campaign management", "must": true },
+    { "id": "R3", "text": "Field inspection workflows", "must": true },
+    { "id": "R4", "text": "Laboratory testing and quality grading", "must": true },
+    { "id": "R5", "text": "Multi-stage approval workflows", "must": true },
+    { "id": "R6", "text": "Warehouse allocation and tracking", "must": true },
+    { "id": "R7", "text": "File and document management", "must": true },
+    { "id": "R8", "text": "Search and advanced filtering", "must": true },
+    { "id": "R9", "text": "Operational dashboards for different user roles", "must": true },
+    { "id": "R10", "text": "Reporting with PDF and Excel export", "must": true },
+    { "id": "R11", "text": "Notifications and reminders", "must": true },
+    { "id": "R12", "text": "Audit logs", "must": true },
+    { "id": "R13", "text": "Mobile-responsive interface for field teams", "must": true },
+    { "id": "R14", "text": "OCR for extracting information from laboratory certificates", "must": true },
+    { "id": "R15", "text": "Intelligent classification of inspection documents", "must": true },
+    { "id": "R16", "text": "Anomaly detection to identify unusual inspection values for review", "must": true },
+    { "id": "D1", "text": "Production-ready web application", "must": true },
+    { "id": "D2", "text": "Clean, maintainable source code", "must": true },
+    { "id": "D3", "text": "Admin portal", "must": true },
+    { "id": "D4", "text": "Technical documentation", "must": true },
+    { "id": "D5", "text": "Testing before delivery", "must": true },
+    { "id": "D6", "text": "Deployment support", "must": true },
+    { "id": "D7", "text": "Post-launch support for initial stabilization", "must": true }
+  ],
+  "implicit_needs": [
+    "Scalability across multiple states and teams",
+    "Data integrity and audit trail for compliance/commodity trading",
+    "Performance with dense datasets (field inspections, procurement records)",
+    "Mobile usability for field personnel conducting inspections",
+    "Integration of AI/ML as operational decision support (not cosmetic)"
+  ],
+  "domain": "Agricultural procurement operations, commodity trading, supply chain coordination, internal workflow automation",
+  "tech_hints": [
+    "Role-based access control (RBAC)",
+    "OCR (Optical Character Recognition)",
+    "Document classification / NLP",
+    "Anomaly detection / statistical flagging",
+    "PDF and Excel export",
+    "Mobile-responsive web design",
+    "Audit logging / change tracking",
+    "Multi-stage workflow / state machines"
+  ],
+  "success_signals": [
+    "Demo shows OCR live-extracting lab certificate data, with anomaly detection flagging out-of-band values",
+    "Role-aware dashboards and workflows convince them the platform understands their ops (procurement / quality / warehouse / management views are distinct and purposeful)",
+    "Multi-stage approval workflow is clearly rendered and functional",
+    "Data is dense, searchable, exportable; feels like a real operations tool not a template",
+    "Design is industrial/trustworthy, not generic SaaS; shows familiarity with agricultural/commodity-trading aesthetics"
+  ],
+  "budget": {
+    "raw": null,
+    "tier": "unknown"
+  },
+  "timeline": "unspecified",
+  "red_flags": [
+    "No budget or timeline stated; estimate is high-scope custom build",
+    "18 explicit feature requirements + 7 deliverables create scope-creep risk; must ruthlessly prioritize hero + 2 pillars vs. realistic demo cap",
+    "AI claims (OCR, classification, anomaly detection) MUST run honestly (client-side or thin blueprint); faked screenshots will fail credibility",
+    "Internal ops tool, not customer-facing; design must prioritize power-user density + mobile field capability over marketing aesthetics"
+  ],
+  "demo_concepts": [
+    {
+      "id": "D1",
+      "name": "AgriPro Operations Console (Full Platform)",
+      "what": "End-to-end internal operations platform showcasing field inspections, lab grading with OCR/anomaly detection, multi-stage approvals, role-based dashboards, document library, and warehouse tracking on realistic agricultural procurement data.",
+      "hero_feature": "OCR lab certificate image, extract grading fields, auto-classify document type, populate inspection record, anomaly detector flags unusual moisture/aflatoxin/foreign-matter values for review",
+      "backend_needed": false,
+      "why_wins": "Demonstrates honest AI (OCR + classification + anomaly detection run client-side with seeded fallback); shows operational spine (campaign board, approval workflows, role dashboards); proves the developer understands 'AI-powered solutions that solve real business problems' in their domain"
+    },
+    {
+      "id": "D2",
+      "name": "Procurement-to-Warehouse Campaign Board",
+      "what": "Kanban-style board visualizing a procurement campaign through field inspection, lab testing, multi-stage approval, and warehouse allocation stages; shows the approval workflow and role transitions.",
+      "hero_feature": "Cards move through approval stages, role-specific approval buttons activate/deactivate based on user role, audit trail shows who approved and when",
+      "backend_needed": false,
+      "why_wins": "Proves operational understanding of their multi-stage workflow and role complexity; Kanban is familiar to operations teams and shows the platform as a tool for coordination"
+    },
+    {
+      "id": "D3",
+      "name": "Role-Based Dashboards with Reporting",
+      "what": "Distinct dashboards for procurement, quality/lab, warehouse, and management roles; each shows role-specific KPIs, pending actions, and a live PDF/Excel export of sample reports.",
+      "hero_feature": "Single data set, four radically different dashboard views; export generates real PDF/Excel files client can download",
+      "backend_needed": false,
+      "why_wins": "Shows scalability to multi-role operations; reporting export (PDF/Excel) is a required deliverable and seeing it work live is credible"
+    }
+  ],
+  "notes_from_michael": null
+}

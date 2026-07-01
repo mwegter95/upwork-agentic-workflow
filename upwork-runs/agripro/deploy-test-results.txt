@@ -1,0 +1,58 @@
+[PASS] CSS - stylesheet link present — https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap
+[FAIL] CSS - color vars present — no color vars found
+[PASS] CSS - font references present
+[PASS] Procurement - page load
+[PASS] Procurement - infinite API loop check
+[PASS] Procurement - login
+[PASS] Procurement - nav tabs found — tabs: 🔬Inspections2, 🌾Procurement, 📊Dashboards, 📁Documents, 🏭Warehouse, 📋Audit Log, Switch Role
+[PASS] Procurement - tab "🔬Inspections2"
+[PASS] Procurement - tab "🌾Procurement"
+[PASS] Procurement - tab "📊Dashboards"
+[PASS] Procurement - tab "📁Documents"
+[PASS] Procurement - tab "🏭Warehouse"
+[PASS] Procurement - tab "📋Audit Log"
+[PASS] Procurement - tab "Switch Role"
+[FAIL] Procurement - UNEXPECTED ERROR — locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('nav a, nav button, [role="tab"], .sideba
+[PASS] Quality - page load
+[PASS] Quality - infinite API loop check
+[PASS] Quality - login
+[PASS] Quality - nav tabs found — tabs: 🔬Inspections2, 📊Dashboards, 📁Documents, 📋Audit Log, Switch Role
+[PASS] Quality - tab "🔬Inspections2"
+[PASS] Quality - tab "📊Dashboards"
+[PASS] Quality - tab "📁Documents"
+[PASS] Quality - tab "📋Audit Log"
+[PASS] Quality - tab "Switch Role"
+[FAIL] Quality - UNEXPECTED ERROR — locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('nav a, nav button, [role="tab"], .sideba
+[PASS] Warehouse - page load
+[PASS] Warehouse - infinite API loop check
+[PASS] Warehouse - login
+[PASS] Warehouse - nav tabs found — tabs: 🔬Inspections2, 📊Dashboards, 🏭Warehouse, 📋Audit Log, Switch Role
+[PASS] Warehouse - tab "🔬Inspections2"
+[PASS] Warehouse - tab "📊Dashboards"
+[PASS] Warehouse - tab "🏭Warehouse"
+[PASS] Warehouse - tab "📋Audit Log"
+[PASS] Warehouse - tab "Switch Role"
+[FAIL] Warehouse - UNEXPECTED ERROR — locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('nav a, nav button, [role="tab"], .sideba
+[PASS] Management - page load
+[PASS] Management - infinite API loop check
+[PASS] Management - login
+[PASS] Management - nav tabs found — tabs: 🔬Inspections2, 🌾Procurement, 📊Dashboards, 📁Documents, 🏭Warehouse, 📋Audit Log, ⚙️Admin, Switch Role
+[PASS] Management - tab "🔬Inspections2"
+[PASS] Management - tab "🌾Procurement"
+[PASS] Management - tab "📊Dashboards"
+[PASS] Management - tab "📁Documents"
+[PASS] Management - tab "🏭Warehouse"
+[PASS] Management - tab "📋Audit Log"
+[PASS] Management - tab "⚙️Admin"
+[PASS] Management - tab "Switch Role"
+[FAIL] Management - UNEXPECTED ERROR — locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('nav a, nav button, [role="tab"], .sideba
+
+Verdict: fail

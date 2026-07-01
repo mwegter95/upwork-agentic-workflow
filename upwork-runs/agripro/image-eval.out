@@ -1,0 +1,41 @@
+# Image Eval (rubric) — AgriPro
+
+## Verification Method
+
+Challenged fixer/analyzer claims by inspecting the actual build artifacts directly:
+- Scanned `index.html` for `<img>` tags: 0 found
+- Scanned `assets/index-BkaM-1E5.css` for `url(...)` raster references: 0 found
+- Scanned `assets/index-BxDBY50E.js` for raster extensions (.jpg/.jpeg/.png/.gif/.webp/.avif): 2 filenames found
+- Investigated both filenames in context; confirmed they are label strings in an OCR demo data array (`yI`), not `img src` attributes
+- No external image URLs (picsum, unsplash, cloudinary, S3, etc.): 0 found
+- `<img>` element occurrences in JS: 5 — all React/DOM framework internals or Recharts `role="img"` SVG path, none rendering raster photos
+- No CSS background-image raster references
+
+## Unique Image Manifest
+
+| Asset | Claim / Use | Verification Result |
+|---|---|---|
+| `GQC-2024-08471.jpg` | OCR demo button label ("Normal Corn Certificate") — string only, no `<img src>` | Not a rendered image; text label only. PASS (no visual to verify) |
+| `AFS-2024-00342.jpg` | OCR demo button label ("Flagged Corn (High Aflatoxin)") — string only, no `<img src>` | Not a rendered image; text label only. PASS (no visual to verify) |
+
+## What I Actually Saw
+
+- Zero raster images are loaded or rendered anywhere in the AgriPro demo.
+- All visual content is: inline SVG icons, Recharts SVG charts, Unicode emoji, and CSS styling.
+- The two `.jpg` strings are document filename labels in mock data for the OCR/AI certificate scanner feature; they populate button text and a simulated document viewer that renders synthesized text content from a JavaScript template literal, not from a real image file.
+- Fixer and analyzer claims are correct and verified by pixel-level inspection (no pixels to inspect — confirmed no raster assets exist).
+
+## Problems
+
+None.
+
+VERDICT: pass
+
+---
+
+## handoff
+
+- **Produced:** `image-eval.out` — confirmed zero raster images in AgriPro demo; VERDICT pass
+- **Decisions:** Two `.jpg` filenames in JS are mock data labels only (OCR demo), not rendered images; no visual verification needed beyond confirming no `<img src>` usage
+- **Next needs:** media-capture step can proceed; no image fixes required, no image caveats for proposal
+- **Risks:** None from images; all demo visuals are SVG/CSS/emoji, fully safe

@@ -1,0 +1,120 @@
+# Deploy Test — AgriPro
+
+## Environment note
+Live site (`michaelwegter.com`) and API (`api.michaelwegter.com`) unreachable from Zscaler env.
+All verification performed locally: `npm run build` (PASS) + `npx serve` on `localhost:4030` +
+full Playwright exercise of all roles and tabs. Deploy was push-confirmed (SHA `14f3591d00f3`
+on GitHub remote); live URL trusted via fire-and-trust mechanism.
+
+## Build check
+- `npm run build` in `demo-src/`: PASS (3.25s, warnings only — chunk size, expected)
+- Built output confirmed: `public/demos/agripro/index.html` + 8 asset files
+- HTTP 200 at `http://localhost:4030/demos/agripro/`
+
+## CSS / Design check
+- [PASS] App stylesheet: `/demos/agripro/assets/index-BkaM-1E5.css` — loaded, HTTP 200
+- [PASS] Color tokens: `--clr-bg: #F5F2EC`, `--clr-surface: #FFFFFF`, `--clr-nav` (agri palette confirmed)
+- [PASS] IBM Plex Sans/Mono font references in CSS
+- [PASS] No em or en dashes in compiled CSS
+
+## Login / RBAC
+- [PASS] Login screen loads: 4 `.role-card` divs (no button — single click triggers `onSelect`)
+- [PASS] No console errors on first paint
+- [PASS] No infinite request loops (3s observation window)
+- [PASS] All 4 roles login successfully via `.role-card` click
+- [PASS] Quality RBAC: Procurement and Warehouse tabs hidden, Inspections shown
+- [PASS] Warehouse RBAC: Procurement and Admin tabs hidden, Warehouse shown
+- [PASS] Management RBAC: All tabs shown including Admin (Management-only)
+
+## Inspections tab (Procurement role)
+- [PASS] `table.data-table` renders with 8 data rows
+- [PASS] Search input: filters to 5 rows for "corn"
+- [PASS] Stage filter dropdown: works (selects option index 1, table updates)
+- [PASS] Row click: opens inline detail panel with crop, stage, lot, grade, cert fields
+- [PASS] "Approve & Advance" button: clickable for eligible inspection (stage-gated)
+- [PASS] OCR upload zone: visible (scrolled into view)
+- [PASS] Anomaly flags rendered: 2 elements on page
+- [PASS] Pipeline stage bars: 7 visible (one per inspection + detail)
+
+## Procurement Board tab
+- [PASS] Campaign cards: 5+ elements render (grid layout)
+- [PASS] Approve buttons: 3 visible after clicking a campaign card (stage-gated, correct)
+- [PASS] Approve button clickable: clicked, state updates
+
+## Dashboard tab (all roles)
+- [PASS] Dashboard loads for Procurement, Management roles
+- [PASS] SVG charts render: 3 SVG elements (Recharts BarChart/PieChart/LineChart)
+- [PASS] KPI cards: 13 elements visible
+- [PASS] PDF export button: clicked successfully (jsPDF)
+- [PASS] Excel export button: clicked successfully (xlsx)
+
+## Notifications
+- [PASS] `.notif-btn` bell visible in topbar
+- [PASS] `.notif-tray` opens on click
+- [PASS] 5 notification items present
+- [PASS] Notification item click works
+
+## Warehouse tab
+- [PASS] 6 `.bin-card` elements render (`.bin-grid` layout — not a table)
+- [PASS] 18 `.bin-fill-bar` capacity bars render
+- [PASS] Bin data content: BIN-A1 Active, corn, 62,400 bu, 62% (real seed data)
+
+## Documents tab
+- [PASS] 7 document list items render
+- [PASS] Search filter: works
+
+## Audit Log tab
+- [PASS] 11 timestamped entries with actor/role visible
+
+## Admin tab (Management only)
+- [PASS] Tab accessible only for Management role
+- [PASS] User/role management content renders
+
+## Mobile (375×812)
+- [PASS] Login screen renders correctly, 4 role cards
+- [PASS] Login works on mobile viewport
+- [PASS] No horizontal overflow (body scrollWidth 375px = viewport)
+- [PASS] No console errors
+
+## Backend / API
+- [PASS] Frontend-only: no calls to `api.michaelwegter.com` or any external API (confirmed via request monitor)
+- No Flask blueprint needed for this demo
+
+## Console errors (all roles)
+- [PASS] No console errors on any role across all tabs
+
+## Screenshots
+- `image-shots.mjs`: `/Users/michael_wegter@optum.com/Documents/projects/WegterProjects/upwork-agentic-workflow/upwork-runs/agripro/image-shots.mjs`
+- `image-shots/`: 116 PNGs covering 31 routes/states (all 4 roles, all tabs, search, filter, row detail, OCR area, notifications, export, mobile)
+
+### Routes/states covered by image-shots.mjs
+01_login_screen, 02_procurement_logged_in, 03_procurement_inspections,
+04_procurement_insp_search, 05_procurement_insp_filter, 06_procurement_insp_row_detail,
+07_procurement_insp_scrolled_ocr, 08_procurement_board, 09_procurement_dashboard,
+10_notifications_open, 11_procurement_warehouse, 12_procurement_documents,
+13_procurement_audit_log, 14_quality_logged_in, 15_quality_inspections,
+16_quality_dashboard, 17_quality_documents, 18_quality_audit_log,
+19_warehouse_logged_in, 20_warehouse_bins, 21_warehouse_inspections,
+22_warehouse_audit, 23_management_logged_in, 24_management_dashboard,
+25_management_admin, 26_management_procurement, 27_management_warehouse,
+28_management_audit, 29_mobile_login, 30_mobile_logged_in, 31_mobile_inspections
+(plus 85 supplementary shots from targeted passes)
+
+## Issues found
+None blocking. All features function correctly. Three test-script selector
+mismatches were investigated and ruled out as real bugs:
+- "Approval button on Procurement Board" — appears only after clicking a campaign
+  card (state-gated). Confirmed 3 approve buttons visible after card select.
+- "Warehouse bin rows" — rendered as `.bin-card` grid, not `<table>`. Confirmed 6 bin
+  cards with real data and 18 fill bars.
+- "Inspection detail panel" — inline conditional div (no separate class), confirmed
+  renders after row click (Close, Pipeline, crop/grade/cert fields all visible).
+
+## handoff
+- **Produced**: local Playwright test of all 4 roles, 7 tabs, all interactive controls; `image-shots.mjs` + 116 PNGs in `image-shots/`; `deploy-test.out` with full results
+- **Decisions**: Live URL unreachable (Zscaler); all verification local against build output; push-confirmed deploy treated as live
+- **Next needs**: image-analyzer runs `node image-shots.mjs` (server at `localhost:4030`) and inspects PNGs; proposal-writer uses demo URL `https://michaelwegter.com/demos/agripro/`
+- **Risks**: Tesseract WASM CDN load not tested locally (CDN unreachable in headless); seeded fallback data covers demo flow. OCR upload zone visible but WASM execution skipped in headless.
+- **Risks**: Inspections tab badge shows "2" in nav (anomaly count badge) — cosmetic, renders correctly.
+
+VERDICT: pass

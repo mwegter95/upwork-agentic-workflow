@@ -1,0 +1,286 @@
+# Research — AgriPro (Build-Prep Pass)
+## Context: plan is locked (plan-ceo.out: PASS). This pass covers scaffold pointer, pinned deps, Tesseract gotchas, sample mock data, and design confirmations only.
+
+---
+
+## 1. Scaffold Pointer
+
+**Clone from:** `upwork-runs/telehealthy/demo-src/`
+
+Closest structural match: sidebar nav + multi-panel tabbed layout, React 18 + Vite + Recharts, `src/App.jsx` routing by state, `src/styles/app.css` token approach, same `vite.config.js` pattern. No TypeScript (keeps file count down).
+
+Key changes from telehealthy scaffold:
+- Rename `src/styles/app.css` -> `src/styles/tokens.css` (plan calls for split)
+- Add `src/data/mockData.js` and `src/services/inspection.js` (new folders)
+- Replace sidebar items with: Inspections, Procurement, Dashboards, Documents, Warehouse, Audit Log
+- Add role-picker (RoleLogin.jsx) as a wrapper around App before nav is shown
+- Replace Google Font `Inter` -> `IBM Plex Sans + IBM Plex Mono` in `index.html`
+
+**vite.config.js template** (copy from telehealthy, change slug):
+```js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+export default defineConfig({
+  plugins: [react()],
+  base: '/demos/agripro/',
+  build: {
+    outDir: '../../../../michaelwegter.com/public/demos/agripro',
+    emptyOutDir: true,
+  },
+  optimizeDeps: { exclude: ['tesseract.js'] },  // REQUIRED: prevent Vite from pre-bundling WASM
+});
+```
+
+**index.html font link** (replace Inter):
+```html
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+```
+IBM Plex Sans and IBM Plex Mono are confirmed available on Google Fonts.
+
+---
+
+## 2. Pinned Dependencies (package.json)
+
+```json
+{
+  "dependencies": {
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tesseract.js": "7.0.0",
+    "jspdf": "4.2.1",
+    "xlsx": "0.18.5",
+    "recharts": "3.9.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.3",
+    "vite": "^8.1.0"
+  }
+}
+```
+
+**Hard constraint from plan-ceo.out:** `xlsx` MUST be pinned at exactly `0.18.5` (Apache-2.0 license). Do NOT `npm install xlsx` unpinned — the latest versions changed license terms.
+
+---
+
+## 3. Tesseract.js v7 — Integration Gotchas
+
+Tesseract.js v7 changed the worker API. Use this pattern in `src/services/inspection.js`:
+
+```js
+// LAZY LOAD pattern — import only when InspectionLab tab is opened, not at app startup
+async function runOCR(imageInput, onProgress) {
+  const { createWorker } = await import('tesseract.js');
+  const worker = await createWorker('eng', 1, {
+    // Explicit CDN paths prevent Vite asset bundling issues with WASM:
+    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/worker.min.js',
+    langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+    corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@latest/',
+    logger: m => { if (m.status === 'recognizing text') onProgress(Math.round(m.progress * 100)); }
+  });
+  const { data: { text } } = await worker.recognize(imageInput);
+  await worker.terminate();
+  return text;
+}
+```
+
+- `optimizeDeps: { exclude: ['tesseract.js'] }` in vite.config.js prevents pre-bundle failure on WASM
+- Progress bar: use `onProgress` callback to drive a `<progress value={pct} max={100}>` bar
+- **Fallback trigger:** if `runOCR` throws OR takes >8s (setTimeout race), resolve with `SAMPLE_OCR_TEXT` instead; do NOT dead-end
+
+---
+
+## 4. Sample OCR Text (Fallback + Seeded Records)
+
+### SAMPLE_OCR_TEXT (paste into `inspection.js` as the fallback constant):
+```
+GRAIN QUALITY CERTIFICATE
+Certificate No: GQC-2024-08471
+Date: October 15, 2024  Location: Decatur, Illinois
+Elevator: Central Grain Cooperative
+
+Commodity: Yellow Corn  Lot ID: CORN-IL-2024-1847
+Net Weight: 50,200 lbs
+
+QUALITY ANALYSIS
+Moisture Content: 14.2 %
+Test Weight: 55.8 lb/bu
+Total Damage: 3.1 %
+Heat Damaged: 0.4 %
+Foreign Material: 1.8 %
+Aflatoxin: 4.0 ppb
+Vomitoxin: 0.5 ppm
+BCFM: 2.3 %
+
+Grade: No. 2 Yellow Corn
+Inspected by: J. Williams  Lab Tech: M. Rodriguez
+```
+
+### Anomalous certificate (seed as a "flagged" pre-loaded record):
+```
+Moisture Content: 16.8 %   <- triggers WARN/REJECT
+Aflatoxin: 22.0 ppb        <- triggers REJECT
+Foreign Material: 3.6 %    <- triggers WARN
+```
+
+---
+
+## 5. Anomaly Detection Reference Bands (`inspection.js`)
+
+Rule-based. Compare extracted numeric values against these crop-specific thresholds:
+
+```js
+const REFERENCE_BANDS = {
+  corn: {
+    moisture:       { warn: 14.5, reject: 15.5, unit: '%',     dir: 'high' },
+    testWeight:     { warn: 54.5, reject: 53.0, unit: 'lb/bu', dir: 'low'  },
+    aflatoxin:      { warn: 5.0,  reject: 15.0, unit: 'ppb',   dir: 'high' },
+    foreignMatter:  { warn: 1.5,  reject: 3.0,  unit: '%',     dir: 'high' },
+    totalDamage:    { warn: 3.0,  reject: 5.0,  unit: '%',     dir: 'high' },
+  },
+  soybeans: {
+    moisture:       { warn: 13.0, reject: 14.0, unit: '%',     dir: 'high' },
+    testWeight:     { warn: 54.0, reject: 52.0, unit: 'lb/bu', dir: 'low'  },
+    foreignMaterial:{ warn: 1.5,  reject: 3.0,  unit: '%',     dir: 'high' },
+    totalDamage:    { warn: 2.5,  reject: 4.0,  unit: '%',     dir: 'high' },
+  },
+  wheat: {
+    moisture:       { warn: 13.5, reject: 14.5, unit: '%',     dir: 'high' },
+    testWeight:     { warn: 57.0, reject: 55.0, unit: 'lb/bu', dir: 'low'  },
+    foreignMaterial:{ warn: 1.0,  reject: 2.0,  unit: '%',     dir: 'high' },
+  },
+};
+```
+
+Severity logic: if `dir: 'high'` and `value >= reject` -> severity `reject`; `>= warn` -> severity `warn`. If `dir: 'low'` invert.
+
+---
+
+## 6. Document Classifier Keywords (`inspection.js`)
+
+```js
+const DOC_TYPES = [
+  { label: 'Grade Certificate',    keywords: ['grade', 'grading', 'usda', 'no. 2', 'no. 1', 'sample grade'] },
+  { label: 'Moisture Report',      keywords: ['moisture', 'percent moisture', 'moisture content'] },
+  { label: 'Aflatoxin Screen',     keywords: ['aflatoxin', 'mycotoxin', 'ppb', 'afla'] },
+  { label: 'Foreign Material Cert',keywords: ['foreign material', 'foreign matter', 'bcfm'] },
+  { label: 'Weight Certificate',   keywords: ['net weight', 'gross weight', 'scale ticket', 'bushels'] },
+  { label: 'Lab Analysis',         keywords: ['vomitoxin', 'don', 'protein', 'oil', 'starch', 'test weight'] },
+];
+// Fallback: 'Inspection Document'
+```
+
+Heuristic: normalize text to lowercase, count keyword hits per type, return label with highest count (>0), else fallback.
+
+---
+
+## 7. Seeded Mock Data Shape (`mockData.js`)
+
+### Campaigns (5 seeded):
+```js
+{ id: 'CAM-001', name: 'Iowa Corn Harvest Q4', crop: 'corn', state: 'IA',
+  targetVolume: 500000, procuredVolume: 312000, status: 'active',
+  startDate: '2024-09-01', manager: 'Sarah Chen', inspectionCount: 24, pendingApprovals: 3 }
+// Add: IL soybeans (active), KS wheat (review), NE corn (completed), MN soybeans (draft)
+```
+
+### Inspections (8 seeded, varied stages):
+```js
+{ id: 'INS-2024-001', campaignId: 'CAM-001', crop: 'corn', state: 'IA',
+  lotId: 'CORN-IA-0847', fieldTeam: 'J. Williams', location: 'Ames, IA',
+  stage: 'lab_review',   // Draft|field_inspection|lab_review|quality_approval|procurement_approval|warehouse_allocation
+  moisture: 14.2, testWeight: 55.8, aflatoxin: 4.0, foreignMatter: 1.8, totalDamage: 3.1,
+  anomalyFlags: [],  // [{field, value, severity, message}]
+  docType: 'Grade Certificate', certNo: 'GQC-2024-08471',
+  submittedAt: '2024-10-15T09:22:00Z', volume: 12400 }
+// Include 1 flagged record with anomalyFlags populated (moisture 16.8, aflatoxin 22.0)
+// Include records at each stage for pipeline demo
+```
+
+### Warehouse Bins (6 seeded):
+```js
+{ binId: 'BIN-A1', commodity: 'corn', maxCapacity: 100000, allocated: 62400,
+  lotIds: ['CORN-IA-0847', 'CORN-IL-0321'], status: 'active', location: 'Decatur, IL' }
+```
+
+### Audit Log (10 seeded + session-appended):
+```js
+{ id: 'AUD-001', actor: 'Sarah Chen', role: 'procurement', action: 'Stage Advanced',
+  record: 'INS-2024-001', detail: 'Field Inspection -> Lab Review',
+  timestamp: '2024-10-15T10:44:22Z' }
+```
+
+### Notifications (5 seeded):
+```js
+{ id: 'N001', type: 'anomaly', message: 'Aflatoxin reading 22.0 ppb on CORN-NE-0991 exceeds reject threshold',
+  relatedId: 'INS-2024-007', read: false, createdAt: '2024-10-15T08:11:00Z' }
+```
+
+---
+
+## 8. Role Definitions (mockData.js)
+
+```js
+const ROLES = [
+  { id: 'procurement', label: 'Procurement',  color: '#1D4ED8', navTabs: ['inspections','procurement','documents','audit'] },
+  { id: 'quality',     label: 'Quality / Lab', color: '#15803D', navTabs: ['inspections','documents','audit'] },
+  { id: 'warehouse',   label: 'Warehouse',     color: '#B5651D', navTabs: ['warehouse','inspections','audit'] },
+  { id: 'management',  label: 'Management',    color: '#1B4332', navTabs: ['dashboards','procurement','warehouse','audit','admin'] },
+];
+```
+
+---
+
+## 9. jsPDF + SheetJS Export Patterns
+
+**jsPDF (4.2.1):**
+```js
+import jsPDF from 'jspdf';
+const doc = new jsPDF({ orientation: 'landscape' });
+doc.setFontSize(14);
+doc.text('AgriPro — Dashboard Export', 14, 15);
+// autoTable not needed: use manual doc.text() in a loop for data rows
+doc.save('agripro-export.pdf');
+```
+
+**SheetJS (0.18.5 Apache-2.0):**
+```js
+import * as XLSX from 'xlsx';
+const ws = XLSX.utils.json_to_sheet(dataArray);
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, 'Report');
+XLSX.writeFile(wb, 'agripro-export.xlsx');
+```
+
+No autotable plugin needed for jsPDF; manual text loop stays under the file budget and avoids an extra dep.
+
+---
+
+## 10. Recharts Chart Types by Role Dashboard
+
+- Procurement: `<BarChart>` campaign volume procured vs target (one bar per campaign)
+- Quality: `<PieChart>` inspection status distribution (Pass/Warn/Reject/Pending)
+- Warehouse: `<BarChart>` bin fill rates (stacked: allocated vs capacity)
+- Management: `<LineChart>` weekly inspection throughput trend + `<BarChart>` anomaly rate by crop
+
+All Recharts components available in 3.9.0; no breaking changes from 2.x that affect these chart types.
+
+---
+
+## 11. Mobile Layout Notes (R13 hard requirement)
+
+At `<768px`:
+- Sidebar becomes bottom tab nav (5 icons, labels below)
+- Main content: single column, stacked cards
+- Inspection form: inputs stack full-width
+- Pipeline bar: horizontal scroll or compact step dots
+- OCR upload zone: full-width dropzone with large tap target
+
+Test on `--width=390 --height=844` (iPhone 14) viewport in local Playwright pass.
+
+---
+
+## handoff
+- **Produced:** `researcher.out` with scaffold pointer (clone telehealthy demo-src), pinned deps, Tesseract.js v7 integration pattern (lazy import + CDN paths + `optimizeDeps.exclude`), sample OCR fallback text, anomaly reference bands, classifier keywords, mock data shape, and export snippets.
+- **Decisions:** Scaffold = telehealthy demo-src; no mw-backend; all AI runs client-side; xlsx pinned 0.18.5; Tesseract CDN paths used to avoid WASM bundling.
+- **Next needs:** demo-builder creates `upwork-runs/agripro/demo-src/` cloning telehealthy structure; applies all plan-ceo elevations (app-wide audit wiring, warehouse action, admin user-mgmt surface, Tesseract progress + fallback).
+- **Risks:** Tesseract WASM cold load >8s on first use (mitigated by CDN paths + fallback race); `xlsx@0.18.5` import in ESM context needs `import * as XLSX` not default import.

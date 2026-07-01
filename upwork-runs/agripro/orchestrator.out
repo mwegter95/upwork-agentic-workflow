@@ -1,0 +1,43 @@
+SLUG: agripro
+
+# Orchestrator — AgriPro run setup
+
+## Identity
+- slug: `agripro`
+- run dir: `upwork-runs/agripro/`
+- demo path: `../michaelwegter.com/public/demos/agripro/` -> live `/demos/agripro/`, framed at `/work-samples/agripro`
+- feature richness: 10/10 (genuinely full-featured, production-quality, several real working features)
+
+## Startup brief (what the client wants)
+Client "AgriPro" runs an established **agricultural procurement business across multiple states**. They coordinate field inspections, lab testing/quality grading, procurement approvals, and warehouse logistics, today via spreadsheets, email, and manual reporting. They want one **internal, role-based operations platform** (NOT customer-facing) that centralizes procurement campaigns, inspection workflows, lab grading, multi-stage approvals, warehouse allocation, documents, dashboards, reporting (PDF/Excel), notifications, and audit logs, with AI layered on top: **OCR of lab certificates, document classification, and anomaly detection** on inspection values. It matters because manual spreadsheet ops do not scale across states/teams and create slow approvals, lost documents, and unflagged data errors that cost money on commodity buys.
+
+## Demo concept (recommendation to planner)
+A single, cohesive **"AgriPro Operations Console"** web app that shows the internal platform working end to end on realistic mock agri-procurement data. Most impressive thing to show: **the AI inspection layer** — drop a lab certificate (image/PDF) and watch OCR extract grading fields, the document auto-classify (e.g. "Moisture Report" vs "Grade Certificate"), values populate the inspection record, and an **anomaly detector flag** unusual readings (moisture/foreign-matter/aflatoxin out of band) for review. Wrap that hero in a believable ops suite: role-aware login (procurement / quality / warehouse / manager), a procurement-campaign board, a field-inspection workflow that moves through a **multi-stage approval pipeline**, lab grading entry, warehouse allocation/tracking, document library, global search + advanced filters, role-specific dashboards, PDF/Excel export, a notifications tray, and an audit-log view. The combination of a real operations spine + visible working AI is what proves AgriPro the developer can build "AI-powered solutions that solve real business problems."
+
+## Prototype vs full decision
+**Build FULL (richness 10).** Heavy app, so plan must pick ONE hero (the AI inspection/OCR/anomaly flow) and ≤2 supporting pillars (procurement+approval workflow board; role dashboards w/ reporting export). Everything else (warehouse, search/filter, audit log, notifications, document library) is rendered convincingly on seeded mock data so the scope reads as "full platform" without unbounded build. **AI must run honestly client-side or via a thin Flask blueprint** — do NOT promise real cloud OCR. Default: in-browser OCR (e.g. Tesseract.js / WASM) + deterministic rule/stat-based anomaly detection + keyword/heuristic classifier, all with seeded fallback samples so the demo never dead-ends. mw-backend blueprint is OPTIONAL (e.g. persist inspections / serve anomaly scoring); only add if planner wants persistence — Zscaler here means validate any blueprint locally and deploy blind.
+
+## Design direction (for planner to finalize)
+NOT michaelwegter.com's look. Target a **serious agri-industrial SaaS** aesthetic: trustworthy, data-dense, field-ready. Earthy-but-modern palette (deep agronomy green + grain/amber accent + slate neutrals + clear status colors for pass/flag/reject), a clean operational UI font (e.g. Inter / IBM Plex Sans + a tabular numeric face for grading values), dense tables, status chips, stage pipelines, map/warehouse bin visuals. Must be **mobile-responsive** (field teams on phones) — show a responsive inspection-capture view. Researcher to pull real agri-procurement / commodity-grading / inspection-SaaS conventions (e.g. AgriDigital, Cropin, Bushel, grain grading sheets); planner locks palette/fonts/hex.
+
+## Key constraints / red flags
+- **Internal ops tool, not customer-facing** — design for power users and density, not marketing polish.
+- **Multi-state, multi-role** — RBAC is core; every dashboard/view must read as role-scoped (procurement, quality/lab, warehouse, management/admin).
+- **AI claims must be demonstrably real, not faked screenshots** — OCR/classification/anomaly must actually run on the sample docs in-browser (with seeded fallback), or the credibility hook fails.
+- **Huge feature list** — risk of shallow-everything. Enforce caps: 1 hero + ≤2 supporting pillars built deep; remainder believable on mock data. Watch the ≤12 demo-file / 3-min build budget.
+- No budget/timeline stated; treat as a substantial custom build and let proposal frame phasing (MVP spine -> AI layer -> hardening/deploy support).
+- Deliverables expect production polish, admin portal, docs, testing, deployment + post-launch support — proposal must speak to maintainability, clean code, and stabilization, not just the demo.
+- Environment: verify the demo locally (build + localhost Playwright), deploy is fire-and-trust via git push; no live-URL/API verification possible here.
+
+## Quality + naming guidance for downstream
+- **intake:** parse the posting into brief.json; capture EVERY explicit requirement precisely/verbatim-ish as gradable items — all 18 "should include" features (auth+RBAC, procurement campaigns, field inspection, lab testing/grading, multi-stage approvals, warehouse allocation/tracking, file/doc mgmt, search+advanced filtering, role dashboards, PDF+Excel reporting, notifications/reminders, audit logs, mobile-responsive, OCR, doc classification, anomaly detection) AND the 7 deliverables (prod-ready app, clean source, admin portal, technical docs, testing, deployment support, post-launch support). Note "internal/not customer-facing" and "multi-state, multi-role" as cross-cutting constraints.
+- **planner:** lock hero = AI inspection layer (OCR + classify + anomaly); supporting (≤2) = procurement+multi-stage-approval workflow board, role dashboards w/ PDF/Excel export; fold warehouse, search/filter, docs, notifications, audit log into those views on mock data. Decide frontend-only vs thin Flask blueprint. Lock bespoke agri-SaaS design system. Build a requirement->feature traceability matrix covering all 18 features + 7 deliverables.
+- **researcher:** in-browser OCR option (Tesseract.js/WASM) + suitable approach for classification/anomaly that runs client-side; real agri-procurement/grading inspection-SaaS UX conventions; clone target = `src/data/apps.js` + `AppFrame.jsx` mechanics; ≤6 fetches.
+- **demo-builder:** implement in `public/demos/agripro/`, use slug `agripro` for the demo folder; register in `workSamples.js` (tags reflect real stack + Dashboard/CRM/Full-Stack/OCR/AI descriptors); add navbar "Work Samples" link if missing; ensure no console errors on first paint and a seeded fallback for the AI flow so first paint never waits on a model/library download.
+
+## handoff
+- produced: run identity (slug `agripro`), startup brief, demo concept, full-build decision, bespoke design direction, downstream quality/naming guidance, risk list.
+- decisions: slug `agripro`; richness 10 FULL; hero = AI inspection layer (in-browser OCR + classification + anomaly detection); ≤2 supporting pillars (procurement/multi-stage approval board, role dashboards + PDF/Excel export); rest believable on seeded mock data.
+- next needs: intake to extract all 18 features + 7 deliverables as gradable requirements; planner to lock hero/supporting split, traceability matrix, and final palette/fonts; researcher to confirm client-side OCR/anomaly libs + agri-SaaS visual conventions.
+- risks: shallow-everything across a huge feature list; AI must actually run on samples (not faked); RBAC/role-scoping must read clearly; first-paint console-clean with seeded fallback; deploy is blind (verify locally only).
+- env: build + QA on localhost; git push = deploy (fire-and-trust); no live site/API/Surface from this machine; any backend = committed Flask blueprint or mock data only.

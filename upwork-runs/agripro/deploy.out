@@ -1,0 +1,26 @@
+# Deploy — AgriPro
+
+## Frontend push
+- Commit: `14f3591` — "feat(agripro): add AgriPro Operations Console demo"
+- Files staged: `public/demos/agripro/` (9 files), `public/work-samples/agripro.png`, `src/data/workSamples.js`, `package-lock.json`
+- Push: `92d4d63..14f3591 main -> main` — EXIT 0
+- Remote SHA confirmed via GitHub API: `14f3591d00f3` (matches local)
+- Live URL: `https://michaelwegter.com/demos/agripro/` (GitHub Pages build ~1-2 min; unverifiable from Zscaler environment — fire-and-trust)
+- Work sample card: `https://michaelwegter.com/work-samples/agripro` (SPA deep link via 404.html shim; 200 not expected from curl — browser-resolved)
+
+## Backend push
+- Not applicable. This run is frontend-only (client-side Tesseract.js, no mw-backend blueprint added).
+
+## Live verification
+- Push confirmed on GitHub remote (API-verified SHA match). GitHub Pages deploy trusted; live URL cannot be polled from this Zscaler environment.
+- No Flask/backend verification required.
+
+## Summary
+Frontend commit `14f3591` pushed to `main` on `mwegter95/michaelwegter.com`. Remote SHA confirmed. GitHub Pages auto-deploy triggered; live at `https://michaelwegter.com/demos/agripro/` within ~1-2 min. No backend changes. Deploy complete.
+
+## handoff
+- **Produced**: commit `14f3591` pushed; `michaelwegter.com` main at `14f3591d00f3` (API-verified). Demo URL: `https://michaelwegter.com/demos/agripro/`.
+- **Decisions**: frontend-only push; no mw-backend commit needed. Git push used `http.version=HTTP/1.1` to avoid Zscaler HTTPS multiplexing hang.
+- **Next needs**: proposal-writer uses demo URL `https://michaelwegter.com/demos/agripro/` in cover letter and deck; must cover D4-D7 (docs, testing, deployment, post-launch support) at proposal level.
+- **Risks**: Live URL unverifiable from this env (expected/accepted). Tesseract WASM loads from CDN at runtime; seeded fallback covers slow CDN. 
+- **Risks**: git push over HTTPS hung on default HTTP/2; workaround (`http.version=HTTP/1.1`) required — may need to be baked into repo config.

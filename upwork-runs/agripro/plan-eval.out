@@ -1,0 +1,94 @@
+# Plan Eval — AgriPro
+
+## Rubric Scoring
+
+### 1. Requirement Coverage (H1 proxy at plan stage)
+
+All 23 brief requirements traced:
+
+| ID | Requirement | Plan Treatment | Status |
+|----|-------------|----------------|--------|
+| R1 | RBAC / secure auth | Role picker gates views and actions | demo feature |
+| R2 | Procurement campaign mgmt | Kanban campaign board (ProcurementBoard.jsx) | demo feature |
+| R3 | Field inspection workflows | Inspection records in 6-stage pipeline | demo feature |
+| R4 | Lab testing / quality grading | OCR-populated grading table | demo feature |
+| R5 | Multi-stage approval workflows | 6-stage bar: Draft→Field→Lab→QA→Procurement→Warehouse | demo feature |
+| R6 | Warehouse allocation/tracking | Seeded allocation grid (lot/bin/commodity/status) | convincing mock |
+| R7 | File/document management | Seeded document library with status badges | convincing mock |
+| R8 | Search and advanced filtering | Client-side in-memory filter bar | convincing mock |
+| R9 | Role dashboards | 4 role-specific KPI + Recharts views | demo feature |
+| R10 | PDF/Excel reporting | jsPDF + SheetJS export on dashboard | demo feature |
+| R11 | Notifications/reminders | Seeded alert tray + mark-read | convincing mock |
+| R12 | Audit logs | Seeded event table + session append | convincing mock |
+| R13 | Mobile-responsive (field) | <768px bottom tab nav + stacked cards | demo feature |
+| R14 | OCR for lab certs | Tesseract.js WASM in-browser | demo feature |
+| R15 | Intelligent doc classification | Keyword heuristic on OCR text | demo feature |
+| R16 | Anomaly detection | Rule-based crop-specific reference bands | demo feature |
+| D1 | Production-ready app | Phased delivery plan in proposal | narrative |
+| D2 | Clean source code | Component decomp, ESLint/Prettier, typed interfaces | narrative |
+| D3 | Admin portal | Management dashboard in demo; full portal = Milestone 3 | partial demo + narrative |
+| D4 | Technical documentation | API docs, data model diagrams, runbook per milestone | narrative |
+| D5 | Testing | Vitest (unit: anomaly/classifier) + Playwright (E2E: approval flows) | defined |
+| D6 | Deployment support | Docker + Nginx, CI/CD, env config | narrative |
+| D7 | Post-launch support | 30-day stabilization, SLA, knowledge transfer | narrative |
+
+**Coverage: 16/16 feature reqs mapped; 7/7 deliverables addressed. PASS.**
+
+Note on D3 (Admin portal): treatment is thin for a deliverable listed alongside "Production-ready web application." The plan defers the full admin portal to Milestone 3 while showing only the Management role view in the demo. Acceptable for proposal — the demo cannot stand up a real admin portal client-side — but the cover letter must explicitly name admin portal as a deliverable and tie it to the full build.
+
+### 2. Technology Choices
+
+| Choice | Rationale | Assessment |
+|--------|-----------|------------|
+| Vite + React 18 | Fast SPA, no backend needed | Correct |
+| Tesseract.js | In-browser OCR WASM, no API key, honest AI | Correct |
+| jsPDF | Client-side PDF, zero server dep | Correct |
+| SheetJS xlsx@0.18.5 | Apache-2.0 license; plan should pin to this version | Correct (with pin) |
+| Recharts | React-native charts, lightweight | Correct |
+| IBM Plex Sans/Mono (Google Fonts) | Professional, data-dense, distinct from portfolio | Correct |
+
+No overengineered choices; no missing technology for any stated demo feature. **PASS.**
+
+### 3. Testing Approach
+
+Explicitly defined in D5 row: Vitest for unit tests on anomaly detection and classifier logic (the highest-risk pure-logic code), Playwright for E2E on the approval flow state machine. Appropriate scope for a demo build. **PASS.**
+
+### 4. Scope Feasibility at 10/10
+
+- 12 source files for 11 real demo features is tight but the plan enumerates exactly which files carry which features. No handwave.
+- 5 requirements (R6-R8, R11-R12) are convincing mocks on seeded data — appropriate; real implementations of warehouse simulation, WebSocket notifications, server-side search, and persistent audit logs cannot run in a static demo. The demo correctly shows the UI concept.
+- OCR (Tesseract.js WASM) is the main runtime risk; mitigation specified (lazy-load on tab open + progress bar). Feasible.
+- Admin portal treated as narrative only in demo is the one scope compromise, but it is appropriate and disclosed.
+- **PASS.**
+
+### 5. Design Direction (Industry Fit)
+
+Palette: warm parchment bg (#F5F2EC), deep forest green nav (#0F2A1A), earth amber accents (#B5651D), strong blue CTAs (#1D4ED8), status greens/ambers/reds. Reads as agri-industrial SaaS, not generic or portfolio-like.
+
+Layout: Dense sidebar-nav + data tables + sticky headers + collapsible details panel. Correct for a power-user internal ops tool. Mobile breakpoint with bottom tab nav addresses field team use case explicitly.
+
+Typography: IBM Plex Sans/Mono distinct from michaelwegter.com's Inter. Mono on numeric columns is a domain-appropriate detail that signals familiarity with commodity grading data. **PASS.**
+
+---
+
+## Issues
+
+1. **D3 (Admin portal) is thin.** Demo shows only Management role dashboard. Cover letter and proposal narrative must explicitly call out admin portal as a named full-build deliverable; do not let it appear absent.
+2. **SheetJS license: pin `xlsx@0.18.5`** (Apache-2.0). Newer versions use a non-OSS license. Demo-builder must not `npm install xlsx` without the version pin.
+3. **Em/en dashes in plan.md** are present but plan.md is internal. Cover letter, one-pager, and deck must contain none. Flag for proposal-writer.
+4. **Researcher.out was a stub.** No actual competitive research data. The plan substituted orchestrator.out references (AgriDigital, Cropin, Bushel). Acceptable; competitive context is adequate for a proposal this technically focused.
+5. **Tesseract.js WASM cold-load.** Real latency concern on first use; progress indicator is required, not optional.
+
+None of these are blocking issues. All are mitigable by downstream agents with explicit handoff notes.
+
+---
+
+## handoff
+
+- **Produced:** `plan-eval.out` — plan scores PASS on all five rubric dimensions
+- **Decisions:** VERDICT pass; proceed to CEO review; no plan rework needed
+- **Next needs:** CEO / proposal-writer must (a) explicitly name admin portal (D3) as a full-build deliverable in cover letter, (b) avoid em/en dashes in all output, (c) demo-builder must pin `xlsx@0.18.5`
+- **Risks:** Tesseract.js WASM load latency (mitigate: lazy-load + progress bar mandatory); SheetJS version pin (mitigate: `xlsx@0.18.5`)
+- **Constraint:** Researcher stub is non-blocking; orchestrator.out competitive context is sufficient
+
+VERDICT: pass

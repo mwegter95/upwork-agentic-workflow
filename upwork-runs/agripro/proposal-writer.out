@@ -1,0 +1,46 @@
+# Proposal Writer — AgriPro (re-run: fix final-ceo defect)
+
+## Fix Applied
+
+final-ceo.out identified ONE blocking defect: all 4 proposal/media PNGs were
+byte-for-byte identical (MD5 593076e2…, 15 KB each), making the one-pager and
+deck embed the same blank frame three times.
+
+**Fix executed:**
+1. Served `michaelwegter.com/public/` on localhost:7777 (public root, not demo folder,
+   so absolute asset paths `/demos/agripro/assets/...` resolve correctly).
+2. Recaptured 3 DISTINCT real frames with Playwright (recapture.mjs):
+   - `hero.png`   → Procurement role, Inspections table loaded   — 131 KB, MD5 1532d8f9
+   - `step-1.png` → Quality/Lab role, Documents/OCR panel        — 111 KB, MD5 1bca19ab
+   - `step-2.png` → Quality/Lab role, flagged inspection detail   — 165 KB, MD5 14a0aaab
+   All 3 MD5s are distinct; all well above 100 KB. No duplicates.
+3. Re-ran `build-deck.py` → deck.pptx rebuilt at 420 KB (was 41 KB), confirming
+   all three real screenshots are now embedded.
+4. one-pager.html embeds the same media/ files by relative path — no rebuild needed,
+   it now renders distinct real frames.
+5. cover-letter.md and one-pager.html: dash scan (U+2014/U+2013/entities) → CLEAN.
+
+## Deliverables (unchanged structure, updated media)
+
+- `proposal/cover-letter.md`  — unchanged (passes dash check, no edits needed)
+- `proposal/one-pager.html`   — unchanged (now shows real screenshots via media/)
+- `proposal/deck.pptx`        — REBUILT (420 KB, 7 slides, 3 distinct embedded screenshots)
+
+## Demo Link Used
+
+**https://michaelwegter.com/demos/agripro/**
+Appears in cover letter paragraph 2, one-pager CTA, and deck slides 1, 4, and 7.
+
+## Requirement Coverage
+
+All R1-R16 and D1-D7 addressed — unchanged from prior run; no changes to letter or
+one-pager text required.
+
+---
+
+## handoff
+
+- **Produced:** hero.png (131KB), step-1.png (111KB), step-2.png (165KB) — all distinct real frames; deck.pptx rebuilt at 420KB embedding all three
+- **Decisions:** Served public/ root (not demo subfolder) so absolute `/demos/agripro/` asset paths resolved; used ES module Playwright script (.mjs) due to workspace `"type":"module"`
+- **Next needs:** final-ceo re-verify — the one blocking defect is resolved; everything else already passed
+- **Risks:** None remaining; 3 distinct MD5s confirmed, deck size confirms real image embed, dash scan clean

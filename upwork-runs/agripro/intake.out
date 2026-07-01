@@ -1,0 +1,25 @@
+# Intake — AgriPro brief extracted
+
+**Title:** AI-Powered Internal Operations Platform for Agricultural Procurement
+
+**Explicit Requirements:** 23 items total:
+- 16 feature requirements (R1-R16): auth/RBAC, procurement campaigns, field inspection, lab grading, multi-stage approvals, warehouse allocation, file/doc mgmt, search/filtering, role dashboards, PDF/Excel reporting, notifications, audit logs, mobile-responsive, OCR, document classification, anomaly detection
+- 7 deliverables (D1-D7): production app, clean code, admin portal, technical docs, testing, deployment support, post-launch support
+
+**Implicit needs:** Scalability across states, compliance/audit trail, data density, mobile UX for field teams, honest AI as operational decision support (not cosmetic)
+
+**Red flags:** No budget/timeline stated (high-scope custom build); 18+7 feature list creates scope creep risk; AI claims must run honestly (not faked); internal ops tool requires power-user density + mobile field capability
+
+**Recommended demo concept:** AgriPro Operations Console (D1 — hero OCR + anomaly detection on lab certificates, wrapped in full ops spine: campaign board, multi-stage approvals, role dashboards, reporting export). Frontend-only with seeded data; if planner wants backend persistence, Flask blueprint optional (validate locally, deploy blind due to Zscaler).
+
+**Design direction:** Serious agri-industrial SaaS aesthetic (deep green + amber + slate, dense tables, status pipelines, field-ready mobile responsive), not michaelwegter.com look. Researcher to pull AgriDigital/Cropin/Bushel conventions.
+
+**Demo scope guidance:** 1 hero (AI inspection layer) + 2 supporting pillars (procurement+approval board; role dashboards + export) built deep; remainder (warehouse, search, audit log, notifications) rendered convincingly on mock data to read as "full platform" within ≤12-file / 3-min-build cap.
+
+## handoff
+
+- **Produced:** brief.json with 23 explicit requirements (16 features + 7 deliverables), 3 demo concepts, explicit risk flags
+- **Decisions:** Hero = AI inspection layer (OCR + anomaly detection); design ≠ michaelwegter.com; backend optional (validate locally if added)
+- **Next needs:** Planner to lock hero/pillars, design palette/fonts, and seal the ~10/10 feature richness commitment; researcher to pull agri-SaaS conventions
+- **Risks:** Scope (18+7 items into 3-min build); AI credibility (must run honestly); no timeline/budget stated (treat as substantial custom build; proposal frames phasing)
+- **Constraints:** Zscaler env: verify locally, deploy blind; no live URL verification possible

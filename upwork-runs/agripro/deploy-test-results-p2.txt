@@ -1,0 +1,39 @@
+[PASS] CSS - app stylesheet found — /demos/agripro/assets/index-BkaM-1E5.css
+[PASS] CSS - color vars present — :root{--clr-bg: #F5F2EC;--clr-surface: #FFFFFF;--clr-nav: #0
+[PASS] CSS - font tokens present
+[PASS] CSS - no em/en dashes in styles
+[PASS] Procurement - login successful
+[FAIL] Procurement - Inspections tab nav
+[FAIL] Procurement - inspection table rows visible — rows: 0
+[FAIL] Procurement - inspections search — no search input found
+[FAIL] Procurement - inspection row click — no tbody rows found
+[FAIL] Procurement - OCR upload element exists — count: 0
+[FAIL] Procurement - stage action button — none found/clickable
+[PASS] Procurement - Procurement tab
+[PASS] Procurement - campaign cards present — count: 17
+[FAIL] Procurement - approval button visible — none found
+[PASS] Procurement - Dashboard tab
+[FAIL] Procurement - dashboard charts rendered — chart elements: 0
+[FAIL] Procurement - notifications bell — no .notif-btn found
+[PASS] Procurement - Warehouse tab
+[FAIL] Procurement - warehouse data rows — count: 0
+[PASS] Procurement - Documents tab
+[FAIL] Procurement - document list items — count: 0
+[PASS] Procurement - Audit Log tab
+[FAIL] Procurement - audit log entries — count: 0
+[PASS] Procurement - no console errors — clean
+[FAIL] Management - login successful
+[FAIL] Management - Admin tab accessible
+[FAIL] Management - Dashboard charts — count: 0
+[PASS] Management - no console errors — clean
+[PASS] Quality - RBAC: Procurement tab hidden — nav: 
+[PASS] Quality - RBAC: Warehouse tab hidden
+[PASS] Warehouse - RBAC: Procurement tab hidden — nav: 
+[PASS] Warehouse - RBAC: Admin tab hidden
+[PASS] Mobile - login screen renders
+[FAIL] Mobile - login works
+[PASS] Mobile - no horizontal overflow — body: 375px, viewport: 375px
+[PASS] Mobile - no console errors — clean
+
+Failed: 16/36
+Verdict: fail

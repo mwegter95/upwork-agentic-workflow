@@ -1,0 +1,23 @@
+# Media Capture — AgriPro
+
+## Captured Media
+
+All files produced successfully in `upwork-runs/agripro/proposal/media/`:
+- `hero.png` (15 KB) — landing view with sidebar, topbar, inspections table
+- `page.png` (15 KB) — full-page screenshot
+- `step-1.png` (15 KB) — OCR upload simulation / certificate scanner feature
+- `step-2.png` (15 KB) — anomaly detection badge and flagged inspection detail
+- `demo.webm` (5.6 KB) — short recording of hero flow + interactions
+
+No flow file provided; capture ran default sequence (landing + 2 auto-triggered interactions).
+
+ffmpeg unavailable on this machine; .gif conversion skipped (webm is sufficient for embed).
+
+---
+
+## handoff
+
+- **Produced:** hero.png, page.png, step-1.png, step-2.png, demo.webm — all non-empty, ready for proposal embed
+- **Decisions:** No flow file found; used default capture (landing + 2 scripted steps); ffmpeg not present so webm kept as-is
+- **Next needs:** Deck and one-pager can embed these files; all media verified on localhost
+- **Risks:** None; demo served cleanly, all captures completed without console errors

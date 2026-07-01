@@ -1,0 +1,65 @@
+[PASS] CSS: app stylesheet found — /demos/agripro/assets/index-BkaM-1E5.css
+[PASS] CSS: color vars (--clr-)
+[PASS] CSS: IBM Plex font ref
+[PASS] CSS: no em/en dashes
+[PASS] CSS: agri palette (#F5F2EC / #0D3B2B)
+[PASS] Login: page loads (HTTP 200)
+[PASS] Login: 4 role cards — found 4
+[PASS] Login: no console errors on load
+[PASS] Login: no infinite request loops
+[PASS] Procurement: login (.role-card click)
+[PASS] Procurement: nav sidebar rendered — 6 nav items
+[PASS] Procurement: correct tabs (Inspections, Procurement, Dashboards)
+[PASS] Inspections: data table renders
+[PASS] Inspections: data rows present — 8 rows
+[PASS] Inspections: search filters rows — 5 rows for "corn"
+[PASS] Inspections: stage filter dropdown works
+[PASS] Inspections: row click
+[PASS] Inspections: stage advance button clickable — "approve & advance"
+[PASS] Inspections: OCR upload zone visible
+[PASS] Inspections: anomaly flags rendered — 2 elements
+[PASS] Inspections: pipeline stage bars — 7 bars
+[PASS] Procurement tab: loads
+[PASS] Procurement tab: campaign cards present — 5 elements
+[FAIL] Procurement tab: approval button — none found
+[PASS] Dashboard tab: loads
+[PASS] Dashboard: charts (SVG) rendered — 3 SVG elements
+[PASS] Dashboard: KPI cards — 13 elements
+[PASS] Dashboard: PDF export button clicked
+[PASS] Dashboard: Excel export button clicked
+[PASS] Notifications: tray opens
+[PASS] Notifications: items present — 5 items
+[PASS] Notifications: item click works
+[PASS] Warehouse tab: loads
+[FAIL] Warehouse: bin rows in table — 0 rows
+[FAIL] Warehouse: capacity/progress bars — 0 bars
+[PASS] Documents tab: loads
+[PASS] Documents: list items — 7 items
+[PASS] Documents: search filter works
+[PASS] Audit Log tab: loads
+[PASS] Audit Log: entries present — 11 entries
+[PASS] Procurement: no console errors — clean
+[PASS] Management: login
+[PASS] Management: Admin tab in nav
+[PASS] Management: Inspections tab in nav
+[PASS] Management: Admin tab navigates
+[PASS] Management: Admin content renders
+[PASS] Management: Dashboard charts — 3 SVG
+[PASS] Management: no console errors — clean
+[PASS] Quality RBAC: Procurement tab hidden — nav: 🔬Inspections2, 📊Dashboards, 📁Documents, 📋Audit Log
+[PASS] Quality RBAC: Warehouse tab hidden
+[PASS] Quality RBAC: Admin tab hidden
+[PASS] Quality RBAC: Inspections tab shown
+[PASS] Quality: Inspections content loads
+[PASS] Warehouse RBAC: Procurement tab hidden
+[PASS] Warehouse RBAC: Admin tab hidden
+[PASS] Warehouse RBAC: Warehouse tab shown
+[FAIL] Warehouse: bin table rows — 0 rows
+[PASS] Mobile: login screen renders — 4 role cards
+[PASS] Mobile: login works
+[PASS] Mobile: no horizontal overflow — body scrollWidth: 375px
+[PASS] Mobile: no console errors — clean
+[PASS] Backend: no external API calls (frontend-only) — clean
+
+Failed: 4/62
+Overall: fail

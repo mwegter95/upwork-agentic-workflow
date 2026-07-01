@@ -1,0 +1,16 @@
+import { chromium } from 'playwright';
+const url = 'http://localhost:7799/demos/agripro/';
+const b = await chromium.launch();
+const p = await b.newPage();
+const errs = [], fails = [];
+p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message));
+p.on('requestfailed', r => fails.push(r.url() + ' :: ' + (r.failure()?.errorText||'')));
+const resp = await p.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+await p.waitForTimeout(1500);
+const title = await p.title();
+const bodyLen = (await p.innerText('body')).length;
+console.log('HTTP', resp.status(), '| title:', JSON.stringify(title), '| bodyTextLen:', bodyLen);
+console.log('CONSOLE_ERRORS:', errs.length); errs.slice(0,10).forEach(e=>console.log('  -', e));
+console.log('REQ_FAILED:', fails.length); fails.slice(0,10).forEach(e=>console.log('  x', e));
+await b.close();

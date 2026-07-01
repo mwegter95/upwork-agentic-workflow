@@ -1,0 +1,28 @@
+# Demo Builder Output — AgriPro Operations Console
+
+## Status: COMPLETE
+
+Hero features implemented and building:
+- **Role-based login** (4 roles: Procurement, Quality, Warehouse, Management) with scoped nav and permissions
+- **Inspections tab** with full search/filter, stage pipeline, AI OCR cert scanning (Tesseract.js), anomaly detection (moisture, aflatoxin, vomitoxin, test weight flagging), and inline approval controls
+- **Procurement Board** with campaign cards, approval workflows, and volume tracking
+- **Role-scoped Dashboards** with Recharts (bar/pie/line), PDF export (jsPDF), Excel export (xlsx)
+- **Documents**, **Warehouse**, **Audit Log**, **Notifications** (bell + tray), and **Admin** (management-only)
+- IBM Plex Sans/Mono fonts; agricultural green/blue palette; no em/en dashes
+
+## Self-Test
+- `npm run build` (demo): PASS (3.35s)
+- `npm run build` (michaelwegter.com): PASS (5.17s)
+- Demo loads: HTTP 200 at localhost:4030
+- Dash gate: PASS (no em/en dashes)
+- Screenshot: captured to `public/work-samples/agripro.png`
+
+## Registry
+`id: 20, slug: "agripro"` added to `workSamples.js`.
+Tags: React, JavaScript, AI, RBAC, Dashboard, Full-Stack, Data Viz.
+
+## handoff
+- **Produced**: `public/demos/agripro/` (built), `public/work-samples/agripro.png` (screenshot), `workSamples.js` entry (id 20)
+- **Decisions**: frontend-only with Tesseract.js client-side OCR and realistic mock data; no Flask backend needed
+- **Next needs**: deploy step should push `michaelwegter.com` to main; no mw-backend changes
+- **Risks**: Tesseract.js WASM loads from CDN at runtime (~5s first OCR scan); chunk sizes large (624 kB) but within acceptable range for demo; live Tesseract OCR depends on CDN availability

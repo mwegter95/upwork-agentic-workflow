@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriPro Operations Platform: Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --clr-bg: #F5F2EC;
+    --clr-surface: #FFFFFF;
+    --clr-nav: #0F2A1A;
+    --clr-primary: #1B4332;
+    --clr-accent: #B5651D;
+    --clr-action: #1D4ED8;
+    --clr-pass: #15803D;
+    --clr-flag: #B45309;
+    --clr-reject: #B91C1C;
+    --clr-text: #1C1917;
+    --clr-text-muted: #57534E;
+    --clr-border: #D6D3C8;
+    --radius: 8px;
+    --max: 880px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--clr-bg);
+    color: var(--clr-text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  header {
+    background: var(--clr-nav);
+    color: #fff;
+    padding: 48px 24px 36px;
+    text-align: center;
+  }
+  header .kicker {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #9ECE9E;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+  header p {
+    color: #C8D9C8;
+    max-width: 600px;
+    margin: 0 auto 20px;
+  }
+  header .badge-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  header .badge {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 4px;
+    font-size: 12px;
+    padding: 4px 12px;
+    color: #E8F5E8;
+  }
+  main { max-width: var(--max); margin: 0 auto; padding: 0 24px 64px; }
+
+  section { margin-top: 48px; }
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--clr-primary);
+    border-bottom: 2px solid var(--clr-accent);
+    padding-bottom: 6px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  p { margin-bottom: 12px; color: var(--clr-text-muted); }
+  p strong { color: var(--clr-text); }
+  a { color: var(--clr-action); }
+
+  /* DEMO SECTION */
+  .demo-block {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .demo-hero-link {
+    display: block;
+    position: relative;
+  }
+  .demo-hero-link img {
+    width: 100%;
+    display: block;
+    max-height: 340px;
+    object-fit: cover;
+    object-position: top;
+  }
+  .demo-hero-link .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(15,42,26,.7));
+    display: flex;
+    align-items: flex-end;
+    padding: 20px;
+  }
+  .demo-hero-link .try-btn {
+    background: var(--clr-action);
+    color: #fff;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 22px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .demo-meta {
+    padding: 16px 20px;
+    border-top: 1px solid var(--clr-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .demo-meta .url-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--clr-action);
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .demo-meta .tag {
+    font-size: 12px;
+    color: var(--clr-text-muted);
+    background: var(--clr-bg);
+    border: 1px solid var(--clr-border);
+    border-radius: 4px;
+    padding: 3px 9px;
+  }
+
+  .step-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .step-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .step-card img {
+    width: 100%;
+    display: block;
+    height: 150px;
+    object-fit: cover;
+    object-position: top;
+  }
+  .step-card .step-label {
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--clr-primary);
+    border-top: 1px solid var(--clr-border);
+  }
+  .step-card .step-desc {
+    padding: 0 14px 12px;
+    font-size: 12px;
+    color: var(--clr-text-muted);
+    margin: 0;
+  }
+
+  /* HOW IT WORKS */
+  .steps-list { display: flex; flex-direction: column; gap: 16px; }
+  .step-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--clr-primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-body strong { color: var(--clr-text); font-size: 14px; display: block; margin-bottom: 2px; }
+  .step-body span { font-size: 13px; color: var(--clr-text-muted); }
+
+  /* REQUIREMENTS TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: var(--clr-primary);
+    color: #fff;
+    padding: 9px 12px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+  tbody tr:nth-child(even) { background: #F0EDE7; }
+  tbody tr:nth-child(odd) { background: var(--clr-surface); }
+  td { padding: 8px 12px; color: var(--clr-text-muted); border-bottom: 1px solid var(--clr-border); }
+  td:first-child { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--clr-accent); font-weight: 500; white-space: nowrap; }
+  td:nth-child(2) { color: var(--clr-text); font-weight: 500; }
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 3px;
+    padding: 2px 8px;
+  }
+  .pill-demo { background: #DCFCE7; color: #14532D; }
+  .pill-mock { background: #FEF3C7; color: #78350F; }
+  .pill-narr { background: #E0F2FE; color: #0C4A6E; }
+
+  /* WHY MICHAEL */
+  .proof-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .proof-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-top: 3px solid var(--clr-accent);
+    border-radius: var(--radius);
+    padding: 18px 16px;
+  }
+  .proof-card .proof-title { font-size: 13px; font-weight: 600; color: var(--clr-primary); margin-bottom: 6px; }
+  .proof-card p { font-size: 13px; margin: 0; }
+
+  /* MILESTONES */
+  .milestone-list { display: flex; flex-direction: column; gap: 14px; }
+  .ms-row {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-left: 4px solid var(--clr-primary);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+  }
+  .ms-row .ms-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .ms-row .ms-title { font-weight: 600; color: var(--clr-text); font-size: 14px; }
+  .ms-row .ms-dur { font-size: 12px; color: var(--clr-accent); font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+  .ms-row p { margin: 0; font-size: 13px; }
+
+  /* CTA */
+  .cta-block {
+    margin-top: 48px;
+    background: var(--clr-primary);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    text-align: center;
+  }
+  .cta-block h2 { color: #9ECE9E; border: none; font-size: 1rem; margin-bottom: 10px; }
+  .cta-block p { color: #C8D9C8; max-width: 520px; margin: 0 auto 20px; }
+  .cta-block a.cta-btn {
+    display: inline-block;
+    background: var(--clr-accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .cta-block .cta-sub { font-size: 13px; color: #9ECE9E; margin-top: 14px; }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--clr-text-muted);
+    padding: 24px;
+    border-top: 1px solid var(--clr-border);
+  }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.4rem; }
+    .step-grid { grid-template-columns: 1fr; }
+    .proof-grid { grid-template-columns: 1fr; }
+    table { font-size: 12px; }
+    .cta-block { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">Proposal / Internal Operations Platform</div>
+  <h1>AgriPro Operations Console</h1>
+  <p>A full-featured, AI-powered internal platform replacing spreadsheets and emails across your procurement, quality, warehouse, and management teams.</p>
+  <div class="badge-row">
+    <span class="badge">React 18</span>
+    <span class="badge">RBAC</span>
+    <span class="badge">OCR (Tesseract.js)</span>
+    <span class="badge">Anomaly Detection</span>
+    <span class="badge">PDF &amp; Excel Export</span>
+    <span class="badge">Multi-Stage Approvals</span>
+  </div>
+</header>
+
+<main>
+
+  <section>
+    <h2>Live Demo</h2>
+    <div class="demo-block">
+      <a class="demo-hero-link" href="https://michaelwegter.com/demos/agripro/" target="_blank" rel="noopener">
+        <img src="media/hero.png" alt="AgriPro Operations Console hero view showing inspections table, sidebar nav, and pipeline bar">
+        <div class="overlay">
+          <span class="try-btn">Try the Live Demo</span>
+        </div>
+      </a>
+      <div class="demo-meta">
+        <a class="url-chip" href="https://michaelwegter.com/demos/agripro/" target="_blank" rel="noopener">michaelwegter.com/demos/agripro/</a>
+        <span class="tag">Runs 100% in your browser</span>
+        <span class="tag">No login required</span>
+        <span class="tag">4 role views</span>
+      </div>
+    </div>
+
+    <div class="step-grid" style="margin-top:20px;">
+      <div class="step-card">
+        <img src="media/step-1.png" alt="OCR certificate scanner extracting lab values from a dropped grain certificate image">
+        <div class="step-label">AI OCR: Lab Certificate Scanner</div>
+        <p class="step-desc">Drop a grain cert image. Tesseract.js extracts moisture, aflatoxin, test weight, and classifies the document type.</p>
+      </div>
+      <div class="step-card">
+        <img src="media/step-2.png" alt="Anomaly detection badge and flagged inspection record with out-of-range moisture value highlighted">
+        <div class="step-label">Anomaly Detection in Action</div>
+        <p class="step-desc">Out-of-band values are flagged with severity and explanation. Quality reviewers see flagged records surfaced automatically.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+    <div class="steps-list">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>Log in as any role</strong>
+          <span>Procurement, Quality, Warehouse, or Management. Each sees a different dashboard, nav scope, and action set.</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>Scan a lab certificate</strong>
+          <span>Drop a grain certificate image into the OCR upload zone. The classifier identifies the document type; extracted values populate the inspection record automatically.</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>Review anomalies</strong>
+          <span>The rule engine compares extracted values against crop-specific reference bands and surfaces any out-of-range readings with severity level and explanation, before they reach the approval step.</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>Advance the approval pipeline</strong>
+          <span>Each inspection moves through 6 stages (Draft, Field, Lab Review, QA Approval, Procurement Approval, Warehouse Allocation) with Approve / Flag / Reject controls at every gate.</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <strong>Export and audit</strong>
+          <span>Generate a PDF or Excel report from the dashboard view. Every stage change and approval action is written to the audit log with actor, role, timestamp, and record ID.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Requirement Coverage</h2>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Demo Treatment</th></tr></thead>
+      <tbody>
+        <tr><td>R1</td><td>Secure auth + RBAC</td><td><span class="pill pill-demo">Live Demo</span> Role picker gates nav, dashboard, and approval actions per role</td></tr>
+        <tr><td>R2</td><td>Procurement campaign management</td><td><span class="pill pill-demo">Live Demo</span> Campaign Kanban board with state, crop, volume, status</td></tr>
+        <tr><td>R3</td><td>Field inspection workflows</td><td><span class="pill pill-demo">Live Demo</span> Inspection records in pipeline with field team, GPS, timestamps</td></tr>
+        <tr><td>R4</td><td>Lab testing and quality grading</td><td><span class="pill pill-demo">Live Demo</span> OCR auto-populates grading values from certificate image</td></tr>
+        <tr><td>R5</td><td>Multi-stage approval workflows</td><td><span class="pill pill-demo">Live Demo</span> 6-stage pipeline bar with per-stage Approve/Flag/Reject</td></tr>
+        <tr><td>R6</td><td>Warehouse allocation and tracking</td><td><span class="pill pill-mock">Rich Mock</span> Allocation grid: lot, bin, commodity, volume, status</td></tr>
+        <tr><td>R7</td><td>File and document management</td><td><span class="pill pill-mock">Rich Mock</span> Document library with cert type, date, linked inspection, badge</td></tr>
+        <tr><td>R8</td><td>Search and advanced filtering</td><td><span class="pill pill-demo">Live Demo</span> Client-side filter by crop, state, stage, anomaly flag</td></tr>
+        <tr><td>R9</td><td>Operational dashboards</td><td><span class="pill pill-demo">Live Demo</span> 4 role-specific KPI + chart dashboards (Recharts)</td></tr>
+        <tr><td>R10</td><td>Reporting: PDF and Excel export</td><td><span class="pill pill-demo">Live Demo</span> jsPDF and SheetJS export from dashboard view</td></tr>
+        <tr><td>R11</td><td>Notifications and reminders</td><td><span class="pill pill-mock">Rich Mock</span> Notification tray with seeded alerts and mark-read</td></tr>
+        <tr><td>R12</td><td>Audit logs</td><td><span class="pill pill-mock">Rich Mock</span> Timestamped event log; session actions appended live</td></tr>
+        <tr><td>R13</td><td>Mobile-responsive for field teams</td><td><span class="pill pill-demo">Live Demo</span> Bottom tab nav + stacked card layout at &lt;768px</td></tr>
+        <tr><td>R14</td><td>OCR for lab certificates</td><td><span class="pill pill-demo">Live Demo</span> Tesseract.js WASM extracts text from dropped cert image</td></tr>
+        <tr><td>R15</td><td>Intelligent document classification</td><td><span class="pill pill-demo">Live Demo</span> Keyword classifier labels cert type from OCR output</td></tr>
+        <tr><td>R16</td><td>Anomaly detection</td><td><span class="pill pill-demo">Live Demo</span> Rule engine flags out-of-band values with severity + reason</td></tr>
+        <tr><td>D1</td><td>Production-ready application</td><td><span class="pill pill-narr">Proposal</span> Phased delivery, test plan, containerized deploy</td></tr>
+        <tr><td>D3</td><td>Admin portal</td><td><span class="pill pill-narr">Proposal</span> Management role previews concept; full admin in Milestone 3</td></tr>
+        <tr><td>D4</td><td>Technical documentation</td><td><span class="pill pill-narr">Proposal</span> API docs, data model diagrams, runbook per milestone</td></tr>
+        <tr><td>D5</td><td>Testing before delivery</td><td><span class="pill pill-narr">Proposal</span> Vitest unit tests + Playwright E2E on approval flows</td></tr>
+        <tr><td>D6</td><td>Deployment support</td><td><span class="pill pill-narr">Proposal</span> Docker + Nginx, CI/CD pipeline, env config management</td></tr>
+        <tr><td>D7</td><td>Post-launch support</td><td><span class="pill pill-narr">Proposal</span> 30-day stabilization, SLA for critical bugs, knowledge transfer</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Why Michael</h2>
+    <div class="proof-grid">
+      <div class="proof-card">
+        <div class="proof-title">Sole developer on a 600-user internal platform</div>
+        <p>At U.S. Bank (via Turnberry) I took ownership of TDAAS within months, became the SME, and kept a 60,000-line React/Python/SQL/Java platform running for 600 users per month. If something broke, I fixed it, often within 10 minutes.</p>
+      </div>
+      <div class="proof-card">
+        <div class="proof-title">AI in real production workflows</div>
+        <p>I use GitHub Copilot and Azure OpenAI in daily delivery. At Optum I am the team's go-to for AI-assisted development. The OCR, classification, and anomaly detection in this demo are the same class of AI I ship at work, not decorative.</p>
+      </div>
+      <div class="proof-card">
+        <div class="proof-title">Full-stack, cloud, and scale</div>
+        <p>React, Angular, Python, .NET/C#, Java, SQL, PostgreSQL, Docker, Kubernetes, CI/CD. I led the TDAAS Azure Cloud migration as the main technical representative, among the first apps the bank moved. I can own the full stack and the deploy.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Proposed Milestones</h2>
+    <div class="milestone-list">
+      <div class="ms-row">
+        <div class="ms-head"><span class="ms-title">Milestone 1: Core Operational Spine</span><span class="ms-dur">Weeks 1 to 8</span></div>
+        <p>Authenticated RBAC, procurement campaigns, field inspection records, 6-stage approval pipeline, search and filtering, audit logs, mobile-responsive layout, admin portal.</p>
+      </div>
+      <div class="ms-row">
+        <div class="ms-head"><span class="ms-title">Milestone 2: AI and Quality Layer</span><span class="ms-dur">Weeks 9 to 12</span></div>
+        <p>Production OCR on lab cert ingestion, document classification, configurable anomaly detection, warehouse allocation, document management, notifications, role dashboards with PDF/Excel export.</p>
+      </div>
+      <div class="ms-row">
+        <div class="ms-head"><span class="ms-title">Milestone 3: Hardening and Delivery</span><span class="ms-dur">Weeks 13 to 16</span></div>
+        <p>Unit + E2E test suite, technical documentation, containerized deploy, CI/CD pipeline, knowledge transfer, 30-day post-launch stabilization support.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="cta-block" style="max-width:880px;margin:0 auto;">
+  <h2>Next Step</h2>
+  <p>Try the live demo and let me know what you would want to adjust or expand. Happy to jump on a call and walk through the platform together.</p>
+  <a class="cta-btn" href="https://michaelwegter.com/demos/agripro/" target="_blank" rel="noopener">Open the Live Demo</a>
+  <div class="cta-sub">Michael Wegter &bull; github.com/mwegter95</div>
+</div>
+
+<footer>
+  AgriPro Operations Platform Proposal &bull; Michael Wegter &bull; github.com/mwegter95
+</footer>
+
+</body>
+</html>

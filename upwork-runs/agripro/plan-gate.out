@@ -1,0 +1,34 @@
+# Plan Gate Review — AgriPro
+
+## Plan completeness check
+
+**Concept:** D1 AgriPro Operations Console, full 10/10 build. Clear hero (AI inspection layer: Tesseract.js OCR + keyword classifier + rule-based anomaly detection) + 2 pillars (procurement board/approval pipeline; role dashboards + PDF/Excel export). Remainder rendered on convincing seeded mocks.
+
+**Requirements coverage:** All 23 requirements explicitly mapped in traceability matrix (R1-R16 + D1-D7). 12 of 16 feature reqs are genuine demo features; R6-R8, R11-R12 are seeded mocks (appropriate for scope). All 7 deliverables addressed in proposal narrative.
+
+**Design:** Fully specified. Hex palette (10 tokens), IBM Plex Sans/Mono from Google Fonts, sidebar-nav layout, mobile breakpoint defined.
+
+**Tech stack:** Complete. Vite + React 18 + Tesseract.js + jsPDF + SheetJS/xlsx + Recharts. No backend. 12-file budget enumerated exactly.
+
+**Out-of-scope:** Explicitly delineated (no real auth, no real persistence, no real-time notifications, no server-side search).
+
+## Issues found
+
+**Non-blocking — noted for downstream:**
+
+1. **researcher.out was a stub** ("(step completed)" only). Planner explicitly acknowledged this and substituted orchestrator.out competitive references (AgriDigital, Cropin, Bushel). The plan does not depend on research data that is missing; orchestrator guidance covered it. Acceptable substitution.
+
+2. **Em/en dashes pervasive in plan.md.** Writing rules prohibit them everywhere. plan.md is an internal doc so this does not block the build, but demo-builder and cover-letter agents must not carry them into the proposal, cover letter, or any client-facing text. Flag in handoff.
+
+3. **SheetJS license unconfirmed.** Planner flagged "check for demo use — MIT for non-commercial" but did not resolve it. The `xlsx` npm package (SheetJS community edition) is Apache-2.0 through v0.18.x; the planner's risk is real but manageable: demo-builder should pin `xlsx@0.18.5` (Apache-2.0) to avoid SheetJS Pro licensing.
+
+**No blocking gaps.** No unknowns flagged as unresolved that would block the build. All required tech choices are made. Sample cert images are deferred to demo-builder (correct split of responsibility).
+
+VERDICT: pass
+
+## handoff
+
+- **Produced:** `plan-gate.out` — plan approved for build
+- **Decisions:** VERDICT pass; plan complete, all 23 requirements mapped, tech/design fully specified
+- **Next needs:** demo-builder to (a) pin `xlsx@0.18.5`, (b) source 2-3 realistic grain cert JPEGs for `public/samples/`, (c) implement hero (InspectionLab.jsx) before pillars, (d) avoid em/en dashes in all output text
+- **Risks:** SheetJS license (mitigate: pin v0.18.5); Tesseract.js WASM cold-load latency (mitigate: lazy-load + progress bar as planner specified); em dashes in plan.md must not propagate to cover letter

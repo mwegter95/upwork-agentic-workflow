@@ -1,0 +1,6 @@
+## handoff
+
+- **Produced:** `plan.md` — full plan with bespoke agri-industrial design system (IBM Plex Sans/Mono, deep-green/amber/slate palette), 12-file Vite+React build, 23-requirement traceability matrix
+- **Decisions:** D1 concept, full 10/10 build, no mw-backend, hero = AI inspection layer (Tesseract.js OCR + keyword classifier + rule-based anomaly), Pillar 1 = procurement board + approval pipeline, Pillar 2 = role dashboards + PDF/Excel export; R6/R7/R8/R11/R12 are convincing seeded mocks
+- **Next needs:** demo-builder to scaffold Vite project, bundle 2-3 sample grain cert JPEG/PNGs, implement hero before pillars
+- **Risks:** Tesseract.js WASM cold-load latency (lazy-load + progress bar); SheetJS license check (MIT for demo use); mobile layout requires explicit test; researcher.out was a stub — orchestrator.out substituted for research inputs
