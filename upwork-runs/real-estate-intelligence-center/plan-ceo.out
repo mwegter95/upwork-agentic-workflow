@@ -1,0 +1,31 @@
+# CEO Review (Plan) — Pathwaize Intelligence Center
+
+Verified plan-eval.out (rubric pass, 100% coverage) and independently checked planner.out scope fences + handoff. Concur with the eval. The plan is build-ready at richness-10.
+
+## Why this passes
+- **Full brief coverage.** All 8 V1 scope items + 14 technical-foundation items + the user's 8 WebGPU best-practices are each mapped to a concrete feature. No item hand-waved.
+- **Correctly resolves the core architectural tension.** Brief demands a "backend LLM routing layer; frontend must not call the LLM directly," but the user explicitly asked for a WebGPU in-browser demo. Plan reconciles this by making `LLMRouter.run()` a visible, provider-agnostic seam (shown in the run log as "model used"), which demos the *concept* the client cares most about (not hard-coded to one provider, approval-gated actions) without a server. This is the right call and directly answers the posting's two hardest apply questions.
+- **Richness-10 is real, not padded.** 3 fully wired engines, 6-state approval machine, IndexedDB run/output persistence, dual-model WebLLM + 3B VRAM fallback, prompt chips, workspace context, cost logging, GHL chrome, Intel Brief stub. Ambitious and feasible within caps (12 files, no bundler, CDN model load avoids build timeout).
+- **Demo-on-any-hardware de-risked.** Mock-LLM fallback with pre-written high-quality canned responses means a non-WebGPU reviewer still sees the full run→review→revise→approve→save flow. This is the single most important reviewer-impression safeguard and it is called out as P0.
+- **Design is bespoke and on-brief.** Dark execution-console aesthetic matches the client's "execution console, not a chatbot" language verbatim; Inter/DM Mono, navy palette, status chips — not the portfolio look.
+
+## Directives to demo-builder (carry forward, do not relitigate)
+1. `LLMRouter.run()` must be visibly surfaced (run log "model used" field) — it is the proposal's proof of the provider-agnostic routing layer. Do not bury it.
+2. Download progress bar + OPFS cache notification are P0 UX, not optional. First-load impression is the top risk.
+3. Pre-write realistic, high-quality canned mock-LLM responses for all 3 engines before wiring the mock path — quality must be indistinguishable from real output.
+4. Enforce the approval gate hard: push/save buttons disabled until status === "approved". This is a literal brief requirement ("no auto-publish without approval") and must be demonstrable.
+5. Look up the WebLLM CDN ESM URL at build time (`@mlc-ai/web-llm`); check for an existing "WebGPU" tag in tagSections before adding (avoid dupes). Both are minor implementation details, not plan gaps.
+
+## Open risks (accepted, not blocking)
+- Mock-LLM canned response quality = highest reviewer-impression risk. Mitigated by P0 pre-write directive above.
+- GHL postMessage spec not public — plan correctly simulates via mock chrome + URL params and the proposal will note real GHL dev access is needed for production. Honest and correct.
+
+No REDIRECT needed. Research/plan loop is complete; proceed to researcher → demo-builder.
+
+## handoff
+- produced: CEO pass on the plan; 5 carry-forward directives for demo-builder; accepted-risk list
+- decisions: plan approved as-is at richness-10; no earlier step re-run; WebGPU-in-browser with visible LLMRouter seam is the endorsed way to satisfy the brief's "backend routing layer" ask
+- next needs: researcher then demo-builder; demo-builder honors the 5 directives verbatim (LLMRouter visible, progress-bar P0, canned responses pre-written, hard approval gate, CDN lookup)
+- risks: mock-LLM response quality + first-load UX are the two things that most shape reviewer impression; both flagged P0
+
+VERDICT: pass

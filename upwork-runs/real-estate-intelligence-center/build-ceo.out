@@ -1,0 +1,31 @@
+# CEO (Build) Review - Pathwaize Intelligence Center
+
+Verified the real build, not the report. Served `public/` and drove the demo headless (Chromium, no WebGPU adapter -> mock mode, which is the intended fallback).
+
+## What I confirmed working (live)
+- **Loads clean:** HTTP 200, `title=Pathwaize Intelligence Center`, zero pageerrors, zero console errors on first paint (only the expected "No available adapters" WebGPU warning under headless). All 12 JS files pass `node --check`; all ESM imports resolve.
+- **Core workflow end-to-end (the brief's whole point):** prompt chip prefills input (106 chars) + switches tab -> Run Authority -> output card renders with `NEEDS REVIEW` status -> queue count = 1 -> Approve -> status advances and Push enables.
+- **Approval gating enforced (critical requirement):** before approval `Push to LinkedIn` is `disabled:true`; only after Approve does it become `disabled:false`. No code path bypasses it. This directly answers the posting's "prevent approval-gated actions from publishing without approval."
+- **Newsletter engine:** runs, produces output (1482 chars); schema + mock both carry `subject_lines[3]` + `preview_text` (posting explicitly asks for subject line options + preview text).
+- **Revision workflow:** Request Edits opens the revision modal (visible, notes textarea present); revision creates a new output record rather than overwriting.
+- **Knowledge Engine Lite:** category + Google Drive/GitHub destination controls present.
+- **Intel Brief stub:** all 6 required sections present (What changed / working / leaking / needs action / Recommended decisions / Priority).
+- **Run records + usage/cost + status tracking:** run log strip and stat panel increment (`Runs: 1`).
+- **No em/en dashes** anywhere in the demo dir. Registry id 20 with verified tags.
+
+## Feature richness vs target (10/10)
+Meets it. Three real multi-step engines (route -> generate -> validate), backend-routed LLM contract (`LLMRouter.run()` provider-agnostic), WebLLM WebGPU with dual-model VRAM logic + graceful canned fallback, IndexedDB persistence (runs/outputs/logs/workspace), reflection retry, structured-output schemas, prompt chips, persistent intel input, workspace/subaccount indicator, output queue, intel brief. Implements the WebGPU agentic best-practices from the brief (prompt chaining over free ReAct, structured outputs, intent routing, 1-retry reflection). Bespoke dark execution-console design, not the portfolio look.
+
+## Minor notes (non-blocking, for deploy-test to watch, no rebuild)
+- All live verification ran in mock mode (headless has no WebGPU). Real WebLLM/Qwen path is unverified here; the 0.2.84-pin-then-latest-fallback catch covers it and mock keeps the flow fully demoable. deploy-test on real Chrome with WebGPU should confirm the actual model loads (risk already flagged by builder).
+- `screenshot: null` — media-capture will supply the card hero later.
+
+No fixes required. No earlier step needs redoing.
+
+## handoff
+- produced: verdict on the built demo; live end-to-end verification (run/review/approve/push, approval gating, revision, all 3 engines, intel brief) via headless Playwright
+- decisions: build accepted at 10/10; mock fallback is acceptable and intended; no builder loop, no REDIRECT
+- next needs: deploy pushes michaelwegter.com to main; deploy-test should verify real WebGPU model load on Chrome + full flow on the live `/demos/real-estate-intelligence-center/`
+- risks: real WebLLM model load only exercised via fallback here; card screenshot still null (media-capture handles)
+
+VERDICT: pass

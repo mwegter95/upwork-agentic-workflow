@@ -1,0 +1,117 @@
+# Plan Eval (Rubric) — Pathwaize Intelligence Center
+
+## Rubric Evaluation
+
+### 1. ALL requirements covered?
+
+**V1 scope items (8 per brief):**
+- Core Intelligence Center UI shell: ✅ 3-col layout, GHL mock chrome, rail nav, engine tabs
+- Intel Brief stub: ✅ 6 sections with static demo data in right panel
+- Knowledge Engine Lite: ✅ route → generate → KB entry → destination picker (Drive/GitHub)
+- Authority Engine wired end-to-end: ✅ 3-step chain, platforms, approval gate
+- Newsletter Engine wired end-to-end: ✅ body + 3 subject-line cards + preview text
+- Outputs Pending Review: ✅ ui/output-queue.js, filterable status cards, click-to-review
+- Prompt chips: ✅ horizontal chip row, auto-selects engine + pre-fills form
+- Persistent intelligence input: ✅ workspace table in IndexedDB, injected to all prompts
+
+**Required technical foundation (14 items per brief):**
+- Engine orchestrator: ✅ app.js (engine dispatcher, event bus, status machine)
+- LLM routing layer: ✅ llm-router.js with provider-agnostic LLMRouter.run() contract
+- Prompt/template management: ✅ per-engine prompt strings in engine files, not hardcoded to one model
+- Engine run records: ✅ IndexedDB `runs` store (id, engine, model, cost, duration, timestamp)
+- Output storage: ✅ IndexedDB `outputs` store
+- Output status tracking: ✅ 6-state machine (idle/running/needs-review/revised/approved/pushed)
+- Review and approval workflow: ✅ state machine + Approve/Request Edits actions
+- Basic revision workflow: ✅ revision textarea → Re-generate flow
+- Usage and cost logging: ✅ per-run cost accumulation, bottom bar aggregate
+- Error handling: ✅ JSON validation, 1-retry reflection, inline error cards
+- Google Drive connection: ✅ destination picker + mock receipt with fileId/path/url
+- GitHub connection: ✅ destination picker + mock receipt with sha/branch/commit URL
+- Subaccount/workspace association: ✅ workspace name displayed in header, workspace context stored
+- Approval gating (no auto-push): ✅ hard-enforced — Push disabled until status === "approved"
+
+**User's WebGPU best-practices requirements:**
+- WebLLM runtime (not raw Python/server): ✅
+- Quantized models (4-bit): ✅ q4f16_1-MLC for all three model IDs
+- Prompt chaining (no free ReAct loops): ✅ strict linear chain per engine, JS handles step transitions
+- Enforced structured outputs (JSON schema): ✅ response_format + grammar enforcement in WebLLM
+- Native web tooling layer (Fetch, IndexedDB): ✅
+- Context management (sliding window, workspace prefix): ✅ 5-turn cap, workspace injection
+- Self-correction / reflection: ✅ 1-retry reflection loop with error feedback, 2nd failure → error card
+- Mock-LLM fallback for non-WebGPU environments: ✅ canned responses, full workflow demonstrable
+
+**Coverage: 100% — no brief item unaddressed.**
+
+---
+
+### 2. Right technologies chosen?
+
+| Decision | Assessment |
+|---|---|
+| WebLLM + Qwen2.5 (confirmed MLC registry IDs) | ✅ — per user's explicit requirement; model IDs validated by pre-researcher |
+| Dual-model: 7B primary + 1.5B router | ✅ — matches user's "fast smaller model for routing" spec |
+| 3B VRAM fallback with auto-detection | ✅ — practical mitigation for low-end GPUs |
+| Vanilla JS + ES modules, no bundler | ✅ — correct for same-origin static hosting in public/demos/ |
+| IndexedDB for all persistence | ✅ — only viable in-browser persistent store for this architecture |
+| Mock integrations (Drive/GitHub/LinkedIn/X) | ✅ — appropriate scope for demo; real OAuth out of scope |
+| No mw-backend blueprint | ✅ — in-browser WebLLM is the backend story; no Flask proxy needed |
+
+One gap: the plan does not specify the exact CDN URL/version for the WebLLM ES module import. The demo-builder will need to look this up (likely `https://esm.run/@mlc-ai/web-llm`). Low risk — this is an implementation lookup, not a plan deficiency, and the pre-researcher confirmed the library exists on CDN.
+
+---
+
+### 3. Testing approach defined?
+
+The plan defines a manual QA gate (step 12 of build priority):
+- 17-gate traceability checklist against the brief
+- No console errors on first paint
+- No em/en dashes in any output
+
+No automated unit tests or Playwright scripts defined in the plan itself — acceptable for a no-build-step self-contained static demo. The deploy-test pipeline node handles live end-to-end Playwright validation post-deployment. The in-plan JS validation (structured output checks, 1-retry) covers runtime correctness. Testing approach is adequate for scope.
+
+---
+
+### 4. Scope feasible for richness-10?
+
+12 files, no bundler, all 3 engines functional, full approval-gate state machine, dual-model WebLLM init with VRAM fallback, IndexedDB persistence, mock integrations, Intel Brief stub, prompt chips, workspace context, usage/cost logging, GHL chrome wrapper. This is genuinely full-featured and ambitious.
+
+Feasibility mitigations all present:
+- Mock-LLM fallback ensures demo is fully demonstrable on any reviewer hardware
+- CDN model load (not bundled) avoids 3-minute build timeout
+- No bundler = no build complexity; JS modules only
+- Clear build priority order with P0 callout for progress bar UX
+
+Scope is achievable. No scope item trips the prototype fallback rules.
+
+---
+
+### 5. Design direction fit for industry?
+
+- Dark execution console / mission-control aesthetic: ✅ matches client's "AI-powered execution console, not a generic chatbot" language verbatim
+- Deep navy palette (#0B0F1A base) with blue/cyan accents: ✅ professional PropTech/SaaS convention
+- Status chip colors (purple for running, amber for review, green for approved): ✅ standard execution console language
+- Inter (UI) + DM Mono (output/logs): ✅ appropriate SaaS pairing, not portfolio fonts
+- GHL chrome wrapper: ✅ contextualizes the demo as an iframe app, matches client's GoHighLevel context
+- Differentiates from Jasper/Copy.ai (light-theme template galleries): ✅ explicit in plan
+
+Design direction is excellent and purpose-built for this client's product positioning.
+
+---
+
+## Problems
+
+1. **CDN URL for WebLLM not specified** — demo-builder must look up `@mlc-ai/web-llm` CDN URL. Low risk, implementation detail. Not a plan gap.
+2. **workSamples.js registry notes adding "WebGPU" tag to tagSections if not present** — demo-builder must check for existing tag before adding to avoid duplicates. Minor.
+3. **No formal test scripts in plan** — acceptable given deploy-test node handles live QA; the 17-gate manual checklist is sufficient for the plan phase.
+
+None of these are blockers.
+
+---
+
+## handoff
+- produced: rubric evaluation of planner.out — all 5 rubric dimensions scored, 100% brief requirement coverage confirmed, technology choices validated, scope feasibility confirmed for richness-10
+- decisions: no plan changes needed; plan is implementation-ready; pass verdict to CEO
+- next needs: CEO reviews this eval + plan against feature richness and brief; if pass, demo-builder executes against planner.out exactly (verbatim model IDs, hex tokens, 12-file structure)
+- risks: WebLLM CDN URL lookup is the only open implementation detail; mock-LLM canned response quality remains highest reviewer-impression risk (flagged in plan, must be P0 for demo-builder)
+
+VERDICT: pass

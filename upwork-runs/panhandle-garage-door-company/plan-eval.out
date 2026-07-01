@@ -1,0 +1,55 @@
+# Plan Eval (rubric) — panhandle-garage-door-company
+
+## Rubric Scores
+
+### R1: All requirements covered
+**PASS.** Traceability matrix in planner.out maps every posting line item:
+- WordPress migration from Squarespace: custom PHP theme on Docker + Redirection plugin 301s ✓
+- Mobile-first / Core Web Vitals: minimal theme, no page builder, WP Super Cache, lazy WebP ✓
+- Technical SEO (schema, sitemap, robots.txt, metadata, internal linking, GSC/GA, conversion tracking): all enumerated in checklist ✓
+- Local SEO: 12 city LPs (9 TX + 3 NM), 8 service pages, commercial hub, blog ✓
+- "Scale to dozens of landing pages": `page-city.php` template — add page, assign template ✓
+- Increase qualified phone calls: sticky click-to-call header + mobile footer bar + in-page CTAs ✓
+- Open-signup SEO analyzer: existing `api.michaelwegter.com/auth/register` confirmed (any email/8-char pw), GH Pages app confirmed ✓
+- Documentation/training: sticky WP admin guide page + redirects-doc.md ✓
+- Bilingual differentiator: "Se Habla Español" in trust strip + every city LP + footer ✓
+
+### R2: Right technologies
+**PASS.**
+- WordPress 6.6 (exactly what posting requires) + Docker on Surface (proven pattern from Maryland run) ✓
+- Custom PHP templates (no page builder = no render-blocking overhead) ✓
+- Yoast SEO (industry-standard; handles sitemap, robots.txt, schema assist, breadcrumbs) ✓
+- Contact Form 7 (estimate + contact forms) ✓
+- WP Super Cache (CWV speed optimization) ✓
+- Redirection plugin (301 Squarespace migration map) ✓
+- Flask bridge cloned from `maryland_driveway_wp_bridge_blueprint.py` (all 3 WP login filters + canonical suppression + no-redirect opener + strip accept-encoding already in template) ✓
+- GH Pages SEO analyzer reused, zero rebuild ✓
+
+### R3: Testing approach defined
+**PASS.** Admin credentials documented (admin / DimitroffAdmin2026!), SEO analyzer signup flow documented (any email + 8-char pw), demo user journey defined (5 steps in planner.out). Standard `deploy → deploy-test` Playwright workflow covers login, multi-step flows. WP admin URL specified. Port 8090 confirmed available.
+
+### R4: Scope feasible at richness 10
+**PASS.** 29 pages via scalable template architecture (not 29 bespoke builds). Docker WP is a proven Surface pattern. Bridge is a clone (not net-new). SEO analyzer requires zero build. Risks called out correctly: Docker pull timeout (mitigated by service registration, not blocking runner), Maryland bridge login filters (copy verbatim), Playwright install prerequisite. All CLAUDE.md hard rules acknowledged (ASCII runner scripts, no `?>` PHP, service registration, cloudflare tunnel untouched).
+
+### R5: Design direction fit for industry
+**PASS.** Bespoke palette derived from actual client site (minimal/utilitarian confirmed):
+- `#1B3A5C` deep steel blue (authority, trust, Texas sky) ✓
+- `#E85D04` safety orange CTAs (industrial urgency) ✓
+- Barlow Condensed 600/700 headings (industrial, compact, masculine) ✓
+- Source Sans 3 body (legible, professional) ✓
+- Mood: "This company owns the Panhandle" — wide-sky authority, direct, not flashy ✓
+- Explicitly NOT michaelwegter.com portfolio look ✓
+
+## Issues
+
+None. No gaps, no contradictions, no unresolved architecture questions. plan-gate.out confirmed all prior failures (R1–R4 contact data, competitors, analyzer confirmation, city list) are resolved in the current planner.out.
+
+One minor note (non-blocking): `category: "Creative"` in workSamples.js entry is debatable for an SEO/local-business site; `category: "Utility"` or `"Productivity"` may be more accurate. Not a blocking issue — demo-builder can adjust.
+
+VERDICT: pass
+
+## handoff
+- produced: plan-eval.out — rubric evaluation, VERDICT pass on all 5 criteria
+- decisions: no plan changes required; all requirements mapped, tech appropriate, scope feasible, design bespoke and industry-fit
+- next needs: CEO review, then demo-builder executes Docker WP on Surface (port 8090), custom PHP theme (12 templates), 29 pages seeded, Maryland bridge clone as panhandle_blueprint.py, /free-seo-audit/ page, screenshot capture
+- risks: none new beyond what planner already flagged (Docker pull timeout, Maryland bridge filter copy, Playwright prerequisite)

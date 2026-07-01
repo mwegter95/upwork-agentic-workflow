@@ -1,0 +1,30 @@
+# Image Eval — Pathwaize Intelligence Center
+
+## Verification methodology
+Checked the fixer's claim ("zero image assets") by directly inspecting the demo directory and source files.
+
+## Manifest of unique image assets
+
+| Asset | Claim | Verified finding |
+|-------|-------|-----------------|
+| `public/demos/real-estate-intelligence-center/*.{png,jpg,svg,webp}` | None claimed | Glob confirms 0 image files exist |
+| `<img>` tags in index.html | None | grep confirms 0 matches |
+| `background-image` / `url()` in styles.css | None | grep confirms 0 matches |
+| `<img>` / image refs in app.js, ui/*.js, engines/*.js | None | grep confirms 0 matches |
+| `public/work-samples/real-estate-intelligence-center.png` | null (pre-media-capture) | File does not exist; workSamples.js correctly has `screenshot: null` |
+
+## Findings
+
+No raster, vector, or CSS-background image assets exist anywhere in this demo. Every visual element is CSS/HTML/emoji-driven. The demo's 12 files (index.html, styles.css, app.js, db.js, llm-router.js, mock-integrations.js, ui/shell.js, ui/intel-brief.js, ui/output-queue.js, engines/authority.js, engines/newsletter.js, engines/knowledge.js) contain zero `<img>` tags, zero `background-image` declarations, and zero `url()` references pointing to image assets.
+
+The `screenshot: null` in workSamples.js is correct: media-capture has not run yet and is expected to produce `public/work-samples/real-estate-intelligence-center.png`.
+
+No image problems to report.
+
+## handoff
+- produced: image-eval.out confirming zero image assets in the demo and null screenshot in registry
+- decisions: nothing to fix; fixer's claim validated directly by file/grep inspection
+- next needs: media-capture to produce `public/work-samples/real-estate-intelligence-center.png` and set screenshot field
+- risks: none for images; gallery card will render without a hero image until media-capture runs
+
+VERDICT: pass

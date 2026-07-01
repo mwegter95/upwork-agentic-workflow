@@ -1,0 +1,32 @@
+# Image Analyzer — Pathwaize Intelligence Center
+
+## Scope
+
+Demo: `https://michaelwegter.com/demos/real-estate-intelligence-center/`
+Work-sample card: `public/work-samples/real-estate-intelligence-center.png`
+
+## Image inventory
+
+### Demo files (`public/demos/real-estate-intelligence-center/`)
+- No `<img>` tags anywhere in `index.html`, `app.js`, `shell.js`, `output-queue.js`, `intel-brief.js`, `engines/*.js`, or any other JS module.
+- No `url()` references in `styles.css`.
+- No image assets (PNG/JPG/SVG/GIF/WebP) in the demo directory.
+
+**Result: zero images to QA in the demo itself. All visual content is rendered via HTML/CSS (SVG icons inlined as text/emoji, colored divs, CSS gradients). No broken, miscropped, or wrong images possible.**
+
+### Work-sample card screenshot
+- `public/work-samples/real-estate-intelligence-center.png` — **does not exist**.
+- `workSamples.js` entry correctly has `screenshot: null`.
+- Card renders without a hero image (the null path is handled gracefully by the gallery component per CLAUDE.md spec).
+
+**Result: no broken image — null screenshot is correct and expected until media-capture runs.**
+
+## Fix list
+
+None. No images present to fix.
+
+## handoff
+- produced: image audit confirming zero image assets in the demo; work-sample screenshot is null (not yet captured, not a bug)
+- decisions: demo is 100% text/CSS/emoji-driven — no image files in the demo bundle; null screenshot is correct pre-media-capture state
+- next needs: media-capture — should capture `public/work-samples/real-estate-intelligence-center.png` and update `screenshot` field in `workSamples.js`
+- risks: if media-capture fails or is skipped, the work-sample card will permanently have no hero image, reducing visual impact in the gallery

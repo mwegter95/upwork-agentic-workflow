@@ -1,0 +1,123 @@
+# Pre-Researcher — Pathwaize Intelligence Center
+
+## CRITICAL BLOCKER 1: WebLLM Model IDs (RESOLVED)
+
+All Qwen2.5 IDs confirmed in `prebuiltAppConfig` of `mlc-ai/web-llm` (raw config.ts verified):
+
+| Model ID | Use |
+|---|---|
+| `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` | Router / validator (~1630 MB VRAM) |
+| `Qwen2.5-3B-Instruct-q4f16_1-MLC` | Fallback primary on low-VRAM devices |
+| `Qwen2.5-7B-Instruct-q4f16_1-MLC` | Primary generation engine (richness-10) |
+
+**Planner action:** Replace provisional `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` as the single model constant with a dual-model setup:
+- `PRIMARY_MODEL = "Qwen2.5-7B-Instruct-q4f16_1-MLC"` (all generation steps)
+- `ROUTER_MODEL = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC"` (intent classification + JSON validation)
+
+**VRAM risk:** 7B q4f16 requires ~4–5 GB VRAM. Implement graceful fallback to `Qwen2.5-3B-Instruct-q4f16_1-MLC` if engine.init() rejects the 7B model. Add a loading-state banner ("Loading 7B model, this takes ~30s the first time") so users don't think it's broken.
+
+---
+
+## CRITICAL BLOCKER 2: Design System (RESOLVED)
+
+### Pathwaize brand (pathwaize.com — confirmed live)
+- **Real product:** AI CRM/OS for real estate investors (calls, lead qualification, follow-up automation)
+- **Marketing site aesthetic:** Light theme, professional blues/whites, enterprise SaaS — typical B2B
+- **No public hex codes** found; brand does not publish a style guide
+- **Key insight:** The Intelligence Center lives INSIDE GHL as a command console — it should NOT look like Pathwaize's marketing site. The posting explicitly calls it "an AI-powered execution console, not a generic chatbot or traditional analytics dashboard"
+
+### Prescribed design system for the demo
+
+Dark execution console aesthetic — authority, data-density, AI/ops feel. Aligns with real estate SaaS conventions (property data dashboards trend dark) and differentiates from Jasper/Copy.ai (both use light themes).
+
+**Palette:**
+```
+--bg-base:     #0B0F1A   /* deep navy black — app shell */
+--bg-surface:  #141929   /* card/panel surface */
+--bg-elevated: #1A2236   /* modals, dropdowns */
+--border:      #1E2740   /* subtle blue-gray dividers */
+--accent-blue: #0EA5E9   /* primary CTA, active states */
+--accent-cyan: #06B6D4   /* secondary highlights, links */
+--status-ok:   #22C55E   /* approved / live */
+--status-warn: #F59E0B   /* pending review */
+--status-err:  #EF4444   /* revision requested */
+--status-run:  #8B5CF6   /* running/generating */
+--text-primary:   #F1F5F9
+--text-secondary: #94A3B8
+--text-muted:     #475569
+```
+
+**Typography:**
+- UI: `Inter` (Google Fonts — universal SaaS standard, NOT the portfolio font)
+- Output/code blocks: `DM Mono` (Google Fonts — avoids portfolio's JetBrains Mono)
+
+**Layout motif:** Three-column shell: left nav rail (64px, icon-only with tooltips) + center engine selector/run panel + right output/review pane. Status chips in-line with output cards.
+
+---
+
+## HIGH: GHL Iframe Context (RESOLVED for proposal purposes)
+
+- Custom pages render **full-width** in GHL's main content area (typically 1100–1400px available desktop width; sidebar is ~64px collapsed or ~220px expanded)
+- Auth context passed via **URL query params**: `?locationId={{location.id}}&userId={{user.id}}` or signed context token
+- Must NOT set `X-Frame-Options: DENY`; CSP must include `frame-ancestors: https://*.gohighlevel.com https://app.gohighlevel.com`
+- GHL has both light and dark dashboard themes (agency-customizable); iframe content is fully isolated from GHL chrome — no shared CSS variables
+- **Demo approach:** Render as standalone with a mock GHL chrome wrapper (thin dark top bar labelled "Pathwaize Intelligence Center | GoHighLevel") to simulate embedding context
+
+**Proposal copy:** Describe iframe integration as: "Hosted on your domain, embedded as a Custom Menu Link or Marketplace App iframe inside GHL with zero-config OAuth context passing (locationId, userId). No GHL whitelabel restrictions — ships as a sub-account custom page."
+
+---
+
+## SHOULD: Competitor UI Differentiation
+
+Jasper and Copy.ai both use light-mode, template-card-centric UIs. Differentiators for the Intelligence Center:
+
+1. **Run console metaphor** (not a template gallery): Engines are launched, not browsed. Primary action is "Run Engine" button with real-time status streaming.
+2. **Approval gates as first-class UI** (not an afterthought): Output cards have inline [Approve] / [Request Edits] / [Re-run] controls — the workflow IS the UI.
+3. **Status chip pipeline** (6-state system already in plan): Idle → Running → Pending Review → Approved → Pushed → Error — visible at all times.
+4. **Prompt chip bar** (persistent at bottom): Always-present context inputs (business name, niche, tone) that pre-fill all engine prompts — feels like a persistent "intelligence layer" not a chat box.
+
+---
+
+## SHOULD: Real Estate SaaS Visual Conventions
+
+- Dark dashboards with high-contrast data tables are standard in proptech/investor tools (DealMachine, BatchLeads, PropStream all use dark accents)
+- Status indicators: colored badges with terse labels (not long status text)
+- Dense information layout — operators want data visible without scrolling
+- Quick action buttons prominent above fold
+- Mobile responsiveness less critical than desktop power-user experience for this use case
+
+---
+
+## Testing Approach
+
+- **WebGPU availability gate:** On load, check `navigator.gpu` — if undefined, show a banner "WebGPU required. Use Chrome 113+ or Edge 113+" and disable run buttons
+- **Model load progress:** Display download progress bar (WebLLM emits progress callbacks); cache to Origin Private File System (OPFS) via MLC's built-in caching — subsequent loads are instant
+- **JSON schema enforcement:** Use `response_format: { type: "json_object" }` for all tool-call steps; validate in JS before proceeding; 1-retry reflection loop on failure
+- **Structured output fallback:** If model returns invalid JSON after retry, surface a "Generation failed — try re-running" inline error card (not a page crash)
+- **IndexedDB persistence:** Run history, output storage, approved items — all in IndexedDB; no network calls required for core workflow
+
+---
+
+## APIs / Integrations (V1 Scope)
+
+Per brief, these should be **simulated with realistic mock responses** in the demo (not real integrations — no OAuth setup needed for proposal demo):
+- Google Drive "push" → mock success toast + file card
+- GitHub commit "push" → mock PR card with fake SHA
+- Newsletter "send" → mock "Queued for review" state
+
+Real integration stubs should be structured so a real OAuth token can be swapped in post-contract.
+
+---
+
+## Risks / Flags for Planner
+
+1. **7B model on integrated GPU laptops:** 7B q4f16 may OOM on 4GB integrated GPUs (some MacBook Airs). Implement auto-detection: query WebGPU adapter info; if `adapterInfo.description` matches low-VRAM patterns, default to 3B. Display "Running compact model for your hardware" — not a failure state.
+2. **First-load latency:** 7B model is ~4GB download. Must show prominent progress bar or users will close tab thinking it's broken. MLC caches to OPFS so second load is <5s.
+3. **GHL postMessage API:** No formal spec for parent↔iframe communication in GHL marketplace apps. For the demo, simulate the context with URL params. In production, the developer would need GHL developer access to test signed context.
+4. **Pathwaize has NO public design tokens** — the hex palette above is derived from industry conventions + the "execution console" brief language, not official brand guidelines. This is fine since the Intelligence Center is a new product inside their platform, not a rebranding of their marketing site.
+
+## handoff
+- produced: confirmed Qwen2.5 model IDs (7B primary + 1.5B router, both in WebLLM registry); full design system palette + typography locked; GHL iframe integration approach documented; competitor differentiation framed; testing strategy and risk flags identified
+- decisions: dark execution console aesthetic (not Pathwaize light marketing theme); dual-model WebLLM setup (7B generation + 1.5B routing); all external integrations simulated with mocks for demo; standalone demo with mock GHL chrome wrapper
+- next needs: planner to replace model constant with dual-model setup, lock the palette/fonts above verbatim into styles.css, finalize the 3-column shell layout spec, confirm IndexedDB schema for run history
+- risks: 7B VRAM requirement needs graceful fallback logic; first-load UX (download progress bar) is critical for demo to not appear broken; GHL postMessage spec requires real GHL dev access for production (not needed for demo)

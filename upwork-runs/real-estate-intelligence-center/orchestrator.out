@@ -1,0 +1,99 @@
+# Orchestrator — Real Estate Intelligence Center
+
+## Run identity
+- slug: `real-estate-intelligence-center`
+- demo path: `../michaelwegter.com/public/demos/real-estate-intelligence-center/`
+- demo URL (live): https://michaelwegter.com/demos/real-estate-intelligence-center/
+- work-sample route: /work-samples/real-estate-intelligence-center
+- feature richness: 10/10 (full-featured, production-minded MVP)
+- client/product: **Pathwaize** — AI operating system for real estate investors. Deliverable = "Intelligence Center" standalone dashboard (meant to embed in GoHighLevel as marketplace app / iframe custom menu page).
+
+## What the client actually wants (distilled)
+An **AI workflow execution console** (NOT a chatbot, NOT an analytics dashboard) that proves ONE core loop across 3 engines:
+
+**Run engine → Generate output → Review output → Request edits → Approve → Push/Save.**
+
+Three engines, each wired end-to-end through that loop:
+1. **Authority Engine** — founder-authority content (LinkedIn/X posts, thought-leadership). PRIORITY #1 to wire.
+2. **Newsletter Engine** — newsletter drafts + subject-line options + preview text.
+3. **Knowledge Engine Lite** — generates/curates core business knowledgebase, saves to Google Drive or GitHub.
+
+Plus supporting UI:
+- **Intel Brief stub** — static/placeholder card with: What changed / What's working / What's leaking / What needs action / Recommended decisions / Priority list.
+- **Outputs Pending Review** queue.
+- **Prompt chips** (quick-start command chips).
+- **Persistent intelligence input** (always-present command bar).
+- **Future-engine placeholders** (only if helpful).
+
+Backend concept required (must be REPRESENTED, at least architecturally): engine orchestrator, **backend-based LLM routing layer** (frontend never calls a provider directly), prompt/template management, engine run records, output storage + status tracking, review/approval/revision workflow, usage + cost logging, error handling, Google Drive + GitHub KB connections, subaccount/workspace association.
+
+## The chosen implementation angle (Michael's note — this is the differentiator)
+Build the demo with the **LLM running client-side on WebGPU** (WebLLM / Transformers.js, 4-bit quantized model e.g. Qwen2.5-1.5B/7B-Instruct-q4). This is a deliberate, defensible demo choice: it lets a fully working AI console run on GitHub Pages with **zero server cost, zero API keys, and full privacy**, while still faithfully modeling the client's required architecture.
+
+**Framing for the proposal (critical):** the client's spec says "frontend must NOT call an LLM provider directly; it talks to the Pathwaize backend which does routing." Reconcile this honestly:
+- The demo ships an **in-browser `LLMRouter` module** that mirrors the exact backend routing contract (same request/response envelope: `{engine, action, prompt, model, params}` → `{output, runId, usage, cost, status}`). In the demo the router resolves to a **WebGPU provider**; in production the identical interface swaps to a server call to Pathwaize's routing layer (OpenAI/Claude/etc.). This proves the "provider-agnostic, not hard-coded to one model" requirement literally — WebGPU is just registered as provider #1, and adding a server/OpenAI provider is a config line, not a rebuild.
+- Adhere to the WebGPU agentic best-practices supplied: **prompt chaining / routing over free ReAct loops**, an **intent-classifier router** step, **enforced structured (JSON-schema/grammar) outputs**, deterministic JS validation + a **single reflection/self-correction retry**, **IndexedDB** for run records / output storage / logs, sliding context window. These map 1:1 onto the client's engine-orchestration + run-records + error-handling requirements, so the "demo trick" IS the architecture demonstration.
+
+Result: a genuinely functional AI console the reviewer can run engines in, review/revise/approve/push outputs in, with real run history + cost logs — all live, no backend to keep alive.
+
+## Prototype vs full — decision
+**FULL, functional demo.** None of the fallback triggers apply: WebGPU makes the hero feature (real LLM generation) work with no backend dependency, so nothing needs stubbing that can't be stubbed. Feature richness 10 demands several real working features. Backend is modeled in-browser (LLMRouter + IndexedDB persistence) — no mw-backend service required for the core loop.
+
+Optional backend lever (planner/CEO decide, do NOT overbuild): a thin mw-backend Flask blueprint could back the Google Drive / GitHub "save/push" as a real integration. Default: simulate save/push destinations convincingly in-browser (show the file that WOULD be written, the target path, and a success receipt) unless planner greenlights a real GitHub push via a blueprint. Keep V1 lean — client explicitly warns against overbuilding.
+
+## Hero + supporting features (caps: 1 hero + ≤2 supporting)
+- **Hero:** the end-to-end engine run loop (Run → Generate via WebGPU → Review → Request edits → Approve → Save/Push), demonstrated fully on the **Authority Engine** and **Newsletter Engine** (the two "wire end-to-end" priorities).
+- **Supporting 1:** Knowledge Engine Lite with a Google Drive / GitHub destination picker + save receipt.
+- **Supporting 2:** the console shell — Outputs Pending Review queue, prompt chips, persistent intelligence input, Intel Brief stub, run-history + usage/cost log panel.
+
+## Priority build order (from the posting — follow it)
+1. UI shell (console layout, NOT a chatbot, NOT analytics).
+2. Authority Engine end-to-end.
+3. Newsletter Engine end-to-end.
+4. Knowledge Engine Lite (generate + KB storage to Drive/GitHub).
+5. Outputs Pending Review.
+6. Approve / request edits / re-run flow.
+7. Intel Brief UI stub.
+8. Future-engine placeholders only if helpful.
+
+## Design direction (bespoke — NOT michaelwegter.com's look)
+"AI-powered execution console" for real-estate investors. Think a **command deck / mission-control** aesthetic: dark, dense, professional SaaS, not playful, not a generic chatbot bubble UI. Suggested direction (planner finalizes with hex + fonts from research):
+- Deep charcoal/near-black canvas with a single confident accent (Pathwaize brand if researcher finds it; else a real-estate-fintech blue/teal or authority gold).
+- Panel-based layout: left engine rail, center run/review workspace, right Outputs-Pending-Review + Intel Brief.
+- Typography: a crisp grotesk/Inter-class UI face + a mono for run IDs / logs / cost figures.
+- Status system: pending / generating / needs-review / revised / approved / pushed — colored state chips everywhere (this sells the "workflow console" feel).
+- researcher: find Pathwaize's real brand (site, logo, colors) + GoHighLevel embed context; competitor consoles (Jasper, Copy.ai workflow UIs, GHL). planner: lock the bespoke palette + fonts.
+
+## Requirements the DoD/evaluator will grade (make sure every one is addressed in demo + cover letter + deck)
+- 3 engines each doing run/generate/review/revise/approve/save-push.
+- Intel Brief stub with its 6 named sections.
+- Prompt chips, persistent intelligence input, Outputs Pending Review.
+- Backend LLM routing layer story (provider-agnostic) — literally shown via LLMRouter.
+- Approval-gating: LLM outputs NEVER auto-publish/push/save without explicit user approval — demonstrate the gate visibly.
+- Google Drive + GitHub KB destinations.
+- Run records, output status tracking, usage/cost logging, error handling — visible in a history/log panel.
+- Subaccount/workspace association — show a workspace selector.
+- The 8 "TO APPLY" questions must all be answered in the cover letter: sample dashboards; recommended stack (they use AWS + Supabase — address it); LLM-workflow experience; GoHighLevel integration approach; how the backend LLM routing stays provider-agnostic; how approval-gating prevents unapproved actions; how to build lean without overengineering; timeline + fixed-price/milestone budget range.
+
+## Proposal-specific notes for downstream steps
+- **Stack recommendation to give the client** (they use AWS + Supabase): Next.js/React frontend embedded in GHL via iframe custom menu page; Supabase (Postgres + Auth + RLS for subaccount/workspace isolation + storage) for run records/outputs/status/logs; a backend **LLM routing service** (Node/Next API routes or a small service on AWS) exposing one provider-agnostic `/route` contract; Drive + GitHub via OAuth server-side. Say this explicitly — it shows we respect their existing infra while our demo proves the client-side-swappable routing pattern.
+- **GoHighLevel angle:** address marketplace app vs iframe custom menu link, SSO/subaccount context passing, and iframe sizing/postMessage (portfolio's AppFrame already does content-height messaging — mention embeddability is proven).
+- Reference the live demo by name + link in BOTH cover letter and deck.
+- Voice: Michael's (`reference/brand-voice.md`). No em/en dashes anywhere. GitHub handle `mwegter95`.
+
+## Scope fences (do NOT build)
+- No advanced analytics, no continuous KB monitoring, no proactive gap detection, no future engines beyond placeholders. Client explicitly rejects these.
+- No real OpenAI/Claude API keys in the demo (WebGPU makes them unnecessary and avoids key leakage).
+- Keep demo ≤ ~12 files, build < 3 min. WebLLM model loads from CDN at runtime — do not bundle weights.
+- One hero + ≤2 supporting. Don't gold-plate the Intel Brief (it's an intentional stub).
+
+## Suggested pipeline layout
+Backend integration is optional/light and a live-deploy demo matters, so **with-deploy** (+ **with-ceo** for a richness-10 build):
+intake → planner → CEO → researcher → demo-builder → deploy → deploy-test → media-capture → proposal-writer → evaluator → prompt-optimizer.
+(Only add an mw-backend blueprint if planner/CEO greenlight a real GitHub/Drive push; otherwise no backend service is needed and deploy is frontend-only.)
+
+## handoff
+- produced: run foundation for `real-estate-intelligence-center` — identity, distilled brief, WebGPU implementation angle, prototype-vs-full (FULL), hero/supporting features, priority build order, bespoke design direction, full requirement + TO-APPLY checklist, scope fences.
+- decisions: FULL demo; LLM runs client-side on WebGPU (WebLLM/Transformers.js) behind an in-browser `LLMRouter` that mirrors the production provider-agnostic backend contract; hero = end-to-end run/review/approve/push loop on Authority + Newsletter engines; Knowledge Engine Lite + console shell as supporting; save/push destinations simulated in-browser by default (real GitHub push only if planner greenlights a blueprint).
+- next needs: intake → structured brief.json graded against the requirement + TO-APPLY checklist above; researcher must find Pathwaize's real brand + GHL embed specifics; planner locks bespoke palette/fonts + confirms whether any mw-backend blueprint is warranted.
+- risks: WebGPU availability varies by browser (demo must detect + show a graceful fallback / "enable WebGPU" note and ideally a mock-LLM path so reviewers without WebGPU still see the flow); reconciling "frontend must not call LLM directly" with a client-side model must be framed honestly as the swappable-provider #1 (do not misrepresent); model download size/latency on first load — pick a small 4-bit model and show a load progress state.

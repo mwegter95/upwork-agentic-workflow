@@ -1,0 +1,58 @@
+# Orchestrator — panhandle-garage-door-company
+
+## Run identity
+- slug: `panhandle-garage-door-company`
+- run dir: `upwork-runs/panhandle-garage-door-company/`
+- demo route: `/work-samples/panhandle-garage-door-company` → iframes `/demos/panhandle-garage-door-company/`
+- feature richness: 10/10 (full, production-quality, multiple working features)
+
+## Client snapshot
+- Company: **Dimitroff Door Repair**, Dumas TX. Serves the entire **Texas Panhandle + Northeast New Mexico**.
+- Tagline / brand position: **"One Company. Every Door."**
+- Services (8 silos): residential garage doors, commercial overhead doors, roll-up doors, storefront doors, barn/agricultural doors, entry ("man") doors, dock equipment, residential+commercial window repair/replacement.
+- Goal stated bluntly: NOT a prettier site — the **highest-ranking** garage/commercial-door site in the Panhandle that generates qualified phone calls/leads and establishes local authority. Out-rank Amarillo competitors in dispersed Panhandle towns.
+- Wants: WordPress (migrating from Squarespace), SEO-first architecture, content silos, city landing pages, service pages, commercial pages, educational blog, technical SEO (schema, sitemap, robots, metadata, internal linking, 301s, GSC/GA, conversion tracking), Core Web Vitals, mobile-first, scalable templates, docs/training.
+- Branding intent: keep current simple/straightforward feel, "slightly elevated" with more functionality. Do NOT just emulate competitor "feel". SEO strategist first, designer second.
+- Posting economics: hourly, intermediate, $15–$100 bids (avg $48.54), 10–15 proposals, contract-to-hire. US-only freelancers.
+
+## Michael's explicit directives (override defaults — honor exactly)
+1. **Real WordPress site** (not a static mock) hosted on the **Surface** via Docker (WP + MySQL), exposed through a Flask **bridge blueprint** at `/demos/panhandle-garage-door-company/...`. This is the same proven WP-Docker-on-Surface pattern used before. Follow the "WordPress Docker demos" gotchas section in CLAUDE.md verbatim (no `?>` tags, ASCII-only runner scripts, 3 login filters, canonical Host forwarding, redirect_canonical suppression, register as a service so run-server.ps1 owns the pull/start).
+2. **SEO focus is company-specific**: real Dimitroff services + real Texas Panhandle/NE-NM geography (Dumas, Amarillo, Borger, Pampa, Dalhart, Canyon, Hereford, Perryton, etc.). City landing pages + service silos must reflect the actual 8 service lines and the "One Company. Every Door." positioning. No generic placeholder SEO.
+3. **SEO Analyzer app** (the app already on michaelwegter.com) must be wired so a visitor can **create an account with ANY fake email + password** and then use the analyzer. After demo-builder + deploy, account creation + analyzer must work live. Treat this as a hero feature: the proposal's proof is "here is the SEO tooling I'll bring," demonstrated on the client's own (demo) site.
+
+## Demo concept (for planner/demo-builder — direction, not final scope)
+Two integrated pieces under one slug:
+- **A. The real WordPress site** for Dimitroff Door Repair: SEO-architected — homepage, service-silo pages, sample city landing pages (Dumas + 2–3 Panhandle towns), a commercial vs residential split, a sample educational/blog post, schema markup (LocalBusiness + Service), XML sitemap, clean metadata, internal linking, click-to-call CTAs / estimate-request conversion path. Branding "simple, straightforward, slightly elevated" — NOT michaelwegter.com's look; build a bespoke door-company design system (utilitarian, trustworthy, blue-collar-premium; see planner for palette/type).
+- **B. The SEO Analyzer app** with open account creation (any email/password) that audits a URL (on-page SEO: title/meta/headings/schema/word count/Core Web Vitals-style signals/local-SEO checks) and returns a scored report. Demonstrate it analyzing the new Dimitroff WP site to show before/after authority gains. This is the differentiator that matches "thinks like an SEO strategist first."
+
+Decision rule: build FULL (richness 10). Backend is warranted (WP DB + auth for analyzer). Record prototype-vs-full as FULL in plan.md.
+
+## Architecture / deployment plan
+- WP site: Docker (WordPress + MySQL) on the Surface, registered via `surface_register_service.py`; Flask bridge blueprint `panhandle_blueprint.py` (PREFIX `/demos/panhandle-garage-door-company`, UPSTREAM `http://127.0.0.1:<port>`), registered in `server.py`, pushed via git (auto-deploy ~30s).
+- SEO Analyzer: the existing analyzer app on the site. Demo-builder must locate it (likely an existing app/blueprint — see `../michaelwegter.com/src/data/apps.js` and mw-backend blueprints) and ensure **open signup** (any fake email/password) + URL analysis works against the live WP demo. If a backend endpoint is needed, add a Flask blueprint mirroring `spotify_blueprint.py`; seed nothing (open signup). Record demo credentials path even though signup is open.
+- Work-sample registry entry in `../michaelwegter.com/src/data/workSamples.js` (schema per CLAUDE.md): client="Dimitroff Door Repair", tags include WordPress, SEO, Local SEO, PHP, MySQL, Docker, Schema Markup, Landing Page, Maps/Geo as accurate. Add any new tag to `tagSections` in the same edit.
+
+## Pipeline plan-of-attack (with-deploy + with-ceo layout recommended)
+intake → planner → ceo → researcher → demo-builder → deploy → deploy-test → media-capture → proposal-writer → evaluator → (prompt-optimizer)
+- researcher: confirm Dimitroff's current Squarespace site (brand colors/logo/voice), real Panhandle/NE-NM city list + competitor set (Amarillo door cos), and locate the exact existing SEO-analyzer app + blueprint to reuse. Cap ~6 fetches.
+- deploy-test (Playwright, LIVE): WP site loads at the bridged path incl. a sub-page; analyzer signup with a fresh fake email + password succeeds and returns a real report. VERDICT gates media-capture.
+
+## Quality guidance / hard gates to keep front-of-mind
+- Address EVERY explicit requirement (SEO architecture, silos, city pages, technical SEO list, CWV, mobile-first, conversion, docs/training) in cover letter AND show it in the demo or deck.
+- No em/en dashes anywhere in prose deliverables.
+- GitHub handle `mwegter95` only.
+- Demo + one-pager + deck share a bespoke door-company design language (utilitarian/trustworthy), NOT the portfolio look.
+- Demo link in BOTH cover letter and deck. Live `/work-samples/<slug>` returns 200 post-deploy.
+- Proposal must speak as SEO strategist first (architecture, ranking strategy, content silos, local authority), web designer second — match the client's stated framing.
+
+## Risks / watchpoints
+- WP-Docker-on-Surface is the highest-risk piece: image-pull timeout (register as service, don't block in /run/exec), sub-path login filters, canonical redirect loops, Host header forwarding. Budget retries here.
+- Open signup ("any fake email/password") must NOT collide with existing app auth assumptions — verify the analyzer's auth allows arbitrary credentials without email verification.
+- Two backends (WP + analyzer) on one slug; keep ports/services distinct and both registered in `services.json`.
+- Verify Flask health (`{"ok":true,...}`) before any /run/exec; recover by pushing if a managed service grabbed 5050.
+
+## handoff
+- produced: orchestrator.out — run identity, client snapshot, Michael's 3 directives, two-part demo concept (real WP site + open-signup SEO analyzer), deployment + pipeline plan, hard gates, risks.
+- decisions: slug `panhandle-garage-door-company`; FULL build (richness 10); real WordPress on Surface via Docker+Flask bridge; SEO analyzer must allow account creation with any fake email/password and run live after deploy; bespoke door-company design, not portfolio look.
+- next needs: intake → brief.json must capture all technical-SEO line items, 8 service silos, Panhandle geography, "One Company. Every Door.", and the open-signup analyzer requirement as gradable requirements.
+- risks: WP-Docker-on-Surface fragility (pull timeout, sub-path login, canonical loops); open-signup auth compatibility; dual-backend port/service management.

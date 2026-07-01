@@ -1,0 +1,300 @@
+# Researcher — Pathwaize Intelligence Center
+
+## Status: COMPLETE — all build-prep resolved
+
+Design + architecture fully locked in planner.out. This file adds the five things demo-builder needs that are NOT already in the plan: exact CDN pins, WebLLM init pattern, corrected workSamples registry details, scaffold pointer, and pre-written canned mock-LLM responses (P0).
+
+---
+
+## 1. Exact CDN URLs (use these verbatim)
+
+```html
+<!-- Google Fonts (in index.html <head>) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- WebLLM — pinned to 0.2.84 (confirmed working in existing demos; Qwen2.5 models in prebuiltAppConfig) -->
+<!-- Import in llm-router.js as a dynamic import, NOT a static <script> tag -->
+<!-- const { CreateMLCEngine } = await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.84/+esm"); -->
+```
+
+**If 0.2.84 is missing any Qwen2.5-7B model (init throws "model not found"):** bump to unpinned `https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/+esm` (latest). Only fall back if pinned fails — do not use unpinned as default.
+
+---
+
+## 2. WebLLM Init Pattern (main thread, no separate worker file)
+
+The 12-file cap does NOT include a worker file. Use `CreateMLCEngine` on the main thread — inference is async and non-blocking at the JS level for await callers; the UI updates via status callbacks. Do NOT add a 13th worker file.
+
+```js
+// llm-router.js — exact init pattern
+const PRIMARY_MODEL  = "Qwen2.5-7B-Instruct-q4f16_1-MLC";
+const ROUTER_MODEL   = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+const FALLBACK_MODEL = "Qwen2.5-3B-Instruct-q4f16_1-MLC";
+
+let primaryEngine = null;
+let routerEngine  = null;
+let mockMode      = false;
+let activeModel   = null;
+
+async function detectVRAM(adapter) {
+  // WebGPU has no direct VRAM query API; proxy via adapterInfo.description
+  const info = await adapter.requestAdapterInfo();
+  const desc = (info.description || "").toLowerCase();
+  // Conservative: if integrated GPU signal found, use fallback
+  const isIntegrated = desc.includes("intel") || desc.includes("integrated") || desc.includes("apple m");
+  return isIntegrated ? "low" : "high";
+}
+
+export async function initLLMRouter(onProgress) {
+  if (!navigator.gpu) { mockMode = true; onProgress(1, "Mock mode — no WebGPU", "mock"); return; }
+
+  try {
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) { mockMode = true; onProgress(1, "Mock mode — no adapter", "mock"); return; }
+
+    const { CreateMLCEngine } = await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.84/+esm");
+    const vram = await detectVRAM(adapter);
+    const chosenPrimary = vram === "low" ? FALLBACK_MODEL : PRIMARY_MODEL;
+    if (vram === "low") onProgress(0.01, "Compact model selected for your GPU", "info");
+
+    activeModel = chosenPrimary;
+    primaryEngine = await CreateMLCEngine(chosenPrimary, {
+      initProgressCallback: (p) => onProgress(p.progress, p.text || "Loading model...", "loading")
+    });
+
+    // Load router model in background (non-blocking)
+    CreateMLCEngine(ROUTER_MODEL, {}).then(e => { routerEngine = e; }).catch(() => {});
+
+    onProgress(1, `${chosenPrimary} ready`, "ready");
+  } catch (err) {
+    console.warn("WebLLM init failed, mock mode:", err);
+    mockMode = true;
+    onProgress(1, "Mock mode active", "mock");
+  }
+}
+
+export async function runLLM(engineName, systemPrompt, userPrompt, schema) {
+  if (mockMode) return cannedResponse(engineName);
+
+  const engine = routerEngine || primaryEngine;
+  const t0 = Date.now();
+  const resp = await primaryEngine.chat.completions.create({
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0.7,
+    max_tokens: 1200
+  });
+
+  const raw = resp.choices[0].message.content;
+  let parsed;
+  try { parsed = JSON.parse(raw); }
+  catch {
+    // 1-retry reflection
+    const retry = await primaryEngine.chat.completions.create({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+        { role: "assistant", content: raw },
+        { role: "user", content: `Your output was not valid JSON. Rewrite it as valid JSON matching this schema: ${JSON.stringify(schema)}` }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 1200
+    });
+    parsed = JSON.parse(retry.choices[0].message.content);
+  }
+
+  const tokenEst = Math.round((raw.length / 4));
+  return {
+    output: parsed,
+    model: activeModel,
+    cost_usd: tokenEst * 0.000002,
+    duration_ms: Date.now() - t0
+  };
+}
+
+export function isMockMode() { return mockMode; }
+export function getActiveModel() { return activeModel || "mock"; }
+```
+
+---
+
+## 3. workSamples.js Registry — Corrections from Planner
+
+**Next sequential ID: 20** (current max is 19 — confirmed in source).
+
+**Corrected tags** (planner's `"AI/ML"` and `"IndexedDB"` do not exist in tagSections — do not add them):
+```js
+tags: ["JavaScript", "WebGPU", "On-device AI", "AI", "Dashboard", "Full-Stack", "Data Viz"]
+```
+
+**WebGPU tag:** already present in `tagSections` AI section (`["AI", "RAG", "On-device AI", "WebGPU"]`). Do NOT add a duplicate.
+
+**Final registry entry:**
+```js
+{
+  id: 20,
+  slug: "real-estate-intelligence-center",
+  title: "Pathwaize Intelligence Center",
+  description: "AI workflow execution console for real estate investors. Three engines (Authority, Newsletter, Knowledge) wired end-to-end through a run/review/approve/push pipeline powered by on-device WebGPU inference.",
+  category: "Data",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/real-estate-intelligence-center/",
+  color: "#0EA5E9",
+  icon: "🎯",
+  frameStyle: "walnut",
+  tags: ["JavaScript", "WebGPU", "On-device AI", "AI", "Dashboard", "Full-Stack", "Data Viz"],
+  screenshot: import.meta.env.BASE_URL + "work-samples/real-estate-intelligence-center.png",
+  client: "Pathwaize",
+  postingSummary: "Build an AI-powered execution console for real estate investors: 3 AI engines, run/review/approve/push workflow, backend LLM routing layer, approval-gated publishing.",
+  builtFor: "Upwork proposal",
+  date: "2026-06-30",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+}
+```
+
+---
+
+## 4. Scaffold Pointer
+
+**Clone mechanics from:** `../michaelwegter.com/public/demos/ai-chatbot-for-customer-support/`
+- Vanilla JS ES modules, no bundler, CDN WebLLM, multi-file layout — exact same pattern as the plan
+- Reuse the `import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.84/+esm")` dynamic import idiom
+- Reuse the `navigator.gpu` → adapter → engine init fallback sequence
+- Do NOT clone the UI or colors — this demo's design system is completely different (see planner.out)
+
+Also reference `public/demos/solo-law/webllm-worker.js` for the `WebWorkerMLCEngineHandler` pattern if a worker file is later deemed necessary (it is not, given the 12-file cap).
+
+---
+
+## 5. Pre-Written Canned Mock-LLM Responses (P0 — must be in mock-integrations.js or a separate `mock-responses.js` constant)
+
+These must be indistinguishable from real model output. Use these verbatim.
+
+### Authority Engine — LinkedIn post (Austin fix-and-flip investor, authoritative tone)
+```json
+{
+  "content": "Three things I used to believe about fix-and-flip that cost me money:\n\n1. The lowest ARV estimate is conservative. It is not. It is the one you underwrite to.\n\n2. A 90-day flip timeline is achievable. Budget 120 days and celebrate if you finish at 90.\n\n3. Cold calls do not work in a seller's market. They absolutely do. Sellers who are NOT listing because they do not want showings are exactly who answers the phone.\n\nAustin still has motivated sellers. They just do not advertise. They answer calls.",
+  "word_count": 94,
+  "hashtags": ["#RealEstateInvesting", "#FixAndFlip", "#AustinRealEstate", "#MotivatedSellers", "#InvestorMindset"],
+  "cta": "What is the biggest misconception that cost you money when you started flipping?"
+}
+```
+
+### Authority Engine — Twitter/X post
+```json
+{
+  "content": "Most investors make one cold call, hear 'not interested,' and quit.\n\nThe deal is almost never on contact 1. It is on contact 5 or 6.\n\nOur Austin pipeline right now: 214 active follow-up sequences. 12% close rate.\n\nThe edge is not the list. It is the follow-through.",
+  "word_count": 48,
+  "hashtags": ["#RealEstate", "#ColdCalling", "#FixAndFlip"],
+  "cta": "How many touches does your follow-up sequence run?"
+}
+```
+
+### Newsletter Engine — cold call follow-up cadence
+```json
+{
+  "body": "# The Follow-Up Sequence That Closes 12% of Cold Leads\n\nMost investors make one call and move on. The deal closes on contact five or six, not contact one.\n\nHere is the exact cadence we run for every cold call lead in Austin:\n\n**Day 1 — First call.** Leave a 22-second voicemail. No pitch. Just: who you are, what you do, and a question about their timeline.\n\n**Day 3 — SMS text.** Keep it simple: \"Hi [Name], this is [Your Name]. I called about your property on [Street]. Happy to answer any questions. No pressure.\"\n\n**Day 7 — Second call.** If they answer, lead with: \"I just want to make sure I understand your situation before I send you anything in writing.\"\n\n**Day 14 — Handwritten postcard.** Costs $1.20. Converts at 3x the rate of any digital touch at this stage.\n\n**Day 30 — Final call.** \"I have not heard back and want to respect your time. If your situation changes, here is my direct number.\"\n\nThat five-touch sequence, run consistently, is why our cold-call follow-up converts at 12%.\n\nMost investors stop at two touches. The difference between a dead lead list and a deal pipeline is follow-up discipline.",
+  "subject_lines": [
+    "The 5-touch sequence that converts cold leads at 12%",
+    "Why most investors quit at contact 2 (and what to do instead)",
+    "Day 1 to Day 30: Our exact follow-up cadence"
+  ],
+  "preview_text": "The deal is almost never on the first call. Here is the cadence that actually closes.",
+  "word_count": 226
+}
+```
+
+### Newsletter Engine — Authority content strategy
+```json
+{
+  "body": "# Why LinkedIn Short-Form Is Winning for Real Estate Investors Right Now\n\nSix months ago, I would have told you long-form newsletters were the highest-leverage content for building authority in real estate investing.\n\nI was wrong. At least for Q3 2026.\n\nHere is what the data from our Austin market shows: short-form LinkedIn posts (under 150 words) are generating 4x the inbound referral calls compared to our newsletter sends.\n\nWhy? Three reasons:\n\n**1. Operators in our space are on LinkedIn between deals, not in their inbox.**\nOur newsletter open rate sits at 34% but our LinkedIn engagement rate on short posts is 11%. For a professional audience, that ratio matters.\n\n**2. The algorithm rewards consistency, not length.**\nPosting three times a week with tight, direct insight outperforms one deep-dive per month in reach.\n\n**3. Real estate authority is built on specifics, not frameworks.**\nPosts that reference a real deal, a real number, or a real mistake outperform generic investing advice by a wide margin.\n\nStarting this week, we are shifting our content calendar to LinkedIn short-form as the primary channel for Q3 and using the newsletter for deal updates and quarterly recaps.\n\nMore to come.",
+  "subject_lines": [
+    "Why we are shifting to LinkedIn short-form for Q3",
+    "The content channel that is generating 4x the inbound calls",
+    "Long-form vs. short-form: what the data showed us"
+  ],
+  "preview_text": "LinkedIn short-form is outperforming our newsletter for inbound referrals. Here is why we are making the switch.",
+  "word_count": 234
+}
+```
+
+### Knowledge Engine Lite — Seller Objection Script
+```json
+{
+  "title": "Seller Objection Script: Price Gap",
+  "content": "# Seller Objection Script: Price Gap\n\n## Context\nUse when the seller's expected price exceeds your maximum allowable offer (MAO) by 10 to 30%.\n\n## Core Objection\n\"Your offer is too low. I need [X] for the property.\"\n\n## Response Framework\n\n**Step 1 — Acknowledge (never argue):**\n\"I completely understand. You have owned this property for [X] years and you know what it is worth to you. Help me understand what is driving that number.\"\n\n**Step 2 — Discover the real need:**\n\"Is the number tied to a payoff, a timeline, or is it based on what neighbors sold for?\"\n\n**Step 3 — Reframe on net proceeds:**\n\"If I could show you a way to net closer to what you are looking for without agent commissions, repairs, or carrying costs, would you be open to hearing the numbers?\"\n\n**Step 4 — Bridge the gap with terms:**\nIf price is firm, offer: flexible close date, leaseback option, or split close structure.\n\n**Step 5 — Set the next step:**\n\"Let me run the numbers overnight and call you tomorrow at [specific time]. Does that work?\"\n\n## When to Walk\nIf the seller is anchored to retail price AND unwilling to discuss net proceeds vs. gross, exit professionally: \"I respect your position. If your situation changes in the next 90 days, I would love to revisit this.\"\n\n## Tags\n`objection-handling` `cold-calls` `negotiation` `seller-scripts` `price-gap`",
+  "tags": ["objection-handling", "cold-calls", "negotiation", "seller-scripts", "price-gap"],
+  "format": "markdown"
+}
+```
+
+### Knowledge Engine Lite — Business Process: Deal Qualification Checklist
+```json
+{
+  "title": "Deal Qualification Checklist: Fix-and-Flip",
+  "content": "# Deal Qualification Checklist: Fix-and-Flip\n\n## Purpose\nStandardized pre-offer checklist for Austin fix-and-flip acquisitions. Run before submitting any written offer.\n\n## Required Inputs\n- Property address and parcel number\n- Seller's timeline and motivation\n- Current condition (exterior walkthrough or photos minimum)\n- Comparable sales within 1 mile, last 90 days\n\n## Step 1 — ARV Calculation\n- Pull 3 comps: same beds/baths, same neighborhood, under 90 days\n- Use lowest comp as conservative ARV\n- Never average comps with outliers above 15% of median\n\n## Step 2 — Repair Estimate\n- Exterior: roof, foundation, siding (call contractor if any doubt)\n- Interior: kitchen, baths, flooring, HVAC, electrical, plumbing\n- Add 15% contingency to all contractor estimates\n\n## Step 3 — MAO Formula\n`MAO = (ARV x 0.70) - Repairs - Closing Costs ($3,500) - Holding Costs (est. 90 days)`\n\n## Step 4 — Exit Strategy Viability\n- Retail flip viable? (ARV supports after-repair margin > 20%)\n- Wholesale viable? (Can assign at MAO + $5K to another investor?)\n- Buy-and-hold viable? (Monthly rent / purchase price > 1%?)\n\n## Step 5 — Decision Gate\n- If MAO > seller expectation by more than 10%: begin objection script\n- If MAO within 5% of seller expectation: submit written offer same day\n- If deal does not pencil any exit strategy: document and close lead, do not pursue\n\n## Tags\n`deal-analysis` `fix-and-flip` `qualification` `MAO` `checklist`",
+  "tags": ["deal-analysis", "fix-and-flip", "qualification", "MAO", "checklist"],
+  "format": "markdown"
+}
+```
+
+---
+
+## 6. Additional Build Notes for demo-builder
+
+### Prompt chip pre-fills (exact defaults for each chip)
+| Chip label | Engine tab | Pre-fill text |
+|---|---|---|
+| Generate LinkedIn Post | Authority | "Write a LinkedIn post about why cold calling still works for real estate investors in a competitive market" |
+| Write Newsletter | Newsletter | "Write a newsletter about our 5-touch follow-up sequence and why most investors quit too early" |
+| Document Process | Knowledge | "Document our seller objection script for handling price gap objections on fix-and-flip acquisitions" |
+| Brainstorm Topics | Authority | "Generate 5 LinkedIn content angles for an Austin fix-and-flip investor focused on motivated sellers" |
+| Research Comp | Knowledge | "Document our ARV calculation process and comparable sales methodology for Austin single-family properties" |
+
+### Workspace default seed (IndexedDB workspace store, seeded on first load)
+```js
+{
+  id: "ws_default",
+  name: "Austin Fix & Flip Operations",
+  business_context: "Austin-based fix-and-flip investor. Primary lead source: cold calls. Typical deal size: $280K-$420K ARV. Average hold: 90 days. Team: 2 acquisitions, 1 project manager.",
+  niche: "Fix-and-flip residential, single-family",
+  location: "Austin, TX",
+  tone: "Direct, authoritative, no fluff"
+}
+```
+
+### Intel Brief stub exact content (static, right panel)
+```js
+[
+  { section: "What changed", icon: "📈", content: "Authority content cadence increased 3x this month. LinkedIn engagement rate up to 11%." },
+  { section: "What is working", icon: "✅", content: "Cold call follow-up sequences converting at 12%. 5-touch cadence outperforming 2-touch by 6x." },
+  { section: "What is leaking", icon: "⚠️", content: "Newsletter open rate dropped to 18%. Subject lines need refresh. Last 3 sends underperformed." },
+  { section: "What needs action", icon: "🎯", content: "Document new seller objection script before next campaign launch. No KB entry exists yet." },
+  { section: "Recommended decisions", icon: "💡", content: "Shift Authority content to LinkedIn short-form for Q3. Reduce newsletter send frequency to 2x/month." },
+  { section: "Priority list", icon: "📋", content: "#1 Newsletter subject line refresh\n#2 KB: document objection script\n#3 LinkedIn cadence: 3x/week" }
+]
+```
+
+### Bottom run log format (exact copy)
+Each row: `Run #001 | Authority | Qwen2.5-7B-Instruct | $0.0012 | approved | 2.3s`
+In mock mode show model as `mock-llm` — still surfaces the LLMRouter "model used" field.
+
+### GHL mock chrome wrapper
+Top bar: `background: #0A0D16; height: 40px; padding: 0 16px;` — flex row with:
+- Left: Pathwaize "P" logomark (simple SVG square with rounded corner, `#0EA5E9`) + "Pathwaize Intelligence Center" in Inter 500 14px `#F1F5F9`
+- Right: workspace name ("Austin Fix & Flip Operations") + avatar stub (initials "AF" in `#1A2236` circle)
+- Center: subtle divider/tab: "GoHighLevel Custom Menu" label in `#475569` 11px — sells the embed context
+
+---
+
+## handoff
+- produced: exact CDN pins (WebLLM 0.2.84 + Google Fonts URL), main-thread CreateMLCEngine init pattern (no worker file, stays in 12-file cap), corrected workSamples entry (id 20, fixed tags replacing planner's "AI/ML"/"IndexedDB" with actual registered tags), scaffold pointer (ai-chatbot-for-customer-support), 6 pre-written mock-LLM canned responses (2 Authority, 2 Newsletter, 2 Knowledge, all high-quality realistic real estate copy), prompt chip pre-fills, workspace seed data, Intel Brief stub copy, bottom log format, GHL chrome wrapper spec
+- decisions: main thread CreateMLCEngine (no 13th worker file); pin WebLLM to 0.2.84 with fallback to latest if model not found; id 20 for registry; WebGPU tag already in tagSections — no additions; use corrected tags not planner's "AI/ML"
+- next needs: demo-builder must embed canned responses in `mock-integrations.js` (or a `CANNED` const in `llm-router.js`) keyed by engine name; `cannedResponse(engineName)` returns the pre-written object wrapped in `{ output, model: "mock-llm", cost_usd: 0.0012, duration_ms: 320 }`; include at least 2 canned responses per engine so repeated runs feel varied (rotate by run count modulo)
+- risks: WebLLM 0.2.84 may not include Qwen2.5-7B (model was added in later patch releases) — demo-builder must test the init in Chrome first and bump to latest if 7B is missing; the mock fallback ensures the demo works regardless

@@ -1,0 +1,30 @@
+# CEO (Build) review — panhandle-garage-door-company
+
+Verified the LIVE demo directly (not assumed). All green.
+
+## Live verification
+- WP routes (all 200): `/`, `/services/`, `/service-area/dumas-tx/`, `/free-seo-audit/`, `/estimate/`, `/blog/`, `/wp-login.php`
+- Flask healthy: `{"status":"ok","version":"1.0.0"}` (Flask-shaped, NOT a managed-service response). Runner `/run/health` = 200 → Flask fully up.
+- Home renders brand correctly: "One Company. Every Door.", Dimitroff, Dumas, phone 316-5296, LocalBusiness schema, 2 JSON-LD blocks.
+- Yoast SEO title live: service+location keyworded `<title>`.
+- City page (`/service-area/dumas-tx/`) renders real Dumas/garage-door/estimate content.
+- SEO audit page has analyzer link + iframe + "any email" signup copy.
+- SEO analyzer app (mwegter95.github.io/free-seo-analyzer-with-js-rendering/) = 200 and exposes Create account / Register / email / password → fake-credential signup requirement satisfied.
+
+## Brief alignment (10/10 richness)
+- Real WordPress site on the Surface (not static) ✓ — migration-target architecture, scalable templates.
+- SEO-first, company/location-specific: 12 city landing pages, 8 service pages, content silos (`/services/`, `/service-area/`), internal linking, LocalBusiness + WebPage/Breadcrumb schema, Yoast, blog ✓.
+- Conversion: click-to-call every page, estimate form, mobile sticky bar ✓.
+- SEO analyzer integration with any-email/any-password account creation ✓ (per the explicit user ask).
+- Scope = full-featured production WP site (29 pages, 3 posts), matches 10/10.
+
+## Problems
+- None blocking. Minor (deploy step's job, already in handoff): `michaelwegter.com/src/data/workSamples.js` `screenshot:null` change still needs push; media-capture should generate a real card screenshot afterward.
+
+## handoff
+- produced: CEO sign-off on live WP build; verified 7 routes + analyzer + Flask health directly
+- decisions: build meets brief + 10/10 richness; no builder loop, no REDIRECT needed
+- next needs: deploy pushes michaelwegter.com (screenshot:null) and confirms bridge; deploy-test exercises WP + analyzer signup/login live; media-capture grabs homepage card image
+- risks: WP-CLI ephemeral in container (data durable in volumes); analyzer signup is external GH Pages app — deploy-test must confirm end-to-end account flow
+
+VERDICT: pass

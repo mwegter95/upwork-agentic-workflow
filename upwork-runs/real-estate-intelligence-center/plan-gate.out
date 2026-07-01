@@ -1,0 +1,47 @@
+# Plan Gate (Pass 2) — Pathwaize Intelligence Center
+
+## Review
+
+Planner file header: "FINAL — all research resolved. Status: READY — no open unknowns."
+Prior gate fail reasons checked against current plan:
+
+**1. WebLLM model IDs (was: unconfirmed)**
+RESOLVED. Verbatim constants locked in plan:
+- PRIMARY: `Qwen2.5-7B-Instruct-q4f16_1-MLC`
+- ROUTER: `Qwen2.5-1.5B-Instruct-q4f16_1-MLC`
+- FALLBACK: `Qwen2.5-3B-Instruct-q4f16_1-MLC`
+All three confirmed as valid MLC registry IDs by pre-researcher. ✅
+
+**2. Design system palette/fonts (was: provisional / pending)**
+RESOLVED. Full hex palette locked (9 tokens: bg-base, bg-surface, bg-elevated, border, accent-blue, accent-cyan, 3 status colors + text scale). Inter + DM Mono confirmed (neither is portfolio fonts). ✅
+
+**3. GHL iframe context (was: unknown)**
+RESOLVED. GHL postMessage spec not public — plan handles this correctly: demo uses URL params + mock chrome wrapper; proposal copy explains real GHL dev access needed for production iframe context. Appropriate scope boundary for a demo. ✅
+
+**4. Pathwaize brand identity (was: unresearched)**
+RESOLVED. No public Pathwaize presence found; plan defaults to dark execution-console aesthetic derived from product brief language + real estate SaaS conventions (dark theme validated over light). ✅
+
+**5. Competitor UI patterns (was: nice-to-have)**
+ADDRESSED. Dark execution console / mission-control positioning explicitly differentiated from Jasper/Copy.ai (both light-theme template galleries). ✅
+
+**Tech/requirements completeness:**
+- All 8 V1 scope items + 17 brief requirements mapped in traceability matrix ✅
+- All 3 engine pipelines: step-by-step prompt chains, exact JSON schemas, JS validation, 1-retry reflection ✅
+- Approval-gate state machine: 6 states with hex colors, Push disabled until status=approved enforced hard ✅
+- LLMRouter.run() contract: provider-agnostic, mirrors production backend interface ✅
+- Mock-LLM fallback: canned responses for non-WebGPU environments ✅
+- 12-file structure, no build step, no bundler — matches hosting constraints ✅
+- No mw-backend blueprint needed (correctly excluded) ✅
+- IndexedDB schema: 4 stores fully specified ✅
+- workSamples.js entry pre-written ✅
+- Risk table with mitigations for all 4 identified risks ✅
+
+**No problems found. Plan is implementation-ready.**
+
+## handoff
+- produced: VERDICT pass — all prior blockers resolved by pre-researcher; plan complete, locked, and ready for demo-builder
+- decisions: no plan changes needed; demo-builder uses verbatim model IDs and hex tokens as specified
+- next needs: demo-builder treats download progress bar as P0 UX (non-optional); pre-writes high-quality mock-LLM canned responses for all 3 engines; enforces approval gate hard (push disabled until status=approved)
+- risks: first-load 30s model download UX and mock-LLM canned response quality are the two highest reviewer-impression risks; both are surfaced in the plan with mitigations
+
+VERDICT: pass

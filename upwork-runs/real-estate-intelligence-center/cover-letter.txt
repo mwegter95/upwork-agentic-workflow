@@ -1,0 +1,77 @@
+COVER LETTER: Pathwaize Intelligence Center MVP
+Michael Wegter | Full-Stack Developer
+michaelwegter.com | github.com/mwegter95
+
+---
+
+You want an execution console for real estate investors, not another chatbot wrapper. I went ahead and built a working demo of the Intelligence Center so you can see exactly what I am proposing before we talk:
+
+https://michaelwegter.com/demos/real-estate-intelligence-center/
+
+Click "Run Authority Engine," fill in a topic, hit Run. The output drops into a review queue. You cannot push it anywhere until you click Approve. That is the core workflow you described, running live.
+
+---
+
+TO APPLY QUESTIONS (answered directly below):
+
+1. EXAMPLES OF SAAS DASHBOARDS AND AI WORKFLOW TOOLS
+
+The demo above is the most direct example. It is a full-featured execution console with three AI engines (Authority, Newsletter, Knowledge Lite), a pending-review queue, run records with cost logging, approval-gated push actions, and on-device LLM inference via WebGPU. The architecture mirrors what a production Pathwaize backend would expose: the frontend never calls an LLM provider directly; it calls a provider-agnostic LLMRouter whose .run() contract is identical whether the backend is a local model or an AWS-hosted routing service.
+
+Other relevant work: at U.S. Bank (via Turnberry) I was the sole developer and SME for TDAAS, an internal platform serving 600 users/month (~60k LOC, React + Python + SQL + Java). I led its migration to Azure Cloud. At Optum (current contract, April 2026) I am delivering Angular + .NET/C# full-stack features in strict Agile and I am the team's go-to for AI-assisted development. The personal portfolio at michaelwegter.com includes a gallery planner, an SEO analyzer, Spotify and Apple Music tools, all shipped and running.
+
+2. RECOMMENDED TECH STACK (respecting your AWS + Supabase stack)
+
+Frontend: Next.js or React, deployed as an iframe inside GoHighLevel's custom menu page or marketplace app. Thin, stateless, communicates only with your backend router, never directly with an LLM provider.
+
+Backend LLM routing layer: a dedicated service on AWS Lambda + API Gateway (or a Next.js API route) exposing one provider-agnostic POST /route endpoint. Receives engine name + payload, selects the model/provider from a config registry, forwards the request, logs usage + cost to Supabase, and returns a normalized response. Adding a second provider (say, switching from OpenAI to Claude or adding both) is a one-line config addition, not a rebuild.
+
+Data layer: Supabase (Postgres + Auth + Row-Level Security). Runs table, outputs table, usage_logs table, workspace/subaccount association baked in via RLS policies. Google Drive and GitHub OAuth tokens stored server-side in Supabase; the frontend never sees API keys.
+
+Integrations: Google Drive API and GitHub API server-side (backend handles OAuth flow + token refresh). LinkedIn and X push via their APIs, also proxied through the backend so the frontend just fires an approval action and waits for a receipt.
+
+3. EXPERIENCE WITH LLM-BACKED WORKFLOWS
+
+I have built LLM-backed features in production at Optum using Azure OpenAI. The Intelligence Center demo goes further: it implements a full prompt-chaining architecture (intent router → task chain → output validator → 1-retry reflection if JSON validation fails), structured JSON-schema output enforcement (the engine never returns free text the app cannot parse), sliding context window management, and an IndexedDB-backed run record system with cost logging. These are not demo shortcuts; they are the patterns I would carry into the production backend.
+
+4. EXPERIENCE WITH GOHIGHLEVEL INTEGRATIONS
+
+I have not shipped a GHL marketplace app in production, and I will be direct about that. What I know from research and the demo: the Intelligence Center embeds cleanly as a custom menu iframe. In production, you handle the subaccount context (location ID, user token) via GHL's SSO/JWT passed at iframe init and caught via postMessage or URL params. The demo simulates this with a mock GHL chrome wrapper that shows the workspace name and "GoHighLevel Custom Menu" label exactly as it would appear in a real embed. If your team has a GHL developer account and sandbox, I will integrate against the real postMessage spec within the first milestone. If not, the iframe path is straightforward and I can prototype against their public docs.
+
+5. HOW I WOULD STRUCTURE THE BACKEND LLM ROUTING LAYER
+
+One contract, multiple providers: POST /route accepts { engine, payload, workspace_id }. The router reads a providers config (a JSON or DB table) to select the active model and provider for this workspace. It constructs the prompt from a stored template (versioned per engine), calls the provider's API, logs the run (model used, tokens, cost, latency, status) to Supabase, and returns { output, model, cost_usd, duration_ms, run_id }.
+
+Adding Claude when OpenAI is already wired: add a "claude" entry to the providers config with its own auth and base URL. Zero frontend changes. The demo's LLMRouter.run() contract makes this concrete: you can see the provider-agnostic interface running in the browser today at the demo link.
+
+6. HOW I PREVENT APPROVAL-GATED ACTIONS FROM AUTO-PUBLISHING
+
+Two layers: status machine and server-side guard.
+
+Status machine: every output record has a status field (pending / generating / needs-review / revised / approved / pushed). The Push/Save button is rendered disabled and cursor: not-allowed whenever status is not "approved". There is no code path that advances an output to "pushed" without an explicit user click on Approve first. You can verify this in the demo: run an engine, try clicking Push before Approve, it is blocked.
+
+Server-side guard (production): the backend's push endpoints check the output's status in Supabase before executing. If status is not "approved", the push is rejected with a 403 and an error message, even if someone somehow bypassed the frontend gate. The demo shows the frontend layer; the same logic mirrors to the backend by design.
+
+7. HOW I APPROACH BUILDING A LEAN MVP WITHOUT OVERENGINEERING
+
+The posting already scopes V1 clearly: 3 engines, core run/review/approve/push loop, Intel Brief stub (static/demo data intentionally), no continuous KB monitoring, no advanced analytics, no future engines except placeholder stubs. That is exactly what I built in the demo. The file count is 12 (not 50). The backend design is a single routing service + Supabase tables, not a microservices maze.
+
+For the real build, I would sequence it exactly as you described: UI shell first, Authority Engine end-to-end, Newsletter Engine end-to-end, Knowledge Engine Lite, Outputs Pending Review queue, approve/request-edits/re-run flow, Intel Brief stub, future placeholders only if they help validate the concept. Each milestone is deployable and testable before the next one starts.
+
+8. TIMELINE AND BUDGET
+
+My honest estimate for this MVP in working, deployed form:
+
+Milestone 1 (UI shell + Authority Engine end-to-end): 1.5 weeks, $2,500
+Milestone 2 (Newsletter Engine end-to-end): 1 week, $1,500
+Milestone 3 (Knowledge Engine Lite + Drive/GitHub save): 1.5 weeks, $2,000
+Milestone 4 (Outputs queue + approve/revise/re-run flow): 1 week, $1,500
+Milestone 5 (Intel Brief stub + polish + GoHighLevel iframe QA + deploy): 1 week, $1,500
+
+Total: approximately 6 to 7 weeks, $9,000 fixed price. I can adjust scope at any milestone if priorities shift. All work is milestone-gated: you see a working build before I invoice.
+
+---
+
+The demo is at https://michaelwegter.com/demos/real-estate-intelligence-center/ and it runs in Chrome or Edge right now. If it shows what you are building, I am ready to start on the real thing.
+
+Michael Wegter

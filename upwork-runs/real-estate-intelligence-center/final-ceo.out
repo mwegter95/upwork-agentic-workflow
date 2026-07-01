@@ -1,0 +1,26 @@
+# Final CEO Sign-off — Pathwaize Intelligence Center
+
+## Verified (tools run, not assumed)
+- Demo live + deploy-test: 28/28 checks PASS (run/review/approve/push, approval gate enforced, all 3 engines, Intel Brief 6 sections, prompt chips, cost tracker). VERDICT pass.
+- Registry entry id 20 complete: slug/href/screenshot/tags/client/proposalDeckUrl/proposalPageUrl all set. Screenshot PNG exists (154KB).
+- Deliverables exist: cover-letter.txt (77 lines), one-pager.html (22KB), deck.pptx (44KB, 8 slides).
+- Deck source (build-deck.py): 0 em/en dashes — clean.
+- Cover letter: all 8 TO APPLY questions answered in order, concretely; demo link appears twice; honest GHL-experience disclosure (strong, not a red flag); LLM routing + 2-layer approval gate explained; $9k / 6-7 week milestone plan. Feature richness 10/10 met.
+- Bespoke execution-console design (not portfolio look); WebGPU on-device agentic patterns reflected in copy.
+
+## Problems (hard-gate: DoD #5, "no em/en dashes anywhere")
+1. cover-letter.txt line 1: `COVER LETTER — Pathwaize Intelligence Center MVP` — contains an em dash.
+2. one-pager.html line 6 `<title>`: `Pathwaize Intelligence Center — Proposal | Michael Wegter` — contains an em dash.
+
+Both are in title/header lines only; body prose is clean. Trivial surgical fix, but the evaluator's hard gate will fail the run if left. Everything else passes.
+
+REDIRECT: proposal-writer
+NOTE: Replace the two em dashes (—) with a plain separator. cover-letter.txt line 1: use "COVER LETTER: Pathwaize Intelligence Center MVP". one-pager.html line 6 <title>: use "Pathwaize Intelligence Center Proposal | Michael Wegter". Edit only those two lines; touch nothing else. Confirm `grep -n '—\|–'` returns zero across cover-letter.txt, one-pager.html, and deck source.
+
+## handoff
+- produced: final-ceo verdict; package verified end-to-end (demo, deploy-test, registry, screenshot, all deliverables).
+- decisions: package wins the client on substance (live tested demo + honest, complete, tailored proposal at 10/10 richness); only blocker is 2 em-dash hard-gate violations in title lines.
+- next needs: proposal-writer removes the 2 em dashes (surgical), then resume here / evaluator.
+- risks: none material beyond the dash fix; real WebGPU model path only verifiable on GPU hardware (documented, expected).
+
+VERDICT: fail

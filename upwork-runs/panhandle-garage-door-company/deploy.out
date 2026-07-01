@@ -1,0 +1,35 @@
+# Deploy — panhandle-garage-door-company
+
+## mw-backend
+- Bridge already pushed in prior step: commit `e5cffcc` ("Add panhandle garage door WP bridge blueprint")
+- `server.py` imports `panhandle_wp_bridge_bp` and registers it — confirmed in repo
+- Flask health: `{"status":"ok","version":"1.0.0"}` — Flask-shaped (not managed service)
+- No new push needed for mw-backend
+
+## michaelwegter.com
+- Added workSamples.js entry (id:19, slug:panhandle-garage-door-company) with tags
+- Committed: "Add Dimitroff Door Repair work sample entry to registry"
+- Rebased on remote (1 unrelated commit pulled), pushed to `origin/main`
+- GH Pages deploy triggered: status `in_progress` as of 2026-06-30T14:14:08Z
+
+## Live verification
+
+| URL | Status |
+|-----|--------|
+| `https://api.michaelwegter.com/health` | 200 `{"status":"ok","version":"1.0.0"}` |
+| `https://api.michaelwegter.com/demos/panhandle-garage-door-company/` | 200 |
+| `.../services/` | 200 |
+| `.../free-seo-audit/` | 200 |
+| `.../service-area/dumas-tx/` | 200 |
+| `.../estimate/` | 200 |
+| `.../blog/` | 200 |
+| `.../wp-login.php` | 200 |
+| `https://michaelwegter.com/work-samples` | 301→200 |
+
+All 8 WP routes confirmed 200. GH Pages build in progress (will auto-deploy work-sample card within ~2 min).
+
+## handoff
+- produced: michaelwegter.com pushed + GH Pages build triggered; mw-backend bridge already live; all WP routes verified 200
+- decisions: href in workSamples.js uses direct `https://api.michaelwegter.com/demos/panhandle-garage-door-company/` (backend-hosted WP, not same-origin static)
+- next needs: deploy-test to exercise WP site flows (home, service pages, city landing pages, estimate form, SEO audit page) + confirm SEO analyzer signup/login with fake credentials
+- risks: GH Pages deploy in-progress at write time — `/work-samples/panhandle-garage-door-company` route will be live ~2 min after push; deploy-test should verify portfolio card is reachable or test WP URL directly

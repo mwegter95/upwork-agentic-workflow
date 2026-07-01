@@ -1,0 +1,317 @@
+# Plan — panhandle-garage-door-company
+## Status: COMPLETE (all research integrated, ready for demo-builder)
+
+---
+
+## Prototype vs Full: FULL (richness 10)
+
+Two integrated deliverables under slug `panhandle-garage-door-company`:
+- **Part A:** Real WordPress site (Docker on Surface, port 8090) — SEO-architected, 25+ pages, bespoke door-company design. Bridge clone from `maryland_driveway_wp_bridge_blueprint.py` (PORT 8081 -> 8090, PREFIX updated).
+- **Part B:** SEO Analyzer — existing GH Pages app at `https://mwegter95.github.io/free-seo-analyzer-with-js-rendering/`. Open signup already works (`POST /auth/register`, no verification, any fake email+password). WP site has a dedicated "Free SEO Audit" nav link and hero CTA linking to/embedding that app. **No rebuild. No new backend blueprint.**
+
+---
+
+## Client data (confirmed from live site)
+
+| Field | Value |
+|---|---|
+| Company | Dimitroff Door Repair |
+| Phone | (806) 316-5296 |
+| Address | 120 Amherst Avenue, Dumas, TX 79029 |
+| Hours | Mon–Fri 8am–6pm, Sat–Sun 10am–5pm |
+| Tagline | "One Company. Every Door." |
+| Trust strip | "Free Estimates • Same-Day Service • 90 Day Warranty • Se Habla Español" |
+| BBB accredited | Yes |
+| Current site | https://www.dimitroffdoorrepair.com/ (Squarespace, no city LPs) |
+
+---
+
+## Design system (bespoke — NOT portfolio look)
+
+**Palette (confirmed — current site is minimal/utilitarian, steel blue is appropriate):**
+- Primary: `#1B3A5C` — deep steel blue (authority, trust, sky)
+- CTA / accent: `#E85D04` — safety orange (action, urgency, industrial)
+- Background: `#F8F6F2` — warm off-white (clean, open-sky Texas)
+- Text: `#1A1A1A` — charcoal
+- Secondary: `#546E7A` — slate (icons, secondary labels)
+- Divider: `#DDD8CE`
+
+**Typography (Google Fonts):**
+- Headings: Barlow Condensed 600/700 — industrial, compact, masculine
+- Body: Source Sans 3 400 — highly legible, professional
+- Nav / labels: Barlow 500
+
+**Mood:** "This company owns the Panhandle." Wide-sky authority. Trustworthy, not flashy. CTAs feel direct and urgent.
+
+---
+
+## Content architecture (25 pages, scalable template)
+
+```
+/                                        Homepage (hero + 8-service grid + city map + trust bar + CTAs)
+/services/                               Services hub (links all 8 silos)
+/services/residential-garage-doors/
+/services/commercial-overhead-doors/
+/services/roll-up-doors/
+/services/storefront-doors/
+/services/barn-agricultural-doors/
+/services/entry-doors/
+/services/dock-equipment/
+/services/window-repair-replacement/
+/commercial/                             Commercial hub (overhead, storefront, roll-up, dock, windows)
+/residential/                            Residential hub (garage doors, entry doors, windows)
+/service-area/                           Hub + full city list + embedded map
+--- 12 city LPs ---
+/dumas-tx/                               HQ city — anchor/pillar page, deepest content
+/amarillo-tx/                            Largest market — highest competition, strongest need
+/pampa-tx/                               Gray County
+/borger-tx/                              Hutchinson County (refinery/industrial = commercial hook)
+/perryton-tx/                            Ochiltree County (zero local competitor)
+/dalhart-tx/                             Hartley County (ag/ranch = barn & roll-up doors)
+/hereford-tx/                            Deaf Smith County (feedlot/livestock = commercial overhead)
+/canyon-tx/                              Randall County (growing Amarillo suburb)
+/friona-tx/                              Parmer County (ag, border market)
+/clovis-nm/                              Curry County NM (Cannon AFB = commercial angle)
+/tucumcari-nm/                           Quay County NM (Route 66 commerce)
+/clayton-nm/                             Union County NM (cattle ranch, zero competitor LPs)
+--- Blog ---
+/blog/                                   Blog hub
+/blog/commercial-overhead-door-guide/    "How to Choose a Commercial Overhead Door for Texas Businesses"
+--- Conversion ---
+/estimate/                               CF7 estimate request form
+/contact/                                Contact + phone + address + map
+/free-seo-audit/                         CTA page — embeds/links to existing SEO analyzer app
+```
+
+Total: 9 service pages + 3 hubs + 12 city LPs + service-area + 1 blog post + 3 conversion/utility = 29 pages. Templates make expansion trivial.
+
+---
+
+## SEO content hooks by city (differentiation strategy)
+
+Competitors (Overhead Door Co. Amarillo, Price Overhead, Willow Creek, Integrity) have **zero city landing pages** for towns outside Amarillo. Primary gap.
+
+| City | Content angle |
+|---|---|
+| Dumas TX | HQ authority, full service range, "locally owned" |
+| Amarillo TX | Volume market, compete on speed + commercial depth |
+| Borger TX | Refinery/industrial — commercial overhead + dock equipment |
+| Hereford TX | Feedlot/livestock — commercial overhead, roll-up, barn doors |
+| Dalhart TX | Ranch/ag — barn & agricultural doors, roll-up |
+| Clovis NM | Cannon AFB — commercial, roll-up, storefront; bilingual |
+| Perryton TX | "Only local-focused door company" — zero competitor LP |
+| Pampa TX | Balanced residential + light commercial |
+| Canyon TX | Growing suburb — residential garage doors, entry doors |
+| Friona TX | Ag community — barn doors, roll-up, commercial |
+| Tucumcari NM | Route 66 commerce — storefront, commercial |
+| Clayton NM | Cattle ranch — barn, roll-up, agricultural |
+
+Bilingual hook ("Se Habla Español") embedded in every city page — differentiator vs. Amarillo competitors.
+
+---
+
+## WP theme approach (custom PHP, no page builders)
+
+| File | Purpose |
+|---|---|
+| `functions.php` | Enqueue fonts/styles/scripts, register menus. No closing `?>`. |
+| `header.php` | Sticky nav: logo + click-to-call `(806) 316-5296` + "Get Estimate" orange CTA |
+| `footer.php` | Address, phone, hours, service list (linked), city list (linked), trust badges |
+| `front-page.php` | Homepage: hero + 8-service grid + service area map + trust bar |
+| `page-service.php` | Service silo template — schema markup, FAQ section, local CTA |
+| `page-city.php` | City LP template — geo-targeted H1, service list for that city, map |
+| `page-commercial.php` | Commercial hub |
+| `page-residential.php` | Residential hub |
+| `page-estimate.php` | CF7 form: name, phone, email, service type (8 options), city, message |
+| `page-seo-audit.php` | Free SEO audit CTA + iframe embed of `mwegter95.github.io/free-seo-analyzer` |
+| `single.php` | Blog post |
+| `page.php` | Generic fallback |
+
+All runner scripts ASCII-only (CLAUDE.md hard rule). No `?>` in any PHP file.
+
+**Plugin stack (lightweight, all free):**
+- Yoast SEO — sitemap, metadata, robots.txt, breadcrumbs, schema assist
+- Contact Form 7 — estimate + contact forms
+- WP Super Cache — CWV / speed
+- Redirection — 301 redirect management (Squarespace migration map)
+
+---
+
+## Conversion architecture (every page)
+
+1. **Sticky header:** Logo + `(806) 316-5296` (click-to-call) + "Get Free Estimate" orange button
+2. **Trust strip:** "Free Estimates | Same-Day Service | 90-Day Warranty | Se Habla Español | BBB Accredited"
+3. **In-page CTAs:** After each service section and city intro — "Call (806) 316-5296" + "Request Estimate"
+4. **Mobile sticky footer bar:** Phone icon + "Call Now" button (garage door leads are phone calls)
+5. **Footer:** 120 Amherst Ave, Dumas TX 79029 | (806) 316-5296 | Mon-Fri 8am-6pm | Sat-Sun 10am-5pm | linked service + city lists
+6. **Estimate page:** CF7 form with thank-you page redirect for GA conversion tracking
+
+---
+
+## Schema markup (every page)
+
+**LocalBusiness (all pages):**
+```json
+{
+  "@type": ["LocalBusiness", "HomeAndConstructionBusiness"],
+  "name": "Dimitroff Door Repair",
+  "telephone": "(806) 316-5296",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "120 Amherst Avenue",
+    "addressLocality": "Dumas",
+    "addressRegion": "TX",
+    "postalCode": "79029"
+  },
+  "openingHours": ["Mo-Fr 08:00-18:00", "Sa-Su 10:00-17:00"],
+  "areaServed": ["Dumas TX", "Amarillo TX", "Borger TX", "Pampa TX", "Perryton TX", "Dalhart TX", "Hereford TX", "Canyon TX", "Friona TX", "Clovis NM", "Tucumcari NM", "Clayton NM"],
+  "url": "https://api.michaelwegter.com/demos/panhandle-garage-door-company/"
+}
+```
+**Service pages:** `Service` schema with `serviceType`, `provider`, `areaServed`.
+**City pages:** Override `addressLocality` to target city; add `FAQPage` schema ("Do you serve [city]?").
+**Blog:** `Article` + `BreadcrumbList` schema.
+**Homepage/contact:** `FAQPage` (common Q's), `BreadcrumbList`.
+
+---
+
+## Technical SEO checklist
+
+| Item | Implementation |
+|---|---|
+| Meta title/description | Yoast SEO per page; pattern: "[Service] in [City] TX \| Dimitroff Door Repair" |
+| H1/H2/H3 hierarchy | Enforced in each template |
+| XML sitemap | Yoast auto-generates `/sitemap.xml` |
+| Robots.txt | Yoast-managed; all service/city/blog pages crawlable |
+| Internal linking | Service pages -> city pages + city pages -> service pages; footer nav both dimensions |
+| 301 redirects | Redirection plugin; `redirects-doc.md` maps Squarespace -> WP URL patterns |
+| Core Web Vitals | Minimal theme CSS, no render-blocking JS, WebP images, lazy-load, WP Super Cache |
+| Mobile-first | CSS Grid/Flex, breakpoints 768px + 375px; mobile sticky call bar |
+| HTTPS | Cloudflare tunnel handles |
+| GSC / GA setup | Sticky admin guide page in WP with step-by-step instructions |
+| Conversion tracking | CF7 thank-you page redirect for form submission goal in GA |
+
+---
+
+## SEO Analyzer (Part B) — existing infrastructure, zero rebuild
+
+**What exists:**
+- GH Pages app: `https://mwegter95.github.io/free-seo-analyzer-with-js-rendering/` — full UI with sign-up, login, analyze
+- Backend: `api.michaelwegter.com` (`/auth/register`, `/auth/login`, `/seo/analyze`, `/seo/crawl`, `/seo/reports`)
+- Open signup: any email + password, bcrypt-hashed, no verification — requirement met
+
+**Demo-builder instructions:**
+- WP site nav: "Free SEO Audit" link in header nav
+- `/free-seo-audit/` WP page: explain what the tool does + iframe embed OR prominent CTA button opening analyzer in new tab + pre-fill URL field with `dimitroffdoorrepair.com` demo URL if iframe supports it
+- No new backend blueprint, no code changes to analyzer
+
+**Demo flow (proposal reviewer experience):**
+1. Browse WP site, click "Free SEO Audit" in nav
+2. Lands on `/free-seo-audit/` page — pitch for the SEO audit service
+3. Clicks through to analyzer, registers with any fake email + password
+4. Runs analysis on the live WP demo URL or `dimitroffdoorrepair.com`
+5. Sees real scored analysis output — demonstrates "SEO tooling I bring"
+
+---
+
+## Deployment architecture
+
+| Component | Service name | Port | Bridge / path |
+|---|---|---|---|
+| WordPress Docker | `panhandle-wp` | 8090 | `panhandle_blueprint.py` -> `http://127.0.0.1:8090`, prefix `/demos/panhandle-garage-door-company` |
+| SEO Analyzer backend | already in Flask | n/a | `/auth/register`, `/auth/login`, `/seo/analyze` — no new blueprint |
+
+Port 8090 confirmed available (only registered port is 3742 for orschell; Maryland WP was 8081).
+
+**WP Docker compose:**
+```yaml
+services:
+  wordpress:
+    image: wordpress:6.6
+    ports: ["8090:80"]
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: panhandle
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: panhandle_wp_2026
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: panhandle
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: panhandle_wp_2026
+      MYSQL_ROOT_PASSWORD: panhandle_root_2026
+    volumes: ["panhandle_db:/var/lib/mysql"]
+volumes:
+  panhandle_db:
+```
+
+**Bridge blueprint:** Clone `maryland_driveway_wp_bridge_blueprint.py`, change:
+- `PREFIX = "demos/panhandle-garage-door-company"`
+- `UPSTREAM = "http://127.0.0.1:8090"`
+- Blueprint var/name: `panhandle_wp_bridge_bp`
+- All 3 WP login filters + `redirect_canonical` suppression + Host/X-Forwarded-Proto + no-redirect opener + strip `accept-encoding` — copy verbatim from Maryland blueprint.
+
+**Service registration:** `surface_register_service.py` with `NAME=panhandle-wp`. Docker image pull is large — register as service so `run-server.ps1` owns startup. Do NOT block in `/run/exec`.
+
+**Demo admin credentials (document in build report):**
+- WP admin URL: `https://api.michaelwegter.com/demos/panhandle-garage-door-company/wp-admin/`
+- Username: `admin` | Password: `DimitroffAdmin2026!`
+- SEO analyzer: any fake email + min-8-char password
+
+---
+
+## workSamples.js entry
+
+```js
+{
+  id: 19,
+  slug: "panhandle-garage-door-company",
+  title: "Dimitroff Door Repair — SEO-First WordPress",
+  description: "Production WordPress site for a Texas Panhandle door company: SEO-architected service silos, 12 city landing pages, LocalBusiness schema, Core Web Vitals optimization, click-to-call conversion CTAs, and an integrated live SEO audit tool.",
+  category: "Creative",
+  status: "live",
+  href: "https://api.michaelwegter.com/demos/panhandle-garage-door-company/",
+  color: "#1B3A5C",
+  icon: "🚪",
+  frameStyle: "walnut",
+  tags: ["WordPress", "PHP", "SEO", "Local SEO", "Technical SEO", "Full-Stack", "Flask", "Docker", "Landing Page", "Dashboard"],
+  screenshot: import.meta.env.BASE_URL + "work-samples/panhandle-garage-door-company.png",
+  client: "Dimitroff Door Repair",
+  postingSummary: "SEO-first WordPress redesign for a Texas Panhandle garage door and commercial door company targeting the highest regional rankings and qualified phone call generation.",
+  builtFor: "WordPress & SEO Developer (Upwork)",
+  date: "2026-06-29",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+}
+```
+
+---
+
+## Requirement-to-feature traceability
+
+| Requirement | Implemented as |
+|---|---|
+| WordPress migration from Squarespace | Custom WP theme on Docker; Redirection plugin for 301s |
+| Mobile-first, fast loading, Core Web Vitals | Minimal theme, no page builder, WP Super Cache, lazy WebP images |
+| SEO-focused site architecture | Content silos (/services/, /commercial/, /residential/) + hub-and-spoke LPs |
+| Schema markup | LocalBusiness + Service + FAQPage + BreadcrumbList on all pages |
+| XML sitemap / robots.txt | Yoast SEO plugin |
+| Individual city landing pages | 12 city LPs (9 TX + 3 NM) from scalable `page-city.php` template |
+| Individual service pages | 8 service pages + 2 hubs from `page-service.php` template |
+| Commercial service pages | Dedicated `/commercial/` hub + commercial angle in 3+ city LPs |
+| Educational content/blog | `/blog/` hub + 1 full sample post |
+| GSC / GA / conversion tracking | Setup guide in WP admin; CF7 thank-you redirect for goal tracking |
+| Increase qualified phone calls | Click-to-call in sticky header + mobile footer bar + in-page CTAs |
+| Scale to dozens of SEO landing pages | Template architecture — add a page, assign `page-city.php`, fill ACF or custom meta |
+| Open-signup SEO analyzer | Existing `api.michaelwegter.com/auth/register` + GH Pages analyzer app |
+| Docs/training | `training-docs.md` as WP sticky admin page + `/estimate/` form |
+| Bilingual differentiator | "Se Habla Español" in trust strip + every city LP + footer |
+
+---
+
+## handoff
+- produced: planner.out — final plan integrating all research (phone/address/hours, 12 city LPs, competitor gap strategy, SEO analyzer confirmed as existing GH Pages app + existing backend, Docker compose creds, WP admin creds, full traceability matrix)
+- decisions: 12 city LPs (9 TX + 3 NM); no analyzer rebuild — link to GH Pages app + WP `/free-seo-audit/` page; port 8090; Maryland bridge clone; WP admin `admin/DimitroffAdmin2026!`; SEO analyzer signup `any email + 8-char password`
+- next needs: demo-builder to (1) scaffold Docker WP on Surface at 8090 via registered service, (2) build custom PHP theme with all templates, (3) seed 29 pages with real SEO content, (4) clone and register Maryland bridge as panhandle_blueprint.py, (5) add `/free-seo-audit/` page linking to GH Pages analyzer, (6) capture screenshot for work-samples
+- risks: WP Docker image pull timeout (must register as service, not block); Maryland bridge PHP login filters must be copied verbatim; Playwright must be installed on Surface for /seo/analyze to work (install if absent as setup step); Surface reboot durability requires service registration

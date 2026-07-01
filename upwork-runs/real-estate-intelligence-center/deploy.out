@@ -1,0 +1,28 @@
+# Deploy — Pathwaize Intelligence Center
+
+## Actions taken
+
+**michaelwegter.com** — commit `5900f90` ("Add Pathwaize Intelligence Center demo") was already staged locally but not pushed (one remote commit existed ahead). Pulled via `git pull --rebase`, then pushed to `origin/main`. GitHub Pages Actions run completed `success`.
+
+No mw-backend changes — demo is fully client-side (WebLLM WebGPU + IndexedDB). No Flask blueprint needed.
+
+## Live verification
+
+| URL | Status |
+|-----|--------|
+| `https://michaelwegter.com/demos/real-estate-intelligence-center/` | 200, `<title>Pathwaize Intelligence Center</title>` |
+| `https://michaelwegter.com/demos/real-estate-intelligence-center/index.html` | 200 |
+| `https://michaelwegter.com/work-samples/real-estate-intelligence-center` | 404 (expected — SPA deep link served by `public/404.html` redirect trick; HTML body is the full React app) |
+| `https://api.michaelwegter.com/health` | 200 `{"status":"ok","version":"1.0.0"}` |
+| GitHub Pages Actions run | `completed / success` |
+
+`/work-samples/` 404 is standard GH Pages SPA behavior — the 404.html redirect is in place and the page body is confirmed to be the React app HTML.
+
+## workSamples.js registry confirmed
+- id: 20, slug: `real-estate-intelligence-center`, href: `BASE_URL + "demos/real-estate-intelligence-center/"`, screenshot: null (media-capture to supply), tags: `["JavaScript","WebGPU","On-device AI","AI","Dashboard","Full-Stack","Data Viz"]`
+
+## handoff
+- produced: michaelwegter.com pushed to main; GH Pages deploy completed; demo live at `https://michaelwegter.com/demos/real-estate-intelligence-center/` (200)
+- decisions: no mw-backend push needed (pure client-side demo); rebase-then-push used because remote had one ahead commit
+- next needs: deploy-test should run Playwright against the live `/demos/real-estate-intelligence-center/` URL — full run/review/approve/push flow, confirm approval gating, confirm mock fallback on headless (WebGPU not available in CI)
+- risks: `screenshot: null` until media-capture runs; real WebGPU/Qwen model load only verifiable on Chrome with GPU — deploy-test will run in headless (mock mode), which is fully functional but doesn't exercise the actual model download

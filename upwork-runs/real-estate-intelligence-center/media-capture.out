@@ -1,0 +1,41 @@
+# Media Capture — Pathwaize Intelligence Center
+
+## Hero flow captured
+
+**Date:** Jul 1, 2026 | **Demo URL:** https://michaelwegter.com/demos/real-estate-intelligence-center/
+
+**Captured flow:**
+1. Page load (React SPA + AI workflow execution console visible)
+2. Fill content brief input textarea ("Create a LinkedIn post on AI-driven real estate operations...")
+3. Click "Run Authority Engine" button
+4. Wait for mock LLM output (~2.5s)
+5. Output card appears with "Needs Review" status + Approve/Request Edits/Push buttons
+6. Click "Approve" button (Push button was disabled pre-approval, enabled post-approval)
+7. Final state captured: approved output card with enabled Push button
+
+## Artifacts produced
+
+| Asset | Location | Dimensions | Format | Size |
+|-------|----------|------------|--------|------|
+| Hero screenshot | `public/work-samples/real-estate-intelligence-center.png` | 1280×1024 | PNG 8-bit RGB | 154 KB |
+
+## Registry updated
+
+**File:** `src/data/workSamples.js`, entry id 20 (Pathwaize Intelligence Center)
+- **Before:** `screenshot: null`
+- **After:** `screenshot: import.meta.env.BASE_URL + "work-samples/real-estate-intelligence-center.png"`
+
+Work-samples gallery card will now render with hero image on next build/deploy.
+
+## Notes
+
+- Playwright capture ran against live production URL (no local build needed)
+- 1280×1024 resolution captures full UI: header, tab nav, Intel Brief stub, Prompt chips, Run buttons, Pending Review counter, Authority Engine output card
+- Mock LLM mode active (WebGPU unavailable in headless Chromium) but full approval workflow exercised
+- Screenshot shows the core value proposition: run → review → approve → push workflow, approval-gated output
+
+## handoff
+- produced: hero screenshot saved to `public/work-samples/real-estate-intelligence-center.png`; workSamples.js registry updated with screenshot path
+- decisions: captured full hero flow (input → run → approve → push-enabled); used 1280×1024 viewport for clear card visibility
+- next needs: proposal-writer to embed demo link; screenshot ready for gallery card display
+- risks: none — screenshot valid, registry updated, demo link correct
