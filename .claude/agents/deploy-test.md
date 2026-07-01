@@ -20,6 +20,10 @@ plan/brief for what the demo is supposed to do.
   file; the `public/404.html` SPA shim renders it client-side) — that is expected,
   not a failure. Playwright loads it fine via the router; for a plain HTTP 200
   check use `/demos/<slug>/`. Don't flag the deep-link 404 or retry curl on it.
+  Serve the demo from the site's `public/` ROOT (e.g. `python3 -m http.server` in
+  `../michaelwegter.com/public`), then open `/demos/<slug>/` — serving from the
+  demo subdirectory breaks the absolute `/demos/<slug>/...` asset paths and yields
+  spurious MIME/404 errors. Prefer this documented command over rediscovering it.
 - Run the hero flow end to end with Playwright against the LIVE site (not a local
   build). Determine whether the demo HAS auth first: grep `deploy.out` /
   `build-report.md` for "credentials" or "login" — only attempt a login flow if

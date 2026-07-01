@@ -296,7 +296,8 @@ If a scraper/demo needs Playwright ON the Surface and a step returns
 as a prerequisite/setup step, not a per-run surprise to debug each time.
 
 ### Local-verify scripts (Playwright, capture, screenshots) — fixed conventions
-Any step running Node locally (capture, deploy/local test, screenshots) must:
+Any step running Node locally (capture, deploy/local test, screenshots, CEO/eval
+verification scripts) must:
 - Name scripts `.mjs` (this workspace `package.json` has `"type": "module"`; a
   `.js` file using `require()` crashes on first run).
 - Run with the `upwork-agentic-workflow` folder as cwd so its local
@@ -524,5 +525,6 @@ A run is only "done" when ALL of these hold:
 5. Demo, one-pager, and deck use a cohesive, bespoke design fit for the client's
    industry and requested style (NOT michaelwegter.com's look), and contain no
    em/en dashes.
-6. `eval-report.md` exists with a passing score and an empty (or accepted) fix
-   list.
+6. `eval-report.md` (or, in layouts that use CEO/eval check nodes instead, the
+   passing `*-ceo.out` / `*-eval.out` files) exists with a passing score and an
+   empty (or accepted) fix list.

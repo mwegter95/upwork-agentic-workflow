@@ -52,8 +52,12 @@ reads as tailored to the client, not as a generic or portfolio-branded deck.
 Embed `hero.png` and the step stills.
 
 If demo-builder left a deck build script (e.g. `build-deck.py`) in the run dir,
-RUN it rather than regenerating the deck from scratch. If `python-pptx` is
-missing, `pip install python-pptx` once at step start.
+RUN it rather than regenerating the deck from scratch. Do a dry run of it FIRST
+and fix any errors (leftover draft blocks, undefined vars) before the finalizing
+write. If `python-pptx` is
+missing, `pip install python-pptx` once at step start. Note: pptx shape fills have
+no transparency, so a hero image behind a solid title-slide overlay is hidden;
+place the hero image on the demo slide (slide 4) where it shows unobscured.
 
 ## Hard rules
 - No em dashes and no en dashes anywhere. Avoid them while drafting (do not

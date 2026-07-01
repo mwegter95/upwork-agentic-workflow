@@ -31,6 +31,9 @@ status — only from the pixels.
   - `https://picsum.photos/seed/<slug-word>/<W>/<H>` (stable, generic).
   Pick `<keywords>` from the analyzer's exact attributes. Match the original's
   dimensions/aspect. Download with `curl -L -o <path> "<url>"` (Bash).
+  LoremFlickr note: use a SINGLE keyword per URL; comma-separated multi-keyword
+  queries return one identical fallback image (same MD5) every time, so distinct,
+  subject-matched photos only come from single-keyword URLs.
   The replacement must match EVERY attribute the analyzer listed — garment type,
   sleeve length, EXACT color, count, etc. Free stock is approximate, so after each
   download, `Read` the file and verify each attribute (long-sleeve really long, black
@@ -67,5 +70,6 @@ pick a better stock query and redo it.
 
 ## Output — `upwork-runs/<slug>/image-fix-report.md`
 One line per image: what was wrong, how you fixed it (stock swap w/ keywords, or the
-CSS/path change), and the final asset. End with a short `## handoff` (count fixed,
+CSS/path change), the final asset, and its MD5 (`md5 <path>`) so image-eval can
+cross-check the exact bytes cheaply without re-fetching. End with a short `## handoff` (count fixed,
 anything you couldn't fix and why).

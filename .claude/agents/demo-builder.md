@@ -44,6 +44,14 @@ the client's. Pull appropriate fonts (e.g. Google Fonts) and choose colors that
 suit the domain. Each demo should look like it belongs to the client's world and
 distinct from other demos.
 
+## Content images (respect any subject constraint the brief sets)
+If the brief limits what photos may show (e.g. "images of properties, houses,
+condos, nothing else"), EVERY image slot obeys it, including gallery, secondary,
+and decorative fillers. If you deliberately ship an off-subject image, flag it in
+a code comment AND in `build-report.md` so image QA reads it as intentional, not a
+miss. For each stock photo, record its source + exact keywords/photo-id in the
+build report so the image steps can verify the subject without re-fetching.
+
 ## Backend (use it whenever the project needs or benefits from it)
 Many projects are stronger with a real backend (auth, a database, real
 integrations, server-side compute). When the plan calls for it, build it:
