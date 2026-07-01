@@ -27,13 +27,22 @@ and the hero flow steps.
 4. Stop the preview server.
 
 ## Output
-- Confirm the media files exist and are non-empty (`ls -la`).
+- Confirm the media files exist and are non-empty (`ls -la`), then ASSERT they
+  are real distinct frames before handoff: each `*.png` must be `>~50KB` and the
+  frames must have DISTINCT MD5s (`md5 *.png` / `md5sum`). Byte-identical or tiny
+  (~15KB) PNGs mean blank captures (usually a wrong serve root — serve the demo
+  from the correct base and hit the real demo URL, then recapture). Do not hand
+  off duplicate or blank frames; the writer/CEO will loop the run back if you do.
 - Write nothing else except a short list. Return a 2 to 4 line summary: which
   files were produced and any capture warnings (e.g. recording fell back to
   stills). If capture failed entirely, say so clearly so the orchestrator can
   retry or fall back to stills only.
 
 ## Rules
+- Capture/verify scripts must be `.mjs` (the workspace `package.json` has
+  `"type": "module"`, so a `.js` file with `require()` crashes) and must run with
+  the `upwork-agentic-workflow` folder as cwd so the local `node_modules`
+  Playwright import resolves (a `/tmp` script fails to resolve it).
 - Do not edit the demo or any proposal file. Capture only.
 - Keep the recording short (the hero flow, a few seconds). Big media is wasteful.
 - Playwright keypresses: use `page.keyboard.press('Escape')`, not

@@ -295,6 +295,16 @@ If a scraper/demo needs Playwright ON the Surface and a step returns
 `python -m playwright install chromium` via the runner, then proceed. Treat this
 as a prerequisite/setup step, not a per-run surprise to debug each time.
 
+### Local-verify scripts (Playwright, capture, screenshots) — fixed conventions
+Any step running Node locally (capture, deploy/local test, screenshots) must:
+- Name scripts `.mjs` (this workspace `package.json` has `"type": "module"`; a
+  `.js` file using `require()` crashes on first run).
+- Run with the `upwork-agentic-workflow` folder as cwd so its local
+  `node_modules` Playwright import resolves; a `/tmp` script fails to resolve it.
+- Before handing captured frames downstream, assert they are DISTINCT (unique
+  MD5s) and non-trivial (`>~50KB`); byte-identical or ~15KB PNGs are blank
+  captures (usually a wrong serve root) and get the run looped back.
+
 ### Critical: start a service so it STAYS UP (and survives reboots)
 The runner waits for your script to finish, so running `node server.js` directly
 just blocks until timeout and is then killed. Do not start services yourself —

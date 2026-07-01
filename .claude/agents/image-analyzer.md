@@ -49,7 +49,10 @@ imageless screens. Instead, inspect the images themselves:
    asset alone is not enough: a CSS `background-image` with no nearby text, a claim
    you cannot read from markup/data, ambiguous placement, or to confirm an image
    actually renders where its label says. A page with NO images needs no screenshot
-   and no analysis. If you do screenshot, prefer the route/state that shows the
+   and no analysis. If the manifest is conclusively EMPTY (the grep/data scan finds
+   zero raster images demo-wide), skip the screenshot-crop/vision phase entirely and
+   report an empty check list — do not pay vision cost to confirm nothing. If you do
+   screenshot, prefer the route/state that shows the
    image in context rather than screenshotting everything.
 
 ## Judge each image against its EXACT claim — attribute by attribute

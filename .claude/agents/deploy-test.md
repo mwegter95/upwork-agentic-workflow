@@ -67,10 +67,12 @@ plan/brief for what the demo is supposed to do.
 
 Actually run the flows (a Playwright script, e.g. via `scripts/capture.mjs`
 flows, or a small node script). Do not assume; click and read real outputs.
-Before writing final selectors, do a quick DOM inspection pass (dump the relevant
-markup) rather than guessing aria-labels/ids — demos often use semantic class
-names (e.g. `.btn-transport`, `.song-chip`); prefer text-content matching as the
-primary fallback so checks survive markup differences.
+Before writing final selectors, do a DOM inspection pass FIRST (dump the relevant
+markup) rather than guessing aria-labels/ids/`button` locators, then write the
+script — blind selector guessing has cost multiple wasted script runs. RBAC and
+card-style demos frequently use `div`/card click patterns (not `<button>`), so
+grep the source for `onClick`/text before scripting. Prefer text-content matching
+as the primary fallback so checks survive markup differences.
 
 ## Hand the image steps your EXACT exercised script (so they SEE every screen)
 The image-analyzer/eval steps must inspect images on EVERY screen and state, not

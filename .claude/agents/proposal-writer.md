@@ -60,8 +60,8 @@ missing, `pip install python-pptx` once at step start.
   rely on a post-hoc fix pass). Before finishing, run ONE repo-wide
   grep across ALL deliverable files (cover-letter.md, one-pager.html, deck source)
   for BOTH the literal chars U+2014/U+2013 AND the HTML entities `&mdash;`/`&ndash;`
-  (also `&#8212;`/`&#8211;`), including inside HTML title/alt attributes, not just
-  body prose. Fixing one file (e.g. only the footer entity) is not enough — every
+  (also `&#8212;`/`&#8211;`), including inside markdown headings/kicker strings and
+  HTML title/alt attributes, not just body prose. Fixing one file (e.g. only the footer entity) is not enough — every
   file must come back clean. Recheck after fixing.
 - Michael's voice, concrete and warm, no buzzwords.
 - The demo link must appear in BOTH the cover letter and the deck.
