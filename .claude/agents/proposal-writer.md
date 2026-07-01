@@ -57,12 +57,15 @@ missing, `pip install python-pptx` once at step start.
 
 ## Hard rules
 - No em dashes and no en dashes anywhere. Avoid them while drafting (do not
-  rely on a post-hoc fix pass). Before finishing, run ONE repo-wide
-  grep across ALL deliverable files (cover-letter.md, one-pager.html, deck source)
-  for BOTH the literal chars U+2014/U+2013 AND the HTML entities `&mdash;`/`&ndash;`
-  (also `&#8212;`/`&#8211;`), including inside HTML title/alt attributes, not just
-  body prose. Fixing one file (e.g. only the footer entity) is not enough — every
-  file must come back clean. Recheck after fixing.
+  rely on a post-hoc fix pass). Before finishing, run ONE grep across the ACTUAL
+  deliverable files by glob (`cover-letter.*`, `one-pager.html`, deck source) —
+  match the real extension on disk (the cover letter is often `.txt`, not `.md`),
+  do NOT grep a hard-coded name that may not exist or you will silently skip a file.
+  Check for BOTH the literal chars U+2014/U+2013 AND the HTML entities `&mdash;`/`&ndash;`
+  (also `&#8212;`/`&#8211;`), and cover the FIRST line / title / header of each file
+  (a `<title>` or a `COVER LETTER —` heading), not just body prose. Fixing one file
+  (e.g. only the footer entity) is not enough, every file must come back clean.
+  Recheck after fixing.
 - Michael's voice, concrete and warm, no buzzwords.
 - The demo link must appear in BOTH the cover letter and the deck.
 - Write only the three files (plus any temp files the pptx skill needs). Return a

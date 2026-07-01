@@ -25,6 +25,11 @@ plan/brief for what the demo is supposed to do.
   `build-report.md` for "credentials" or "login" — only attempt a login flow if
   they appear. If it has auth, log in (use the seeded demo credentials the
   demo-builder noted) and run a representative multi-step workflow.
+  **Fill required inputs before triggering the action.** Demo input fields
+  (textareas, prompt boxes, forms) are often blank on load, and a Run/Submit
+  handler may return early and silently no-op when they are empty. Type into every
+  required field first, then click Run, and assert real output appeared, do not
+  assume an empty-field click exercised the flow.
 - **Exercise EVERY interactive control, not just the hero flow.** On each route
   and state (including post-login and any role-specific views), enumerate every
   interactive element — buttons, links, tabs, nav items, toggles, dropdowns,
