@@ -1,0 +1,439 @@
+# Planner — Pathwaize Intelligence Center Demo (FINAL — all research resolved)
+
+## Status: READY — no open unknowns
+
+All critical blockers from plan-gate.out resolved by pre-researcher. Plan is complete and ready for demo-builder.
+
+---
+
+## Demo Concept
+
+**Pathwaize Intelligence Center** — a self-contained, browser-side AI workflow execution console. Three AI engines (Authority, Newsletter, Knowledge Lite) wired end-to-end through a strict Run → Generate → Review → Revise → Approve → Push pipeline. WebGPU local inference via WebLLM (no exposed API keys). IndexedDB persistence. Mock GHL chrome wrapper simulates iframe embed context.
+
+**Prototype vs Full: FULL**
+Feature richness 10 requires all 3 engines functional, full approval-gate state machine, run records, usage/cost log, Intel Brief stub, prompt chips, persistent intelligence input, output queue, workspace context. No scope item trips the prototype fallback rules.
+
+**Backend blueprint: NOT needed.** In-browser LLMRouter mirrors the production backend contract exactly. Save/push simulated with realistic receipts. No mw-backend change required.
+
+---
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| LLM runtime | `@mlc-ai/web-llm` from CDN (WebWorker offload, JSON schema enforcement built in) |
+| Primary model | `Qwen2.5-7B-Instruct-q4f16_1-MLC` (~4–5GB VRAM, richness-10 generation quality) |
+| Router model | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` (intent classification + JSON validation) |
+| VRAM fallback | `Qwen2.5-3B-Instruct-q4f16_1-MLC` (auto-switch if adapter VRAM < 5GB) |
+| Storage | IndexedDB native (runs, outputs, logs, workspace) |
+| Frontend | Vanilla JS + ES modules, no bundler, no build step |
+| Hosting | `public/demos/real-estate-intelligence-center/` — same-origin static, auto-deploys with site |
+
+---
+
+## Design System (LOCKED)
+
+**Palette:**
+```css
+--bg-base:        #0B0F1A   /* deep navy black — app shell */
+--bg-surface:     #141929   /* card/panel surface */
+--bg-elevated:    #1A2236   /* modals, dropdowns */
+--border:         #1E2740   /* subtle blue-gray dividers */
+--accent-blue:    #0EA5E9   /* primary CTA, active states */
+--accent-cyan:    #06B6D4   /* secondary highlights, links */
+--status-ok:      #22C55E   /* approved / live */
+--status-warn:    #F59E0B   /* needs-review / pending */
+--status-err:     #EF4444   /* revision requested / error */
+--status-run:     #8B5CF6   /* running / generating */
+--text-primary:   #F1F5F9
+--text-secondary: #94A3B8
+--text-muted:     #475569
+```
+
+**Typography:**
+- UI face: `Inter` from Google Fonts
+- Output/logs/code: `DM Mono` from Google Fonts
+- (Neither is michaelwegter.com's portfolio font)
+
+**Aesthetic:** Dark execution console / mission-control. Dense, professional SaaS. NOT chatbot bubbles. NOT analytics dashboard. Differentiates from Jasper/Copy.ai (both light-theme template galleries).
+
+---
+
+## LLMRouter Architecture
+
+**Provider-agnostic contract (all engine files call ONLY this):**
+```js
+LLMRouter.run(engineName, payload)
+  → Promise<{ output: Object, model: string, cost_usd: number, duration_ms: number }>
+```
+In demo: resolves to WebGPU/WebLLM provider.
+In production: identical interface routes to Pathwaize backend HTTP endpoint.
+Adding a new provider = one config entry, not a rebuild.
+
+**Model constants (verbatim — demo-builder must use exactly these IDs):**
+```js
+const PRIMARY_MODEL  = "Qwen2.5-7B-Instruct-q4f16_1-MLC";
+const ROUTER_MODEL   = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+const FALLBACK_MODEL = "Qwen2.5-3B-Instruct-q4f16_1-MLC";
+```
+
+**Init sequence:**
+1. Check `navigator.gpu` — if undefined, enable mock-LLM mode (canned responses, full workflow visible).
+2. Query WebGPU adapter; if VRAM estimated < 5GB, default to FALLBACK_MODEL with "Compact model for your hardware" banner.
+3. Load PRIMARY_MODEL; show prominent download progress bar ("Loading AI model — first load ~30s; cached on return"). This is P0 UX — users will close if they think nothing is happening.
+4. Load ROUTER_MODEL in background after primary ready.
+
+**Structured output enforcement:**
+- Every routing and generation step: `response_format: { type: "json_object" }` (WebLLM grammar enforcement blocks illegal tokens).
+- JS validates schema after each step. On failure: 1 reflection retry ("Your output failed with error X. Rewrite correctly."). After 2nd failure: inline error card ("Generation failed — re-run").
+
+**Context management:**
+- Sliding window: cap at 5 turns per engine run.
+- Workspace context (persistent intelligence) injected as system prompt prefix on every call.
+
+---
+
+## Engine Pipelines (strict prompt chaining — no free ReAct loops)
+
+### Authority Engine (Priority 1)
+
+**Step 1 — Route (ROUTER_MODEL):**
+System: "Classify this user request."
+Output schema: `{ "engine": "authority", "platform": "linkedin|twitter|general", "topic": "...", "tone": "authoritative|conversational|educational", "angle": "..." }`
+
+**Step 2 — Generate (PRIMARY_MODEL):**
+System: "You are a ghostwriter for a real estate investor building authority on [platform]. Context: [workspace.context]. Write [platform]-optimized content. No em dashes."
+Output schema:
+```json
+{ "content": "string", "word_count": "number", "hashtags": ["string"], "cta": "string" }
+```
+
+**Step 3 — JS validate:** check content exists, hashtags is array, word_count > 50. 1 reflection retry on fail.
+
+**Output card actions:** [Request Edits → revision textarea → Re-generate] | [Approve] | (only after Approve:) [Push to LinkedIn/X → mock toast receipt]
+Push button rendered `disabled` + tooltip "Approve first" until status === "approved".
+
+---
+
+### Newsletter Engine (Priority 2)
+
+**Step 1 — Route (ROUTER_MODEL):**
+Output schema: `{ "engine": "newsletter", "topic": "...", "audience": "...", "tone": "...", "brand_voice": "..." }`
+
+**Step 2 — Generate (PRIMARY_MODEL):**
+System: "Generate a complete newsletter for [audience] in real estate investing. Context: [workspace.context]. No em dashes."
+Output schema:
+```json
+{
+  "body": "string",
+  "subject_lines": ["string", "string", "string"],
+  "preview_text": "string",
+  "word_count": "number"
+}
+```
+
+**UI specifics:** 3 subject-line options rendered as selectable radio cards; user picks one before Approve. Preview text editable inline.
+**Actions:** [Request Edits] | [Approve] | (after Approve:) [Schedule/Push → mock "Queued for delivery" receipt]
+
+---
+
+### Knowledge Engine Lite (Priority 3)
+
+**Step 1 — Route (ROUTER_MODEL):**
+Output schema: `{ "engine": "knowledge", "topic": "...", "context": "...", "category": "process|playbook|faq|definition" }`
+
+**Step 2 — Generate (PRIMARY_MODEL):**
+System: "Generate a business knowledge base entry for a real estate investor. Context: [workspace.context]. Format as structured markdown. No em dashes."
+Output schema:
+```json
+{ "title": "string", "content": "string", "tags": ["string"], "format": "markdown" }
+```
+
+**Destination picker (visible before Push):** [Google Drive] | [GitHub Repo] — two button options.
+**Actions:** [Request Edits] | [Approve] | (after Approve + destination selected:) [Save] → mock receipt:
+- Drive: `{ fileId: "1XyZ...", path: "/Pathwaize KB/[title].md", url: "https://drive.google.com/file/d/1XyZ..." }`
+- GitHub: `{ sha: "a3f9d12", branch: "main", path: "kb/[slug].md", url: "https://github.com/pathwaize/knowledge-base/commit/a3f9d12" }`
+
+---
+
+## Console Shell Layout
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  [GHL mock chrome: #0B0F1A bar]  Pathwaize Intelligence Center | GHL │
+├──────┬──────────────────────────────────────┬───────────────────────┤
+│ Rail │        Center Workspace              │   Right Panel         │
+│ 64px │                                      │   300px               │
+│      │  [Engine tabs: Authority|Newsletter   │                       │
+│ 🎯   │            |Knowledge]               │  Outputs Pending      │
+│ 📰   │  [Persistent Intelligence Bar]       │  Review               │
+│ 📚   │  [Prompt Chips]                      │  (status cards,       │
+│      │  [Run Input Form]                    │   click-to-review)    │
+│ ─── │  [Output Card + status chip]         │                       │
+│ ⚙️  │  [Approve/Edit/Push actions]         │  ─────────────────── │
+│ 👤   │                                      │  Intel Brief Stub     │
+│      │                                      │  (6 sections)         │
+├──────┴──────────────────────────────────────┴───────────────────────┤
+│  Run #001 | Authority | Qwen2.5-7B | $0.0012 | approved | 2.3s     │
+│  Usage: 12 runs | Total: $0.0148 | Auth: $0.008 | NL: $0.005      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**GHL chrome wrapper:** Thin top bar (`#0B0F1A`) labelled "Pathwaize Intelligence Center | GoHighLevel" + workspace name top-right + avatar stub. Simulates iframe embed. Proposal copy: "Hosted on your domain, embedded as Custom Menu Link or Marketplace App iframe with `locationId`/`userId` URL context params. No GHL whitelist restrictions."
+
+**Left rail (64px):** Icon-only with tooltips. 3 engine icons + settings + workspace selector. Workspace name displayed on hover/click.
+
+---
+
+## Persistent Intelligence Input
+
+Always-present bar above engine form:
+```
+[ Your context: Austin fix-and-flip investor | Lead source: cold calls | Tone: direct ]  [Edit]
+```
+Stored in IndexedDB `workspace` table. Injected as system prompt prefix on every engine call. Editable via modal; changes persist to IndexedDB immediately.
+
+---
+
+## Prompt Chips
+
+Horizontal chip row below persistent intelligence bar:
+```
+[Generate LinkedIn Post]  [Write Newsletter]  [Document Process]  [Brainstorm Topics]  [Research Comp]
+```
+Click → auto-selects correct engine tab + pre-fills run input form with smart defaults.
+
+---
+
+## Status State Machine
+
+```
+idle → running → needs-review → (revised →) approved → pushed
+                              ↘ error
+```
+
+Chip colors:
+- `idle`: `#475569` (muted)
+- `running`: `#8B5CF6` + pulsing animation
+- `needs-review`: `#F59E0B`
+- `revised`: `#06B6D4`
+- `approved`: `#22C55E`
+- `pushed`: `#22C55E` + checkmark
+- `error`: `#EF4444`
+
+**Approval gating (hard rule):** Push/Save buttons `disabled` + `cursor: not-allowed` when status !== "approved". Tooltip: "Approve output first". No code path auto-advances to pushed without explicit user click on Approve.
+
+---
+
+## File Plan (exactly 12 files)
+
+```
+public/demos/real-estate-intelligence-center/
+├── index.html              # Shell layout, GHL chrome wrapper, CDN imports (Inter + DM Mono + WebLLM)
+├── styles.css              # Design tokens, 3-col layout, status chips, all component styles
+├── app.js                  # Main controller: init, engine dispatch, status machine, event bus
+├── llm-router.js           # LLMRouter: WebLLM dual-model init, VRAM detection, mock-LLM fallback, .run() contract
+├── db.js                   # IndexedDB schema (runs/outputs/logs/workspace) + CRUD helpers
+├── mock-integrations.js    # Drive/GitHub/LinkedIn/X simulated push receipts
+├── engines/
+│   ├── authority.js        # Authority Engine: 3-step chain (route → generate → validate)
+│   ├── newsletter.js       # Newsletter Engine: route → generate (body+3subjects+preview) → validate
+│   └── knowledge.js        # Knowledge Engine Lite: route → generate KB entry → destination picker
+└── ui/
+    ├── shell.js            # 3-col render, prompt chips, persistent intelligence bar, usage panel
+    ├── output-queue.js     # Pending Review queue: status cards, click-to-review, approve/reject/edit
+    └── intel-brief.js      # Intel Brief stub: 6 sections with demo data
+```
+
+---
+
+## IndexedDB Schema
+
+```js
+// Database: "pathwaize-ic", version: 1
+stores: {
+  runs: {
+    id: string (uuid),
+    engine: "authority" | "newsletter" | "knowledge",
+    input: string,
+    model: string,
+    output_id: string,
+    cost_usd: number,
+    duration_ms: number,
+    timestamp: ISOString,
+    workspace_id: string
+  },
+  outputs: {
+    id: string,
+    run_id: string,
+    engine: string,
+    content: Object,           // raw engine output JSON
+    status: StatusEnum,
+    revision_notes: string | null,
+    destination: "gdrive" | "github" | "linkedin" | "twitter" | null,
+    created_at: ISOString,
+    approved_at: ISOString | null,
+    pushed_at: ISOString | null
+  },
+  logs: {
+    id: string,
+    run_id: string,
+    event: "run_start" | "run_complete" | "approved" | "push_attempt" | "error",
+    detail: Object,
+    timestamp: ISOString
+  },
+  workspace: {
+    id: string,
+    name: string,
+    business_context: string,
+    niche: string,
+    location: string,
+    tone: string
+  }
+}
+```
+
+---
+
+## Intel Brief Stub (static demo data)
+
+6 sections in right panel (collapsible):
+1. **What changed:** "Authority content cadence increased 3x this month"
+2. **What is working:** "Cold call follow-up sequences converting at 12%"
+3. **What is leaking:** "Newsletter open rate dropped to 18% — subject lines need refresh"
+4. **What needs action:** "Document new seller objection script before next campaign"
+5. **Recommended decisions:** "Shift Authority content to LinkedIn short-form for Q3"
+6. **Priority list:** "#1 Newsletter refresh | #2 KB: objection script | #3 LinkedIn cadence"
+
+---
+
+## Mock Integrations
+
+```js
+// mock-integrations.js
+mockGoogleDrive.push(content)
+  → { fileId: "1XyZ...", path: "/Pathwaize KB/[title].md", url: "https://drive.google.com/..." }
+
+mockGitHub.commit(content)
+  → { sha: "a3f9d12", branch: "main", path: "kb/[slug].md", url: "https://github.com/pathwaize/knowledge-base/commit/a3f9d12" }
+
+mockLinkedIn.push(content)
+  → { postId: "7209182...", status: "draft_saved", platform: "LinkedIn" }
+
+mockTwitterX.push(content)
+  → { tweetId: "1802334...", status: "draft_saved", platform: "X" }
+```
+All render as success receipt cards with icon + link (non-navigable stub URL is fine).
+
+---
+
+## Usage/Cost Log (bottom bar)
+
+```
+Total Runs: 12  |  Total Cost: $0.0148  |  Authority: $0.008  |  Newsletter: $0.005  |  Knowledge: $0.002  |  Avg: $0.0012/run
+```
+Per-run cost: mock token rate ($0.000002/token x estimated output tokens). Accumulated in IndexedDB `runs` store; summed on render.
+
+---
+
+## Feature-to-Requirement Traceability Matrix
+
+| Brief Gate | File(s) | Implementation |
+|---|---|---|
+| Authority Engine end-to-end | engines/authority.js, app.js | 3-step chain + state machine |
+| Newsletter Engine end-to-end | engines/newsletter.js, app.js | body + 3 subject options + preview |
+| Knowledge Engine Lite end-to-end | engines/knowledge.js, app.js | KB entry + destination picker |
+| Intel Brief stub (6 sections) | ui/intel-brief.js | Static demo data, collapsible panel |
+| Outputs Pending Review queue | ui/output-queue.js, db.js | Filterable; click-to-review |
+| Prompt chips | ui/shell.js | Pre-fill engine forms on click |
+| Persistent intelligence input | ui/shell.js, db.js | workspace table; injected into all prompts |
+| Backend LLM routing story | llm-router.js | LLMRouter.run() provider-agnostic contract |
+| Approval gating (no auto-push) | app.js | Push disabled until status === approved |
+| Google Drive + GitHub picker | engines/knowledge.js, mock-integrations.js | Picker UI + mock receipt |
+| Run records visible | db.js, ui/shell.js | History bar: timestamp / engine / model / cost / status |
+| Output status tracking | db.js, ui/output-queue.js | 6-state colored chips everywhere |
+| Usage/cost logging | db.js, ui/shell.js | Per-run cost + aggregate bottom panel |
+| Error handling | llm-router.js, app.js | Inline error cards; 1-retry reflection; graceful error state |
+| Workspace/subaccount indicator | ui/shell.js | Workspace name + context in header |
+| Bespoke design | styles.css, index.html | Dark execution console, Inter + DM Mono, palette above |
+| WebGPU fallback | llm-router.js | Mock-LLM mode if no WebGPU; VRAM auto-fallback to 3B |
+| No em/en dashes | All files | Hard enforced in all copy and generated demo text |
+
+---
+
+## Build Priority Order (for demo-builder)
+
+1. `index.html` + `styles.css` — 3-col shell, GHL wrapper, font/CDN imports, CSS token declarations
+2. `db.js` — IndexedDB init, all 4 stores, CRUD helpers
+3. `llm-router.js` — WebLLM dual-model init, VRAM detection, mock-LLM fallback (P0: progress bar UI), `.run()` contract, JSON validation + 1-retry reflection
+4. `app.js` — engine dispatcher, status machine, event bus, prompt chip handlers
+5. `engines/authority.js` — step 1 of full engine pipeline (Priority 1 per brief)
+6. `engines/newsletter.js` — subject-line selectable cards (Priority 2)
+7. `engines/knowledge.js` — destination picker (Priority 3)
+8. `mock-integrations.js` — Drive/GitHub/LinkedIn/X receipts
+9. `ui/shell.js` — persistent intelligence bar, usage panel, run history bar
+10. `ui/output-queue.js` — pending review list
+11. `ui/intel-brief.js` — 6-section stub
+12. QA pass: all 17 traceability gates, no console errors, no em/en dashes
+
+---
+
+## workSamples.js Registry Entry
+
+```js
+{
+  id: <next sequential>,
+  slug: "real-estate-intelligence-center",
+  title: "Pathwaize Intelligence Center",
+  description: "AI workflow execution console for real estate investors. Three engines (Authority, Newsletter, Knowledge) wired end-to-end through a run/review/approve/push pipeline powered by on-device WebGPU inference.",
+  category: "Data",
+  status: "live",
+  href: import.meta.env.BASE_URL + "demos/real-estate-intelligence-center/",
+  color: "#0EA5E9",
+  icon: "🎯",
+  frameStyle: "walnut",
+  tags: ["JavaScript", "WebGPU", "Dashboard", "Full-Stack", "Data Viz", "AI/ML", "IndexedDB"],
+  screenshot: import.meta.env.BASE_URL + "work-samples/real-estate-intelligence-center.png",
+  client: "Pathwaize",
+  postingSummary: "Build an AI-powered execution console for real estate investors: 3 AI engines, run/review/approve/push workflow, backend LLM routing layer, approval-gated publishing.",
+  builtFor: "Upwork proposal",
+  date: "2026-06-30",
+  proposalDeckUrl: null,
+  proposalPageUrl: null,
+}
+```
+
+Add `"WebGPU"` to the `AI` section of `tagSections` if not already present.
+
+---
+
+## Scope Fences
+
+- No real API keys, no exposed LLM credentials (WebGPU = local; mock-LLM fallback for non-WebGPU)
+- No real Google Drive/GitHub/LinkedIn push (all mocked with realistic receipt UI)
+- No advanced analytics, no continuous KB monitoring, no proactive gap detection
+- Intel Brief = static demo data only (client explicitly calls this out for V1)
+- 12 files exactly, no bundler, no build step
+- WebLLM models load from CDN at runtime (not bundled, no 3-minute build timeout risk)
+- No mw-backend blueprint needed
+
+---
+
+## Risks + Mitigations
+
+| Risk | Mitigation |
+|---|---|
+| 7B model OOM on low-VRAM GPUs | Auto-detect adapter; fall back to 3B with "Compact model for your hardware" banner |
+| First-load 30s model download | Prominent progress bar (P0 UX); OPFS cache so return loads < 5s |
+| WebGPU unavailable (non-Chrome, mobile) | Mock-LLM mode: canned high-quality responses; full workflow demonstrable |
+| JSON generation failures from smaller model | Grammar enforcement + 1-retry reflection; inline error card after 2nd failure |
+| GHL postMessage spec not public | Demo uses URL params + mock wrapper; proposal notes real GHL dev access required for production |
+| Mock canned responses look low-quality | Pre-write realistic, high-quality canned responses for all 3 engines before enabling mock-LLM path |
+
+---
+
+## handoff
+- produced: complete final build plan — 12-file structure, locked design system (full hex palette + Inter/DM Mono), dual-model WebLLM constants (verbatim IDs), all 3 engine prompt chains with JSON schemas, IndexedDB schema, approval-gate state machine, traceability matrix (17 gates), build priority order, workSamples.js entry, scope fences, risk mitigations
+- decisions: full functional demo (richness-10); no backend blueprint; save/push simulated with realistic UI receipts; dark execution console aesthetic; mock-LLM fallback for non-WebGPU reviewers; WebLLM 7B primary + 1.5B router + 3B VRAM fallback (confirmed model IDs from researcher); GHL simulated via mock chrome wrapper
+- next needs: demo-builder uses the locked palette hex values and model ID constants verbatim; treats download progress bar as P0 UX (not optional); pre-writes high-quality canned mock-LLM responses for all 3 engines; enforces approval gate (push buttons disabled until status=approved); adds LLMRouter.run() as a visible architectural element (shown in run log as "model used" field)
+- risks: first-load UX (progress bar + cache notification) is the single biggest reviewer impression risk; mock-LLM canned response quality must be indistinguishable from real model output so non-WebGPU reviewers get full value from the demo

@@ -1,0 +1,27 @@
+# CEO Review (Plan) — panhandle-garage-door-company
+
+## Verified (not assumed)
+- Open signup live: `POST /auth/register` -> **201** with any fake email + 8-char pw. Matches user's hard requirement (create account, any fake email/pw, run analyzer after deploy). ✓
+- `api.michaelwegter.com/health` -> **200** (Flask up, not a squatting managed service). ✓
+- SEO analyzer GH Pages app -> **200**. Reuse path is real; zero rebuild justified. ✓
+- `maryland_driveway_wp_bridge_blueprint.py` + `bridge_blueprint_template.py` both present -> bridge clone is a real clone, not net-new. ✓
+- `redirect_canonical` correctly scoped to WP theme PHP (not the Flask bridge), consistent with CLAUDE.md WP gotchas. ✓
+
+## Assessment against brief + richness 10
+Plan delivers exactly what the user asked for: a REAL WordPress site on the Surface (Docker, port 8090, bridged) + work-sample entry + integrated SEO analyzer with open signup. SEO-first focus is genuine, not cosmetic: content silos, 12 city LPs (9 TX + 3 NM) built on the competitor gap (Amarillo rivals have zero town-level LPs), LocalBusiness/Service/FAQ/Breadcrumb schema, Yoast sitemap/robots, CWV/caching, click-to-call conversion architecture, bilingual differentiator. 29 pages via scalable templates = production scope worthy of 10/10, not bespoke-page busywork. Design is bespoke and industry-fit (steel blue + safety orange, Barlow Condensed), derived from the client's actual minimal site and explicitly not the portfolio look. plan-eval passed all 5 rubric criteria; plan-gate confirmed prior gaps resolved. No contradictions, no unresolved architecture.
+
+## Notes for demo-builder (non-blocking, do not re-run plan)
+1. **workSamples.js `category`**: change `"Creative"` -> `"Utility"` (or `"Productivity"`). An SEO/local-business WordPress build is not Creative; eval/image steps shouldn't fail on this but fix it at build time.
+2. **Analyzer integration must round-trip live**: `/free-seo-audit/` page must actually let the reviewer register (fake email/pw) and run an analysis on the deployed WP demo URL. deploy-test must exercise this exact flow, not just load the page. This is the user's explicit acceptance criterion.
+3. **Playwright on Surface** is a prerequisite for `/seo/analyze` (JS rendering) — install chromium first if `playwright_available: false`, treat as setup not a mid-run surprise.
+4. **Docker pull** must be via registered service (`run-server.ps1` owns startup), never blocked in `/run/exec` (Cloudflare 524). All runner scripts ASCII-only; no `?>` in any PHP; never touch the tunnel config.
+
+No earlier step needs redoing. Plan is build-ready.
+
+VERDICT: pass
+
+## handoff
+- produced: plan-ceo.out — CEO pass; verified open signup (201), Flask health (200), analyzer app (200), Maryland bridge + template present before approving
+- decisions: plan approved unchanged; proceed to researcher -> demo-builder; analyzer reuse + Docker WP + bridge clone all validated against live infra
+- next needs: demo-builder builds Docker WP (8090, registered service), custom PHP theme + 29 pages, clone bridge as panhandle_blueprint.py, /free-seo-audit/ page that round-trips signup+analyze; set workSamples category to Utility
+- risks: none new; deploy-test must verify the live register+analyze flow end-to-end (user's explicit acceptance gate), plus standard WP-bridge login-filter + Docker-pull-timeout cautions

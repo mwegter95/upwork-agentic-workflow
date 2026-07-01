@@ -1,0 +1,301 @@
+{
+  "posting_id": "real-estate-intelligence-center",
+  "client_name": "Pathwaize",
+  "product": "AI-powered operating system for real estate investors",
+  "deliverable": "Intelligence Center — AI workflow execution console (v1 MVP)",
+  "target_platform": "GoHighLevel (marketplace app or iframe custom menu page)",
+  "feature_richness": 10,
+  "posting_summary": "Full-Stack SaaS MVP: a lean, functional Intelligence Center dashboard that proves the core workflow (Run → Generate → Review → Revise → Approve → Save/Push) across 3 primary AI engines. Not a chatbot, not analytics. An execution console where users run engines, review outputs, request edits, and gate approvals before saving or pushing to external destinations.",
+
+  "core_workflow": {
+    "description": "The non-negotiable loop every engine must support",
+    "steps": [
+      "Run engine (with user input + persistent intelligence)",
+      "Generate output (AI-powered generation)",
+      "Review output (user inspects result)",
+      "Request edits (user provides revision notes)",
+      "Approve output (user gates the action)",
+      "Save or Push to destination (only after approval)"
+    ]
+  },
+
+  "engines": {
+    "authority_engine": {
+      "priority": "PRIORITY #1 — wire end-to-end first",
+      "description": "Generates founder-authority content (LinkedIn posts, X/Twitter threads, thought-leadership pieces)",
+      "io": "User input (topic/angle/tone) → AI-generated drafts → Review → Revise → Approve → Save as draft or push to LinkedIn/X",
+      "minimal_features": [
+        "Prompt input (topic, tone, platform)",
+        "AI-generated content block",
+        "Edit/revision capability",
+        "Approval gate",
+        "Save or schedule/push action"
+      ]
+    },
+    "newsletter_engine": {
+      "priority": "PRIORITY #2 — wire end-to-end",
+      "description": "Generates newsletter content + metadata (subject line options, preview text, body copy)",
+      "io": "User input (topic/audience) → AI generates body + 3 subject-line options + preview text → Review → Revise → Approve → Save as draft or schedule/send",
+      "minimal_features": [
+        "Prompt input (topic, audience, brand voice)",
+        "AI-generated newsletter body",
+        "AI-generated subject-line options (≥3)",
+        "AI-generated preview text",
+        "Review/revision panel",
+        "Approval gate",
+        "Save or schedule action"
+      ]
+    },
+    "knowledge_engine_lite": {
+      "priority": "PRIORITY #3 — generate + store KB",
+      "description": "Generates or curates core business knowledgebase (customer-facing, internal playbooks, processes). Stores to Google Drive or GitHub.",
+      "io": "User input (business context/topic) → AI generates KB entry → Review → Approve → Save to Google Drive or GitHub",
+      "minimal_features": [
+        "Prompt input (topic, business context)",
+        "AI-generated KB entry",
+        "Destination picker (Google Drive or GitHub folder)",
+        "Save with receipt + link to saved asset",
+        "Visual confirmation of successful save"
+      ],
+      "note": "Full analytics automation is NOT required for V1. Stub is acceptable; focus on the save workflow."
+    }
+  },
+
+  "supporting_ui": {
+    "intel_brief_stub": {
+      "description": "A lite/manual/stubbed section showing intended structure with placeholder items",
+      "sections": [
+        "What changed",
+        "What is working",
+        "What is leaking",
+        "What needs action",
+        "Recommended decisions",
+        "Priority list"
+      ],
+      "note": "Intentionally static/demo data. Full analytics automation is not required for V1."
+    },
+    "outputs_pending_review_queue": {
+      "description": "List of generated outputs awaiting user approval or revision",
+      "minimal_features": [
+        "Show pending outputs by engine + timestamp",
+        "Status badge (needs-review, revised, approved-ready-to-push)",
+        "Click-to-review action",
+        "Approve/reject/request-edits actions per output"
+      ]
+    },
+    "prompt_chips": {
+      "description": "Quick-start command chips for common tasks",
+      "example": "[Generate LinkedIn Post] [Create Newsletter] [Document Process] [Brainstorm Topic Ideas]",
+      "behavior": "Click chip → pre-fill engine input with smart defaults"
+    },
+    "persistent_intelligence_input": {
+      "description": "Always-present command/input bar at the console's top or side",
+      "behavior": "Global text input for persistent user context (e.g., 'Operating in Austin market, selling fix-and-flip deals, lead source is cold calls'). Engines can reference this context when generating outputs."
+    },
+    "console_shell": {
+      "description": "Overall layout + supporting chrome",
+      "features": [
+        "Left engine rail (3 engine buttons/cards to switch context)",
+        "Center run/review/revise workspace (main content area)",
+        "Right panel: Outputs Pending Review queue + Intel Brief stub",
+        "Bottom or side: Run history, usage/cost log, error messages"
+      ]
+    }
+  },
+
+  "backend_architecture_required": {
+    "note": "Must be REPRESENTED / architecturally demonstrated in the demo. In a full production system, these live on the real Pathwaize backend. The demo models them in-browser via WebGPU + IndexedDB.",
+    "components": [
+      "Engine orchestrator (routes requests to the correct engine pipeline)",
+      "Backend-based LLM routing layer (frontend never calls OpenAI/Claude/any provider directly; it talks to a router that selects the model/provider)",
+      "Prompt/template management (store + versioned prompts for each engine)",
+      "Engine run records (log every run: timestamp, engine, input, model, output, cost)",
+      "Output storage (persist generated outputs with metadata)",
+      "Output status tracking (pending / generating / needs-review / revised / approved / pushed)",
+      "Review and approval workflow (user can reject, request edits, or approve)",
+      "Revision workflow (generate alternative outputs or refined versions)",
+      "Usage and cost logging (track API costs per user/workspace/engine, visible in dashboard)",
+      "Error handling (graceful failure messages, retry logic if applicable)",
+      "Google Drive connection (OAuth + ability to save KB entries to Drive)",
+      "GitHub connection (OAuth + ability to save KB entries to GitHub repos)",
+      "Subaccount/workspace association (multi-tenant: each workspace has its own engine settings, run history, API quotas)"
+    ]
+  },
+
+  "llm_routing_requirement": {
+    "critical": "Frontend MUST NOT call OpenAI, Claude, or any LLM provider directly.",
+    "contract": "Frontend → Backend router. Backend router handles: prompt execution, model/provider selection, permissions, logging, usage/cost tracking, run history, error handling, approval-gated actions.",
+    "provider_agnostic_proof": "System must be structured so additional providers or models can be added without rebuilding the product. Start with one primary provider in V1.",
+    "example_backend_routed_actions": [
+      "Running the Authority Engine",
+      "Running the Newsletter Engine",
+      "Running the Knowledge Engine",
+      "Revising an output",
+      "Summarizing a run",
+      "Classifying a user command",
+      "Saving outputs for review",
+      "Preparing approved outputs to be pushed or saved"
+    ]
+  },
+
+  "approval_gating_requirement": {
+    "critical": "LLM-generated outputs NEVER automatically publish, send, or update critical systems without explicit user approval.",
+    "must_demonstrate": [
+      "A pending output cannot push to LinkedIn/X without user approval click",
+      "A newsletter cannot be scheduled/sent without approval click",
+      "A KB entry cannot be saved to Drive/GitHub without approval click",
+      "Revision requests block the push path until resolved"
+    ]
+  },
+
+  "requirements_for_cover_letter": {
+    "note": "The client's posting includes 8 specific 'TO APPLY' questions. Cover letter must answer ALL 8 explicitly and reference the live demo by name + link.",
+    "questions": [
+      {
+        "id": 1,
+        "question": "Examples of SaaS dashboards, AI apps, or workflow tools you have built",
+        "note": "Link to live demo + 2-3 portfolio references"
+      },
+      {
+        "id": 2,
+        "question": "Your recommended tech stack for this MVP (currently using AWS and Supabase)",
+        "note": "Address their existing infra; recommend a cohesive stack that respects AWS + Supabase"
+      },
+      {
+        "id": 3,
+        "question": "Your experience with LLM-backed workflows",
+        "note": "Concrete examples of apps that integrated LLMs; mention backend routing, cost tracking, error handling"
+      },
+      {
+        "id": 4,
+        "question": "Your experience with GoHighLevel integrations",
+        "note": "Address marketplace app vs iframe custom menu link; SSO/subaccount context; sizing + postMessage"
+      },
+      {
+        "id": 5,
+        "question": "How you would structure the backend LLM routing layer so the product is not hard-coded to one model or provider",
+        "note": "Explain provider-agnostic contract + config-driven model selection"
+      },
+      {
+        "id": 6,
+        "question": "How you would prevent approval-gated actions from publishing, pushing, or updating connected systems without user approval",
+        "note": "Explain workflow gates + status tracking + why outputs don't auto-publish"
+      },
+      {
+        "id": 7,
+        "question": "How you would approach building this as a lean MVP without overengineering it",
+        "note": "Scope-down: focus on 3 engines + core workflow loop, skip advanced analytics/continuous KB monitoring/proactive gap detection"
+      },
+      {
+        "id": 8,
+        "question": "Your estimated timeline and fixed-price or milestone-based budget range",
+        "note": "Give a ballpark range; structure as milestones (UI shell, Authority Engine, Newsletter Engine, KB Engine, Review/Approval flow, Polish/Deploy)"
+      }
+    ]
+  },
+
+  "requirements_for_demo": {
+    "note": "The evaluator will grade the demo against these explicit gates. Every one must be visible, functional, or clearly modeled.",
+    "gates": [
+      "3 engines (Authority, Newsletter, Knowledge Lite) each wired end-to-end through run/generate/review/revise/approve/save-push",
+      "Intel Brief stub with its 6 named sections (What changed, What's working, What's leaking, What needs action, Recommended decisions, Priority list)",
+      "Outputs Pending Review queue (visible + interactive)",
+      "Prompt chips (quick-start command suggestions that pre-fill engine input)",
+      "Persistent intelligence input (always-present context bar)",
+      "Backend LLM routing layer story (literally shown via an in-browser LLMRouter module with same request/response contract as production backend)",
+      "Approval-gating: LLM outputs NEVER auto-publish/push/save; user must explicitly click 'Approve' before a Push action succeeds",
+      "Google Drive + GitHub destination picker for Knowledge Engine KB saves",
+      "Run records visible (history log showing: timestamp, engine, input, model used, output, cost, status)",
+      "Output status tracking (pending / generating / needs-review / revised / approved / pushed — shown as colored chips)",
+      "Usage and cost logging (visible somewhere in the dashboard: total calls, total cost, per-engine breakdown, cost per run)",
+      "Error handling (graceful error messages when generation fails or user input is invalid)",
+      "Subaccount/workspace association (workspace selector or multi-tenant context indicator)",
+      "Design is bespoke + professional (AI execution console aesthetic, NOT michaelwegter.com's portfolio look, NOT a generic chatbot)",
+      "No em/en dashes anywhere in the UI or proposal text"
+    ]
+  },
+
+  "scope_fences": {
+    "do_not_build": [
+      "Advanced analytics, continuous KB monitoring, proactive gap detection, or future engines beyond placeholder stubs",
+      "Real OpenAI/Claude API keys exposed in the demo (WebGPU local models eliminate this risk + cost)",
+      "More than ~12 files in the demo codebase",
+      "Build time > 3 minutes (WebLLM model loads from CDN at runtime, not bundled)",
+      "More than 1 hero feature + 2 supporting features",
+      "Over-engineering the Intel Brief (it's intentionally a lightweight, demo-data stub)"
+    ],
+    "what_can_be_simulated": [
+      "Save/push to Google Drive and GitHub (show the file that WOULD be written, target path, and success receipt in-browser; real GitHub push only if planner greenlights a backend blueprint)",
+      "LinkedIn/X post scheduling/push (show mock success response)",
+      "Newsletter delivery metadata (show when a newsletter would be sent; do not actually send emails)"
+    ]
+  },
+
+  "design_direction": {
+    "theme": "AI-powered execution console for real-estate investors",
+    "aesthetic": "Command deck / mission-control: dark, dense, professional SaaS. NOT playful, NOT a generic chatbot bubble UI.",
+    "suggested_elements": [
+      "Deep charcoal/near-black canvas with a single confident accent (Pathwaize brand color if found; else fintech blue/teal or authority gold)",
+      "Panel-based layout: left engine rail, center run/review workspace, right queue + Intel Brief",
+      "Typography: crisp grotesk/Inter-class UI face + mono for run IDs, logs, cost figures",
+      "Status system: pending / generating / needs-review / revised / approved / pushed — colored state chips everywhere",
+      "Dense but scannable: many status indicators at a glance, but not overwhelming"
+    ],
+    "who_finalizes": "planner (lock palette hex + fonts after researcher gathers Pathwaize brand + GoHighLevel context)"
+  },
+
+  "tech_stack_recommendation_for_client": {
+    "note": "Proposal must address their existing AWS + Supabase infrastructure explicitly.",
+    "frontend": "Next.js / React embedded in GoHighLevel via iframe custom menu page",
+    "backend": "Supabase (Postgres + Auth + Row-Level Security for workspace/user isolation) for run records, outputs, status, logs; a dedicated LLM routing service (Node/Next.js API routes or a small service on AWS Lambda + API Gateway) exposing one provider-agnostic /route contract",
+    "auth": "Supabase Auth (with OAuth for Google + GitHub for Drive/GitHub KB connections)",
+    "integrations": "Google Drive API + GitHub API, both via OAuth server-side (backend handles tokens, frontend never sees keys)",
+    "llm_provider": "Start with one (OpenAI or Claude); structure so adding another is a config + provider-class addition, not a rebuild",
+    "rationale": "Respects their AWS + Supabase investments; provider-agnostic routing scales to multi-provider later; server-side OAuth keeps keys secure; Supabase RLS handles workspace isolation elegantly."
+  },
+
+  "demo_implementation_note": {
+    "approach": "WebGPU + Transformers.js for the LLM (client-side, 4-bit quantized small model like Qwen2.5-1.5B or Llama-3-8B-Instruct-Q4). Browser IndexedDB for run records + output storage + logs. In-browser LLMRouter module mirrors the backend routing contract exactly (swappable at config time). This proves the architecture without requiring a real backend for demo reviewers, while staying 100% honest about the production flow (frontend talks to a routing layer, not directly to OpenAI).",
+    "webgpu_best_practices_from_brief": [
+      "Prompt chaining / routing over free-loop ReAct (avoid hallucinations from small models)",
+      "Intent-classifier router step (fast pre-routing logic)",
+      "Enforced structured (JSON-schema / grammar) outputs (100% syntactic correctness)",
+      "IndexedDB for run records / output storage / logs (persistent + performant)",
+      "Sliding context window (cap conversation to last 4-6 turns + async summarization)",
+      "Local self-correction / reflection (validate output format in JS; retry once if it fails)"
+    ]
+  },
+
+  "success_criteria": {
+    "definition_of_done": [
+      "All 8 'TO APPLY' cover-letter questions answered explicitly + demo link referenced twice",
+      "Demo builds and loads with no console errors on first paint",
+      "All 3 engines (Authority, Newsletter, Knowledge Lite) wired end-to-end and visibly working",
+      "Approval-gating prevents unapproved outputs from pushing; user must click 'Approve' first",
+      "Run records + output status tracking + usage/cost logging all visible in the UI",
+      "Intel Brief stub with all 6 sections present (even if demo data)",
+      "Outputs Pending Review queue functional (can select, approve, request edits, push)",
+      "Prompt chips and persistent intelligence input present and functional",
+      "Design is bespoke to real-estate/fintech vertical (NOT portfolio look), professional, no em/en dashes",
+      "Demo URL resolves live after deploy; live /work-samples/:slug route returns 200"
+    ]
+  },
+
+  "priority_build_order_from_posting": [
+    "1. UI shell (console layout, NOT chatbot, NOT analytics)",
+    "2. Authority Engine end-to-end (run → generate → review → revise → approve → save/push)",
+    "3. Newsletter Engine end-to-end",
+    "4. Knowledge Engine Lite (generate + KB storage destination picker)",
+    "5. Outputs Pending Review queue",
+    "6. Approve / request-edits / re-run flow",
+    "7. Intel Brief UI stub",
+    "8. Future-engine placeholders only if helpful"
+  ],
+
+  "handoff": {
+    "produced": "Structured brief.json capturing: client (Pathwaize) + deliverable (Intelligence Center MVP), core workflow loop, 3 engines (Authority/Newsletter/Knowledge Lite) with minimal feature sets, supporting UI (Intel Brief stub, Outputs queue, prompt chips, persistent input, console shell), full backend architecture requirements (LLM routing, approval gating, storage, multi-tenant, integrations), the 8 'TO APPLY' cover-letter questions + explicit answers required, demo validation gates (all 13 requirements graded by evaluator), scope fences (no analytics/overengineering), bespoke design direction, recommended tech stack addressing client's AWS + Supabase infra, priority build order from posting, success criteria (definition of done).",
+    "decisions": "Feature richness 10 = full functional demo (WebGPU local LLM behind in-browser LLMRouter module mirrors production backend contract exactly; provider-agnostic = swappable at config). Hero = end-to-end run/review/approve/push on Authority + Newsletter; Supporting = Knowledge Lite + console shell. Build order strict from posting. Design must be bespoke execution-console aesthetic (dark, professional, NOT portfolio look). Cover letter must answer all 8 TO APPLY questions + reference live demo twice. No em/en dashes anywhere.",
+    "next_needs": "Planner: lock bespoke palette (hex) + typography + layout from this brief. Decide whether a real mw-backend GitHub blueprint is warranted for save/push (default = simulate in-browser convincingly, greenlight real blueprint only if planner/CEO agree). Researcher: find Pathwaize's real brand (site, logo, colors) + GoHighLevel embed specifics + competitor workflow UIs (Jasper, Copy.ai). CEO: validate that the WebGPU approach + in-browser LLMRouter genuinely proves the 'provider-agnostic' requirement without misrepresenting the architecture.",
+    "risks": "WebGPU availability varies by browser (demo must gracefully detect + show fallback option; ideally mock-LLM path so non-WebGPU reviewers still see the workflow). Model download latency on first load (pick smallest 4-bit quantized model; show load progress UI). Reconciling 'frontend must not call LLM' with client-side model must be framed honestly (in demo, router swaps to WebGPU provider; in production, identical interface calls backend; this is the architectural demonstration, not a hack)."
+  }
+}

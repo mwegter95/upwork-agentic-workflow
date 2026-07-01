@@ -1,0 +1,42 @@
+# Intake — panhandle-garage-door-company
+
+## Brief parsed
+
+Created `brief.json`: structured capture of Dimitroff Door Repair's SEO-first WordPress redesign + SEO analyzer demo.
+
+**Client:** Dimitroff Door Repair, Dumas TX. Tagline "One Company. Every Door." Serves Texas Panhandle + NE New Mexico.
+
+**Goal:** Highest-ranking garage/commercial door site in Panhandle. Generate qualified phone calls/leads. Establish local authority. Out-rank Amarillo competitors across dispersed towns (Dumas, Borger, Pampa, Dalhart, Canyon, Hereford, Perryton, etc.).
+
+**8 Service silos:** residential garage doors, commercial overhead doors, roll-up doors, storefront doors, barn/agricultural, entry doors, dock equipment, residential+commercial window repair/replacement.
+
+**Core ask:** WordPress migration from Squarespace. SEO-first architecture (content silos, city landing pages, service pages, blog). Technical SEO (schema LocalBusiness+Service, XML sitemap, robots.txt, metadata, internal linking, 301s, GSC/GA, conversion tracking). Core Web Vitals. Mobile-first. Scalable templates. Docs/training.
+
+**Branding:** Simple, straightforward, "slightly elevated" — NOT emulating competitors and NOT michaelwegter.com's portfolio look. Utilitarian, trustworthy, blue-collar-premium aesthetic.
+
+**Two-part demo:**
+- A: Real WordPress site on Surface (Docker+MySQL, Flask bridge at `/demos/panhandle-garage-door-company/`). SEO-architected with service silos, city landing pages, commercial/residential split, blog sample, schema markup, click-to-call + estimate-request CTAs.
+- B: SEO Analyzer app (reuse existing from michaelwegter.com) with open signup (any fake email/password). Audits URLs (on-page SEO, local SEO checks, Core Web Vitals signals). Demonstrate on live Dimitroff site to show "here's the SEO toolkit I bring."
+
+**Deployment:** WordPress as registered Service on Surface via `surface_register_service.py`; Flask bridge `panhandle_blueprint.py` at `/demos/panhandle-garage-door-company/`, registered in `server.py`, pushed to mw-backend (auto-deploy ~30s). Analyzer wired for open signup, must work live post-deploy.
+
+**Feature richness:** 10 (full, production-quality, multiple features).
+
+**Hard constraints:**
+- No em/en dashes in prose.
+- GitHub handle `mwegter95` only.
+- Voice: SEO strategist first, web designer second.
+- Demo link in both cover letter and deck.
+- Bespoke design (not portfolio); address EVERY explicit requirement in narrative.
+
+**High-risk pieces:**
+- WP Docker image pull timeout; register as service, do NOT block in /run/exec.
+- Sub-path WordPress login requires 3 filters (wp_redirect, login_redirect, login_url) + canonical Host + X-Forwarded-Proto.
+- Open signup auth must allow arbitrary email/password (no verification) — verify analyzer compatibility.
+- Dual backends (WP + analyzer) on same slug; keep ports/services distinct.
+
+## handoff
+- produced: brief.json (structured requirements: 8 service silos, Panhandle geography, 10+ technical-SEO items, content silos, city pages, conversion CTAs, open-signup analyzer, bespoke design direction, deployment plan).
+- decisions: FULL build (richness 10); real WP-Docker-on-Surface + Flask bridge; analyzer open-signup mandatory; bespoke door-company design (not portfolio look); SEO strategist-first voice.
+- next needs: planner must decide hero feature scope (likely WP architecture + analyzer integration), design direction (palette/type for utilitarian/trustworthy), and prototype-vs-full (already FULL). researcher must find Dimitroff brand colors/logo, Panhandle competitor set, and locate/verify existing analyzer app + backend. demo-builder must execute WP Docker setup + analyzer wiring + bridge deployment.
+- risks: WP Docker fragility (pull timeout, login filter complexity, canonical loops); open signup auth compatibility; port/service management; Surface reboot durability for dual services.

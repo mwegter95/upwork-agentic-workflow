@@ -21,3 +21,6 @@
 - [reuse] Capture scripts must be .mjs (not .js) when the workspace package.json has "type":"module"; prompt should note this to avoid a require() crash on first run.
 - [adherence] The media-capture step should be required to verify distinct MD5s and min size before marking handoff complete, so the writer never inherits duplicate frames and gets looped back unnecessarily.
 
+
+### prompt-optimizer
+- [reuse] Several runs repeat the same Pillow/python-pptx "pip install at step start" lesson; these are environment prerequisites, not prompt fixes, so a setup/image manifest should own them and stop surfacing them as per-run improvements.

@@ -1,0 +1,29 @@
+# Proposal Writer — Pathwaize Intelligence Center (CEO revision pass)
+
+## Changes applied (CEO directive)
+
+1. `cover-letter.txt` line 1: `COVER LETTER — Pathwaize Intelligence Center MVP` → `COVER LETTER: Pathwaize Intelligence Center MVP`
+2. `one-pager.html` line 6 `<title>`: `Pathwaize Intelligence Center — Proposal | Michael Wegter` → `Pathwaize Intelligence Center Proposal | Michael Wegter`
+
+## Dash audit (grep -n '—\|–')
+
+| File | Matches |
+|------|---------|
+| cover-letter.txt | 0 |
+| proposal/one-pager.html | 0 |
+| build-deck.py (deck source) | 0 |
+
+All three files clean.
+
+## Deliverables (unchanged from prior pass)
+
+- `cover-letter.txt` — 77 lines, all 8 TO APPLY Qs answered, demo link twice, no dashes
+- `proposal/one-pager.html` — 22 KB, dark execution-console design, demo CTA in hero
+- `proposal/deck.pptx` — 8 slides, 44 KB, demo link on slides 1 and 8
+- `workSamples.js` — proposalDeckUrl + proposalPageUrl set
+
+## handoff
+- produced: 2-line surgical fix; cover-letter.txt and one-pager.html now dash-free; deck source already clean
+- decisions: replaced em dash with colon in cover letter header; dropped em dash entirely (no separator) in one-pager title per CEO instruction
+- next needs: deploy step must push updated one-pager.html (in michaelwegter.com repo); evaluator to confirm no-dash gate passes
+- risks: none

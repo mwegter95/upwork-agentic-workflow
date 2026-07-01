@@ -1,0 +1,113 @@
+# Demo Builder — Panhandle Garage Door Company
+
+## Status: COMPLETE
+
+**Live demo:** https://api.michaelwegter.com/demos/panhandle-garage-door-company/
+
+Full production WordPress site for Dimitroff Door Repair — SEO-first architecture with real content, LocalBusiness schema, Yoast SEO, 12 city landing pages, 8 service sub-pages, and an embedded live SEO audit tool.
+
+---
+
+## Infrastructure
+
+- **Docker:** `panhandle-wordpress` (port 8090) + `panhandle-mysql` — both Up, running from prior step
+- **WP-CLI:** installed in container (`/usr/local/bin/wp` v2.12.0)
+- **WP version:** 6.6 — freshly installed this run
+- **siteurl/home:** `https://api.michaelwegter.com/demos/panhandle-garage-door-company`
+- **Admin creds:** admin / DimitroffAdmin2026!
+- **Theme:** `panhandle-theme` (active) — Barlow Condensed + Source Sans 3, #1B3A5C / #E85D04
+- **Plugins:** Yoast SEO 27.9 (active)
+- **Permalinks:** `/%postname%/`
+- **Bridge:** `panhandle_wp_bridge_blueprint.py` registered at server.py lines 353-354 (already pushed)
+
+---
+
+## Content (29 pages + 3 posts)
+
+### Core Pages
+| URL | ID | Notes |
+|-----|----|-------|
+| `/` | 5 | front-page.php — hero, trust strip, 8-service grid, 12-city grid, why-us, CTA band |
+| `/services/` | 6 | Hub linking all 8 service sub-pages |
+| `/residential/` | 29 | Residential hub |
+| `/commercial/` | 28 | Commercial hub with maintenance contract mention |
+| `/contact/` | 30 | Phone, address, hours, service area |
+| `/estimate/` | 31 | HTML form with service selector (12 options) |
+| `/blog/` | 33 | Set as page_for_posts |
+| `/free-seo-audit/` | 32 | page-seo-audit.php template — iframe + launch button to SEO analyzer |
+
+### Service Sub-pages (parent: /services/ ID 6)
+- `/services/residential-garage-doors/` — FAQ (3 Qs), CTA
+- `/services/commercial-overhead-doors/`
+- `/services/roll-up-doors/`
+- `/services/storefront-doors/`
+- `/services/barn-agricultural-doors/`
+- `/services/entry-doors/`
+- `/services/dock-equipment/`
+- `/services/window-repair-replacement/`
+
+### Service Area (parent: /service-area/ ID 15)
+TX: dumas-tx (HQ), amarillo-tx, pampa-tx, borger-tx, perryton-tx, dalhart-tx, hereford-tx, canyon-tx, friona-tx
+NM: clovis-nm, tucumcari-nm, clayton-nm
+
+Each city page: localized H1, service list with internal links, anti-Amarillo-competitor copy, Se Habla Espanol, click-to-call CTA.
+
+### Blog Posts (3 posts, IDs 34-36)
+- "How Long Do Garage Door Springs Last in the Texas Panhandle?" (2026-06-15)
+- "5 Reasons Your Garage Door Won't Open in Cold Weather" (2026-06-10)
+- "SEO for Local Service Businesses: What the Texas Panhandle Taught Us" (2026-06-05) — links to SEO audit page
+
+---
+
+## SEO Implementation
+
+- **LocalBusiness schema** in header.php: name, phone, postal address (120 Amherst Ave, Dumas TX 79029), openingHours (M-F 8-6, S-S 10-5), areaServed (12 cities), slogan "One Company. Every Door."
+- **Yoast SEO:** auto-generates WebPage/BreadcrumbList/WebSite schema per page; SEO titles set
+- **Content siloing:** `/services/` and `/service-area/` as WP parent pages
+- **Internal linking:** home -> services -> service pages; city pages -> service pages; blog -> SEO audit page
+- **Conversion:** click-to-call (806) 316-5296 every page, estimate form, mobile sticky bar (fixed bottom)
+- **Remove canonical redirect:** `remove_filter('template_redirect', 'redirect_canonical')` in functions.php prevents sub-path proxy loop
+
+---
+
+## SEO Audit Tool Integration
+
+`/free-seo-audit/` uses `page-seo-audit.php` WP template:
+- Button: "Launch Free SEO Analyzer" -> https://mwegter95.github.io/free-seo-analyzer-with-js-rendering/ (200 live)
+- Embedded `<iframe>` of same URL (950px height)
+- Instructional copy: "Sign up with any email address and password (minimum 8 characters)"
+- Suggested test URL shown: the demo site itself
+
+---
+
+## Verification (14/14 routes — all 200)
+
+```
+/ /services/ /services/residential-garage-doors/ /services/commercial-overhead-doors/
+/service-area/ /service-area/dumas-tx/ /service-area/amarillo-tx/ /service-area/clovis-nm/
+/residential/ /commercial/ /estimate/ /contact/ /free-seo-audit/ /blog/
+```
+
+WP login: https://api.michaelwegter.com/demos/panhandle-garage-door-company/wp-login.php (200)
+
+---
+
+## Portfolio Entry
+
+`workSamples.js` id:19 — already existed from prior run. Added `screenshot: null` field.
+`href: "https://api.michaelwegter.com/demos/panhandle-garage-door-company/"` (literal URL)
+
+---
+
+## Files Changed This Run
+
+- `michaelwegter.com/src/data/workSamples.js` — added `screenshot: null` to id:19 entry (minor)
+- Surface: WP-CLI installed in container; all WP content seeded via WP-CLI; Yoast SEO installed
+
+---
+
+## handoff
+- produced: live WP demo at https://api.michaelwegter.com/demos/panhandle-garage-door-company/ — 29 pages, 3 posts, panhandle-theme, Yoast SEO, LocalBusiness schema, 12 city pages, 8 service pages, SEO audit page (iframe to live SEO analyzer), estimate form; workSamples.js id:19 already registered
+- decisions: WP core installed this run (was not installed in prior run); page-seo-audit.php template; Yoast SEO for real schema; mw-backend bridge already deployed; siteurl = no-trailing-slash form
+- next needs: deploy step push michaelwegter.com (screenshot: null change); verify mw-backend bridge still live; media-capture step capture /demos/panhandle-garage-door-company/ homepage screenshot
+- risks: WP-CLI installed ephemerally in container — persists until container is recreated; all WP data in `panhandle_db` Docker volume (durable); theme files in `panhandle_wp/panhandle-theme/` volume mount (durable); if container is recreated, WP-CLI must be reinstalled but data persists

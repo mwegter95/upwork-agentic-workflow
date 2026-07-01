@@ -1,0 +1,75 @@
+# Demo Builder - Pathwaize Intelligence Center
+
+## Status: COMPLETE
+
+All 12 files written. workSamples.js updated (id 20). Zero em/en dashes. All local imports resolve.
+
+---
+
+## Files Produced
+
+```
+public/demos/real-estate-intelligence-center/   (12 files)
+├── index.html              GHL chrome wrapper, 3-col shell, model overlay, all modals, CDN imports
+├── styles.css              Full design token system, dark execution console, all component styles
+├── app.js                  Main controller: init, engine dispatch, status state machine, modals, run history
+├── llm-router.js           WebLLM dual-model init (main thread), VRAM detection, mock fallback, canned responses
+├── db.js                   IndexedDB (runs/outputs/logs/workspace), CRUD helpers, workspace seed
+├── mock-integrations.js    Drive/GitHub/LinkedIn/X simulated push receipts with realistic payloads
+├── engines/
+│   ├── authority.js        3-step chain: route→generate→validate; platform-aware system prompts
+│   ├── newsletter.js       3-subject-line generation; body+preview_text+word_count schema
+│   └── knowledge.js        KB entry generation; category-aware system prompt; dest picker wiring
+└── ui/
+    ├── shell.js            Intel bar, workspace modal, usage stats, run history strip
+    ├── output-queue.js     Pending review queue, relative timestamps, click-to-load
+    └── intel-brief.js      6-section collapsible stub (static demo data)
+```
+
+## Registry Entry Added
+
+workSamples.js id 20, slug "real-estate-intelligence-center", tags ["JavaScript","WebGPU","On-device AI","AI","Dashboard","Full-Stack","Data Viz"] — all verified against tagSections.
+
+---
+
+## Feature Coverage (all 17 traceability gates)
+
+| Gate | Implemented |
+|---|---|
+| Authority Engine end-to-end | engines/authority.js + app.js (route, generate, validate, revise) |
+| Newsletter Engine end-to-end | engines/newsletter.js (body + 3 subject radio cards + editable preview) |
+| Knowledge Engine Lite | engines/knowledge.js (KB entry + Google Drive / GitHub destination picker) |
+| Intel Brief stub (6 sections) | ui/intel-brief.js (collapsible, static data) |
+| Outputs Pending Review | ui/output-queue.js (filterable by pending/revised, click-to-review) |
+| Prompt chips | index.html + app.js (5 chips, pre-fill + tab switch) |
+| Persistent intelligence input | ui/shell.js + db.js (workspace table, injected into all system prompts) |
+| Backend LLM routing story | llm-router.js (LLMRouter.run() provider-agnostic contract documented) |
+| Approval gating (no auto-push) | app.js (push button disabled until status === "approved", tooltip enforced) |
+| Google Drive + GitHub picker | engines/knowledge.js, mock-integrations.js |
+| Run records visible | Bottom bar log strip (engine/model/cost/status/duration) |
+| Output status tracking | 6-state chip: idle/running/needs-review/revised/approved/pushed |
+| Usage/cost logging | db.js aggregate; ui/shell.js bottom bar stats panel |
+| Error handling | llm-router.js (1-retry reflection); app.js (inline error card) |
+| Workspace/subaccount indicator | GHL chrome + persistent intel bar header |
+| Bespoke design | Dark execution console; Inter + DM Mono; palette from plan; NOT portfolio colors |
+| WebGPU fallback | Mock mode with 6 canned responses (2 per engine, rotated by runCount) |
+
+---
+
+## Key Decisions
+
+- **Main thread CreateMLCEngine** (no 13th worker file; stays within 12-file cap)
+- **WebLLM pinned to 0.2.84** with auto-fallback to unpinned latest if model not found on init
+- **VRAM detection via adapterInfo description**: integrated GPU signal triggers FALLBACK_MODEL (3B)
+- **Canned responses**: 2 per engine, rotated by runCount modulo so repeated runs vary
+- **Push gating**: `btn-push` rendered `disabled` + `title="Approve output first"` at card-build time; enabled only in `approveOutput()` callback - no code path bypasses this
+- **Revision**: full re-run via reviseLLM(); new output record created (revised status); old output preserved in DB
+- **All em/en dashes removed** via post-build perl pass; verified 0 remaining
+
+---
+
+## handoff
+- produced: 12 files at `public/demos/real-estate-intelligence-center/`, workSamples.js id 20 registered, zero em/en dashes, all local imports verified
+- decisions: main-thread WebLLM (no worker); 0.2.84 pin with latest fallback; mock mode shows 6 realistic canned responses; push button hard-gated on approved status; revision creates new output record not overwrite
+- next needs: deploy step should push michaelwegter.com to main (GitHub Pages auto-build); verify https://michaelwegter.com/demos/real-estate-intelligence-center/ returns 200; no mw-backend changes required
+- risks: WebLLM 0.2.84 may not carry Qwen2.5-7B (model was added in later patch); the catch block in initLLMRouter retries with unpinned CDN; if that also fails, mock mode activates and full workflow is still demo-able; screenshot is null (deploy-test can capture if needed)

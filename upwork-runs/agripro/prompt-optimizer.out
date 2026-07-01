@@ -1,0 +1,27 @@
+# Prompt Optimizer — run agripro
+
+Checkpointed both repos (isolated pending changes), then applied 6 surgical prompt/doc edits. Local commit only; nothing pushed.
+
+## Checkpoints
+- `.` (upwork-agentic-workflow): had untracked `upwork-runs/agripro/` -> checkpointed.
+- `../claude-workflow-studio`: had `package-lock.json` churn -> checkpointed.
+
+## Edits applied (6) — committed `8a52245` in upwork-agentic-workflow
+1. **.claude/agents/media-capture.md** (Output) — require asserting DISTINCT MD5s + `>~50KB` per frame before handoff; blank/dup PNGs (wrong serve root) get looped back. [adherence] (final-ceo, proposal-writer re-run: 4 identical blank PNGs shipped).
+2. **.claude/agents/media-capture.md** (Rules) — scripts must be `.mjs` and run with the repo folder as cwd (module-type + local node_modules Playwright resolution). [reuse]
+3. **.claude/agents/deploy-test.md** — DOM-dump pass BEFORE writing selectors; note RBAC/card demos use div/card `onClick`, not `<button>`. [adherence]/[tokens] (2 wasted script runs on blind selectors).
+4. **.claude/agents/image-analyzer.md** — if manifest is conclusively empty, skip screenshot/vision phase and report empty list. [tokens]
+5. **.claude/agents/proposal-writer.md** — dash grep must cover markdown headings/kicker strings too, not only body/title/alt. [adherence]
+6. **CLAUDE.md** (new "Local-verify scripts" block) — shared `.mjs` + repo-cwd + distinct-MD5/min-size rule so all local-verify steps inherit it once. [reuse]/[adherence]
+
+## Left for human review (not edited — env/risky/uncertain)
+- **Pillow / python-pptx not pre-installed** (image-analyzer, proposal-writer [tokens]/[reuse]): an ENVIRONMENT prerequisite (bake into setup image), not a prompt fix; prompts already say "install once at step start." Needs infra change, out of my scope.
+- **image-analyzer: "Read renders JPEG as raw binary; use a PIL crop-to-JPEG workaround"** [reuse]: contradicts the spec's "Read renders the image so you see it" and may be Copilot-runtime-specific. Do not encode a workaround that could be false on Claude Code — verify the tool behavior first.
+- **deploy-test: shared serve+Playwright setup module / prerequisite server step** [reuse]: a real refactor of the run harness, not a surgical prompt edit. Design before adopting.
+
+## handoff
+- **Produced:** prompt-optimizer.out + optimizer commit `8a52245` (5 files) on local `main`, plus 2 checkpoint commits (one per repo). No push.
+- **Decisions:** deduped repeated `.mjs`/cwd/MD5 notes into ONE shared CLAUDE.md block + the media-capture spec; kept step-specific edits surgical.
+- **Next needs:** none for this step; human reviews/pushes the commit.
+- **Risks:** 3 suggestions deferred (2 are env-install, 1 asserts unverified tool behavior) — listed above, none applied.
+- **Verify:** studio repo had NO prompt-text suggestions, so it got only its checkpoint, no self-improve commit.

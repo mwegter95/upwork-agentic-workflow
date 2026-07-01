@@ -1,0 +1,162 @@
+{
+  "slug": "panhandle-garage-door-company",
+  "client": "Dimitroff Door Repair",
+  "location": "Dumas, Texas (serving Texas Panhandle & Northeast New Mexico)",
+  "brandTagline": "One Company. Every Door.",
+  "featureRichness": 10,
+  "projectType": "WordPress Site Redesign (SEO-First) + SEO Analyzer Demo",
+
+  "businessGoals": [
+    "Become the highest-ranking garage door and commercial door website in the Texas Panhandle",
+    "Consistently generate qualified phone calls, leads, and estimate requests",
+    "Establish the company as the local authority for door services in the region",
+    "Dominate search rankings and crowd out Amarillo-based competitors in dispersed Panhandle towns"
+  ],
+
+  "servicesSilos": [
+    "Residential garage doors",
+    "Commercial overhead doors",
+    "Roll-up doors",
+    "Storefront doors",
+    "Barn & agricultural doors",
+    "Entry (man) doors",
+    "Dock equipment",
+    "Residential & commercial window repair and replacement"
+  ],
+
+  "geographicTarget": {
+    "primary": ["Dumas", "Amarillo", "Borger", "Pampa", "Dalhart", "Canyon", "Hereford", "Perryton"],
+    "region": "Texas Panhandle and Northeast New Mexico"
+  },
+
+  "coreRequirements": {
+    "platform": "WordPress (migration from Squarespace)",
+    "designApproach": "Mobile-first responsive, clean scalable templates",
+    "performanceTargets": ["Fast loading speed", "Core Web Vitals optimization"],
+    "userExperience": ["Improved UX", "Increased conversion rates"]
+  },
+
+  "technicalSeoRequirements": [
+    "Schema markup (LocalBusiness + Service structured data)",
+    "XML sitemap",
+    "Robots.txt optimization",
+    "Metadata optimization (titles, meta descriptions)",
+    "Internal linking strategy",
+    "301 redirect planning (migration from Squarespace)",
+    "Google Search Console setup",
+    "Google Analytics setup with conversion tracking",
+    "Core Web Vitals optimization (LCP, CLS, FID)",
+    "SSL/HTTPS"
+  ],
+
+  "localSeoRequirements": [
+    "Individual city landing pages for Panhandle towns",
+    "Individual service pages (8 service silos)",
+    "Commercial service pages (separate from residential)",
+    "Educational content / blog posts"
+  ],
+
+  "contentSilosAndPages": [
+    "Homepage (brand authority, service overview)",
+    "Service-silo pages (each of 8 service lines)",
+    "City landing pages (Dumas, sample 2-3 additional Panhandle towns)",
+    "Commercial vs residential split pages",
+    "Blog/educational content",
+    "Estimate request / contact conversion pages"
+  ],
+
+  "conversionOptimization": [
+    "Click-to-call CTAs",
+    "Estimate request forms",
+    "Phone-call tracking and logging",
+    "Lead capture and conversion funnels"
+  ],
+
+  "deliverables": [
+    "Complete WordPress website (migrated from Squarespace)",
+    "SEO-friendly page templates (scalable to dozens of landing pages)",
+    "Optimized navigation structure",
+    "Technical SEO implementation (all items above)",
+    "Speed optimization",
+    "Conversion optimization",
+    "Documentation and training for client to add content independently",
+    "SEO Analyzer app with open account creation (any fake email/password) to demonstrate SEO scoring and auditing capability on the live site"
+  ],
+
+  "designDirection": {
+    "philosophy": "Simple, straightforward branding, slightly elevated with increased functionality",
+    "style": "Utilitarian, trustworthy, blue-collar-premium (NOT michaelwegter.com portfolio look)",
+    "palette": "TBD by planner (based on Dimitroff brand colors if available; otherwise establish cohesive door-company industry aesthetic)",
+    "typography": "TBD by planner"
+  },
+
+  "demoArchitecture": {
+    "part_a": {
+      "name": "Real WordPress Site",
+      "description": "SEO-architected WordPress site for Dimitroff Door Repair, hosted on Surface via Docker (WordPress + MySQL)",
+      "deployment": "Flask bridge blueprint (panhandle_blueprint.py) at /demos/panhandle-garage-door-company/, registered in server.py, pushed to mw-backend",
+      "includes": [
+        "Homepage with brand positioning",
+        "8 service-silo pages",
+        "2-3 city landing pages (Dumas + Panhandle towns)",
+        "Commercial vs residential pages",
+        "Blog/educational content sample",
+        "Schema markup (LocalBusiness, Service)",
+        "XML sitemap visible at /sitemap.xml",
+        "Contact/estimate request forms",
+        "Mobile-responsive design",
+        "Core Web Vitals optimized"
+      ]
+    },
+    "part_b": {
+      "name": "SEO Analyzer App",
+      "description": "URL-auditing SEO analyzer with open account creation (any fake email/password)",
+      "functionality": [
+        "User signup with arbitrary email and password (no email verification)",
+        "URL submission for SEO analysis",
+        "On-page SEO scoring (title, meta, headings, word count, schema presence)",
+        "Local SEO checks (LocalBusiness schema, city info)",
+        "Core Web Vitals signals (simulated or real)",
+        "Scored report output",
+        "Demonstrate analyzer against live Dimitroff WordPress site to show SEO authority gains"
+      ],
+      "integration": "Existing analyzer app from michaelwegter.com; ensure backend allows open signup; add Flask blueprint if needed for analysis endpoint"
+    }
+  },
+
+  "deploymentStrategy": {
+    "wordpress": "Docker service on Surface; registered via surface_register_service.py; Flask bridge at /demos/panhandle-garage-door-company/; pushed to mw-backend/server.py",
+    "analyzer": "Reuse existing app; ensure open signup works; wire to mw-backend if analysis endpoint needed; must work live after deploy",
+    "liveVerification": "Demo loads at /work-samples/panhandle-garage-door-company (iframed), WP subpages accessible, analyzer signup+analysis functional"
+  },
+
+  "brandingConstraints": [
+    "No em dashes or en dashes in any prose",
+    "GitHub handle mwegter95 only",
+    "Voice: SEO strategist first, web designer second (per client brief emphasis)",
+    "Maintain 'One Company. Every Door.' positioning throughout",
+    "Do NOT emulate competitor 'feel'; keep Dimitroff's simple/straightforward branding but elevated"
+  ],
+
+  "successCriteria": [
+    "Website loads without console errors on first paint",
+    "/work-samples/panhandle-garage-door-company returns 200 after deploy",
+    "WordPress site accessible at bridged path (/demos/panhandle-garage-door-company/)",
+    "City landing pages + service silos present and indexed-ready",
+    "Schema markup validates (LocalBusiness + Service)",
+    "SEO analyzer allows account creation with any fake credentials and analyzes URLs",
+    "All technical SEO checklist items visible/implemented",
+    "Mobile-first responsive design confirmed",
+    "Bespoke design language applied (not portfolio look)",
+    "Demo link in both cover letter and proposal deck",
+    "All explicit requirements addressed in proposal narrative"
+  ],
+
+  "risks": [
+    "WordPress Docker image pull timeout on Surface (budget retries, register service so run-server.ps1 owns startup)",
+    "Sub-path WordPress login filters (need wp_redirect, login_redirect, login_url all correct; Host header + X-Forwarded-Proto critical)",
+    "Open signup colliding with analyzer's existing auth (must verify arbitrary email/password allowed before live test)",
+    "Dual-backend port/service coordination (WP on one port, analyzer backend on another if needed)",
+    "Canonical redirect loops on city landing pages behind sub-path (suppress redirect_canonical when REQUEST_URI is /)"
+  ]
+}

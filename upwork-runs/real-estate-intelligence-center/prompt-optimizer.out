@@ -1,0 +1,23 @@
+# Prompt Optimizer — Pathwaize Intelligence Center run
+
+## Repo state
+- claude-workflow-studio: clean (no pending changes, no agent-prompt copies there — prompts live only in upwork-agentic-workflow/.claude/agents/).
+- upwork-agentic-workflow: checkpointed pending run dirs first (bb7c780), then applied edits (f63ea62). Local commits only, NOT pushed.
+
+## Applied (safe, surgical)
+1. proposal-writer.md dash gate: grep referenced a hard-coded `cover-letter.md` but the real file is `cover-letter.txt`, so the CEO-caught em dash in the cover-letter title line slipped past. Changed to glob the ACTUAL files by extension and to explicitly cover the first line / `<title>` / header, not just body. Directly addresses the final-ceo hard-gate fail root cause.
+2. deploy-test.md: added a note that demo input fields are often blank on load and a Run/Submit handler can return early and silently no-op when empty; the hero flow must fill required inputs first, then assert real output. (from improvements.md deploy-test [adherence]).
+
+## Not applied (already covered)
+- deploy-test [reuse] Playwright import path: prompt already bakes the absolute `node_modules/playwright/index.mjs` path (lines 40-42). No change needed.
+- demo-builder [reuse] strip em/en dashes at write time: already enforced by demo-builder dash gate (step 3) and proposal-writer hard rule.
+
+## Deferred for human review (run-specific / risky, not generalized to prompts)
+- demo-builder [adherence] "embed canned response objects as a named const block": this is a code-structure choice for one demo, not a general prompt rule. Adding it could over-constrain unrelated builds.
+- demo-builder [tokens] "move output-schema string literals to a compact JSON/separate schema file": plausible token win but implementation-specific; risks conflicting with structured-output guidance. Leave to a human if it recurs.
+
+## handoff
+- produced: 2 surgical agent-prompt edits (proposal-writer dash-gate glob fix, deploy-test blank-input note), 2 local commits (checkpoint + edits).
+- decisions: only safe, generalizable suggestions applied; run-specific code-structure suggestions deferred, not edited.
+- next needs: none — final step; pipeline complete.
+- risks: none; local-only commits, no push. Deferred items listed above for optional human follow-up.

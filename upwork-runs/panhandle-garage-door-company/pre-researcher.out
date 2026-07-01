@@ -1,0 +1,126 @@
+# Pre-Researcher — panhandle-garage-door-company
+
+Answers the 4 plan-gate research gaps (R1–R4) so demo-builder can proceed.
+
+---
+
+## R1 — Dimitroff Door Repair contact/brand data (HARD BLOCKER — RESOLVED)
+
+**Phone:** (806) 316-5296
+**Address:** 120 Amherst Avenue, Dumas, TX 79029
+**Hours:** Mon–Fri 8am–6pm | Sat–Sun 10am–5pm
+**Tagline strip:** "Free Estimates • Same-Day Service • 90 Day Warranty • Se Habla Español"
+**Brand position:** "One Company. Every Door."
+**Trust signals:** BBB accredited, locally owned, same-day/48-hr SLA, all major brands serviced
+**Differentiators for content:** bilingual (Spanish), 90-day labor warranty, dock equipment + window repair (rare combo)
+**Current site:** https://www.dimitroffdoorrepair.com/ (Squarespace; minimal city targeting, no landing pages)
+**Source:** Live site confirmed.
+
+---
+
+## R2 — Competitor landscape (RESOLVED)
+
+### Amarillo-based competitors (all ranking above Dimitroff regionally)
+| Competitor | Est. | City pages? | Notes |
+|---|---|---|---|
+| Overhead Door Co. of Amarillo | 1968 | None | Strongest brand; no local LP strategy |
+| Price Overhead Door | 1971 | None | Legacy player; static site |
+| Willow Creek Overhead Door | 2000 | None | Family-owned, Amarillo |
+| Integrity Overhead Door | ~2010 | Limited service-area pages | Closest to an LP strategy |
+| Dockins Overhead Doors | Unknown | None | Supplier + installer |
+| A&H Overhead Door, Hollis, A-1 | Unknown | None | Smaller locals |
+
+### NE New Mexico competitors (thin coverage)
+- **TRU Garage Door** — Clovis, NM (30+ yrs combined exp, primary Clovis competitor)
+- **CMB Garage Doors** — Lubbock/Clovis/Cave Creek footprint
+
+### Key gap: NO Amarillo-based competitor has dedicated landing pages for smaller Panhandle towns (Pampa, Borger, Perryton, Dalhart, Hereford, Canyon, Friona) or NE NM cities. This is Dimitroff's primary SEO opportunity — rank for "garage door repair [small city]" where Amarillo competitors have zero local signals.
+
+### Content angle for Dimitroff:
+- Local Dumas/Moore County authority vs. "big city company that drives out"
+- Bilingual service ("Se Habla Español") targets Hispanic community across Panhandle
+- Commercial + dock equipment differentiates from residential-only competitors
+- Speed (same-day, 48-hr) as primary conversion hook
+
+---
+
+## R3 — SEO Analyzer app architecture (HARD BLOCKER — RESOLVED)
+
+**Front-end:** https://mwegter95.github.io/free-seo-analyzer-with-js-rendering/ (GH Pages static app)
+**Back-end:** `api.michaelwegter.com` — the existing Flask backend (server.py), NOT a separate service
+
+### Routes (all require JWT auth via existing `require_auth`):
+- `POST /seo/analyze` — single-page analysis
+- `POST /seo/prescan` — pre-scan step
+- `POST /seo/crawl` — full site crawl
+- `GET /seo/crawl/stream` — SSE stream for crawl progress
+- `GET /seo/reports` — list user's saved reports
+- `GET /seo/reports/<filename>` — fetch a saved report
+
+### Auth flow:
+- Uses **the same JWT auth system** as the rest of mw-backend (`/register`, `/login`)
+- Users can register with any fake email + password; passwords hashed with bcrypt; reports stored per-user at `data/seo_reports/<user_id>/`
+- Front-end CORS already allows `http://localhost:5015` and the GH Pages origin
+
+### Demo-builder instruction (CRITICAL):
+**Do NOT rebuild the SEO analyzer.** It already exists and works. The WP demo should include a "Free SEO Analysis" section/page with a CTA button that links to `https://mwegter95.github.io/free-seo-analyzer-with-js-rendering/` (opens in new tab or embeds as iframe). This lets the proposal reviewer register with a fake email, log in, run an analysis on dimitroffdoorrepair.com (or any URL), and see the real analyzer — zero build effort, maximum demo impact.
+
+The analyzer CORS list already includes the relevant origins so no backend changes are needed.
+
+---
+
+## R4 — Extended city list (RESOLVED)
+
+Recommended 12 city landing pages (priority order):
+
+### Texas Panhandle (9 pages)
+1. **Amarillo, TX** — largest market, Potter/Randall County; must-have despite competitor density
+2. **Dumas, TX** — home base; anchor/pillar page with full service depth
+3. **Pampa, TX** — Gray County; mid-size; minimal competitor presence
+4. **Borger, TX** — Hutchinson County; refinery/industrial = commercial door opportunity
+5. **Perryton, TX** — Ochiltree County; northernmost Panhandle; no local competitor
+6. **Dalhart, TX** — Hartley County; agricultural + ranch = barn/ag door angle
+7. **Hereford, TX** — Deaf Smith County; feedlot/livestock = commercial overhead doors
+8. **Canyon, TX** — Randall County; Amarillo suburb; growing residential
+9. **Friona, TX** — Parmer County; ag community; border market
+
+### Northeast New Mexico (3 pages)
+10. **Clovis, NM** — Curry County; largest NE NM city; Cannon AFB = commercial angle
+11. **Tucumcari, NM** — Quay County; Route 66 commerce; minimal coverage
+12. **Clayton, NM** — Union County; cattle ranching; zero competitor LP coverage
+
+**Total: 12 city LPs** (9 TX + 3 NM) = expanded from plan's 6. Each ~600–900 words targeting "[service] [city] TX/NM" keywords.
+
+---
+
+## Additional findings (planner should incorporate)
+
+### Schema markup priority
+- `LocalBusiness` + `HomeAndConstructionBusiness` schema on every page
+- `Service` schema on each service page with `areaServed` listing target cities
+- `FAQPage` schema on service pages (common Q: "Do you serve [city]?")
+- `BreadcrumbList` on all city LPs
+
+### Core Web Vitals for WordPress
+- Use GeneratePress or Blocksy theme (lightweight, ~30kb CSS base)
+- Implement WP Rocket or LiteSpeed Cache for caching
+- Serve images as WebP; lazy-load below fold
+- Avoid page builders (Elementor bloat) — build with Gutenberg blocks + custom CSS
+
+### Conversion optimization
+- Sticky click-to-call button on mobile (most garage door leads are phone calls)
+- Above-fold CTA: "Call Now" + "Request Estimate" on every page
+- Trust bar: BBB badge, "Se Habla Español", "Same-Day Service", "90-Day Warranty"
+
+### WordPress demo specifics
+- Port 8090 (as per plan), WP + MySQL in Docker on Surface
+- Bridge blueprint: clone `maryland_driveway_wp_bridge_blueprint.py` pattern
+- Demo admin credentials to document for live test
+
+---
+
+## handoff
+- produced: pre-researcher.out — all 4 gaps resolved with specific data
+- decisions: R3 = link/embed existing SEO analyzer (no rebuild); 12 city LPs (9 TX + 3 NM); phone (806) 316-5296, address 120 Amherst Ave Dumas TX 79029
+- next needs: planner to integrate contact data into plan, update city count to 12, confirm demo links to existing analyzer (not rebuild), update plan.md and re-route to plan-gate
+- risks: WordPress Docker image pull on Surface is slow — plan must use registered service pattern (not blocking runner call); "Se Habla Español" differentiator should appear in copy but avoid assuming bilingual content delivery unless scoped
