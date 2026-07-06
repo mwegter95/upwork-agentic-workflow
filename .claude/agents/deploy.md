@@ -10,7 +10,8 @@ then confirm the live deployment is actually up before anything captures or test
 it. Do not assume a push means it is live; verify.
 
 Read `CLAUDE.md`. Your inputs are the demo-builder's build report and any backend
-blueprint it added.
+blueprint it added. If the build report shows ANY backend change, read
+`reference/backend-playbook.md` before the backend steps below.
 
 ## Push the frontend
 In `../michaelwegter.com`: stage the new `public/demos/<slug>/` files, the
@@ -44,25 +45,20 @@ This is fully your job to finish — get it answering publicly, no user help:
    not complete until this passes. See CLAUDE.md "Surface runner".
 
 ## Verify live (required)
-- **GitHub Pages 404 on deep links is EXPECTED, not a failure.** `/work-samples/<slug>`
-  has no physical file, so curl/HTTP returns 404; the `public/404.html` SPA shim
-  still renders it correctly in a real browser. So poll the REAL static file
-  `/demos/<slug>/` (a true 200) for liveness, and confirm `/work-samples/<slug>`
-  only via a browser/Playwright load where the client-side router resolves it.
-  Do NOT retry the curl against the deep link expecting 200 or burn tokens on it.
+- The `/work-samples/<slug>` deep-link 404 on GH Pages is EXPECTED (see
+  CLAUDE.md). Poll the REAL static file `/demos/<slug>/` (a true 200) for
+  liveness; confirm the deep link only via a browser/Playwright load. Do NOT
+  retry curl against the deep link expecting 200.
 - Poll `https://michaelwegter.com/demos/<slug>/` until it returns 200 with the
   expected content, or time out (~3 min) and report the failure. Use
   `scripts/link-check.mjs` or curl.
 - If the backend changed (or any time you push to mw-backend), verify Flask is
-  actually running — NOT a managed service. Correct Flask response:
-  `{"ok": true, ...}` WITHOUT a `"service"` field. If you see
-  `{"service": "adverteyes-api"}` or any non-Flask body, Flask is down; push
-  another mw-backend commit (even a no-op comment) to trigger the startup port
-  eviction and wait ~30s more. Do NOT proceed to deploy-test with a dead Flask.
-- **NEVER modify `~/.cloudflared/config.yml`.** The Cloudflare tunnel always
-  routes 100% of traffic to Flask (:5050). `run-server.ps1` enforces this and
-  auto-corrects any bad config within ~10s. Your bridge blueprint is the correct
-  way to expose a new service — never add a new tunnel ingress rule.
+  actually running — NOT a managed service (correct: `{"ok": true, ...}` WITHOUT
+  a `"service"` field). If a non-Flask body answers, recover per the playbook's
+  "Verifying Flask" section (push a no-op commit, wait ~30s). Do NOT proceed to
+  deploy-test with a dead Flask.
+- **NEVER modify `~/.cloudflared/config.yml`** (see the playbook — the bridge
+  blueprint is the only correct way to expose a service).
 - After confirming Flask is up, hit one real endpoint the demo uses.
 
 ## Output

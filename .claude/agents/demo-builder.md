@@ -49,49 +49,41 @@ If the brief limits what photos may show (e.g. "images of properties, houses,
 condos, nothing else"), EVERY image slot obeys it, including gallery, secondary,
 and decorative fillers. If you deliberately ship an off-subject image, flag it in
 a code comment AND in `build-report.md` so image QA reads it as intentional, not a
-miss. For each stock photo, record its source + exact keywords/photo-id in the
-build report so the image steps can verify the subject without re-fetching.
+miss.
+
+**Image manifest (required output — it drives the zero-token image gate).**
+As you place images, record them; when done, write `image-manifest.json` in the
+run directory (next to `build-report.md`): a JSON array, one entry per UNIQUE
+raster image the demo shows, deduplicated by asset path/URL:
+`{ "asset": "<path or URL>", "claim": "<the alt/label/product name it must depict>",
+"source": "<stock source + exact keywords/photo-id>" }`.
+Include images referenced from data/seed JSON, CSS `background-image`, and
+`srcset`, not just `<img>`. If the demo genuinely shows NO raster images
+(intentional SVG icons/logos don't count), write `[]` — that skips the entire
+image QA section, so an accurate empty manifest saves real money, and a missed
+image here is a missed QA check. This replaces per-photo notes in the build
+report; the image steps verify subjects from this manifest without re-fetching.
 
 ## Backend (use it whenever the project needs or benefits from it)
 Many projects are stronger with a real backend (auth, a database, real
-integrations, server-side compute). When the plan calls for it, build it:
-- Add `<feature>_blueprint.py` to `../mw-backend/`, register it in `server.py`,
-  mirror `spotify_blueprint.py` / `apple_music_blueprint.py`, keep CORS open for
-  the site origin. Avoid touching auth, the DB schema, or other blueprints unless
-  the feature truly needs it.
-- Point the demo at `https://api.michaelwegter.com/<prefix>/...`. If the demo
-  needs login, seed a demo/test account and write the credentials into your build
-  report so the deploy-test step can log in and exercise it.
-- Do NOT push or restart the backend yourself. The deploy step pushes it and the
-  Surface auto-deploy watcher restarts the API. Just record the backend changes
-  (files, endpoints, test credentials) in your build report.
-- A Flask blueprint is committed CODE — it needs NO Surface runner. It ships by
-  `git push` (the deploy step pushes `../mw-backend`; Flask auto-restarts in
-  ~20–30s). Do not use `/run/exec` to install or hot-patch a blueprint — just
-  write the file and register it. Reach for the runner ONLY when the project needs
-  a separate service that can't be a blueprint (next bullet). See CLAUDE.md
-  "Changing the backend".
-- For a backend bigger than a Flask blueprint (e.g. a Node/Express service): build
-  the WHOLE thing on the Surface yourself — do not hand any of it back to the user.
-  Use the Surface runner (`python scripts/surface_run.py --lang python ...`) to
-  install the runtime and build the service in the runner workspace. Then REGISTER
-  it with `scripts/surface_register_service.py` so the Surface launcher keeps it
-  up and reboot-durable (a plain `node server.js` will NOT persist — see CLAUDE.md
-  "Surface runner"); confirm it prints `LISTENING` on `127.0.0.1:<PORT>`. Finally
-  write the bridge: copy
-  `../mw-backend/bridge_blueprint_template.py` to `<feature>_blueprint.py`, set
-  `PREFIX` + `UPSTREAM=http://127.0.0.1:<PORT>`, and register it in `server.py`.
-  Do NOT push (deploy does that). Record the port, the exact start command, and
-  the bridge prefix in your build report so deploy can verify and re-start it.
+integrations, server-side compute). **If the plan calls for ANY backend work,
+read `reference/backend-playbook.md` FIRST** — it is the full operating manual
+(blueprint vs Surface-runner decision, registering services so they stay up, the
+bridge pattern, ASCII-only runner scripts, WordPress Docker gotchas). Key
+contracts for this step:
+- Simple case: add `<feature>_blueprint.py` to `../mw-backend/`, register it in
+  `server.py`, mirror an existing blueprint, keep CORS open. Don't touch auth,
+  the DB schema, or other blueprints unless truly needed.
+- If the demo needs login, seed a demo/test account and write the credentials
+  into your build report so deploy-test can log in and exercise it.
+- Do NOT push or restart the backend yourself — the deploy step does that.
+  Record every backend change (files, endpoints, service name/port/bridge
+  prefix, test credentials) in your build report so deploy can verify it.
+- Bigger than a blueprint (Node service, Docker, WordPress): build it end to end
+  on the Surface yourself per the playbook — registered, `LISTENING`, bridged.
+  Never hand backend steps back to the user.
 - Frontend-only with realistic mock data is fine for simple demos that gain
   nothing from a server.
-- **Surface runner scripts must be ASCII-only** (no box-drawing chars, no Unicode
-  in comments/strings) — Windows charmap encoding throws on non-ASCII, costing a
-  retry. Applies to embedded PHP/template content too.
-- **WordPress (Docker) demos:** see CLAUDE.md "WordPress Docker demos" for the
-  recurring gotchas (large image pulls registered as services, sub-path canonical
-  redirect filter, the 3 login filters, bridge Host/encoding handling, no `?>` in
-  functions.php). Bake those in rather than rediscovering them.
 - **Live-streaming / progress demos:** do NOT use a single long streaming GET.
   Start the job with a `POST` that returns a `job_id`, then stream results from a
   separate `GET /stream/<job_id>` (SSE). This decouples kickoff from the stream
@@ -126,9 +118,8 @@ loosely-anchored Edit can drop the item outside the array and break the build.
 1. Demo loads: serve `public/demos/<slug>/` (e.g. `npx serve` or
    `python3 -m http.server`) and fetch `index.html` returns 200. If you can, run
    `scripts/capture.mjs` smoke mode to confirm it paints with no console errors.
-   (After deploy, the demo lives at the real static path `/demos/<slug>/`; the
-   `/work-samples/<slug>` deep link is an SPA route that curls as 404 on GitHub
-   Pages but renders in a browser via `public/404.html` — expected, not a bug.)
+   (The `/work-samples/<slug>` deep-link 404 on GH Pages is expected — see
+   CLAUDE.md.)
 2. Site still builds: in `../michaelwegter.com`, run `npm run build`. It must
    pass. Fix anything you broke in `workSamples.js`.
 3. Dash gate (DoD #5): before declaring done, run
@@ -149,8 +140,8 @@ loosely-anchored Edit can drop the item outside the array and break the build.
 ## Output
 Do not stop at intermediate artifacts (e.g. downloaded files/assets sitting on
 disk): the step is only complete when the asset is actually wired INTO the app
-(an in-app edit) AND `build-report.md` is written. Both are required before you
-return or hand off to the CEO.
+(an in-app edit) AND `build-report.md` AND `image-manifest.json` are written.
+All are required before you return or hand off to the CEO.
 
 Write `upwork-runs/<slug>/build-report.md`: what you built, the file list, the
 local preview command + URL, backend changes (if any) and that they need a

@@ -32,15 +32,12 @@ on; the target feature richness (N/10) is in your prompt.
   information. Use this sparingly, only when looping the partner cannot fix it.
 
 ## Rules
-- **GitHub Pages 404 on `/work-samples/<slug>` is expected, not a defect.** The
-  deep link has no physical file, so curl/HTTP returns 404; the `public/404.html`
-  SPA shim renders it in a browser. Verify via the real static path `/demos/<slug>/`
-  (true 200) or a browser load — never flag the deep-link 404 as a build failure.
-- If a backend change is needed, the fix is to edit the Flask code in
-  `../mw-backend` (the deploy step ships it by `git push`; Flask auto-restarts in
-  ~20–30s) — direct the builder to do that. Don't hot-patch the backend through
-  `/run/exec`; that runner is only for host-level service work (see CLAUDE.md
-  "Changing the backend").
+- The `/work-samples/<slug>` deep-link 404 on GH Pages is expected, not a defect
+  (see CLAUDE.md) — verify via `/demos/<slug>/` or a browser load instead.
+- If a backend change is needed, direct the builder to edit the Flask code in
+  `../mw-backend` (deploy ships it by `git push`) — never hot-patch via
+  `/run/exec`. If you are reviewing backend work, read
+  `reference/backend-playbook.md` first.
 - Do ONLY this review. Never use the Task/Agent tool or run other steps yourself.
 - Keep raising the bar toward the requested feature richness, but stay
   constructive and concrete. Return a 3 to 5 line summary: verdict, the single

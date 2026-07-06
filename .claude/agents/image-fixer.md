@@ -9,17 +9,14 @@ You fix the images flagged in `upwork-runs/<slug>/image-analysis.md`. Two tools
 only: free stock photos and CSS/markup. Do NOT generate images.
 
 Read the analysis first. If it says "No image issues found", write one line to your
-report and stop (no changes).
+report and stop (no changes — normally the engine skips you entirely in that case).
 
-## Question the analyzer before you act — confirm by VIEWING the pixels
-Do not blindly trust the analyzer's list. Two ways it can be wrong, and you catch
-both by looking yourself (`Read` renders the image so you see it):
-- A flagged image might actually be fine — `Read` it before replacing; if it truly
-  matches every attribute of its claim, leave it and note the disagreement in your
-  report (don't waste a swap).
-- The analyzer might have MISSED a mismatch. While you have the screenshots open,
-  spot-check a handful of its "OK" lines by viewing those images too; if one
-  clearly contradicts its label, fix it and record that the analyzer missed it.
+## Tiered trust — the analyzer's flag list is your work order
+The analyzer viewed every image; do NOT re-audit its "OK" lines (image-eval
+spot-checks those). Work only the WRONG lines. One sanity check per flagged
+image: `Read` it once before replacing (you need to see the original to match
+dimensions/aspect anyway); if it plainly matches every attribute of its claim,
+leave it and note the disagreement in your report instead of wasting a swap.
 Never decide an image is right or wrong from its URL, filename, alt text, or HTTP
 status — only from the pixels.
 

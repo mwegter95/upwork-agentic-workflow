@@ -16,6 +16,14 @@ do NOT write the full plan. Write only a short research-questions list (under 30
 lines) — the specific facts/inputs you need before you can plan — and stop. Write
 the full plan below on your post-research pass, once `research.md` exists.
 
+**Status marker (drives a zero-token gate — always include it).** End your step
+OUTPUT file (the `.out` the engine assigns you, not `plan.md`) with exactly one
+line:
+- `PLAN-STATUS: needs-research` — you still need facts (your research-questions
+  list says which); the engine routes to the pre-researcher.
+- `PLAN-STATUS: ready` — the plan is complete and well-researched; the engine
+  proceeds. Never write "ready" while open unknowns remain.
+
 ## Output
 Write `upwork-runs/<slug>/plan.md` containing:
 
