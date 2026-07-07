@@ -1,0 +1,118 @@
+# Orchestrator — bowling-shirt-designer
+
+## Project slug
+`bowling-shirt-designer`
+
+## Run paths
+- Run dir: `upwork-runs/bowling-shirt-designer/`
+- Demo dest: `../michaelwegter.com/public/demos/bowling-shirt-designer/`
+- Registry: `../michaelwegter.com/src/data/workSamples.js`
+- Demo URL: `https://michaelwegter.com/demos/bowling-shirt-designer/`
+- Work-sample route: `https://michaelwegter.com/work-samples/bowling-shirt-designer`
+
+## What the client actually needs vs. Michael's demo goal
+
+**Posting:** React/JS e-commerce apparel customizer audit — debug dead clicks (`undefined is not an object`), diagnose homepage bounce from script-load blocking, deliver a Technical Remediation Roadmap. Intermediate level, < 1 month, hourly, $20–$120/hr.
+
+**Michael's vision (demo goal):** Full-featured bowling shirt e-commerce store with:
+- 3D live visualization of the shirt
+- Pattern/design upload + live application to the shirt model
+- Name/text customization on the back (with font/color picker)
+- One shirt model to start
+- Next.js frontend
+- PHP backend layer routed through the Python backend (mw-backend)
+- Feature richness: 10/10
+
+The demo showcases Michael's ability to build exactly the kind of product the client's team broke — a high-quality, production-grade interactive apparel customizer — while simultaneously proving the audit/architecture skill set.
+
+## Architecture decisions (locked for all downstream steps)
+
+### Frontend
+- **Framework:** Next.js 14 (App Router), React 18, TypeScript
+- **3D engine:** Three.js + `@react-three/fiber` + `@react-three/drei` — render a bowling shirt GLTF/OBJ model in a canvas, apply uploaded texture patterns via `THREE.TextureLoader` / canvas-composite, handle real-time mesh UV updates
+- **State:** Zustand (simple, no Redux overhead; avoids the "undefined is not a function" class of bugs the client hit)
+- **Styling:** Tailwind CSS (rapid, production-quality, nothing like michaelwegter.com)
+- **Cart/checkout:** Local state + localStorage (no payment processing needed for demo)
+- **Fonts:** Google Fonts — inter for UI, a bold display font for the hero
+
+### Backend
+- **PHP bridge:** A thin PHP script (`api/proxy.php`) receives requests from Next.js and forwards them to `https://api.michaelwegter.com` Flask routes. This satisfies "true PHP backend routed through Python backend."
+- **Flask endpoints needed (add to mw-backend):**
+  - `POST /bowling/patterns` — store uploaded pattern metadata (name, URL, palette)
+  - `GET /bowling/patterns` — list available patterns
+  - `POST /bowling/customize` — save a customization session (pattern + text + colors + sizes), return session ID
+  - `GET /bowling/sessions/<id>` — retrieve a saved customization
+- **Demo auth:** seed a demo account; checkout/save requires login (JWT via existing mw-backend auth)
+
+### Self-contained build approach
+- Scaffold a **Vite + React** version instead of full Next.js for the static demo hosting model (Next.js requires a Node server; GH Pages is static). The demo is a Vite/React app with Three.js, deployed as `public/demos/bowling-shirt-designer/` as a static build.
+- The PHP proxy layer is described in the proposal as architecture/pattern, and the backend Flask endpoints are real (mw-backend). The demo calls mw-backend directly (no PHP layer needed for the demo itself since it's same-origin SPA).
+- Label clearly in the demo: "Architecture: Next.js + PHP proxy + Flask API" as a technical callout, even though the demo is the Vite static version.
+
+### Shirt 3D model
+- Use a freely licensed low-poly shirt OBJ or GLTF from Sketchfab/Poly Haven or build a simple procedural plane-based shirt silhouette if no free model is found quickly
+- researcher step: find a free bowling shirt / Hawaiian shirt GLTF, or note "build procedural"
+
+## Feature list (richness 10/10)
+
+**Hero feature — 3D Interactive Customizer:**
+1. 3D shirt model in orbit-controls canvas (rotate, zoom)
+2. Pattern library: 6+ pre-loaded patterns (stripes, florals, retro geometric, flames, leopard, bowling pins) plus user-upload PNG/SVG
+3. Live texture application to shirt via Three.js material swap
+4. Color picker for base shirt color (collar, cuffs, body independently)
+5. Name/text on back: font selector (4 fonts), color, size — rendered via canvas-to-texture and applied to back UV region
+
+**Supporting feature 1 — Product page + cart:**
+- Size selector (S/M/L/XL/2XL), quantity, "Add to Cart"
+- Cart drawer with live preview thumbnail of the customized shirt
+- Cart persists in localStorage
+
+**Supporting feature 2 — Audit credibility section:**
+- A "How we fixed yours" panel showing a side-by-side: the error pattern the client described (`undefined is not an object` / dead clicks / blocking scripts) and the architecture choices in this demo that prevent each. This doubles as a technical proof-of-work that directly addresses the job posting.
+
+**Polish / production quality indicators:**
+- Performance: code-split Three.js (dynamic import), lazy-load the 3D canvas only when the customizer tab is active (zero blocking on homepage load — directly answers the client's bounce problem)
+- Error boundaries around the 3D canvas
+- Loading skeleton on first paint
+- Mobile-responsive layout (canvas collapses to portrait, controls below)
+- Smooth scroll, subtle entrance animations (CSS transitions, no heavy lib)
+
+## Design direction (for researcher + planner + demo-builder)
+
+- **Vibe:** Retro-modern bowling alley — think 1960s Americana meets clean SaaS product. Bold, fun, confident.
+- **Palette:** Deep navy `#1a1f3c`, warm cream `#f5f0e8`, hot coral/red `#e84040`, gold accent `#f5a623`, white `#ffffff`
+- **Typography:** `Bebas Neue` or `Black Han Sans` for display headers; `Inter` for body/UI
+- **Layout:** Full-width hero with the 3D canvas front-and-center, sidebar customizer panel, clean product details below
+- **NO** michaelwegter.com tokens anywhere in the demo
+
+## Plan-of-attack for downstream steps
+
+1. **intake** — parse posting + Michael's notes into `brief.json`
+2. **planner** — concrete build plan with the feature set above, design tokens, scope fence (one shirt model)
+3. **researcher** — find: free bowling/short-sleeve shirt GLTF model; retro pattern assets; any relevant three.js shirt-customizer examples to clone structure from; competitor apparel customizers (Printful, CustomInk) for UX reference
+4. **demo-builder** — build Vite+React+Three.js app in `public/demos/bowling-shirt-designer/`; add Flask blueprint to mw-backend; write `image-manifest.json`
+5. **deploy** — push both repos, verify live
+6. **deploy-test** — Playwright: load demo, rotate shirt, swap pattern, add text, add to cart
+7. **media-capture** — screenshots of 3D view, pattern panel, cart
+8. **proposal-writer** — cover letter + one-pager + deck; lead with live demo link; address dead-click/bounce audit skills explicitly
+
+## Quality guidance (CEO enforces this)
+
+- 3D canvas MUST render a visible shirt with a texture applied — a blank canvas is a fail
+- Pattern upload MUST work: user picks a file, shirt updates live
+- Text-on-back MUST be visible on the 3D model (not just a form field)
+- Cart MUST show the customization thumbnail
+- Zero console errors on first paint
+- Homepage load must be fast (deferred canvas import proves the point to the client)
+- Cover letter must mention Microsoft Clarity / dead-click diagnosis by name (shows familiarity with their exact tools)
+
+## Risks
+- Free bowling shirt GLTF: may not exist; researcher should find closest match (short-sleeve button shirt, Hawaiian shirt) or flag "build procedural plane"
+- PHP proxy: not needed for the demo itself; describe as architecture in proposal, implement the Flask backend real
+- Three.js UV texture mapping for name-on-back requires known UV layout; may need a custom UV-mapped model or canvas-overlay approach
+
+## handoff
+- produced: `orchestrator.out` — slug, architecture decisions, feature list, design direction, plan-of-attack, quality gates
+- decisions: Vite+React+Three.js for demo (static deploy); Flask endpoints on mw-backend; PHP proxy is architecture narrative not code; Zustand state; retro bowling palette; 10/10 richness means all 3 features fully working
+- next needs: intake parses brief.json from posting + this file; researcher finds free shirt GLTF model and pattern assets; planner locks feature scope to the 3 features defined here
+- risks: shirt GLTF availability is the critical path item; researcher must resolve before demo-builder starts; canvas UV layout for text-on-back may need a custom approach

@@ -1,0 +1,24 @@
+# CEO (Plan) — improve pass 2 review
+
+Reviewed planner3 via plan-eval2 (pass). Verified against the new requirements: owayo-level 3D fidelity, full-wrap upload, separate front/back, smart-align, live zoom/crop/align sliders, optional color choice.
+
+## Assessment
+- All 7 new requirements traced with explicit plan sections. No gaps.
+- Tech stack (R3F + drei meshPhysicalMaterial sheen, studio env, ContactShadows, 2048² CanvasTexture compositor, @imgly WASM/WebGPU smart-align with deterministic alpha-bbox fallback) is the right call for owayo-quality studio render + bowlifi silhouette. WebGPU-vision-or-deterministic-or-combo requirement satisfied.
+- Scope (~6 files, 1 lazy dep, no new backend, build <3min) is feasible and genuinely full-featured at richness=10.
+
+## Directives carried to demo-builder (must honor)
+1. Silhouette is the single biggest realism lever. `CylinderGeometry` alone is insufficient for owayo look — implement post-construction vertex displacement (waist pinch ~0.82x, shoulder/chest flare) or `LatheGeometry` with a shirt profile curve. Do not ship a plain cylinder.
+2. Photo fidelity must read as fabric, not a flat decal: keep the knit normal map + sheen so uploaded images pick up cloth micro-shading and fold/light response. Compare final render side-by-side against screenshot owayo.png before declaring done.
+3. Front/back seam handling: verify the back UV island split does not show a visible hard seam on non-tiling uploads; mirror-seam toggle must actually mitigate it.
+4. Smart-align must visibly reposition the uploaded pattern (deploy-test will exercise it) — deterministic path must work even if @imgly WASM fails to load.
+
+Plan is strong enough to build a winning demo. No earlier step needs redoing.
+
+## handoff
+- produced: plan-ceo2 approval of planner3 for improve pass 2.
+- decisions: pass; 4 explicit build directives (real silhouette shaping, fabric-shaded photo wrap, seam mitigation, robust smart-align fallback).
+- next needs: demo-builder implements owayo-fidelity render; compare against screenshot owayo.png.
+- risks: silhouette shaping and photo-as-fabric realism are the two failure modes to watch.
+
+VERDICT: pass

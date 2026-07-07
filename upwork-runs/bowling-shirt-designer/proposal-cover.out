@@ -1,0 +1,30 @@
+# Cover Letter — bowling-shirt-designer
+
+---
+
+Your customizer is losing sales right now, and Microsoft Clarity is already telling you exactly where. Dead clicks on the configurator UI and a "undefined is not an object" error blocking the interaction loop are the kind of bugs I can find fast because I have shipped exactly this kind of app myself.
+
+I went ahead and built a working demo so you can see the approach in action: **https://michaelwegter.com/demos/bowling-shirt-designer/**
+
+It is a full 3D bowling shirt customizer with a photorealistic shader model (owayo-level fabric realism, not a flat extrude), separate front and back image upload, smart auto-alignment using a deterministic pixel-scan plus optional WebGPU vision refinement, real-time zoom, crop, and offset controls, and a localStorage-persisted cart with a live customization thumbnail. Everything renders cleanly on first paint, no console errors, and the 3D canvas loads deferred so it does not block the homepage. You can rotate the shirt, upload any image, hit Smart Align, and watch it wrap around the model. The things your Clarity session data is flagging as broken, this demo has working.
+
+For your actual codebase, here is how I would work through it:
+
+1. **JS error triage first.** "undefined is not an object" almost always means a component is trying to access state before it exists. I would trace the call stack from Clarity's recorded sessions, find the component and the missing null-guard or race condition, and have a fix or a clear report in your hands within one focused session.
+2. **Dead-click audit.** I would map Clarity's heatmap data against your event handler tree. Dead clicks on a customizer usually mean an overlapping element is absorbing pointer events, or an async state update is re-rendering the hit target before the click completes.
+3. **Homepage load audit.** Script-blocking on load is solvable with code-splitting and lazy canvas initialization (my demo does this; the 3D canvas never touches the critical path). I would document every blocking resource and prioritize cuts by impact.
+4. **Deliverable your choice.** Direct code fixes with pull requests, a prioritized Technical Remediation Roadmap, or both.
+
+On my background: I spent two and a half years as the sole React developer and SME on a 60,000-line internal platform at U.S. Bank, where I inherited a codebase mid-project and owned every bug from that day forward. If something was broken I fixed it, often within minutes, because I had to know that codebase cold. I am currently on a large-team Angular/.NET engagement at Optum but take focused short-term React contracts when the problem is genuinely interesting, and yours is.
+
+Happy to screen-share through Clarity recordings with you if that would make the diagnosis faster.
+
+Michael
+
+---
+
+## handoff
+- produced: cover letter targeting the audit job, with demo link, Microsoft Clarity named explicitly, concrete 4-step approach matching all 3 hard requirements, and relevant proof points
+- decisions: led with the client's specific symptom (Clarity dead-click data + undefined error), named the demo prominently as the differentiator, kept it skimmable with numbered approach, used U.S. Bank proof point (closest match to sole-dev audit work), no em/en dashes
+- next needs: proposal-deck step can pull the same 4-step audit frame and the demo link; one-pager can mirror the numbered approach
+- risks: cover letter does not mention hourly rate preferences or availability explicitly (client can ask; adding it would feel presumptuous at this stage)

@@ -1,0 +1,62 @@
+# Intake — Improve Pass 2
+
+Input: orchestrator2.out (new feature requirements), brief.json (prior run)
+
+---
+
+## Changes to brief.json (surgical edits only)
+
+### 1. heroFeatureDetail (expanded with new requirements)
+
+Added:
+- `"3dVisualization"` now specifies "photorealistic...like owayo.com" + "NOT flat extrude"
+- `"imageFrontBack"`: separate upload slots for front/back (independent alignment)
+- `"smartAlignment"`: deterministic + optional WebGPU vision model
+- `"manualAlignment"`: zoom/scale/offset/rotation sliders with real-time preview
+
+Unchanged: colorCustomization, textOnBack, liveTextureApplication.
+
+### 2. featureList[0] (3D Interactive Customizer description)
+
+Updated to reflect: photorealistic (like owayo.com), full-wrap image upload (front+back), smart auto-align + manual sliders, live preview.
+
+### 3. hardRequirements (new gates)
+
+Added 4 new hard gates:
+- Shirt MUST look 3D with fabric realism (photorealistic, not flat extrude)
+- Image upload to front MUST wrap and cover front face
+- Image upload to back MUST show independently on back when rotated
+- Auto-fit/smart-align button MUST re-center and scale image on click
+- Alignment sliders MUST update 3D render in real time (<100ms)
+- Color picker MUST still work in non-image mode
+- Pattern presets MUST still work in non-image mode
+
+Kept: text-on-back, cart, zero console errors, fast load, cover letter gate.
+
+### 4. criticalPathRisks (updated with new technical challenges)
+
+Replaced generic GLTF risk with procedural fallback plan (CylinderGeometry half-shells).
+Added: seam z-fighting fix (5-degree overlap), smart-align performance (<50ms), texture matrix recalc via useMemo, WebGPU lazy-load.
+
+### 5. handoff block
+
+Updated to reflect intake2 work: integrated new 3D/image/alignment into brief; identified demo-builder touch points (ShirtCanvas, OptionsPanel, smartAlign.ts); flagged risks (z-fighting, texture state, async model load).
+
+---
+
+## Summary
+
+brief.json now fully captures improve-pass 2 requirements:
+- **3D realism**: Owayo-quality fabric shading (photorealistic, NOT ExtrudeGeometry flat)
+- **Image upload**: Full-wrap pattern (front + back separate, independent transforms)
+- **Smart alignment**: Deterministic instant + optional WebGPU (progressive enhancement)
+- **Manual controls**: Zoom/scale/offset/rotation sliders with real-time 3D preview
+- **Color & patterns**: Still work when no image uploaded
+
+All hard gates and critical path risks updated. Demo-builder has clear file touch map from orchestrator2.out.
+
+## handoff
+- produced: brief.json v2 with integrated new requirements (3D realism, image upload, smart alignment, manual controls)
+- decisions: front+back image separation with independent transforms; deterministic pixel-scan + lazy WebGPU; CylinderGeometry half-shell fallback; photorealistic fabric shading (NOT flat extrude)
+- next needs: demo-builder reads this updated brief + orchestrator2.out; edits ShirtCanvas.tsx (CylinderGeometry, fabric material), OptionsPanel.tsx (tabbed front/back upload, transform sliders), adds smartAlign.ts (pixel-scan logic); rebuilds and tests
+- risks: z-fighting at seam (5-degree overlap fix); texture matrix updates must use useMemo on transform state; deterministic align must complete <50ms; WebGPU model lazy-import only

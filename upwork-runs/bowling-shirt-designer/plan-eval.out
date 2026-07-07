@@ -1,0 +1,70 @@
+# Plan Eval — bowling-shirt-designer
+
+## Rubric scoring
+
+### 1. ALL requirements covered?
+| Requirement | Covered | Notes |
+|---|---|---|
+| Diagnose JS errors / state-mgmt failures | YES | Zustand guarded store + before/after audit section |
+| Analyze homepage asset-loading / bounce | YES | Code-split lazy canvas (dynamic import, ssr:false) = literal fix, demonstrated |
+| Direct fixes OR remediation roadmap | YES | Roadmap panel in audit section + one-pager |
+| JavaScript / TypeScript / React | YES | Next.js 14 + TS throughout |
+| CSS / HTML | YES | Tailwind + semantic markup |
+| API Integration | YES | Flask `/bowling/*` → PHP proxy; save/load customization sessions |
+| Microsoft Clarity familiarity | YES | Named in audit section + cover letter |
+| Michael: Next.js | YES | Next.js 14 App Router, static export |
+| Michael: PHP via Python | YES | Real PHP microservice proxied through Flask blueprint |
+| Michael: upload patterns + live 3D + text on back | YES | Hero feature covers all three |
+| Java/MySQL/Spring Boot/MongoDB (client mandatory list) | PARTIAL | Classic Upwork skill-tag spam; posting is for a JS audit. N/A to demo. Proposal cover letter should acknowledge relevant transferable backend experience. Minor gap — does not block pass. |
+| Firebase/GCP/AWS (preferred) | N/A | Acknowledged in matrix; "transferable" mention in proposal is correct call |
+
+### 2. Technologies chosen — fit for purpose?
+- **Next.js 14 static export** with basePath `/demos/bowling-shirt-designer/`: correct. Honors Michael, deploys frictionlessly to GH Pages, lets proposal truthfully claim Next.js. Risk (basePath mis-match) is noted in plan with mitigations.
+- **Three.js + r3f + drei**: industry-standard for browser 3D customizers. Good choice. Decal for text-on-back is idiomatic.
+- **Zustand**: explicitly chosen as the fix for the client's dead-click/`undefined is not an object` failure mode. Smart alignment of demo architecture with the posting's pain point.
+- **Procedural mesh**: eliminates GLTF sourcing risk entirely. Correct call given Q1 research outcome.
+- **Canvas-generated patterns**: zero CDN/license dependency. Smart.
+- **PHP-via-Flask**: real, not narrative. Fallback (`php --version` gate → Flask-only) is well designed.
+- **Tailwind + CSS vars**: fine for richness-10, no michaelwegter.com tokens.
+
+All choices are justified, technically coherent, and appropriately scoped.
+
+### 3. Testing approach defined?
+- Hard gate: zero console errors on first paint.
+- Error boundary around canvas (graceful fallback, not white-screen).
+- Loading skeleton + Suspense validated on first paint.
+- Mobile responsive check.
+- PHP feasibility check (step 1 of demo-builder, result in build-report.md).
+- No formal unit/integration test suite — acceptable for a demo context given richness-10 timeline; manual QA gates cover the critical paths.
+
+Minor gap: no explicit Playwright deploy-test checklist in the plan. Acceptable; deploy-test step is a separate node in the pipeline.
+
+### 4. Scope feasibility at richness 10?
+- 1 hero + 2 supporting = correct cap per rules.
+- Procedural mesh (no GLTF load/parse), canvas textures (no CDN), Next.js static export (no server) — all reduce build-time risk.
+- ~12 file touch budget is tight for Next.js; feasible if demo-builder stacks functionality per file efficiently (layout, store, customizer canvas, patterns, cart, audit section = ~8 core files, room for config/styles).
+- 3-min build timeout: Next.js `next build` for a small static app should be well under that.
+- PHP fallback gated on runtime check prevents unbounded time sink.
+- Scope fences are explicit and enforced (no checkout/payment, 1 shirt, PNG/SVG only).
+
+**Feasibility: credible.** The plan is ambitious but the fallbacks and scope fences are mature.
+
+### 5. Design direction fit for industry?
+- Retro-modern bowling alley / 1960s Americana meets clean SaaS: highly appropriate.
+- Palette (navy/cream/coral/gold) confirmed against real brand (Hammer/Ebonite/Brunswick) via research.
+- Bebas Neue + Inter: correct pairing for display-heavy retro-sports brand.
+- Layout clones Custom Ink / RushOrderTees configurator (canvas center-left, options right sidebar): industry-validated UX pattern for apparel customizers.
+- Bowling-alley motifs as SVG accents: adds polish without bloat.
+- Zero michaelwegter.com visual tokens: confirmed (no Space Grotesk, no dark gallery-wall, no mustard/cyan).
+
+Design direction: excellent fit.
+
+## Issues (none blocking)
+1. Java/MySQL/Spring Boot/MongoDB "mandatory" skills: posting is boilerplate Upwork tag spam; posting body and Michael's ask are entirely JS/React/Next.js. Cover letter should include one sentence acknowledging broad backend experience (Node, Python, PHP demonstrated) without over-promising on Java/Spring. Does not block.
+2. Decal Y=PI rotation correctness on back face: identified risk in plan, must be validated in demo-builder. Not a plan flaw.
+3. ~12 file budget tight for Next.js: manageable if demo-builder is disciplined. Not a plan flaw.
+
+## Summary
+Plan is comprehensive, research-integrated, technically sound, and directly maps demo architecture to the client's stated pain points. Requirement coverage is thorough (minor Java/Spring gap is irrelevant to the actual project). Technologies are well-chosen with real fallbacks. Design direction is industry-appropriate and bespoke. Scope is ambitious but bounded with mature fallbacks. This is a strong plan at richness 10.
+
+VERDICT: pass

@@ -1,0 +1,28 @@
+# Demo Builder — improve pass 2 (bowling-shirt-designer)
+
+Implemented owayo-level realism + image-upload/wrap/smart-align per researcher2.out. Build EXIT=0, self-test 0 console errors, all new features verified live-local.
+
+## Changes (surgical)
+- lib/compositor.ts — NEW. 2048² CanvasTexture UV compositor (rAF-throttled). FRONT px512–1536, BACK-L px0–512 + BACK-R px1536–2048 (mirrored strip for a seamless back join). `wrap` mode fills full 2048 (optional mirror-seam edges). Base color + tiled pattern + per-image clip/translate/rotate/scale layers.
+- lib/smartAlign.ts — NEW. Tier-1 deterministic subject bbox (alpha scan, else luminance-variance block bbox) → instant transform. Tier-2 `imglyRefine` = @imgly/background-removal loaded from jsDelivr `+esm` CDN via `import(/* webpackIgnore */ …)` (WebGPU/WASM, degrades to Tier-1 on any failure). `hasWebGPU()` probe, `boxToTransform()`.
+- components/ShirtCanvas.tsx — REWRITE. CylinderGeometry(48×8, openEnded) + vertex-displaced bowlifi silhouette (`profile()`), short angled sleeves, mandarin collar band, cuffs, bottom cap. meshPhysicalMaterial sheen=0.9 + procedural knit normal map (makeKnitNormal, no external asset) + drei Environment "studio" + directionalLight(shadow) + ContactShadows on #f0ede8 studio bg. Compositor texture bound as `map`; back-name plane preserved.
+- components/OptionsPanel.tsx — EDIT. Mode toggle (All-Around Wrap / Front-Back), ImageUploadSlot ×1–2 (file input, Smart Align button, Zoom/PanX/PanY/Rotate sliders), mirror-seam checkbox, detection-method note. Removed old single-upload; color/pattern active states now key off `hasImage`. Added `mounted` guard to kill navigator-driven hydration mismatch.
+- lib/store.ts — EDIT. Removed uploadedUrl; added ImageTransform type, uploadMode/frontImage/backImage/mirrorSeam/frontTransform/backTransform/hasImage + setters.
+- workSamples.js (site) — EDIT. Description rewritten (owayo realism, any-image wrap, front/back, smart-align WebGPU); tags += "WebGPU","AI" (both already in tagSections).
+
+## Deviations from researcher2.out spec (necessary, recorded)
+- Poly Haven knit_fabric_02 URL returned 404 → replaced with a self-contained procedural knit normal map (makeKnitNormal). No CORS/asset risk.
+- @imgly + onnxruntime-web CANNOT be bundled: Next 14 SWC throws "failed to parse" on ort.webgpu.bundle.min.mjs. Solution: load @imgly from CDN `+esm` at runtime with webpackIgnore; uninstalled both npm deps. WebGPU model still integrates client-side; deterministic Tier-1 is the always-instant path.
+
+## Verify (localhost:8899, site public root)
+- build EXIT=0, first-paint console errors = 0, total errors = 0.
+- Upload (wrap) visibly changes the render (WRAP_CHANGED_RENDER true); base/wrap/aligned = 3 distinct non-trivial frames (~0.85–1.0 MB each).
+- Smart Align button present; Front/Back mode exposes 2 file slots.
+- st2-wrap.png confirms the uploaded image wraps around the jersey with knit micro-texture + studio sheen (owayo-like).
+
+## handoff
+- produced: full owayo-fidelity image-upload customizer deployed to public/demos/bowling-shirt-designer/ (rebuilt out/), registry entry updated.
+- decisions: procedural knit normal (Poly Haven 404); @imgly via CDN webpackIgnore (SWC can't bundle onnxruntime); wrap=full-2048 vs frontback=FRONT px512–1536/BACK split-mirror; smart-align = instant deterministic bbox + optional WebGPU refine.
+- next needs: deploy step pushes michaelwegter.com only (no backend/blueprint change this pass — existing /bowling PHP+Flask untouched). deploy-test should exercise upload → Smart Align → wrap render + front/back mode; note @imgly first-run pulls ~12–60 MB from CDN (slow, non-blocking, deterministic result immediate).
+- risks: @imgly CDN import blocked by strict CSP/offline → Tier-1 only (still functional, no error). Cylinder seam is at back-center (U=0); front/back split assumes that — visually confirmed correct in st2-wrap. Large uploads recomposite on a 2048² canvas each slider tick but rAF-throttled.
+- image-manifest.json stays [] (demo ships no baked raster; patterns canvas-gen, normal map procedural, uploads are user-supplied at runtime).

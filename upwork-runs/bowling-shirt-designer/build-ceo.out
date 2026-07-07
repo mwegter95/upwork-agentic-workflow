@@ -1,0 +1,21 @@
+# CEO (Build) review — bowling-shirt-designer
+
+Ran the demo end-to-end. Verdict: PASS.
+
+## Verified (not assumed)
+- Demo serves 200 at `/demos/bowling-shirt-designer/` (1.9M Next 14 static export, index.html present).
+- `verify.mjs` (Playwright): pattern swap (Argyle), name-on-back fill (STRIKE), Add-to-cart, Checkout button appears — **0 console errors, 0 page errors**.
+- 3D actually renders + rotates: front/back canvas frames distinct MD5s (263KB / 230KB), so both shirt faces show.
+- Registry id 24 correct: E-commerce category, accurate 9-tag stack (Next.js/React/TS/Three.js/Flask/PHP/Tailwind/E-commerce/Full-Stack), `Three.js` added to tagSections, hero card PNG present (469KB).
+- Backend: `bowling_blueprint.py` + `server.py` registration syntax-OK; PHP microservice `php -l` clean.
+
+## Assessment vs feature richness 10 and the brief
+Matches Michael's note precisely: Next.js, live 3D visualization, upload patterns onto shirt, name/text on the back, PHP backend proxied through the Python/Flask API. Full feature set (colors, 6 patterns, upload, collar/sleeve trim, name font/size/color, sizes, qty, cart w/ real 3D thumbnail, checkout, save&share w/ graceful fallback, randomize). Crucially it also reframes the posting's *audit* ask into the built solution: code-split 3D bundle (homepage-bounce fix), guarded state reads (the `undefined is not an object` class of bug), and an explicit before/after Clarity table + remediation roadmap section. This is a genuine 10/10 build, not a prototype.
+
+## Problems
+None blocking. Minor/for later steps (not a loopback):
+- PHP service not yet live on Surface; native-Flask fallback + client-side `#d=` share fallback cover it, so nothing dead-clicks. deploy-test should confirm `/bowling/health` returns `mode:native-flash`... i.e. `native-flask`, and the `/session` POST->GET round-trip. If the client literally needs "true PHP" live, a Surface runner must start the PHP service + set `BOWLING_PHP_AVAILABLE=1` — optional, not required for a working demo.
+
+Proceed to deploy (push BOTH michaelwegter.com and mw-backend).
+
+VERDICT: pass

@@ -1,0 +1,149 @@
+# Planner — Improve Pass 2 (delta over planner.out)
+
+Scope of change: ONLY the 3D render + image pipeline. Everything else in
+planner.out (Next.js static export, Zustand, PHP-via-Flask backend, cart, audit
+section, retro-bowling design, deploy model) stays as-is. Do not rebuild.
+
+## What the user actually wants (from orchestrator2 + 3 screenshots)
+- `screenshot owayo.png` = the FIDELITY bar: photorealistic knit jersey, soft
+  studio lighting, gradient sublimation, subtle body volume + fabric weave. The
+  current flat ExtrudeGeometry (a 0.16-deep silhouette) is explicitly rejected.
+- `screenshot bowlifi.png` = the STYLE to match: short-sleeve "Full Custom
+  Jersey" bowling shirt, mandarin/placket neckline, button placket, set-in
+  sleeves. (owayo 2.png shows the polo/collar family for reference.)
+- Core new capability, in priority order:
+  1. Upload ANY image → it wraps ALL THE WAY AROUND the shirt (single-image
+     wrap mode).
+  2. OR upload a separate FRONT image and BACK image (different or same),
+     independently aligned.
+  3. SMART auto-align: one click re-centers + scales the image onto the shirt
+     (deterministic instant; optional WebGPU/WASM vision model refines).
+  4. MANUAL adjust: zoom/crop/offsetX/offsetY/rotation sliders that update the
+     3D render live (<100ms).
+  5. Color pickers + preset patterns still work when no image is uploaded.
+
+## The central technical decision this pass must nail
+The whole feature = a **texture-compositing pipeline** feeding a **genuinely
+volumetric, well-lit shirt mesh**. Two sub-decisions, both research-gated:
+
+### A. Geometry + material (owayo fidelity)
+Replace flat ExtrudeGeometry with a real 3D torso that has proper wrap UVs:
+- **Preferred:** a free permissive GLB jersey/polo with clean, known front/back
+  UV islands (drei `useGLTF`, static-hostable, <~3MB). Best fidelity, cleanest
+  UV mapping for uploads. Gated on RESEARCH Q1.
+- **Fallback (if no suitable GLB):** procedural volumetric torso — a lofted body
+  from `LatheGeometry`/tapered `CylinderGeometry` (front+back half-shells) with
+  proper shoulders, plus set-in sleeve cylinders and a mandarin collar torus.
+  Cylinder U maps 0→1 around the body = the wrap requirement falls out for free
+  (front at U≈0.25, back at U≈0.75, seams hidden at the sides).
+- **Fabric realism regardless of geometry:** `meshPhysicalMaterial` with sheen,
+  a seamless knit/fabric **normal map** (subtle weave) + light AO, roughness
+  ~0.8, metalness 0; drei `<Environment>` studio HDRI + a soft key/fill
+  lightformer rig; `<ContactShadows>` + gentle `<AccumulativeShadows>` for the
+  grounded studio look. Gated on RESEARCH Q2 (exact params + a free normal map).
+
+### B. Image pipeline (wrap + front/back + align)
+- **One runtime compositor canvas** (e.g. 2048×2048) is the single `map`. Two
+  fixed UV rectangles = FRONT island + BACK island of the chosen geometry.
+- Each face draws its uploaded image with an affine transform (scale/zoom,
+  offsetX, offsetY, rotation), default object-fit COVER. Sliders mutate the
+  transform → recomposite → `texture.needsUpdate=true`, throttled to rAF so it
+  stays <100ms. Store transforms in Zustand; recomposite in a `useMemo`/effect
+  keyed on transform + image (per intake2 useMemo note).
+- **Single-image "wrap-all-around" mode:** composite the one image across BOTH
+  islands continuously (or `RepeatWrapping` across full U) so the pattern
+  circles the whole shirt with the seam at the side. Toggle: `Wrap one image` vs
+  `Front + Back separately`.
+- **Smart-align (deterministic, instant):** find the image's salient/content
+  bounding box (alpha bbox; else variance/edge-energy scan) → compute scale +
+  offset to center that box in the island. Must complete <50ms.
+- **Smart-align (optional WebGPU/WASM refine, progressive enhancement):** lazy-
+  import a client-side vision model to segment the subject / remove background
+  and re-center precisely. Deterministic result shows instantly; model refines
+  on arrival; never blocks first paint. Gated on RESEARCH Q3.
+
+## Files demo-builder touches (surgical, ~6 files, still under the 12 cap)
+- `components/ShirtCanvas.tsx` — swap geometry (GLB or procedural volumetric),
+  new fabric material + normal map + studio Environment/lighting, consume the
+  compositor texture for front/back islands. Biggest change.
+- `components/OptionsPanel.tsx` — add: mode toggle (wrap-one vs front/back),
+  Front/Back upload slots, Smart-align button, zoom/crop/offset/rotation sliders;
+  keep existing color pickers + pattern presets (shown when no image).
+- `lib/store.ts` — add state: `frontImage`, `backImage`, `wrapMode`, per-face
+  `{scale,offsetX,offsetY,rotation,crop}` transforms; keep color/pattern state.
+- `lib/compositor.ts` (NEW) — canvas compositor: draw image(s) into UV island(s)
+  with transform; returns/updates the shared CanvasTexture.
+- `lib/smartAlign.ts` (NEW) — deterministic content-bbox align + lazy WebGPU
+  refine hook.
+- `public/demos/.../assets/` — the GLB (if used) + fabric normal map, hosted
+  same-origin.
+Keep back-text (Decal) and cart/thumbnail capture working through the new mesh.
+
+## Scope fences (this pass)
+1 shirt style (bowlifi short-sleeve custom jersey). Wrap-one + front/back-
+separate image modes; PNG/JPG/SVG upload. Smart-align = deterministic always +
+WebGPU refine only if Q3 yields a static-hostable model that fits budget (else
+ship deterministic-only and describe WebGPU as the enhancement path — do NOT
+sink unbounded time). No new backend endpoints required (compositing is client-
+side); reuse existing PHP/Flask save-load. Build timeout 3 min.
+
+## Requirement → feature traceability (new rows; prior matrix still holds)
+| New requirement | Where satisfied |
+|---|---|
+| Owayo-level photorealism | GLB-or-volumetric mesh + physical fabric material + normal map + studio Environment/lighting |
+| Bowlifi jersey style | short-sleeve custom-jersey silhouette (mandarin/placket) |
+| Upload wraps all the way around | wrap-one mode, cylindrical/full-U UVs, side-seam |
+| Separate front + back images | Front/Back upload slots → two UV islands, independent transforms |
+| Smart auto-align | `smartAlign.ts` deterministic bbox + optional WebGPU refine |
+| Zoom/crop/align adjust live | transform sliders → compositor recomposite <100ms |
+| Colors/patterns still optional | color pickers + presets active when no image |
+
+## RESEARCH QUESTIONS for pre-researcher (integrate answers, then flip to ready)
+1. **Free short-sleeve bowling/polo/custom jersey GLB** with clean, documented
+   front-vs-back UV islands: exact URL + license (must be CC0/permissive),
+   file size, and how its UVs are laid out (single wrap vs separate panels).
+   Candidates to vet: three.js/pmndrs "shirt_baked.glb" T-shirt configurator
+   model, Poly Pizza, Sketchfab CC0, Khronos samples. If NONE qualifies, say so
+   explicitly so we commit to the procedural volumetric fallback.
+2. **Owayo-level fabric realism in r3f within budget:** concrete recipe —
+   `meshPhysicalMaterial` params (sheen, sheenRoughness, roughness, clearcoat?),
+   which drei `<Environment>` preset (studio/warehouse/city) + lightformer rig,
+   AccumulativeShadows vs ContactShadows, and a **free CC0 seamless knit/fabric
+   normal map URL** (+ optional roughness/AO map). Give hex-free numeric params.
+3. **Client-side smart-align vision model (optional refine):** lightest WebGPU/
+   WASM option that runs in-browser, lazy-loaded, static/CDN-hostable — e.g.
+   `@huggingface/transformers` RMBG-1.4 background removal, or MediaPipe
+   ImageSegmenter, or a saliency model. Give model id, approx size, WebGPU vs
+   WASM fallback, and confirm it works from a static site (no server). Plus the
+   best **deterministic** content-bbox algorithm (alpha bbox / variance scan)
+   with brief pseudocode as the always-on baseline.
+4. **Texture-compositing + UV-island technique in three.js:** confirm single
+   CanvasTexture (updated on transform, `needsUpdate`, rAF-throttled) is the
+   right call vs two textures/materials; how to define/reserve fixed FRONT and
+   BACK UV rectangles on the chosen geometry so images stay on the correct face
+   with the seam hidden at the sides; and how to keep recomposite <100ms.
+5. **Seamless wrap-all-around:** how to map one rectangular image around a
+   cylindrical/paneled torso without ugly side-seam distortion (RepeatWrapping
+   vs ClampToEdge vs mirrored seam, overlap trick), and any owayo-style
+   flat-pattern-to-panel projection worth mimicking.
+
+## handoff
+- produced: improve-pass plan delta — replace flat ExtrudeGeometry with a
+  volumetric owayo-fidelity shirt (GLB preferred, procedural fallback) + a
+  canvas texture-compositing pipeline for wrap-one and front/back-separate image
+  upload, smart-align (deterministic + optional WebGPU), live transform sliders;
+  colors/patterns retained; ~6 files, backend untouched.
+- decisions: single compositor CanvasTexture with FRONT/BACK UV islands;
+  cylinder U = natural wrap; fabric realism via meshPhysicalMaterial + normal
+  map + studio Environment; deterministic align always-on, WebGPU refine
+  optional/gated; no new endpoints.
+- next needs: pre-researcher answers Q1–Q5 (esp. Q1 GLB availability decides
+  geometry path, Q3 decides WebGPU model). Then planner flips to ready and
+  demo-builder edits ShirtCanvas/OptionsPanel/store + adds compositor.ts,
+  smartAlign.ts.
+- risks: no suitable free GLB → procedural volumetric must still hit owayo bar
+  (lighting/material carry it); WebGPU model size/budget; side-seam distortion
+  on wrap; recomposite perf <100ms; keep back-text Decal + cart thumbnail
+  working through the new mesh.
+
+PLAN-STATUS: needs-research — missing: (Q1) a vetted free permissive short-sleeve jersey GLB with known front/back UVs or confirmation none exists; (Q2) exact r3f fabric-realism params + a free seamless normal map URL; (Q3) a static-hostable client-side WebGPU/WASM align model id+size + deterministic bbox algorithm; (Q4/Q5) confirmed UV-island + seamless-wrap technique.

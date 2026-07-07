@@ -1,0 +1,4 @@
+$ node scripts/gate-images.mjs (exit 1)
+gate-images: manifest is affirmatively empty — no raster images, skipping the image QA section
+
+VERDICT: fail

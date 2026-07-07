@@ -1,0 +1,148 @@
+# Planner — bowling-shirt-designer
+
+Build plan for a full (richness 10) 3D bowling-shirt e-commerce customizer that
+doubles as proof of the exact skills the posting audits: state-management rigor
+(no dead clicks / `undefined is not an object`) and homepage load performance.
+
+## Stack decision (revisits intake — honor Michael's explicit ask)
+
+Michael said explicitly: "Use next JS and let's do a true php backend routed
+through my python backend." Intake downgraded both to Vite + narrative-only PHP.
+Planner overrides toward Michael's stated intent where it survives the static
+same-origin hosting model:
+
+- **Frontend: Next.js 14 (App Router) with `output: 'export'`**, `basePath` +
+  `assetPrefix` = `/demos/bowling-shirt-designer`, `images.unoptimized: true`.
+  Static export drops into `../michaelwegter.com/public/demos/bowling-shirt-designer/`
+  exactly like a Vite build — same zero-friction GH Pages deploy, but honors the
+  Next.js requirement and lets the proposal truthfully say "Next.js." Keep demo
+  source in `upwork-runs/bowling-shirt-designer/demo-src/`.
+- **3D: Three.js + @react-three/fiber + @react-three/drei**. Canvas is a
+  client-only component, dynamically imported (`next/dynamic`, `ssr:false`) so it
+  is code-split and NOT in the homepage critical path — this is the literal fix
+  for the client's "heavy script blocking / instant bounce" problem and we make
+  that visible (fast first paint, canvas lazy-mounts on view/interaction).
+- **State: Zustand** single store (customizer + cart). Deliberately chosen and
+  called out as the antidote to the client's `undefined is not an object` /
+  dead-click failures (no unguarded nested reads, selectors, immer-safe updates).
+- **Styling: Tailwind + CSS vars** for the retro palette. Fonts via
+  next/font (Google): Bebas Neue (display), Inter (UI).
+- **Backend: real PHP microservice proxied through Flask** — CONFIRMED feasible
+  (Q5). Tiny PHP built-in-server app (`php -S 127.0.0.1:5060`) with 3 endpoints
+  (`GET /patterns`, `POST /session`, `GET /session/<id>`, flat-file JSON storage,
+  no MySQL). Registered as a Surface service (`bowling-php`, port 5060) so it
+  stays up across reboots. Flask blueprint `bowling_blueprint.py` (clone the
+  bridge template, PREFIX=`/bowling`, UPSTREAM=`http://127.0.0.1:5060`) proxies
+  `/bowling/*` and is the sole public origin. This makes "true PHP routed through
+  Python" real, not narrative. **Single gatekeeper:** demo-builder step 1 runs
+  `php --version` on the Surface; if winget/PHP is unavailable in the runner user
+  context, fall back cleanly to a Flask-only blueprint with the same endpoints and
+  describe PHP in the proposal architecture diagram. Record the outcome in
+  build-report.md. PHP source is written to disk as a file (runner scripts stay
+  ASCII-only per playbook), not embedded inline.
+
+## Features (all fully working)
+
+### HERO — 3D Interactive Customizer
+- Orbit controls (rotate/zoom/pan), auto-rotate idle, reset-view button.
+- Shirt model: **procedural mesh** (Q1 decided — no reliable free bowling GLTF).
+  4 groups: ShirtBody (Box + shoulder spheres, material #0), Collar (Torus, #1),
+  Sleeves (x2 Cylinders, #2), BackPanel (child PlaneGeometry, z-offset +0.101,
+  flat 0→1 UV = zero-distortion text surface). 3 named material indices drive
+  per-segment color.
+- Pattern library: **6 canvas-generated tileable patterns** (Q2 — Atomic
+  Starburst, Bowling Pins, Argyle Diamond, 50s Polka Dot, Lane Chevrons, Atomic
+  Bowtie), drawn to 512x512 at module init → `THREE.CanvasTexture`,
+  `wrapS=wrapT=RepeatWrapping`, `repeat.set(3,3)`. Zero network/license risk. Plus
+  **live user upload** (PNG/SVG) → `URL.createObjectURL` → THREE.Texture applied
+  instantly as repeating map.
+- Per-segment color pickers: base body, collar, cuffs/trim independent materials
+  (each `<meshStandardMaterial color={store.*}>`, re-renders on store change).
+- Text-on-back: font + color + size + text input → offscreen 512x256 canvas →
+  `THREE.CanvasTexture` → drei `<Decal position={[0,0.1,-0.101]} rotation={[0,PI,0]}
+  scale={[0.5,0.25,1]}>` on the back face (Q7 — Decal is the r3f-idiomatic choice;
+  BackPanel `.material.map` is the equally-valid simpler fallback). Visible when
+  rotated to back. Debounce input 150ms to avoid per-keystroke texture rebuild.
+- Save/share: POST customization to backend, returns id; GET rehydrates it.
+
+### SUPPORTING 1 — Product Page + Cart
+- Size selector (S/M/L/XL/2XL), quantity, price, Add to Cart.
+- Cart persisted in localStorage; each line item shows a **customization
+  thumbnail** captured from the canvas (renderer.domElement.toDataURL at add).
+- Cart drawer with edit/remove, subtotal. No payment/checkout (scope fence).
+
+### SUPPORTING 2 — Audit Credibility Section
+- On-page section that answers the posting directly: a side-by-side "Before
+  (the failure pattern) vs After (this build's architecture)" table —
+  dead-click / `undefined is not an object` root cause vs guarded state; heavy
+  synchronous script vs code-split lazy canvas; plus a one-screen
+  "Technical Remediation Roadmap" mirroring the deliverable the client asked for.
+- Ties the demo explicitly to Microsoft Clarity findings.
+
+## Production-quality requirements (richness 10)
+- Error boundary around the Canvas (graceful fallback, never a white-screen).
+- Loading skeleton + Suspense on first paint; homepage interactive before 3D loads.
+- Mobile responsive: canvas → portrait, controls stack below.
+- Zero console errors on first paint (hard gate).
+- Subtle entrance transitions (CSS only, no heavy animation lib).
+- a11y: labelled controls, keyboard-usable pattern/color pickers.
+
+## Scope fences
+1 shirt model. Customizer → product page → cart only (no checkout/payment).
+PNG/SVG uploads only. 5 preset sizes. ~12 files for demo touch budget. 1 hero +
+2 supporting features, nothing more. 3-min build timeout. PHP realness gated on
+Q5 — do NOT sink unbounded time into Surface PHP; fall back cleanly.
+
+## Design direction (bespoke, zero michaelwegter.com tokens)
+Retro-modern bowling alley — 1960s Americana meets clean SaaS.
+- Palette (CONFIRMED accurate vs Hammer/Ebonite/Brunswick, Q3): navy `#1a1f3c`,
+  cream `#f5f0e8`, coral `#e84040`, gold `#f5a623`, white `#ffffff`.
+- Type: Bebas Neue (display/hero), Inter (body/UI).
+- Layout (Custom Ink / RushOrderTees configurator pattern, Q3): canvas center-left
+  ~60% with visible orbit controls; options panel right sidebar ~35% (color
+  pickers as clickable swatch circles, pattern picker, text tool stacked);
+  Front/Back toggle button above canvas (rotates camera, not swap mesh); Add to
+  Cart CTA pinned at sidebar bottom. Mobile: canvas full-width top, options scroll
+  below. Bowling-alley motifs (chevrons, lane arrows, pin/ball) as SVG accents.
+
+## Requirement → feature traceability
+| Brief requirement | Where satisfied |
+|---|---|
+| Diagnose JS errors / state-mgmt failures | Audit section (before/after) + Zustand guarded store; cover letter |
+| Analyze homepage asset-loading / bounce | Code-split lazy canvas + fast first paint; audit section "heavy script" row |
+| Direct fixes OR remediation roadmap | Roadmap panel in audit section + proposal one-pager |
+| JavaScript / React / TypeScript | Next.js + TS throughout |
+| CSS / HTML | Tailwind + semantic markup |
+| API Integration | Flask (`/bowling/*`) proxy → PHP save/load customization |
+| Next.js (preferred) | Next.js static export (honors Michael) |
+| Firebase/GCP/AWS (preferred) | N/A for demo; mention transferable in proposal |
+| Microsoft Clarity familiarity | Named in audit section + cover letter |
+| Michael: Next.js + PHP via Python | Next.js FE + PHP-proxied-through-Flask (Q5) |
+| Michael: upload patterns, live 3D, name/text on back | Hero feature, all three |
+
+## Research resolved (all 7 integrated — see pre-researcher.out)
+1. **Shirt model** → procedural 4-group mesh (no reliable free bowling GLTF).
+   BackPanel flat plane = zero-distortion text UV. No load risk, fits build budget.
+2. **Patterns** → 6 canvas-generated tileable textures at module init. Zero CDN /
+   license dependency. (CDN fallback: transparenttextures.com if canvas skipped.)
+3. **Brand/UX** → palette CONFIRMED (Hammer/Ebonite/Brunswick). Layout clones
+   Custom Ink / RushOrderTees configurator (canvas + right options panel).
+4. **r3f pattern** → Zustand store + `useTexture`/`TextureLoader`, per-material
+   `<meshStandardMaterial color>`, `URL.createObjectURL` for uploads.
+5. **PHP-on-Surface** → FEASIBLE. `php -S 127.0.0.1:5060` as a registered Surface
+   service, Flask bridge blueprint proxies `/bowling/*`. Real, not narrative.
+   Gatekeeper: `php --version` at demo-builder step 1; Flask-only fallback if absent.
+6. **Blueprint to clone** → `art_store_blueprint.py` (cleanest e-commerce template);
+   register in `server.py` after the last `register_blueprint` (~line 358) with
+   `from bowling_blueprint import bowling_bp` / `app.register_blueprint(bowling_bp)`.
+   CORS is global — no per-blueprint config.
+7. **Text-on-back** → drei `<Decal>` (offscreen CanvasTexture, position back-center,
+   rotation Y=PI). Survives orbit + mobile. Debounce input 150ms.
+
+## handoff
+- produced: final build plan (research integrated) — Next.js static-export FE + Three.js/r3f customizer, Zustand, REAL PHP-via-Flask backend, 3 features at richness 10, bespoke retro-bowling design, requirement→feature matrix.
+- decisions: procedural 4-group shirt mesh (no GLTF); 6 canvas-generated patterns + live upload; drei Decal for text-on-back; PHP service on Surface proxied by `bowling_blueprint.py` (clone `art_store_blueprint.py`), `php --version` gate with Flask-only fallback; Next.js `output:'export'` with basePath `/demos/bowling-shirt-designer/`; code-split lazy canvas = the on-purpose fix for the client's bounce problem + a demo talking point.
+- next needs: demo-builder — step 1 = PHP feasibility check (record in build-report.md); build procedural customizer with zero console errors on first paint; write image-manifest.json (likely `[]`, canvas/SVG only, no raster); capture card screenshot.
+- risks: PHP winget availability in Surface runner user context unverified until runtime (fallback ready); Decal rotation on back face must be Y=PI; Next.js basePath must exactly match the demo path; homepage first paint must stay fast (canvas dynamically imported, ssr:false).
+
+PLAN-STATUS: ready

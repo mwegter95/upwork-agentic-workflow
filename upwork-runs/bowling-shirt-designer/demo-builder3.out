@@ -1,0 +1,46 @@
+# demo-builder3 — photoreal 3D shirt rebuild (improve pass)
+
+Replaced the procedural tube-and-cylinder shirt with an offline-authored garment
+mesh + baked AO, rendered with PBR fabric materials. Owayo-style realism, Bowlifi
+mock-neck quarter-zip silhouette (no pocket), full 360 orbit.
+
+## what changed
+- NEW tools/sculpt.mjs: deterministic garment authoring (runs ~4s). Analytic
+  garment loft consumes true pattern fabric width per cross-section; front/back
+  panels via Coons grids; sleeves lofted from the real armhole ring (arc-length
+  UV parametrization); analytic-ring stand collar; yoke shrinkwrap onto a
+  mannequin SDF; masked Laplacian relax at shoulders/caps; crafted displacement
+  wrinkles (hang folds, armpit tension, zip channel, hem waves); welded seams w/
+  pinch; hemisphere-raycast vertex AO; trim bands + zipper geometry; exports
+  public/shirt.bin (custom packed binary, ~1.1MB).
+- tools/drape.mjs (kept for reference): full PBD cloth sim w/ sewing —
+  abandoned: unstable + slow (~90s chunked); sculpt is the supported path.
+- lib/compositor.ts v2: clean panel atlas (front island x20..1006, back
+  x1042..2028, y460..1769 as-seen/unmirrored; sleeves y24..424). Back images no
+  longer mirrored-duplicated. backText now drawn into the atlas (arched) so it
+  follows fabric + AO. wrap mode spans both body islands; mirrorSeam mirrors the
+  back panel.
+- lib/shirtMesh.ts: shirt.bin loader (AO -> vertex colors).
+- components/ShirtCanvas.tsx: rewritten. Loads baked meshes; MeshPhysical fabric
+  (compositor map, knit normal, sheen, AO); BackSide lining passes; local
+  RoomEnvironment (replaces drei CDN HDR fetch — offline-safe); soft key light +
+  contact shadow; damped autorotate orbit.
+- tools/preview/index.html + tools/shot.mjs + tools/qa.mjs: headless render
+  harness (swiftshader; one browser per view + retry).
+
+## verification
+- UV debug grid: FRONT/BACK upright + unmirrored, uniform texel density.
+- qa.mjs against the built app: console errors NONE; color swatch, wrap upload,
+  transforms all live on the new mesh.
+- Deployed copy serves clean from michaelwegter.com/public/demos/bowling-shirt-designer.
+- Card hero refreshed: public/work-samples/bowling-shirt-designer.png.
+
+## handoff
+- produced: baked garment asset pipeline (sculpt.mjs -> shirt.bin), rewritten
+  renderer + compositor v2, deployed build + new card screenshot. Committed, NOT pushed.
+- decisions: deterministic sculpt over cloth dynamics; panel-atlas UVs
+  (unmirrored back) are the compositor contract — any mesh change must keep it.
+- next needs: push both repos to go live; optional material polish (AO strength,
+  knit scale) after seeing it on real hardware GPU.
+- risks: stale hashed _next chunks from the old build remain in the site folder
+  (sandbox cannot delete); harmless but prune on next Mac-side pass.

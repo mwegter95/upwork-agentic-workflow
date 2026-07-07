@@ -1,0 +1,166 @@
+{
+  "slug": "bowling-shirt-designer",
+  "clientPosting": {
+    "title": "Technical Code & Flow Audit: E-Commerce Apparel Customizer (React/JS)",
+    "postedDate": "2026-07-05",
+    "jobType": "Hourly",
+    "estimatedHours": "< 30 hrs/week",
+    "duration": "< 1 month",
+    "experienceLevel": "Intermediate",
+    "budgetRange": {
+      "low": 20,
+      "high": 120,
+      "average": 53.22,
+      "currency": "USD"
+    },
+    "location": "Worldwide",
+    "summary": "E-commerce apparel brand seeking technical audit of interactive design customizer. Microsoft Clarity logs show: (1) dead clicks & JavaScript errors ('undefined is not an object') blocking customization interactions; (2) high homepage bounce rates due to heavy script-load blocking.",
+    "requirements": [
+      "Diagnose root causes of JS errors and state management failures in customizer",
+      "Analyze homepage asset-loading flow to isolate bounce triggers",
+      "Provide direct code fixes OR prioritized Technical Remediation Roadmap"
+    ],
+    "mandatorySkills": [
+      "JavaScript",
+      "React",
+      "TypeScript",
+      "CSS",
+      "HTML",
+      "API Integration"
+    ],
+    "preferredSkills": [
+      "Next.js",
+      "React Native",
+      "AWS Development",
+      "Google Cloud Platform",
+      "Firebase"
+    ],
+    "userBehaviorTools": "Microsoft Clarity"
+  },
+  "michaelsVision": {
+    "demoGoal": "Full-featured bowling shirt e-commerce store showcasing high-quality interactive apparel customizer",
+    "heroFeature": "3D Interactive Customizer",
+    "heroFeatureDetail": {
+      "3dVisualization": "Photorealistic 3D shirt model (Owayo-quality fabric shading, proper form, NOT flat extrude) with orbit controls, rotate/zoom",
+      "patternLibrary": "6+ pre-loaded patterns OR photorealistic image upload (PNG/JPG wrap full shirt: front + back)",
+      "imageFrontBack": "Separate upload slots for shirt front and back (can be same or different); independent alignment per face",
+      "smartAlignment": "Auto-align uploaded images: deterministic pixel-scan (instant) + optional WebGPU vision model (progressive enhancement) to center & scale image onto shirt",
+      "manualAlignment": "Zoom/scale, X offset, Y offset, rotation sliders per face; real-time preview on 3D model",
+      "liveTextureApplication": "Three.js material swaps applied instantly with texture transforms",
+      "colorCustomization": "Per-segment color picker (base, collar, cuffs independently) when no image uploaded",
+      "textOnBack": "Font/color/size picker, canvas-to-texture, applied to back UV region"
+    },
+    "supportingFeature1": "Product Page + Cart",
+    "supportingFeature1Detail": "Size selector (S/M/L/XL/2XL), quantity, Add to Cart; localStorage-persisted cart with live customization thumbnail",
+    "supportingFeature2": "Audit Credibility Section",
+    "supportingFeature2Detail": "Side-by-side comparison: client's error pattern vs. this demo's architecture solutions (answers job posting directly)"
+  },
+  "demoApproach": {
+    "frontend": {
+      "framework": "Vite + React 18 + TypeScript",
+      "rationale": "Static self-contained app, no Node server required for GH Pages deployment. Next.js mentioned in orchestrator as Michael's desired pattern; Vite matches the static hosting model.",
+      "3dEngine": "Three.js + @react-three/fiber + @react-three/drei",
+      "stateManagement": "Zustand (avoids 'undefined is not a function' class bugs client experienced)",
+      "styling": "Tailwind CSS (production-quality, industry-fit, zero michaelwegter.com tokens)",
+      "fonts": "Google Fonts (Inter for UI, Bebas Neue / Black Han Sans for display)"
+    },
+    "backend": {
+      "architecture": "PHP proxy pattern (architectural narrative) + Flask API",
+      "endpointsRequired": [
+        "POST /bowling/patterns — store pattern metadata",
+        "GET /bowling/patterns — list patterns",
+        "POST /bowling/customize — save customization session",
+        "GET /bowling/sessions/<id> — retrieve saved customization"
+      ],
+      "auth": "JWT (existing mw-backend auth), seeded demo account for login flow"
+    },
+    "deployment": "Vite build → ../michaelwegter.com/public/demos/bowling-shirt-designer/",
+    "demoUrl": "https://michaelwegter.com/demos/bowling-shirt-designer/"
+  },
+  "designDirection": {
+    "vibe": "Retro-modern bowling alley — 1960s Americana meets clean SaaS product. Bold, fun, confident.",
+    "palette": {
+      "navy": "#1a1f3c",
+      "cream": "#f5f0e8",
+      "coral": "#e84040",
+      "gold": "#f5a623",
+      "white": "#ffffff"
+    },
+    "typography": "Bebas Neue / Black Han Sans (display), Inter (body/UI)",
+    "layout": "Full-width hero + 3D canvas front-center, sidebar customizer, product details below",
+    "mobileResponsive": "Canvas collapses to portrait, controls below",
+    "noMichaelwegterTokens": true
+  },
+  "featureRichness": 10,
+  "featureList": [
+    {
+      "priority": "hero",
+      "name": "3D Interactive Customizer",
+      "description": "Photorealistic shirt model (fabric shading, proper 3D form like owayo.com) with orbit controls; 6+ pattern library OR full-wrap image upload (front+back separate, independent alignment); smart auto-align (deterministic + optional WebGPU) + manual zoom/scale/offset/rotation sliders; live preview; color picker (base/collar/cuffs); text-on-back with font/color/size"
+    },
+    {
+      "priority": "supporting",
+      "name": "Product Page + Cart",
+      "description": "Size selector, quantity, Add to Cart; localStorage cart persistence; customization thumbnail"
+    },
+    {
+      "priority": "supporting",
+      "name": "Audit Credibility Section",
+      "description": "Side-by-side: client's error pattern vs. demo's architecture solutions (dead-click prevention, performance optimization)"
+    }
+  ],
+  "productionQuality": [
+    "Performance: code-split Three.js, lazy-load canvas only when active (proves homepage load optimization)",
+    "Error boundaries around 3D canvas",
+    "Loading skeleton on first paint",
+    "Mobile-responsive (portrait canvas + sidebar controls below)",
+    "Smooth scroll, subtle entrance animations (CSS transitions, no heavy lib)"
+  ],
+  "hardRequirements": [
+    "Shirt MUST look visually 3D with depth and fabric realism (photorealistic like owayo.com), NOT flat extruded shape",
+    "Image upload to front MUST wrap around and cover front face (upload → shirt updates live)",
+    "Image upload to back MUST show independently on back face when rotated (separate from front)",
+    "Auto-fit/smart-align button MUST visibly re-center and scale image on click",
+    "Alignment sliders (zoom, X/Y offset, rotation) MUST update 3D rendering in real time (< 100ms lag)",
+    "Color picker MUST still work when no image is uploaded (solid color mode)",
+    "Pattern presets MUST still work when no image is uploaded",
+    "Text-on-back MUST be visible on 3D model",
+    "Cart MUST show customization thumbnail",
+    "Zero console errors on first paint",
+    "Fast homepage load (deferred canvas proves performance expertise)",
+    "Cover letter addresses Microsoft Clarity / dead-click diagnosis by name"
+  ],
+  "criticalPathRisks": [
+    "3D realism: free bowling shirt GLTF may not exist; fallback to procedurally-generated CylinderGeometry with half-shells for front/back separation (faster, safer than URL hunting)",
+    "Front/back split requires clean UV mapping per face (seam z-fighting at theta=0/PI boundary) — use 5-degree overlap to avoid visual artifacts",
+    "Smart alignment deterministic pixel-scan must be instant (<50ms) for UX; WebGPU segmentation model is async/lazy (50MB download) and optional only",
+    "Texture transforms via THREE.Texture matrix (rotation, repeat, offset) must re-apply on every slider change; use useMemo keyed on transform values to avoid redundant recalc",
+    "Three.js UV texture mapping for name-on-back requires known UV layout; may need custom UV model or canvas-overlay",
+    "PHP proxy is architecture narrative only; real implementation is Flask-only (PHP layer described in proposal)"
+  ],
+  "scopeFence": {
+    "shirtModels": 1,
+    "touchpoints": "customizer → product page → cart (no checkout/payment processing)",
+    "fileTypes": "PNG/SVG patterns only",
+    "sizes": "S/M/L/XL/2XL preset"
+  },
+  "buildBudget": {
+    "maxFiles": "~12 (app structure + 3D components + cart + auth bridge)",
+    "maxBuildTime": "3 minutes",
+    "estimatedTokens": "heavy (opus-level demo-builder work)"
+  },
+  "nextSteps": [
+    "Planner: lock concrete build plan with design tokens, feature scope, Vite+Three.js architecture",
+    "Researcher: find free bowling/short-sleeve shirt GLTF; source 6+ retro pattern assets; reference three.js shirt-customizer examples",
+    "Demo-builder: scaffold Vite+React+Three.js; build 3D canvas + customizer panel; add Flask blueprint to mw-backend",
+    "Deploy: push both repos, verify live",
+    "Deploy-test: Playwright flow (rotate, swap pattern, add text, cart)",
+    "Proposal-writer: emphasize audit skills + live demo; lead with Clarity/dead-click familiarity"
+  ],
+  "handoff": {
+    "produced": "brief.json v2 (improve pass 1) — integrated new 3D realism + image upload + smart alignment requirements into hero feature; added front/back image separation + alignment controls + auto-fit button as hard gates",
+    "decisions": "Image upload now primary (not just patterns); front+back separate with independent transforms; smart alignment = deterministic pixel-scan (instant) + optional WebGPU (lazy, progressive); CylinderGeometry fallback (no GLTF dependency); fabric shading + normals for photorealism (owayo-level not flat extrude)",
+    "nextNeeds": "Demo-builder: edit ShirtCanvas.tsx for CylinderGeometry half-shells + fabric material; add smartAlign.ts (pixel-scan logic); update OptionsPanel.tsx with tabbed front/back upload + transform sliders; test front/back upload + alignment controls + real-time preview",
+    "risks": "Seam z-fighting on cylinder split; texture matrix updates must be keyed on transform state (useMemo); deterministic align must stay <50ms; WebGPU model size (lazy import only)"
+  }
+}

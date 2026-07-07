@@ -1,0 +1,185 @@
+# Orchestrator — Improve Pass 2
+slug: bowling-shirt-designer
+run-type: improve (smallest change to satisfy new requirements)
+base-run: upwork-runs/bowling-shirt-designer/
+
+---
+
+## What changed vs pass 1
+
+New requirements (all additive, no feature removal):
+1. Photorealistic 3D shirt rendering (Owayo-quality: fabric shading, proper form, not flat extrude)
+2. Upload any image as a full-wrap pattern (goes all the way around — front AND back)
+3. Separate front-image and back-image upload slots (can be same or different, aligned independently)
+4. Manual alignment controls per face: zoom/scale, X offset, Y offset, rotation
+5. Smart auto-alignment: analyze uploaded image, auto-center and scale onto shirt surface
+6. Smart alignment backend: WebGPU vision model integration and/or deterministic canvas analysis
+7. Color chooser kept (unchanged)
+
+Steps affected: demo-builder only. All other steps (intake, planner, researcher, proposal) unchanged
+— pass through with one line.
+
+---
+
+## Architecture decisions for demo-builder
+
+### 1. 3D Shirt Model — CRITICAL UPGRADE
+
+Replace `ExtrudeGeometry` (flat 2D shape extruded 0.16 units) with a realistic 3D shirt.
+
+**Primary: Load a free CC0 GLB model via URL**
+- Target: https://cdn.jsdelivr.net/gh/nicktacular/awesome-glb@main/assets/ or similar CDN
+- Try: https://market-assets.fra1.cdn.digitaloceanspaces.com/market-assets/models/t-shirt/model.gltf
+- Fallback URL list to try in order (GLTFLoader, catch on fail):
+  1. `https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/t-shirt/model.gltf`
+  2. `https://raw.githack.com/nicktacular/bowling-shirt/main/shirt.glb`
+  3. Procedural fallback (see below)
+
+**Fallback (if no GLB loads): Dramatically improved procedural mesh**
+- Body: THREE.CylinderGeometry (radiusTop 0.68, radiusBottom 0.72, height 1.9, segments 48) — no flat extrude
+  - Slice top 15% for shoulder taper via vertex manipulation
+- Front/back panel split: add mesh group 0 = front hemisphere faces (normalZ > 0), group 1 = back hemisphere faces (normalZ < 0)
+- Collar: THREE.TorusGeometry (radius 0.18, tube 0.06, arc 0.8*PI) at top, clipped to V-shape with alpha mask
+- Sleeves: THREE.CylinderGeometry (0.22, 0.26, 0.38, 24) angled 30deg outward each side — not boxes
+- PBR lighting: add `drei Environment preset="studio"` or `drei Environment preset="apartment"` (adds realistic light bounce)
+- Material: `roughness={0.82}` `normalScale={[0.4, 0.4]}` + generate a canvas fabric normal map (weave pattern)
+  - Fabric normal map: 128x128 canvas, alternating +/- height bumps in a weave grid
+- ContactShadows already present — keep
+
+This gives the realistic fabric look without needing a GLTF.
+
+### 2. Front/Back Separate UV Surfaces (KEY FEATURE)
+
+For GLB path: Three.js GLTFLoader typically names mesh groups. Use material index 0 for front body, 1 for back body. If names available, map 'Body_Front' → front texture, 'Body_Back' → back texture.
+
+For procedural fallback:
+- Body cylinder: use UV.y ∈ [0,1] naturally. Split into front (UV.x ∈ [0.25, 0.75]) and back (UV.x outside that range).
+- Better approach: create two separate meshes — front half-cylinder and back half-cylinder (thetaStart/thetaLength = PI each), each with its own material. They share the shoulder/hem seam geometry.
+- Front mesh: material using `frontUploadUrl` transform
+- Back mesh: material using `backUploadUrl` transform
+- Each mesh's UVs are remapped 0→1 across their own thetaStart→thetaEnd arc, so the uploaded image covers the full face.
+
+### 3. State additions (store.ts minimal edit)
+
+Add to ShirtState:
+```ts
+frontUploadUrl: string | null       // replaces uploadedUrl (keep uploadedUrl as alias)
+backUploadUrl: string | null
+frontTransform: { scale: number; offsetX: number; offsetY: number; rotation: number }
+backTransform:  { scale: number; offsetX: number; offsetY: number; rotation: number }
+smartAlignActive: boolean           // true while auto-align is running
+```
+Keep `uploadedUrl` for backwards compat (set from frontUploadUrl).
+Default transform: `{ scale: 1.0, offsetX: 0, offsetY: 0, rotation: 0 }`
+
+### 4. Texture transform application (ShirtCanvas.tsx)
+
+For each uploaded texture, apply the transform via THREE.Texture matrix:
+```ts
+texture.center.set(0.5, 0.5)
+texture.rotation = transform.rotation * (Math.PI / 180)
+texture.repeat.set(1 / transform.scale, 1 / transform.scale)
+texture.offset.set(-transform.offsetX / transform.scale, -transform.offsetY / transform.scale)
+texture.needsUpdate = true
+```
+The UVs of each face already map 0→1 across the full panel, so scale=1 shows the full image once. This is NOT tiling (remove the old `t.repeat.set(3,3)`).
+
+### 5. Smart Auto-Alignment (deterministic, no backend required for core feature)
+
+Implement in `lib/smartAlign.ts` as a pure browser function:
+
+```ts
+export async function smartAlign(dataUrl: string): Promise<AlignResult>
+  1. Draw image to offscreen canvas (full size)
+  2. getImageData → scan pixels for non-white / non-transparent region
+  3. Find bbox: minX, maxX, minY, maxY of "content" pixels (alpha > 10 OR not near-white)
+  4. Content center: cx = (minX+maxX)/2 / W, cy = (minY+maxY)/2 / H
+  5. Content fill ratio: max(bbox_w/W, bbox_h/H)
+  6. Return: { scale: 0.9 / fillRatio, offsetX: 0.5-cx, offsetY: 0.5-cy, rotation: 0 }
+```
+
+This centers the subject and scales it to fill ~90% of the shirt panel. Works for any PNG/JPG.
+
+**WebGPU enhancement layer (show capability, not required for UX):**
+- Check `navigator.gpu !== undefined` on mount
+- If WebGPU available, show a "GPU-accelerated" badge in the upload section
+- Use `@xenova/transformers` (ONNX Runtime Web with WebGPU backend) to run MobileNet segmentation:
+  - `pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', { device: 'webgpu' })`
+  - On success: use segment bounding box for even tighter alignment
+  - On failure (model too slow / not available): fall back to pixel-scan deterministic
+- Keep WebGPU path as progressive enhancement — it can run async after the deterministic result is shown immediately
+
+**Load `@xenova/transformers` lazily** (dynamic import) — do NOT bundle it at build time.
+
+### 6. OptionsPanel.tsx changes
+
+"Upload Your Artwork" section becomes "Upload Design":
+- Two tabs: "Front" and "Back" (default: Front)
+- Each tab:
+  - Image upload button
+  - Preview thumbnail (40x40 of uploaded image)
+  - "Auto-fit" button (runs smartAlign, applies result to that face's transform)
+  - "Same as front" checkbox on Back tab (copies front upload + transform)
+  - Transform controls (show only when an image is uploaded for that face):
+    - Scale: slider 0.3× → 3×
+    - X offset: slider -50% → +50%
+    - Y offset: slider -50% → +50%
+    - Rotation: slider -180 → +180
+  - WebGPU badge: small "⚡ GPU align" label if navigator.gpu available
+- Remove "Tiles seamlessly" copy (replaced by the above controls)
+- Keep all other sections (colors, patterns, name-on-back, size/qty, cart) completely unchanged
+
+---
+
+## Quality gates (new ones on top of pass 1 gates)
+
+- Shirt MUST look visually 3D with depth, not a flat extruded shape — cylinder body minimum
+- Uploading an image to "Front" MUST show it covering the front face of the shirt visibly
+- Uploading a DIFFERENT image to "Back" MUST show it covering the back face when shirt is rotated
+- "Auto-fit" button MUST visibly re-center and scale the image on click
+- Transform sliders MUST update the shirt texture in real time (no lag > 100ms)
+- WebGPU badge appears only when `navigator.gpu !== undefined` — not hardcoded
+- Color picker still works (solid color on body when no image uploaded)
+- Pattern presets still work (when no image uploaded)
+- Existing features: back text, cart, save&share — all still functional
+- Zero console errors on first paint
+- GLB load attempt MUST have a try/catch with graceful fallback (no white screen on 404)
+
+---
+
+## File touch map for demo-builder (minimal blast radius)
+
+Files to EDIT (not rewrite entirely unless you have to):
+- `demo-src/lib/store.ts` — add new state fields
+- `demo-src/lib/smartAlign.ts` — NEW FILE (pure function, ~60 lines)
+- `demo-src/components/ShirtCanvas.tsx` — upgrade 3D geometry + material + front/back split
+- `demo-src/components/OptionsPanel.tsx` — replace upload section with tabbed front/back + transform sliders
+
+Files to LEAVE UNCHANGED:
+- `demo-src/app/globals.css`, `layout.tsx`, `page.tsx`
+- `demo-src/components/AuditSection.tsx`, `CartDrawer.tsx`, `ShirtCustomizer.tsx`
+- `demo-src/lib/patterns.ts` (canvas patterns still used for non-upload mode)
+- `mw-backend/bowling_blueprint.py`, `server.py` (backend unaffected)
+- `workSamples.js` (registry unchanged)
+
+After editing, run the same build + selftest as pass 1:
+```bash
+cd upwork-runs/bowling-shirt-designer/demo-src
+npm run build
+cp -r out/* ../../../michaelwegter.com/public/demos/bowling-shirt-designer/
+```
+
+---
+
+## Risks
+
+- Free shirt GLB URL availability: the three attempted URLs may all 404. If so, proceed immediately to procedural fallback (CylinderGeometry half-shells). Do not waste time on URL hunting beyond 3 attempts.
+- WebGPU model download: `segformer` is ~50MB — do NOT eagerly import. The deterministic smartAlign must work without it. WebGPU path is additive only.
+- Front/back split with cylinder approach: seams at theta=0 and theta=PI must be clean (no visible gap). Use slight overlap (5 degrees) on each half to avoid z-fighting.
+- Transform sliders + real-time updates: texture matrix updates in r3f must trigger via state change. Use `useMemo` keyed on transform values so the texture recalculates only when controls change.
+
+## handoff
+- produced: `orchestrator2.out` — improve-pass architecture decisions, feature specs, file touch map, quality gates for the 3D shirt upgrade + front/back upload + smart alignment
+- decisions: replace ExtrudeGeometry with CylinderGeometry half-shells (front+back separate materials); no GLTF dependency (too risky); deterministic smartAlign.ts as primary; WebGPU as progressive enhancement; store gets 5 new fields; OptionsPanel gets tabbed front/back upload with transform sliders
+- next needs: demo-builder reads this file + existing demo-src files (ShirtCanvas.tsx, OptionsPanel.tsx, store.ts); makes surgical edits; rebuilds and copies to michaelwegter.com/public/demos/; writes demo-builder2.out
+- risks: GLB URL availability (bypass with procedural fallback immediately); WebGPU model size (lazy import, not required); cylinder seam z-fighting (5-degree overlap fix); smart-align must be instantaneous (pixel scan, no async for core path)

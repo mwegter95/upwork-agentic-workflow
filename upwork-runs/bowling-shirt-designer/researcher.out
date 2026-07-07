@@ -1,0 +1,724 @@
+# Researcher — bowling-shirt-designer
+
+Build-prep package for demo-builder. Plan is locked (CEO: pass). All domain
+research was resolved in pre-researcher.out and absorbed into the plan. This file
+is implementation scaffolding only.
+
+---
+
+## 1. Library versions (pinned for React 18 compatibility)
+
+```json
+{
+  "dependencies": {
+    "next": "15.5.20",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.185.1",
+    "@react-three/fiber": "8.18.0",
+    "@react-three/drei": "9.122.0",
+    "zustand": "^5.0.14",
+    "tailwindcss": "^3.4.19",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/three": "^0.168",
+    "typescript": "^5.7.2"
+  }
+}
+```
+
+**Compatibility chain confirmed:** r3f 8.x requires React ^18 < 19; drei 9.x
+requires @react-three/fiber ^8 + React ^18; Next.js 15.x supports React ^18.2.
+Do NOT upgrade r3f to 9.x (requires React 19).
+
+---
+
+## 2. next.config.js (exact)
+
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  basePath: '/demos/bowling-shirt-designer',
+  assetPrefix: '/demos/bowling-shirt-designer',
+  trailingSlash: true,
+  images: { unoptimized: true },
+};
+module.exports = nextConfig;
+```
+
+---
+
+## 3. Scaffold sequence (demo-builder step 0)
+
+```bash
+cd upwork-runs/bowling-shirt-designer
+npx create-next-app@15.5.20 demo-src \
+  --ts --tailwind --app --no-eslint --no-src-dir \
+  --import-alias "@/*"
+cd demo-src
+npm install three @react-three/fiber@8.18.0 @react-three/drei@9.122.0 zustand
+npm install -D @types/three
+```
+
+Then overwrite `next.config.ts` (or `.js`) with the config above.
+
+---
+
+## 4. ~12-file map (stay under budget — stack functionality per file)
+
+```
+demo-src/
+  next.config.js
+  tailwind.config.ts           -- palette + Bebas Neue / Inter
+  app/
+    layout.tsx                 -- Google Fonts (Bebas Neue + Inter), global CSS, metadata
+    page.tsx                   -- homepage: hero + lazy Canvas section + AuditSection
+    globals.css                -- CSS vars, Tailwind @layer base
+  components/
+    ShirtCustomizer.tsx        -- 'use client'; next/dynamic Canvas wrapper (ssr:false)
+    ShirtCanvas.tsx            -- r3f Canvas, OrbitControls, procedural shirt mesh, Decal
+    OptionsPanel.tsx           -- color pickers, pattern picker, text-on-back, size/qty, Add-to-Cart
+    CartDrawer.tsx             -- slide-over cart, thumbnails from canvas.toDataURL
+    AuditSection.tsx           -- Before/After table + Roadmap panel
+  lib/
+    store.ts                   -- Zustand store (all customizer + cart state)
+    patterns.ts                -- 6 canvas-generated CanvasTexture factories
+```
+
+Total: 12 files (layout + page + globals + 5 components + 2 lib + config x2).
+If the build gets tight, merge CartDrawer into OptionsPanel (save 1 file).
+
+---
+
+## 5. Tailwind config (palette + fonts)
+
+```ts
+// tailwind.config.ts
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        navy:  '#1a1f3c',
+        cream: '#f5f0e8',
+        coral: '#e84040',
+        gold:  '#f5a623',
+      },
+      fontFamily: {
+        display: ['var(--font-bebas)', 'Impact', 'sans-serif'],
+        ui:      ['var(--font-inter)', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+};
+export default config;
+```
+
+---
+
+## 6. Google Fonts import (layout.tsx)
+
+```tsx
+import { Bebas_Neue, Inter } from 'next/font/google';
+
+const bebas = Bebas_Neue({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bebas',
+  display: 'swap',
+});
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+// On <html>: className={`${bebas.variable} ${inter.variable}`}
+```
+
+---
+
+## 7. Zustand store skeleton (lib/store.ts)
+
+```ts
+import { create } from 'zustand';
+
+export type PatternKey = 'none' | 'starburst' | 'pins' | 'argyle' | 'polka' | 'chevrons' | 'bowtie';
+
+interface ShirtState {
+  // Customizer
+  bodyColor:   string;  // '#e84040'
+  collarColor: string;  // '#1a1f3c'
+  cuffColor:   string;  // '#f5a623'
+  pattern:     PatternKey;
+  backText:    string;
+  textColor:   string;  // '#f5f0e8'
+  fontSize:    number;  // 72
+  fontFamily:  string;  // 'Impact'
+  uploadedUrl: string | null;
+  // Product
+  size:     string;  // 'M'
+  qty:      number;  // 1
+  // Cart
+  cartItems: CartItem[];
+  sessionId: string | null;
+  // Actions
+  setBodyColor:   (c: string) => void;
+  setCollarColor: (c: string) => void;
+  setCuffColor:   (c: string) => void;
+  setPattern:     (p: PatternKey) => void;
+  setBackText:    (t: string) => void;
+  setTextColor:   (c: string) => void;
+  setFontSize:    (n: number) => void;
+  setFontFamily:  (f: string) => void;
+  setUploadedUrl: (u: string | null) => void;
+  setSize:        (s: string) => void;
+  setQty:         (n: number) => void;
+  addToCart:      (thumbnail: string) => void;
+  removeFromCart: (id: string) => void;
+  setSessionId:   (id: string) => void;
+}
+
+const PRICE = 89;
+
+export const useStore = create<ShirtState>((set, get) => ({
+  bodyColor: '#e84040', collarColor: '#1a1f3c', cuffColor: '#f5a623',
+  pattern: 'none', backText: '', textColor: '#f5f0e8', fontSize: 72,
+  fontFamily: 'Impact', uploadedUrl: null,
+  size: 'M', qty: 1, cartItems: [], sessionId: null,
+
+  setBodyColor:   (c) => set({ bodyColor: c }),
+  setCollarColor: (c) => set({ collarColor: c }),
+  setCuffColor:   (c) => set({ cuffColor: c }),
+  setPattern:     (p) => set({ pattern: p }),
+  setBackText:    (t) => set({ backText: t }),
+  setTextColor:   (c) => set({ textColor: c }),
+  setFontSize:    (n) => set({ fontSize: n }),
+  setFontFamily:  (f) => set({ fontFamily: f }),
+  setUploadedUrl: (u) => set({ uploadedUrl: u }),
+  setSize:        (s) => set({ size: s }),
+  setQty:         (n) => set({ qty: n }),
+
+  addToCart: (thumbnail) => set((s) => ({
+    cartItems: [...s.cartItems, {
+      id: crypto.randomUUID(),
+      size: s.size, qty: s.qty,
+      bodyColor: s.bodyColor, collarColor: s.collarColor, cuffColor: s.cuffColor,
+      pattern: s.pattern, backText: s.backText,
+      price: PRICE * s.qty,
+      thumbnail,
+    }],
+  })),
+  removeFromCart: (id) => set((s) => ({
+    cartItems: s.cartItems.filter((i) => i.id !== id),
+  })),
+  setSessionId: (id) => set({ sessionId: id }),
+}));
+
+export interface CartItem {
+  id: string; size: string; qty: number;
+  bodyColor: string; collarColor: string; cuffColor: string;
+  pattern: PatternKey; backText: string;
+  price: number; thumbnail: string;
+}
+```
+
+---
+
+## 8. Canvas pattern factory (lib/patterns.ts)
+
+```ts
+import * as THREE from 'three';
+
+function makeTexture(draw: (ctx: CanvasRenderingContext2D) => void): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  const ctx = c.getContext('2d')!;
+  draw(ctx);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(3, 3);
+  return t;
+}
+
+export function buildPatterns() {
+  return {
+    starburst: makeTexture((ctx) => {
+      ctx.fillStyle = '#1a1f3c'; ctx.fillRect(0,0,512,512);
+      ctx.fillStyle = '#f5a623';
+      // 8-point star at (256,256), r=160
+      ctx.save(); ctx.translate(256,256);
+      for (let i=0;i<8;i++) {
+        ctx.rotate(Math.PI/4);
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(30,160); ctx.lineTo(-30,160); ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(256,256,50,0,Math.PI*2);
+      ctx.fillStyle = '#f5a623'; ctx.fill();
+    }),
+
+    pins: makeTexture((ctx) => {
+      ctx.fillStyle = '#e84040'; ctx.fillRect(0,0,512,512);
+      // Draw 3 pin silhouettes per tile in offset rows
+      const drawPin = (x:number,y:number)=>{
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.ellipse(x,y+40,12,20,0,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x,y,14,0,Math.PI*2); ctx.fill();
+      };
+      [[128,128],[384,128],[256,300],[64,400],[448,400]].forEach(([x,y])=>drawPin(x,y));
+    }),
+
+    argyle: makeTexture((ctx) => {
+      ctx.fillStyle = '#f5f0e8'; ctx.fillRect(0,0,512,512);
+      // Navy + coral diamonds
+      [[256,128,'#1a1f3c'],[128,256,'#e84040'],[384,256,'#e84040'],[256,384,'#1a1f3c']].forEach(([cx,cy,col]) => {
+        ctx.save(); ctx.translate(cx as number,cy as number); ctx.rotate(Math.PI/4);
+        ctx.fillStyle = col as string;
+        ctx.fillRect(-70,-70,140,140);
+        ctx.restore();
+      });
+      // Hairline cross lines
+      ctx.strokeStyle = '#1a1f3c'; ctx.lineWidth = 1;
+      for (let i=0;i<512;i+=128) {
+        ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,512); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(512,i); ctx.stroke();
+      }
+    }),
+
+    polka: makeTexture((ctx) => {
+      ctx.fillStyle = '#1a1f3c'; ctx.fillRect(0,0,512,512);
+      [[128,128],[384,128],[256,256],[128,384],[384,384]].forEach(([x,y])=>{
+        ctx.beginPath(); ctx.arc(x,y,55,0,Math.PI*2); ctx.fillStyle='#f5f0e8'; ctx.fill();
+      });
+      [[256,128],[128,256],[384,256],[256,384]].forEach(([x,y])=>{
+        ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fillStyle='#e84040'; ctx.fill();
+      });
+    }),
+
+    chevrons: makeTexture((ctx) => {
+      // Alternating navy/gold chevron rows
+      const W=512, ROW=64;
+      for (let row=0; row<W/ROW; row++) {
+        ctx.fillStyle = row%2===0 ? '#1a1f3c' : '#f5a623';
+        ctx.beginPath();
+        const y0=row*ROW, y1=y0+ROW;
+        ctx.moveTo(0,y0); ctx.lineTo(W,y0); ctx.lineTo(W,y1);
+        // chevron point at center
+        ctx.lineTo(W/2, y1-24); ctx.lineTo(0,y1); ctx.closePath();
+        ctx.fill();
+      }
+    }),
+
+    bowtie: makeTexture((ctx) => {
+      ctx.fillStyle = '#1a1f3c'; ctx.fillRect(0,0,512,512);
+      const drawBowtie = (cx:number,cy:number)=>{
+        ctx.fillStyle = '#f5a623';
+        ctx.beginPath();
+        ctx.moveTo(cx-50,cy-30); ctx.lineTo(cx,cy); ctx.lineTo(cx-50,cy+30); ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(cx+50,cy-30); ctx.lineTo(cx,cy); ctx.lineTo(cx+50,cy+30); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx,cy,8,0,Math.PI*2);
+        ctx.fillStyle='#e84040'; ctx.fill();
+      };
+      [[128,128],[384,128],[256,256],[128,384],[384,384]].forEach(([x,y])=>drawBowtie(x,y));
+    }),
+  };
+}
+```
+
+---
+
+## 9. Procedural shirt mesh snippet (ShirtCanvas.tsx key parts)
+
+```tsx
+'use client';
+import { useRef, useMemo } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, Decal } from '@react-three/drei';
+import * as THREE from 'three';
+import { useStore } from '@/lib/store';
+import { buildPatterns } from '@/lib/patterns';
+
+// Call buildPatterns() once outside the component at module level.
+// Guard with typeof window !== 'undefined' for SSR safety.
+let _patterns: ReturnType<typeof buildPatterns> | null = null;
+function getPatterns() {
+  if (typeof window === 'undefined') return null;
+  if (!_patterns) _patterns = buildPatterns();
+  return _patterns;
+}
+
+function ShirtMesh() {
+  const { bodyColor, collarColor, cuffColor, pattern, uploadedUrl,
+          backText, textColor, fontSize, fontFamily } = useStore();
+  const patterns = getPatterns();
+
+  // Uploaded texture
+  const uploadedTexture = useMemo(() => {
+    if (!uploadedUrl) return null;
+    const t = new THREE.TextureLoader().load(uploadedUrl);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(3, 3);
+    return t;
+  }, [uploadedUrl]);
+
+  // Active body map
+  const bodyMap = uploadedUrl
+    ? uploadedTexture
+    : (patterns && pattern !== 'none' ? patterns[pattern as keyof typeof patterns] : null);
+
+  // Text-on-back CanvasTexture (debounced upstream)
+  const textTexture = useMemo(() => {
+    if (!backText) return null;
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 256;
+    const ctx = c.getContext('2d')!;
+    ctx.clearRect(0, 0, 512, 256);
+    ctx.font = `bold ${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(backText, 256, 128);
+    const t = new THREE.CanvasTexture(c);
+    t.needsUpdate = true;
+    return t;
+  }, [backText, textColor, fontSize, fontFamily]);
+
+  return (
+    <group>
+      {/* Body */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[1.0, 1.3, 0.2]} />
+        <meshStandardMaterial color={bodyColor} map={bodyMap ?? undefined} />
+      </mesh>
+      {/* Collar */}
+      <mesh position={[0, 0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.22, 0.06, 8, 24]} />
+        <meshStandardMaterial color={collarColor} />
+      </mesh>
+      {/* Left sleeve */}
+      <mesh position={[-0.68, 0.3, 0]} rotation={[0, 0, Math.PI / 3]}>
+        <cylinderGeometry args={[0.13, 0.16, 0.45, 12]} />
+        <meshStandardMaterial color={cuffColor} />
+      </mesh>
+      {/* Right sleeve */}
+      <mesh position={[0.68, 0.3, 0]} rotation={[0, 0, -Math.PI / 3]}>
+        <cylinderGeometry args={[0.13, 0.16, 0.45, 12]} />
+        <meshStandardMaterial color={cuffColor} />
+      </mesh>
+      {/* Back text decal on back face */}
+      {backText && textTexture && (
+        <Decal
+          position={[0, 0.1, -0.101]}
+          rotation={[0, Math.PI, 0]}
+          scale={[0.55, 0.28, 1]}
+          map={textTexture}
+        />
+      )}
+    </group>
+  );
+}
+
+// Canvas wrapper (used from ShirtCustomizer with next/dynamic ssr:false)
+export default function ShirtCanvas() {
+  return (
+    <Canvas camera={{ position: [0, 0, 3], fov: 40 }} style={{ background: '#1a1f3c' }}>
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[3, 4, 5]} intensity={1.2} />
+      <ShirtMesh />
+      <OrbitControls enablePan={false} minDistance={1.5} maxDistance={6} autoRotate autoRotateSpeed={1.5} />
+    </Canvas>
+  );
+}
+```
+
+---
+
+## 10. Dynamic import (ShirtCustomizer.tsx — page.tsx uses this)
+
+```tsx
+'use client';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+
+const ShirtCanvas = dynamic(() => import('./ShirtCanvas'), { ssr: false });
+
+export default function ShirtCustomizer() {
+  return (
+    <div className="w-full h-full">
+      <Suspense fallback={<div className="w-full h-full bg-navy animate-pulse rounded-xl" />}>
+        <ShirtCanvas />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+---
+
+## 11. Flask blueprint (bowling_blueprint.py) — full scaffold
+
+```python
+"""
+Bowling Shirt Designer -- Flask Blueprint
+Mounts under /bowling on mw-backend.
+
+If the PHP service (php -S 127.0.0.1:5060) is running, all requests are
+proxied to it. Otherwise, the blueprint serves the same endpoints natively.
+
+Endpoints:
+  GET  /bowling/patterns         list of pattern names
+  POST /bowling/session          save customization JSON -> returns {id}
+  GET  /bowling/session/<id>     reload saved customization
+  GET  /bowling/health           liveness check
+
+PHP check: demo-builder sets BOWLING_PHP_AVAILABLE in the Flask env when the
+Surface PHP service is confirmed up. If absent, native mode is used.
+"""
+
+import os
+import json
+import time
+import secrets
+import pathlib
+
+from flask import Blueprint, request, jsonify, Response
+import urllib.request
+import urllib.error
+
+bowling_bp = Blueprint("bowling", __name__, url_prefix="/bowling")
+
+_PHP_UPSTREAM = "http://127.0.0.1:5060"
+_SESSIONS_DIR = pathlib.Path(__file__).parent / "data" / "bowling_sessions"
+_SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+
+_PATTERNS = ["none","starburst","pins","argyle","polka","chevrons","bowtie"]
+
+_HOP = {"connection","keep-alive","transfer-encoding","content-encoding",
+        "proxy-authenticate","proxy-authorization","te","trailers","upgrade",
+        "host","content-length"}
+
+def _php_available() -> bool:
+    return os.environ.get("BOWLING_PHP_AVAILABLE") == "1"
+
+def _proxy(path: str):
+    url = f"{_PHP_UPSTREAM}/{path}"
+    if request.query_string:
+        url += "?" + request.query_string.decode()
+    data = request.get_data() or None
+    req = urllib.request.Request(url, data=data, method=request.method)
+    for k, v in request.headers:
+        if k.lower() not in _HOP:
+            req.add_header(k, v)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            body = r.read(); status = r.status
+            hdrs = [(k,v) for k,v in r.getheaders() if k.lower() not in _HOP]
+    except urllib.error.HTTPError as e:
+        body = e.read(); status = e.code
+        hdrs = [(k,v) for k,v in (e.headers.items() if e.headers else []) if k.lower() not in _HOP]
+    except Exception as e:
+        return Response(f"PHP upstream error: {e}", status=502, mimetype="text/plain")
+    return Response(body, status=status, headers=hdrs)
+
+@bowling_bp.route("/health")
+def health():
+    mode = "php-proxied" if _php_available() else "native-flask"
+    return jsonify({"status": "ok", "mode": mode})
+
+@bowling_bp.route("/patterns")
+def patterns():
+    if _php_available(): return _proxy("patterns")
+    return jsonify({"patterns": _PATTERNS})
+
+@bowling_bp.route("/session", methods=["POST"])
+def save_session():
+    if _php_available(): return _proxy("session")
+    data = request.get_json(force=True) or {}
+    sid = secrets.token_urlsafe(8)
+    (_SESSIONS_DIR / f"{sid}.json").write_text(
+        json.dumps({"id": sid, "ts": int(time.time()), "data": data})
+    )
+    return jsonify({"id": sid})
+
+@bowling_bp.route("/session/<sid>")
+def load_session(sid: str):
+    if _php_available(): return _proxy(f"session/{sid}")
+    p = _SESSIONS_DIR / f"{sid}.json"
+    if not p.exists():
+        return jsonify({"error": "session not found"}), 404
+    return jsonify(json.loads(p.read_text()))
+```
+
+**Registration in server.py** — add after line 358 (after the orschell blueprint):
+```python
+# ─── Bowling Shirt Designer demo ─────────────────────────────────────────────
+from bowling_blueprint import bowling_bp
+app.register_blueprint(bowling_bp)
+```
+
+---
+
+## 12. PHP service scaffold (bowling-php/index.php)
+
+Write this to disk as `upwork-runs/bowling-shirt-designer/bowling-php/index.php`
+(Runner pushes to Surface via surface_run.py; ASCII-only source per playbook).
+
+```php
+<?php
+// Bowling Shirt Designer -- PHP microservice
+// php -S 127.0.0.1:5060 -t /path/to/bowling-php
+
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$method = $_SERVER['REQUEST_METHOD'];
+$sessDir = __DIR__ . '/sessions';
+if (!is_dir($sessDir)) mkdir($sessDir, 0755, true);
+
+if ($uri === '/patterns' && $method === 'GET') {
+    echo json_encode(['patterns' => ['none','starburst','pins','argyle','polka','chevrons','bowtie']]);
+} elseif ($uri === '/session' && $method === 'POST') {
+    $body = json_decode(file_get_contents('php://input'), true) ?? [];
+    $id = bin2hex(random_bytes(8));
+    file_put_contents("$sessDir/$id.json", json_encode(['id'=>$id,'ts'=>time(),'data'=>$body]));
+    echo json_encode(['id' => $id]);
+} elseif (preg_match('#^/session/([a-zA-Z0-9_-]+)$#', $uri, $m) && $method === 'GET') {
+    $f = "$sessDir/{$m[1]}.json";
+    if (!file_exists($f)) { http_response_code(404); echo json_encode(['error'=>'not found']); }
+    else echo file_get_contents($f);
+} else {
+    http_response_code(404);
+    echo json_encode(['error' => 'not found']);
+}
+```
+
+---
+
+## 13. workSamples.js registry entry (ID 24)
+
+Add at the END of `workSampleRegistry` (before the closing `]`), after
+cinched-crm (currently the last entry):
+
+```js
+  {
+    id: 24,
+    slug: "bowling-shirt-designer",
+    title: "Bowling Shirt Designer",
+    description:
+      "Interactive 3D bowling shirt customizer with orbit controls, canvas-generated retro patterns, live text-on-back, and a pattern upload. Built on Next.js 14 with React Three Fiber, Zustand state management, and a real PHP microservice proxied through Flask.",
+    category: "E-commerce",
+    status: "live",
+    href: import.meta.env.BASE_URL + "demos/bowling-shirt-designer/",
+    color: "#1a1f3c",
+    icon: "🎳",
+    frameStyle: "baroque",
+    tags: ["Next.js", "React", "TypeScript", "Three.js", "Flask", "PHP", "Tailwind CSS", "E-commerce", "Full-Stack", "3D"],
+    screenshot: import.meta.env.BASE_URL + "work-samples/bowling-shirt-designer.png",
+    client: null,
+    postingSummary:
+      "Senior frontend audit: diagnose JS errors, state-management failures, and homepage bounce rates in a React e-commerce customizer.",
+    builtFor: "Technical Code & Flow Audit: E-Commerce Apparel Customizer (React/JS)",
+    date: "2026-07-06",
+    proposalDeckUrl: null,
+    proposalPageUrl: null,
+  },
+```
+
+Also add `"Three.js"` to the `tagSections` frontend section (it is not currently
+listed there).
+
+---
+
+## 14. API calls from the frontend (OptionsPanel.tsx)
+
+Backend base: `https://api.michaelwegter.com/bowling`
+
+```ts
+// Save customization
+async function saveSession(state: Partial<ShirtState>) {
+  const res = await fetch('https://api.michaelwegter.com/bowling/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(state),
+  });
+  const { id } = await res.json();
+  return id as string;
+}
+
+// Load by URL param ?s=<id> on mount
+async function loadSession(id: string) {
+  const res = await fetch(`https://api.michaelwegter.com/bowling/session/${id}`);
+  return res.json();
+}
+```
+
+Share URL pattern: `window.location.origin + '/demos/bowling-shirt-designer/?s=' + id`
+On page load: `const params = new URLSearchParams(window.location.search); const sid = params.get('s');`
+
+---
+
+## 15. CSS vars (globals.css snippet)
+
+```css
+:root {
+  --navy:  #1a1f3c;
+  --cream: #f5f0e8;
+  --coral: #e84040;
+  --gold:  #f5a623;
+  --white: #ffffff;
+}
+body {
+  background: var(--navy);
+  color: var(--cream);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+```
+
+---
+
+## 16. AuditSection sample content
+
+Before/After table rows (render as a styled `<table>`):
+
+| Problem (Client's Clarity Finding) | Root Cause | This Build's Fix |
+|---|---|---|
+| Dead clicks / "undefined is not a object" | Unguarded nested state reads; missing null checks on async store hydration | Zustand selectors with safe defaults; no unguarded optional chaining |
+| Homepage bounce (instant exit after load) | Heavy synchronous JS bundle blocks first paint; canvas lib in critical path | `next/dynamic` + `ssr:false` code-splits the Three.js bundle; homepage is interactive before canvas mounts |
+| Unresponsive color swaps | Multiple setState calls triggering cascading re-renders + re-layout | Single Zustand action per interaction; Three.js material `color` prop updated once per frame |
+
+Remediation Roadmap steps (render as numbered checklist):
+1. Audit all selector calls for `undefined` — wrap with `?? fallback` or `if (!x) return`.
+2. Move Three.js / canvas to a dynamic import with `ssr:false`. Measure LCP before/after.
+3. Replace `setState` chains with a single Zustand action that patches multiple fields atomically.
+4. Add an `ErrorBoundary` around the Canvas; log to Clarity custom events.
+5. Run Clarity "Dead Click" heatmap against the patched build; confirm the hot zones resolve.
+
+---
+
+## 17. image-manifest.json
+
+The demo uses zero raster images — all visuals are Three.js canvas + CSS. Write:
+```json
+[]
+```
+(empty array = image QA gate is skipped entirely)
+
+---
+
+## handoff
+- produced: full build-prep package — pinned library versions (r3f 8.18.0/React 18 chain), next.config.js, scaffold command, 12-file map, Zustand store, pattern factories (all 6), procedural mesh + Decal snippet, dynamic import wrapper, full bowling_blueprint.py + server.py registration line, PHP index.php, workSamples.js entry (id 24), API call patterns, CSS vars, AuditSection content, image-manifest (`[]`).
+- decisions: r3f 8.18.0 (NOT 9.x — React 19 incompatible with Next.js 14/15); Next.js 15.5.20 (latest stable, same static-export pattern as existing trucking demo); Tailwind 3.4.19 (v4 skipped — different config model, higher risk); blueprint = native Flask fallback by default (PHP gated on BOWLING_PHP_AVAILABLE env var set by demo-builder after php --version check); workSamples id 24 (last used = 23).
+- next needs: demo-builder — (1) php --version check on Surface, set BOWLING_PHP_AVAILABLE=1 if available, push bowling-php/index.php to Surface + register service; (2) `npx create-next-app` then npm install with exact versions above; (3) write all 12 files using snippets above; (4) npm run build; (5) copy dist to public/demos/bowling-shirt-designer/; (6) write image-manifest.json []; (7) capture work-samples/bowling-shirt-designer.png screenshot.
+- risks: Three.js tag missing from workSamples.js tagSections — must add it or the filter shows an unknown tag; BOWLING_PHP_AVAILABLE env var must be set before Flask restarts (or native fallback runs); Decal Y=Math.PI rotation on back face — verify visually; pattern texture module-level init guard (`typeof window !== 'undefined'`) is mandatory to prevent Next.js SSR crash.

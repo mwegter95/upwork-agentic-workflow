@@ -1,0 +1,752 @@
+# Researcher — improve pass 2 (bowling-shirt-designer)
+
+Delta over researcher.out. Base sections (§1 library versions, §2 next.config, §3 scaffold, §6–8 Tailwind/fonts/store-skeleton, §10–16 backend/PHP/workSamples/API/CSS/AuditSection/manifest) are unchanged — demo-builder reads them from researcher.out. Only the sections that change are written here.
+
+---
+
+## §1 ADDITION — new npm dependency
+
+```bash
+npm install @imgly/background-removal
+```
+
+- Package: `@imgly/background-removal` (latest stable ~1.4.5)
+- Self-fetches ONNX model from jsDelivr CDN at first `removeBackground()` call (~12–60 MB, cached after first load). No local model file needed.
+- WASM runs transparently on WebGPU if `navigator.gpu` is available; falls back to CPU WASM automatically.
+- Tree-shakeable; only imported inside `smartAlign.ts` behind a dynamic `import()`.
+
+---
+
+## §4 UPDATED — file map (13 files, was 12)
+
+```
+demo-src/
+  next.config.js                 -- unchanged
+  tailwind.config.ts             -- unchanged
+  app/
+    layout.tsx                   -- unchanged
+    page.tsx                     -- unchanged (canvas section still uses ShirtCustomizer)
+    globals.css                  -- unchanged
+  components/
+    ShirtCustomizer.tsx          -- unchanged (next/dynamic ssr:false wrapper)
+    ShirtCanvas.tsx              -- REWRITE: CylinderGeometry + vertex-displaced silhouette,
+                                    meshPhysicalMaterial sheen, Environment, ContactShadows,
+                                    knit normal map, compositor CanvasTexture binding
+    OptionsPanel.tsx             -- EDIT: add mode toggle, dual upload slots,
+                                    per-image zoom/offset/rotation sliders, smart-align button
+    CartDrawer.tsx               -- unchanged
+    AuditSection.tsx             -- unchanged
+  lib/
+    store.ts                     -- EDIT: add frontImage/backImage/transform/mode state
+    patterns.ts                  -- unchanged
+    compositor.ts                -- NEW: 2048² CanvasTexture compositor, UV island draw
+    smartAlign.ts                -- NEW: deterministic bbox + lazy @imgly WASM refine
+```
+
+---
+
+## §7 UPDATED — Zustand store additions (lib/store.ts)
+
+Add to `ShirtState` interface and `create()` call — surgical edit only:
+
+```ts
+// Add to ShirtState interface
+  // Image upload
+  uploadMode:   'wrap' | 'frontback';   // wrap = one image all around; frontback = separate
+  frontImage:   HTMLImageElement | null;
+  backImage:    HTMLImageElement | null;
+  mirrorSeam:   boolean;
+  // Per-image transforms (front and back independent)
+  frontTransform: ImageTransform;
+  backTransform:  ImageTransform;
+  // Actions
+  setUploadMode:    (m: 'wrap' | 'frontback') => void;
+  setFrontImage:    (img: HTMLImageElement | null) => void;
+  setBackImage:     (img: HTMLImageElement | null) => void;
+  setMirrorSeam:    (v: boolean) => void;
+  setFrontTransform:(t: Partial<ImageTransform>) => void;
+  setBackTransform: (t: Partial<ImageTransform>) => void;
+
+// Add new type
+export interface ImageTransform {
+  scale:    number;   // default 1.0  (zoom)
+  offsetX:  number;   // default 0.0  (−1 to 1 in canvas fraction)
+  offsetY:  number;   // default 0.0
+  rotation: number;   // default 0.0  (degrees)
+}
+
+const DEFAULT_TRANSFORM: ImageTransform = { scale: 1, offsetX: 0, offsetY: 0, rotation: 0 };
+
+// In create() defaults:
+  uploadMode: 'wrap', frontImage: null, backImage: null, mirrorSeam: false,
+  frontTransform: { ...DEFAULT_TRANSFORM }, backTransform: { ...DEFAULT_TRANSFORM },
+
+// Actions:
+  setUploadMode:    (m) => set({ uploadMode: m }),
+  setFrontImage:    (img) => set({ frontImage: img }),
+  setBackImage:     (img) => set({ backImage: img }),
+  setMirrorSeam:    (v) => set({ mirrorSeam: v }),
+  setFrontTransform:(t) => set((s) => ({ frontTransform: { ...s.frontTransform, ...t } })),
+  setBackTransform: (t) => set((s) => ({ backTransform: { ...s.backTransform, ...t } })),
+```
+
+Also REMOVE `uploadedUrl: string | null` / `setUploadedUrl` (replaced by `frontImage`/`backImage`).
+
+---
+
+## §NEW-A — compositor.ts (lib/compositor.ts)
+
+Full file — new:
+
+```ts
+/**
+ * 2048×2048 CanvasTexture compositor.
+ *
+ * UV island layout (CylinderGeometry, radialSegments 48, seam at U=0/U=1,
+ * front centered at U=0.5):
+ *   FRONT island: canvas x  512–1536  (U 0.25–0.75, px width 1024)
+ *   BACK  island: canvas x  0–512 + 1536–2048 (U 0–0.25 + 0.75–1, split strips)
+ *   V maps 0=bottom to 1=top; canvas y 0=top, so y = (1-V)*2048.
+ */
+
+import * as THREE from 'three';
+import type { ImageTransform } from './store';
+
+const W = 2048;
+// Front: x 512..1536, Back: x 0..512 + x 1536..2048
+const FRONT_X  = 512;
+const FRONT_W  = 1024;
+const BACK_L_X = 0;
+const BACK_L_W = 512;
+const BACK_R_X = 1536;
+const BACK_R_W = 512;
+
+let _canvas: HTMLCanvasElement | null = null;
+let _ctx: CanvasRenderingContext2D | null = null;
+let _texture: THREE.CanvasTexture | null = null;
+
+export function getCompositorTexture(): THREE.CanvasTexture {
+  if (!_texture) {
+    _canvas = document.createElement('canvas');
+    _canvas.width = _canvas.height = W;
+    _ctx = _canvas.getContext('2d')!;
+    _texture = new THREE.CanvasTexture(_canvas);
+    _texture.wrapS = _texture.wrapT = THREE.ClampToEdgeWrapping;
+  }
+  return _texture;
+}
+
+let _rafId: number | null = null;
+let _dirty = false;
+let _lastParams: CompositeParams | null = null;
+
+export interface CompositeParams {
+  baseColor:      string;
+  pattern?:       THREE.CanvasTexture | null;
+  frontImage:     HTMLImageElement | null;
+  backImage:      HTMLImageElement | null;
+  frontTransform: ImageTransform;
+  backTransform:  ImageTransform;
+  uploadMode:     'wrap' | 'frontback';
+  mirrorSeam:     boolean;
+}
+
+export function scheduleRecompose(params: CompositeParams) {
+  _lastParams = params;
+  _dirty = true;
+  if (_rafId === null) {
+    _rafId = requestAnimationFrame(() => {
+      _rafId = null;
+      if (_dirty && _lastParams) {
+        recompose(_lastParams);
+        _dirty = false;
+      }
+    });
+  }
+}
+
+function applyTransform(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  destX: number, destY: number, destW: number, destH: number,
+  t: ImageTransform
+) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(destX, destY, destW, destH);
+  ctx.clip();
+
+  const cx = destX + destW / 2 + t.offsetX * destW;
+  const cy = destY + destH / 2 + t.offsetY * destH;
+  ctx.translate(cx, cy);
+  ctx.rotate((t.rotation * Math.PI) / 180);
+  ctx.scale(t.scale, t.scale);
+
+  // Draw image centered at origin, scaled to fill the dest rectangle
+  const aspect = img.naturalWidth / img.naturalHeight;
+  const destAspect = destW / destH;
+  let dw: number, dh: number;
+  if (aspect > destAspect) {
+    dh = destH; dw = dh * aspect;
+  } else {
+    dw = destW; dh = dw / aspect;
+  }
+  ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+  ctx.restore();
+}
+
+function recompose(p: CompositeParams) {
+  if (!_canvas || !_ctx || !_texture) return;
+  const ctx = _ctx;
+
+  // 1. Base color fill
+  ctx.fillStyle = p.baseColor;
+  ctx.fillRect(0, 0, W, W);
+
+  // 2. Pattern layer (tiled, if no image override)
+  if (p.pattern && !p.frontImage && !p.backImage) {
+    // Draw pattern canvas into the compositing canvas via pattern fill
+    const pCanvas = (p.pattern as any).image as HTMLCanvasElement;
+    if (pCanvas) {
+      const pat = ctx.createPattern(pCanvas, 'repeat');
+      if (pat) {
+        ctx.fillStyle = pat;
+        ctx.fillRect(0, 0, W, W);
+      }
+    }
+  }
+
+  // 3. Image layers
+  if (p.uploadMode === 'wrap') {
+    // Single image, all the way around: fill entire 2048×2048
+    const img = p.frontImage;
+    if (img) {
+      applyTransform(ctx, img, 0, 0, W, W, p.frontTransform);
+      if (p.mirrorSeam) {
+        // Draw mirrored at the edges to reduce seam visibility
+        ctx.save();
+        ctx.translate(W, 0);
+        ctx.scale(-1, 1);
+        applyTransform(ctx, img, 0, 0, W / 8, W, p.frontTransform);
+        ctx.restore();
+      }
+    }
+  } else {
+    // Front/back separate
+    if (p.frontImage) {
+      applyTransform(ctx, p.frontImage, FRONT_X, 0, FRONT_W, W, p.frontTransform);
+    }
+    const backImg = p.backImage ?? p.frontImage; // if no back, mirror front
+    if (backImg) {
+      // Left back strip
+      applyTransform(ctx, backImg, BACK_L_X, 0, BACK_L_W, W, p.backTransform);
+      // Right back strip — mirror-seam flips horizontally so strips join seamlessly
+      ctx.save();
+      ctx.translate(BACK_R_X + BACK_R_W, 0);
+      ctx.scale(-1, 1);
+      applyTransform(ctx, backImg, 0, 0, BACK_R_W, W, p.backTransform);
+      ctx.restore();
+    }
+  }
+
+  _texture!.needsUpdate = true;
+}
+```
+
+---
+
+## §NEW-B — smartAlign.ts (lib/smartAlign.ts)
+
+Full file — new:
+
+```ts
+/**
+ * Smart-align: detect the image subject's bounding box.
+ *
+ * Tier 1 (always-on, <10ms): alpha/variance content-bbox scan.
+ *   Works on any image; for fully-opaque photos uses luminance variance.
+ * Tier 2 (optional, first-call ~12-60 MB download): @imgly/background-removal WASM.
+ *   Removes background → alpha bbox on the cutout for tighter subject fit.
+ *   On load failure: silently returns Tier 1 result.
+ */
+
+export interface SubjectBox {
+  centerX: number;  // 0–1 relative to image width
+  centerY: number;  // 0–1 relative to image height
+  scaleHint: number; // suggested scale to fill a unit area (1 = fill exactly)
+}
+
+/** Tier 1: fast deterministic scan */
+export function contentBbox(img: HTMLImageElement): SubjectBox {
+  const W = Math.min(img.naturalWidth,  512);
+  const H = Math.min(img.naturalHeight, 512);
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d')!;
+  ctx.drawImage(img, 0, 0, W, H);
+  const data = ctx.getImageData(0, 0, W, H).data;
+
+  let minX = W, minY = H, maxX = 0, maxY = 0;
+  let hasAlpha = false;
+  for (let i = 3; i < data.length; i += 4) { if (data[i] < 250) { hasAlpha = true; break; } }
+
+  if (hasAlpha) {
+    // Alpha-based bbox
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (data[(y * W + x) * 4 + 3] > 20) {
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    }
+  } else {
+    // Luminance variance — find high-contrast region (crude but instant)
+    // Compute per-pixel luminance, median filter 8×8 blocks, take bbox of >threshold blocks
+    const blockSize = 16;
+    const bW = Math.ceil(W / blockSize);
+    const bH = Math.ceil(H / blockSize);
+    const lumens: number[] = [];
+    for (let by = 0; by < bH; by++) for (let bx = 0; bx < bW; bx++) {
+      let sum = 0, count = 0;
+      for (let dy = 0; dy < blockSize && by * blockSize + dy < H; dy++)
+      for (let dx = 0; dx < blockSize && bx * blockSize + dx < W; dx++) {
+        const i = ((by * blockSize + dy) * W + (bx * blockSize + dx)) * 4;
+        sum += 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+        count++;
+      }
+      lumens.push(sum / count);
+    }
+    const sorted = [...lumens].sort((a, b) => a - b);
+    const lo = sorted[Math.floor(sorted.length * 0.1)];
+    const hi = sorted[Math.floor(sorted.length * 0.9)];
+    const thresh = lo + (hi - lo) * 0.3;
+    for (let by = 0; by < bH; by++) for (let bx = 0; bx < bW; bx++) {
+      if (lumens[by * bW + bx] > thresh) {
+        const px = bx * blockSize, py = by * blockSize;
+        if (px < minX) minX = px; if (px > maxX) maxX = px;
+        if (py < minY) minY = py; if (py > maxY) maxY = py;
+      }
+    }
+    // Fallback: full image
+    if (minX >= maxX) { minX = 0; minY = 0; maxX = W; maxY = H; }
+  }
+
+  const cxRel = ((minX + maxX) / 2) / W;
+  const cyRel = ((minY + maxY) / 2) / H;
+  const fillW = (maxX - minX) / W;
+  const fillH = (maxY - minY) / H;
+  const scaleHint = 1 / Math.max(fillW, fillH, 0.1);
+
+  return { centerX: cxRel, centerY: cyRel, scaleHint };
+}
+
+/** Tier 2: @imgly WASM refine (lazy, degrades gracefully) */
+export async function imglyRefine(img: HTMLImageElement): Promise<SubjectBox> {
+  try {
+    const { removeBackground } = await import('@imgly/background-removal');
+    const blob = await removeBackground(img.src, {
+      debug: false,
+      output: { format: 'image/png', quality: 0.8 },
+    });
+    const url = URL.createObjectURL(blob);
+    const cutout = new Image();
+    await new Promise<void>((res, rej) => {
+      cutout.onload = () => res(); cutout.onerror = rej;
+      cutout.src = url;
+    });
+    URL.revokeObjectURL(url);
+    return contentBbox(cutout);
+  } catch {
+    // Any failure: return deterministic result
+    return contentBbox(img);
+  }
+}
+
+/**
+ * Convert a SubjectBox to an ImageTransform that centers + fills the subject.
+ * offsetX/Y shift the image so the subject center sits at the canvas center.
+ * scale ensures subject fills the target area.
+ */
+export function boxToTransform(box: SubjectBox) {
+  return {
+    scale:   Math.min(box.scaleHint, 4), // cap at 4× zoom
+    offsetX: 0.5 - box.centerX,
+    offsetY: 0.5 - box.centerY,
+    rotation: 0,
+  };
+}
+```
+
+---
+
+## §NEW-C — ShirtCanvas.tsx key changes
+
+Replace the flat box/primitive mesh with this pattern:
+
+```tsx
+'use client';
+import { useRef, useMemo, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import * as THREE from 'three';
+import { useStore } from '@/lib/store';
+import { buildPatterns } from '@/lib/patterns';
+import { getCompositorTexture, scheduleRecompose } from '@/lib/compositor';
+
+// --- Knit normal map (Poly Haven CC0) ---
+// Primary URL (cors-ok for browser fetch — check once at build time):
+const KNIT_NORMAL_URL =
+  'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/knit_fabric_02/knit_fabric_02_nor_gl_1k.jpg';
+// Fallback (vendor into demo-src/public/fabric_nor.jpg at build if CORS fails):
+// const KNIT_NORMAL_URL = '/demos/bowling-shirt-designer/fabric_nor.jpg';
+
+// --- Procedural shirt body geometry (LatheGeometry-style via CylinderGeometry + vertex displacement) ---
+function makeShirtBody(): THREE.BufferGeometry {
+  // CylinderGeometry: openEnded, 48 radial, 8 height segments, radius=0.45
+  const geo = new THREE.CylinderGeometry(0.45, 0.45, 1.8, 48, 8, true);
+  // Vertex displacement: profile(normalizedY) scale radii for bowlifi silhouette
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i);                        // −0.9 to +0.9
+    const yn = y / 0.9;                           // −1 to +1
+    const r = profile(yn);
+    const x = pos.getX(i), z = pos.getZ(i);
+    const len = Math.sqrt(x * x + z * z) || 1;
+    pos.setXYZ(i, (x / len) * r, y, (z / len) * r);
+  }
+  pos.needsUpdate = true;
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// Profile: radial scale as a function of normalized Y (−1=hem, +1=collar base)
+function profile(yn: number): number {
+  // Bowlifi silhouette: slightly flared hem, nipped waist, full chest, tapers to collar
+  if (yn < -0.5) return THREE.MathUtils.lerp(0.48, 0.42, (yn + 1) / 0.5); // hem→waist
+  if (yn < 0.1)  return THREE.MathUtils.lerp(0.42, 0.50, (yn + 0.5) / 0.6); // waist→chest
+  if (yn < 0.65) return THREE.MathUtils.lerp(0.50, 0.44, (yn - 0.1) / 0.55); // chest→shoulder
+  return THREE.MathUtils.lerp(0.44, 0.22, (yn - 0.65) / 0.35); // shoulder→collar
+}
+
+// Sleeve geometry: short, angled (bowling jersey = mid-bicep)
+function makeSleeveGeo(): THREE.BufferGeometry {
+  return new THREE.CylinderGeometry(0.14, 0.17, 0.38, 20, 1);
+}
+
+// Mandarin/band collar: thin cylinder band at top of body
+function makeCollarGeo(): THREE.BufferGeometry {
+  return new THREE.CylinderGeometry(0.225, 0.225, 0.12, 32, 1, true);
+}
+
+function ShirtMesh() {
+  const state = useStore();
+  const compositorTexture = useMemo(() => getCompositorTexture(), []);
+  const patterns = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return buildPatterns();
+  }, []);
+  const normalMap = useMemo(() => {
+    const loader = new THREE.TextureLoader();
+    const t = loader.load(KNIT_NORMAL_URL);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(4, 4);
+    return t;
+  }, []);
+
+  const bodyGeo = useMemo(() => makeShirtBody(), []);
+  const sleeveGeo = useMemo(() => makeSleeveGeo(), []);
+  const collarGeo = useMemo(() => makeCollarGeo(), []);
+
+  // Drive compositor on every state change that affects the texture
+  useEffect(() => {
+    scheduleRecompose({
+      baseColor:      state.bodyColor,
+      pattern:        patterns && state.pattern !== 'none'
+                        ? patterns[state.pattern as keyof typeof patterns]
+                        : null,
+      frontImage:     state.frontImage,
+      backImage:      state.backImage,
+      frontTransform: state.frontTransform,
+      backTransform:  state.backTransform,
+      uploadMode:     state.uploadMode,
+      mirrorSeam:     state.mirrorSeam,
+    });
+  }, [
+    state.bodyColor, state.pattern,
+    state.frontImage, state.backImage,
+    state.frontTransform, state.backTransform,
+    state.uploadMode, state.mirrorSeam,
+    patterns,
+  ]);
+
+  const fabricMat = (
+    <meshPhysicalMaterial
+      map={compositorTexture}
+      normalMap={normalMap}
+      normalScale={new THREE.Vector2(0.5, 0.5)}
+      roughness={0.85}
+      metalness={0}
+      sheen={0.9}
+      sheenColor={new THREE.Color(state.bodyColor)}
+      sheenRoughness={0.45}
+      side={THREE.DoubleSide}
+    />
+  );
+
+  const trimMat = (
+    <meshPhysicalMaterial
+      color={state.collarColor}
+      roughness={0.8}
+      metalness={0}
+      sheen={0.4}
+      sheenColor={new THREE.Color(state.collarColor)}
+      sheenRoughness={0.6}
+    />
+  );
+
+  const cuffMat = (
+    <meshPhysicalMaterial
+      color={state.cuffColor}
+      roughness={0.8}
+      metalness={0}
+    />
+  );
+
+  return (
+    <group position={[0, 0.1, 0]}>
+      {/* Body */}
+      <mesh geometry={bodyGeo}>{fabricMat}</mesh>
+
+      {/* Mandarin collar band */}
+      <mesh position={[0, 0.97, 0]} geometry={collarGeo}>{trimMat}</mesh>
+
+      {/* Left sleeve: angled ~35° outward-down */}
+      <mesh
+        geometry={sleeveGeo}
+        position={[-0.54, 0.55, 0]}
+        rotation={[0, 0, (Math.PI / 180) * 50]}
+      >
+        {fabricMat}
+      </mesh>
+      {/* Cuff trim on left sleeve */}
+      <mesh position={[-0.76, 0.33, 0]} rotation={[0, 0, (Math.PI / 180) * 50]}>
+        <cylinderGeometry args={[0.14, 0.14, 0.06, 20]} />
+        {cuffMat}
+      </mesh>
+
+      {/* Right sleeve */}
+      <mesh
+        geometry={sleeveGeo}
+        position={[0.54, 0.55, 0]}
+        rotation={[0, 0, -(Math.PI / 180) * 50]}
+      >
+        {fabricMat}
+      </mesh>
+      <mesh position={[0.76, 0.33, 0]} rotation={[0, 0, -(Math.PI / 180) * 50]}>
+        <cylinderGeometry args={[0.14, 0.14, 0.06, 20]} />
+        {cuffMat}
+      </mesh>
+
+      {/* Shirt bottom cap */}
+      <mesh position={[0, -0.9, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.48, 48]} />
+        {fabricMat}
+      </mesh>
+    </group>
+  );
+}
+
+export default function ShirtCanvas() {
+  return (
+    <Canvas
+      shadows
+      camera={{ position: [0, 0.4, 2.8], fov: 38 }}
+      style={{ background: '#f0ede8' }}  // neutral off-white studio bg
+    >
+      <Environment preset="studio" background={false} />
+      <directionalLight
+        position={[3, 8, 5]}
+        intensity={1.2}
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+      />
+      <ambientLight intensity={0.4} />
+      <ContactShadows
+        position={[0, -1.05, 0]}
+        opacity={0.4}
+        scale={2.5}
+        blur={1.5}
+        far={1.5}
+      />
+      <ShirtMesh />
+      <OrbitControls
+        enablePan={false}
+        minDistance={1.8}
+        maxDistance={5}
+        autoRotate
+        autoRotateSpeed={1.2}
+        target={[0, 0.1, 0]}
+      />
+    </Canvas>
+  );
+}
+```
+
+---
+
+## §NEW-D — OptionsPanel.tsx additions (partial — surgical edit)
+
+Add these UI blocks to OptionsPanel (INSERT before or after the existing color pickers section):
+
+```tsx
+// --- Upload mode toggle ---
+<div className="flex gap-2 mb-3">
+  <button
+    onClick={() => setUploadMode('wrap')}
+    className={`flex-1 py-1.5 rounded text-sm font-ui font-semibold
+      ${uploadMode === 'wrap' ? 'bg-coral text-white' : 'bg-navy/40 text-cream'}`}
+  >All-Around Wrap</button>
+  <button
+    onClick={() => setUploadMode('frontback')}
+    className={`flex-1 py-1.5 rounded text-sm font-ui font-semibold
+      ${uploadMode === 'frontback' ? 'bg-coral text-white' : 'bg-navy/40 text-cream'}`}
+  >Front / Back</button>
+</div>
+
+{/* Front image upload */}
+<ImageUploadSlot
+  label={uploadMode === 'wrap' ? 'Image (wraps all around)' : 'Front Image'}
+  onLoad={(img) => setFrontImage(img)}
+  transform={frontTransform}
+  onTransform={(t) => setFrontTransform(t)}
+  onSmartAlign={async (img) => {
+    const box = contentBbox(img);
+    setFrontTransform(boxToTransform(box));
+    // Lazy WASM refine in background
+    imglyRefine(img).then((box2) => setFrontTransform(boxToTransform(box2)));
+  }}
+/>
+
+{uploadMode === 'frontback' && (
+  <ImageUploadSlot
+    label="Back Image (optional — uses front if blank)"
+    onLoad={(img) => setBackImage(img)}
+    transform={backTransform}
+    onTransform={(t) => setBackTransform(t)}
+    onSmartAlign={async (img) => {
+      const box = contentBbox(img);
+      setBackTransform(boxToTransform(box));
+      imglyRefine(img).then((box2) => setBackTransform(boxToTransform(box2)));
+    }}
+  />
+)}
+
+<label className="flex items-center gap-2 text-sm font-ui text-cream/70 mt-1">
+  <input type="checkbox" checked={mirrorSeam}
+    onChange={(e) => setMirrorSeam(e.target.checked)} />
+  Mirror seam edges (reduces visible seam on non-tiling images)
+</label>
+```
+
+**`ImageUploadSlot` sub-component (inline in OptionsPanel.tsx):**
+
+```tsx
+function ImageUploadSlot({ label, onLoad, transform, onTransform, onSmartAlign }: {
+  label: string;
+  onLoad: (img: HTMLImageElement) => void;
+  transform: ImageTransform;
+  onTransform: (t: Partial<ImageTransform>) => void;
+  onSmartAlign: (img: HTMLImageElement) => void;
+}) {
+  const [currentImg, setCurrentImg] = useState<HTMLImageElement | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { setCurrentImg(img); onLoad(img); };
+    img.src = url;
+  };
+
+  return (
+    <div className="mb-4 p-3 rounded-lg bg-navy/30 border border-cream/10">
+      <p className="text-xs font-ui text-cream/60 mb-1">{label}</p>
+      <input type="file" accept="image/*" onChange={handleFile}
+        className="text-xs text-cream/80 mb-2 w-full" />
+      {currentImg && (
+        <>
+          {/* Smart-align button */}
+          <button
+            onClick={async () => {
+              setAnalyzing(true);
+              await onSmartAlign(currentImg);
+              setAnalyzing(false);
+            }}
+            disabled={analyzing}
+            className="w-full mb-2 py-1 rounded bg-gold text-navy text-xs font-semibold"
+          >
+            {analyzing ? '✨ Analyzing…' : '✨ Smart Align'}
+          </button>
+          {/* Transform sliders */}
+          <SliderRow label="Zoom" min={0.3} max={4} step={0.01}
+            value={transform.scale} onChange={(v) => onTransform({ scale: v })} />
+          <SliderRow label="X Pan" min={-1} max={1} step={0.01}
+            value={transform.offsetX} onChange={(v) => onTransform({ offsetX: v })} />
+          <SliderRow label="Y Pan" min={-1} max={1} step={0.01}
+            value={transform.offsetY} onChange={(v) => onTransform({ offsetY: v })} />
+          <SliderRow label="Rotate" min={-180} max={180} step={1}
+            value={transform.rotation} onChange={(v) => onTransform({ rotation: v })} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function SliderRow({ label, min, max, step, value, onChange }: {
+  label: string; min: number; max: number; step: number;
+  value: number; onChange: (v: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-1">
+      <span className="text-xs text-cream/60 w-12 shrink-0">{label}</span>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="flex-1 accent-coral" />
+      <span className="text-xs text-cream/50 w-8 text-right">{value.toFixed(2)}</span>
+    </div>
+  );
+}
+```
+
+---
+
+## §NEW-E — Poly Haven CORS verification (demo-builder must run this)
+
+```bash
+# At build time, before writing ShirtCanvas.tsx:
+curl -s -o /dev/null -w "%{http_code}" \
+  "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/knit_fabric_02/knit_fabric_02_nor_gl_1k.jpg"
+# If NOT 200: download and vendor:
+curl -L -o demo-src/public/fabric_nor.jpg \
+  "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/knit_fabric_02/knit_fabric_02_nor_gl_1k.jpg"
+# Then set KNIT_NORMAL_URL = '/demos/bowling-shirt-designer/fabric_nor.jpg' in ShirtCanvas.tsx
+```
+
+---
+
+## §13 UPDATED — workSamples.js description (replace only the description field)
+
+```js
+description:
+  "Interactive 3D bowling shirt customizer with owayo-level fabric realism: upload any image and it wraps all the way around the shirt, or load separate front and back images. Smart-align auto-centers your design with WebGPU-accelerated subject detection (deterministic fallback). Live zoom, crop, pan, and rotation sliders update the render in real time. Built on Next.js + React Three Fiber with meshPhysicalMaterial sheen, studio HDR lighting, and a knit normal map for cloth micro-texture.",
+```
+
+Tags: add `"WebGPU"` to the tags array (and to `tagSections` AI section in workSamples.js).
+
+---
+
+## handoff
+- produced: improve-pass-2 researcher — new library (@imgly/background-removal), updated store.ts (front/back images + per-image transform state), full compositor.ts (2048² CanvasTexture with FRONT px512–1536 / BACK px0–512+1536–2048 UV islands, rAF-throttled recompose), full smartAlign.ts (deterministic alpha/variance bbox + lazy imgly WASM refine + boxToTransform), ShirtCanvas.tsx key changes (CylinderGeometry + vertex-displaced bowlifi profile, meshPhysicalMaterial sheen, knit normal map, Environment+ContactShadows+directionalLight), OptionsPanel additions (mode toggle, ImageUploadSlot with sliders + smart-align button), Poly Haven CORS check command, updated workSamples description.
+- decisions: CylinderGeometry radialSegments=48 heightSegments=8 + post-construction vertex displacement for bowlifi silhouette (no GLB); single 2048² CanvasTexture compositor, FRONT=px512–1536, BACK-L=px0–512, BACK-R=px1536–2048; wrap-one fills all 2048px; @imgly lazy import behind try/catch (deterministic bbox is always the instant result); Poly Haven knit_fabric_02 nor_gl_1k.jpg (vendor if CORS 4xx); meshPhysicalMaterial sheen=0.9/sheenRoughness=0.45/roughness=0.85 as locked in planner3.
+- next needs: demo-builder (1) npm install @imgly/background-removal; (2) CORS-check Poly Haven URL and vendor jpg if needed; (3) write compositor.ts + smartAlign.ts exactly as above; (4) apply surgical edits to store.ts, ShirtCanvas.tsx, OptionsPanel.tsx; (5) verify compositor UV islands match the actual CylinderGeometry seam position (log a vertex UV at angle=0 and confirm it's at U=0); (6) rebuild + verify smart-align visibly repositions the pattern.
+- risks: CylinderGeometry seam placement (U=0) may not land exactly at back-center — verify with a UV-debug gradient texture before finalizing the px512/1536 split; @imgly 12–60 MB first-load is slow on mobile (spinner shown, deterministic result is immediate); sheenColor must be updated with `new THREE.Color(state.bodyColor)` when bodyColor changes (not just on mount).

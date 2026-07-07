@@ -1,0 +1,60 @@
+# Plan Eval — improve pass 2 (bowling-shirt-designer)
+
+Evaluated: planner3.out against new requirements (owayo-level 3D fidelity, full-wrap image upload, front/back separate, smart-align, live transform sliders).
+
+---
+
+## Rubric scoring
+
+### 1. ALL requirements covered?
+
+| Requirement | Plan section | Status |
+|---|---|---|
+| Owayo-level 3D realism (soft sheen, studio light, grounded shadow, spin) | §1 procedural volumetric + §2 meshPhysicalMaterial/env/ContactShadows | ✓ |
+| Bowlifi garment style (mandarin/stand collar, button placket, short sleeves) | §1 collar/placket/sleeve primitives | ✓ (geometry underspecified — see risk below) |
+| Upload any picture, wraps all the way around | §3 wrap-one mode, 2048² CanvasTexture, mirror-seam toggle | ✓ |
+| Front + back separate images (same or different, aligned) | §3 front px512–1536 / back px0–512+1536–2048 islands | ✓ |
+| Smart-align picture to shirt | §4 deterministic alpha-bbox + lazy @imgly WASM refine | ✓ |
+| Adjust zoom/crop/alignment → real-time render update | §5 per-image zoom/offset/rotation sliders, rAF throttle | ✓ |
+| Still choose colors | §6 color tints sheenColor/trim, overridden by image mode | ✓ |
+
+All 7 requirements explicitly traced. No gaps.
+
+### 2. Right technologies?
+
+- **React Three Fiber + drei**: Correct. meshPhysicalMaterial with `sheen 0.9 / roughness 0.85`, `<Environment preset="studio"/>`, `<ContactShadows>`, `OrbitControls` with damping — matches owayo's studio-lit, drag-to-spin look.
+- **CanvasTexture 2048² compositor**: Correct. rAF-throttled, <100ms recompose on slider change.
+- **@imgly/background-removal**: Good — lazy-loaded (~12MB, degrades gracefully), WASM with transparent WebGPU speedup satisfies the "WebGPU vision model or deterministic or combination" requirement.
+- **Poly Haven knit normal map**: Correct. CC0, tileable, ~300KB. CORS fallback handled.
+- **CylinderGeometry for shirt body**: Workable but **flagged risk**. `CylinderGeometry` takes only `radiusTop/Bottom` — it cannot achieve per-height radius variation (chest wider than waist, slight flare at hem) without vertex displacement post-construction. The plan says "heightSegments 8 for smooth shoulder taper" but does not explicitly direct the demo-builder to displace vertices or use `LatheGeometry` with a shirt profile curve. For owayo-level silhouette, demo-builder must implement vertex displacement (waist pinch ~0.82x, shoulder flare ~1.08x, or switch to LatheGeometry). Plan should have been more explicit here. **Flagging for demo-builder, not a blocker.**
+- **Back UV island split** (px 0–512 + px 1536–2048): Correct approach; back-center seam is at U=0/1. Mirror-seam toggle mitigates visible split on non-tiling photos.
+
+### 3. Testing approach defined?
+
+No explicit test plan in planner3. The workflow's `deploy-test` step handles E2E Playwright. For this plan specifically, demo-builder should verify: (a) image upload renders visible on shirt in <200ms, (b) front/back mode shows independent images correctly, (c) smart-align fires and repositions image, (d) sliders update texture in real time. Not a plan blocker — testing is the deploy-test step's remit in this workflow.
+
+### 4. Scope feasible for richness=10?
+
+- ~6 files, no new backend endpoint, build <3min. Feasible.
+- @imgly 12MB lazy (spinner + instant deterministic fallback): Good UX.
+- 2048² CanvasTexture compositor rAF throttled: Well within browser limits.
+- One new dep (@imgly) with graceful degradation: Acceptable.
+- Feature richness=10 is achievable: hero (photoreal wrap-around), supporting (smart-align, front/back separate), polish (live sliders, mirror-seam, color tints). That is genuinely full-featured.
+
+### 5. Design direction fit for industry?
+
+Custom sublimation sportswear / bowling apparel. Target: owayo.com studio render quality + bowlifi garment silhouette. Plan's material/lighting spec (soft sheen, ContactShadows, studio env, drag-to-spin) directly matches owayo screenshot. Garment style (short-sleeve, stand collar, button placket) matches bowlifi screenshot. Fit: excellent.
+
+---
+
+## Issues summary
+
+1. **[Minor — implementation risk]** `CylinderGeometry` alone cannot produce owayo-level shoulder/waist shaping. Demo-builder must use post-construction vertex displacement (chest/waist/shoulder radius profile) or `LatheGeometry` with a shirt outline curve. Plan says "shoulder taper" but doesn't specify the mechanism. Not a plan failure — research ruled out GLB, procedural is correct — but demo-builder needs explicit direction.
+
+2. **[Minor — no test plan]** No formal test checklist in the plan. Covered by deploy-test step.
+
+No blockers. All requirements covered with explicit traceability. Technology stack appropriate and well-researched (3 planning rounds). Scope bounded correctly for richness=10.
+
+---
+
+VERDICT: pass

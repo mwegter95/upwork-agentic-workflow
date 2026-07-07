@@ -1,0 +1,31 @@
+# Deploy — bowling-shirt-designer
+
+## Actions
+
+### michaelwegter.com
+- Staged: `public/demos/bowling-shirt-designer/` (40 files, Next.js 14 static export), `public/work-samples/bowling-shirt-designer.png`, `src/data/workSamples.js`
+- Committed: `f184bef` — feat: add bowling-shirt-designer demo
+- Pushed: `main` → `github.com:mwegter95/michaelwegter.com.git` ✓
+
+### mw-backend
+- Staged: `bowling_blueprint.py` (new), `server.py` (registration edit)
+- Removed stale `.git/HEAD.lock` from prior process
+- Committed: `b5cf52d` — feat: add bowling_blueprint
+- Pushed: `main` → `github.com:mwegter95/mw-backend.git` ✓
+- Surface auto-deploy restarted Flask (~45s)
+
+## Live verification
+
+| URL | Status |
+|-----|--------|
+| `https://michaelwegter.com/demos/bowling-shirt-designer/` | **200 OK** |
+| `https://api.michaelwegter.com/health` | `{"status":"ok","version":"1.0.0"}` |
+| `https://api.michaelwegter.com/bowling/health` | `{"mode":"native-flask","status":"ok"}` |
+
+Flask came back in native-flask mode (no PHP service on Surface — expected, demo is fully functional with fallback as CEO noted).
+
+## handoff
+- produced: both repos committed + pushed; GH Pages live at `/demos/bowling-shirt-designer/`; Flask /bowling blueprint live in native-flask mode
+- decisions: PHP microservice not started on Surface (not required — native-flask fallback confirmed working by `/bowling/health`)
+- next needs: deploy-test should exercise `/bowling/health`, POST `/bowling/session`, GET `/bowling/session/:id` round-trip, and the live demo page load/3D render/checkout flow via Playwright
+- risks: PHP service still not live (non-blocking per CEO); if deploy-test requires true PHP mode, the Surface runner must `php -S 127.0.0.1:5060 ...` and `BOWLING_PHP_AVAILABLE=1` restart — out of scope for this step

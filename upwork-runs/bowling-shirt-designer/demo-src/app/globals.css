@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #1a1f3c;
+  --navydeep: #12162c;
+  --cream: #f5f0e8;
+  --coral: #e84040;
+  --gold: #f5a623;
+  --white: #ffffff;
+}
+
+html,
+body {
+  background: var(--navydeep);
+  color: var(--cream);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-bebas), Impact, sans-serif;
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-coral text-white font-ui font-semibold rounded-lg px-5 py-3 transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply border border-cream/25 text-cream font-ui rounded-lg px-4 py-2.5 transition hover:bg-cream/10;
+  }
+  .swatch {
+    @apply w-9 h-9 rounded-full border-2 transition cursor-pointer;
+  }
+  .card {
+    @apply bg-navy/70 border border-cream/10 rounded-2xl backdrop-blur;
+  }
+}
+
+.halftone {
+  background-image: radial-gradient(circle, rgba(245, 166, 35, 0.25) 1.5px, transparent 1.5px);
+  background-size: 14px 14px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(245, 240, 232, 0.18);
+  border-radius: 6px;
+}

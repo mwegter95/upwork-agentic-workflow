@@ -1,0 +1,45 @@
+# Demo Builder — bowling-shirt-designer
+
+Built a full, functional 3D bowling-shirt e-commerce customizer (feature richness 10).
+Slug: `bowling-shirt-designer`. Local demo verified: 200, zero console errors, all
+flows exercised.
+
+## What shipped
+
+**Demo** (Next.js 14 static export) at
+`michaelwegter.com/public/demos/bowling-shirt-designer/` (1.9M).
+Live 3D customizer (React Three Fiber + drei OrbitControls, auto-rotate) with:
+- Procedural shirt mesh (ExtrudeGeometry silhouette + camp collar + cap sleeves + placket).
+- 8 body colors, 6 canvas-generated retro patterns (starburst/pins/argyle/polka/chevrons/bowtie), and image upload (tiles as fabric).
+- Collar + sleeve trim colors (independent), live name-on-back with font / size / color.
+- 6 sizes, quantity, Add-to-cart that captures a real 3D `toDataURL` thumbnail into a slide-over cart drawer with subtotal + checkout.
+- Save & share: POSTs design to the Flask/PHP backend for a `?s=<id>` link; on API failure it degrades to a client-side base64 `#d=` share link (no dead click).
+- Randomize ("Surprise me").
+- An Engineering / audit section: before-after Clarity-finding table + 5-step remediation roadmap (directly answers the posting's audit brief).
+
+Design system is bespoke (retro-league: navy `#1a1f3c` / coral `#e84040` / gold `#f5a623` / cream `#f5f0e8`, Bebas Neue + Inter). Not the portfolio look.
+
+**Registry**: `workSamples.js` id 24 added; `"Three.js"` added to `tagSections` frontend.
+Hero card screenshot written to `public/work-samples/bowling-shirt-designer.png` (16:9, argyle shirt + panel).
+
+**Backend** (created, ready for `deploy` to push):
+- `mw-backend/bowling_blueprint.py` (url_prefix `/bowling`): `/health`, `/patterns`, `/session` POST, `/session/<id>` GET. Native Flask storage by default; proxies to a PHP upstream (`127.0.0.1:5060`) when `BOWLING_PHP_AVAILABLE=1`.
+- Registered in `server.py` after the orschell blueprint. CORS already covers michaelwegter.com. Syntax-checked.
+- PHP microservice source at `upwork-runs/bowling-shirt-designer/bowling-php/index.php` (mirrors the same endpoints) for optional Surface deployment.
+
+**image-manifest.json**: `[]` (all visuals are Three.js canvas + CSS; no raster images) → image QA gate skips.
+
+## Key build decisions / fixes
+- **Next 14, not 15.** create-next-app pulled Next 15 + React 19 + Tailwind 4. Next 15's App Router requires React 19, which is incompatible with r3f 8 (needed for React 18) and threw `ReactCurrentBatchConfig` at runtime. Pinned Next `14.2.33` + React `18.3.1` + r3f `8.18.0` + drei `9.122.0` + Tailwind `3.4.19`. Build clean, static export to `out/`.
+- **Pattern/upload map fix (two real bugs):** (1) meshStandardMaterial compiled without `USE_MAP` on first paint (pattern starts `none`), so adding a map later never recompiled the shader → added `key` on the material keyed by pattern/upload to remount it. (2) Body color multiplied and muddied pattern colors → base color is white whenever a map is active so patterns/uploads show true colors. Also planar-project fresh UVs on the extruded geometry so maps tile reliably.
+- Three.js is code-split via `next/dynamic` `ssr:false` (First Load JS ~92KB) — this is literally the homepage-bounce fix the posting asked for, embodied in the build.
+- Back-text plane hugs the back surface (z -0.135) and auto-rotate bumped to 3.0 so both faces show.
+
+## Verify scripts (kept for media-capture reuse)
+`selftest.mjs`, `verify.mjs`, `capture.mjs` (run from workflow root; serve `michaelwegter.com/public` on :8899, hit `/demos/bowling-shirt-designer/`).
+
+## handoff
+- produced: full 3D customizer demo (Next 14 static export in site `public/demos/`), workSamples id 24 + Three.js tag, hero card PNG, Flask `bowling_blueprint.py` + server.py registration + PHP source, image-manifest `[]`.
+- decisions: Next 14 / React 18 / r3f 8 chain (React 19 breaks r3f 8); material `key` remount to enable maps; white base under any map; backend defaults to native-Flask (PHP optional via `BOWLING_PHP_AVAILABLE=1`).
+- next needs: `deploy` pushes BOTH repos (michaelwegter.com for the demo+card+registry; mw-backend for the blueprint). Live API base `https://api.michaelwegter.com/bowling`. `deploy-test`: check `/bowling/health` (expect `mode:native-flask`), `/bowling/patterns`, a `/session` POST->GET round-trip, plus the customizer flows (pattern swap, name-on-back, add-to-cart, save&share link copies).
+- risks: PHP service not yet running on Surface (native Flask fallback serves everything; save&share also has a client-side `#d=` fallback, so nothing breaks) — if the "true PHP" requirement must be literally live, a Surface runner step must start `php -S 127.0.0.1:5060 -t bowling-php` and set `BOWLING_PHP_AVAILABLE=1` before Flask restarts. Demo-src lives under `upwork-runs/` (not committed to the site).

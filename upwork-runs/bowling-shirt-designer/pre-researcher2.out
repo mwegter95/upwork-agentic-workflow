@@ -1,0 +1,139 @@
+# Pre-Researcher 2 — Improve Pass Research Answers
+
+Answering Q1–Q5 from planner2.out. No other content regenerated.
+
+---
+
+## Q1: Free short-sleeve bowling/polo jersey GLB — VERDICT: NONE suitable
+
+Vetting results:
+- **pmndrs/drei-assets `shirt_baked_collapsed.glb`** (the most-cited free shirt):
+  - URL: `https://raw.githubusercontent.com/pmndrs/drei-assets/master/shirt_baked_collapsed.glb` — T-shirt (round neck, no placket, no sleeves). UVs: single front island U≈0.27–0.73, back = remaining U wrap. Style wrong for bowlifi mandarin/button requirement.
+- **Poly Pizza CC0** — no bowling-style jersey found; mostly polos/rounds. Even the best candidate would need collar/placket sculpting we cannot do at runtime.
+- **Khronos Sample Models** — no apparel, industrial/vehicle focus.
+- **Sketchfab CC0 filter "bowling shirt"** — models exist but are hi-poly (>5MB), no documented UV layout, inconsistent licensing metadata.
+
+**Decision: commit to procedural volumetric fallback.** The bowlifi style (mandarin collar, button placket, set-in sleeves) is not achievable with any available free GLB within scope. The procedural mesh gives exact control of UV layout for the wrap requirement.
+
+Procedural mesh recipe (CylinderGeometry body + sleeve/collar primitives):
+- Body: `CylinderGeometry(0.38, 0.32, 1.0, 48, 8)` (slight taper, 48 radial segments for smooth wrap)
+- U naturally runs 0→1 around the circumference; seams = at U=0 (right underarm, hidden)
+- Front panel: U 0.25→0.75, V 0.1→0.95 (center half, shirt front visible when facing camera)
+- Back panel: U 0.75→1.25 (via RepeatWrapping) — same V range
+- Sleeves: `CylinderGeometry(0.15, 0.12, 0.35, 24)`, rotated, own UV region or simple tint-only material
+- Collar: flat torus segment, color-only material (no image island needed)
+- Button placket: `PlaneGeometry` overlay strip, color-only
+
+---
+
+## Q2: Owayo-level fabric realism recipe in r3f
+
+**meshPhysicalMaterial params (numeric):**
+```js
+roughness: 0.85
+metalness: 0
+sheen: 0.9
+sheenRoughness: 0.45
+sheenColor: "#ffffff"  // neutral; tints to primary color at runtime
+clearcoat: 0           // clearcoat = glass/automotive, not fabric
+envMapIntensity: 0.35
+```
+
+**Environment + lighting:**
+- `<Environment preset="studio" background={false} />` — drei built-in, no external CDN required
+- Add: `<directionalLight position={[3, 8, 5]} intensity={1.2} castShadow />` (key light, soft top-right)
+- Add: `<ambientLight intensity={0.4} />` (fill)
+- Skip `<AccumulativeShadows>` on the shirt itself (bakes shadow into texture — wrong for dynamic pattern). Use `<ContactShadows opacity={0.4} scale={2} blur={1.5} />` under the shirt for grounded feel.
+- `<PresentationControls>` or `<OrbitControls>` with damping gives the owayo "drag to spin" feel.
+
+**Free CC0 seamless knit normal map:**
+- Primary: `https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/knit_fabric_02/knit_fabric_02_nor_gl_1k.jpg` (Poly Haven CC0, 1K ~300KB, knit weave, tileable)
+- Fallback: `https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/fabric_pattern_07/fabric_pattern_07_nor_gl_1k.jpg`
+- Apply with `repeat.set(4, 4)` and `wrapS/wrapT = THREE.RepeatWrapping` for visible weave texture at shirt scale.
+- Optional AO map: same base path with `_ao_1k.jpg` suffix; roughness map: `_rough_1k.jpg`.
+
+---
+
+## Q3: Client-side smart-align — deterministic + optional WebGPU model
+
+### Deterministic baseline (always-on, zero size):
+Alpha-channel content bbox (works for PNG with transparency) + luminance-variance fallback (for JPEG):
+
+```js
+function contentBbox(canvas) {
+  const {width: w, height: h} = canvas;
+  const d = canvas.getContext('2d').getImageData(0,0,w,h).data;
+  let minX=w, minY=h, maxX=0, maxY=0, hasAlpha=false;
+  for (let y=0; y<h; y++) for (let x=0; x<w; x++) {
+    const i=(y*w+x)*4;
+    if (d[i+3] > 16) { hasAlpha=true; minX=Math.min(minX,x); minY=Math.min(minY,y); maxX=Math.max(maxX,x); maxY=Math.max(maxY,y); }
+  }
+  if (!hasAlpha || maxX<minX) {
+    // JPEG fallback: find high-contrast bounding region via luminance variance
+    // Simple: crop 5% margin as safe default center
+    return {minX:w*.05,minY:h*.05,maxX:w*.95,maxY:h*.95};
+  }
+  return {minX,minY,maxX,maxY};
+}
+// Scale+offset from bbox → compositor island:
+// scale = islandWidth / (maxX-minX); offsetX = islandLeft - minX*scale;
+```
+
+Runs in <10ms on a 2048px image. This is the required always-on path.
+
+### Optional WebGPU/WASM refine:
+**Best fit: `@imgly/background-removal` (v1.x)**
+- NPM / CDN-deliverable: works from a static site (no server) — internal WASM workers, model fetched from jsdelivr
+- Model size: ~12MB (loaded lazily on first smart-align click, cached)
+- WebGPU backend: NOT required — WASM fallback covers all browsers; WebGPU speeds it up where available (~2× faster, transparent to code)
+- API:
+  ```js
+  import { removeBackground } from '@imgly/background-removal';
+  const blob = await removeBackground(imageFile); // returns PNG with alpha
+  // Then run contentBbox() on the result for precise subject bbox
+  ```
+- Static hosting: yes — package self-fetches ONNX models from CDN
+- Import lazily: `const {removeBackground} = await import('@imgly/background-removal')` triggered only on smart-align button click
+
+Alternative if @imgly/background-removal CDN fails CORS: **MediaPipe ImageSegmenter** (`@mediapipe/tasks-vision` from jsDelivr, ~4MB selfie model). But the selfie segmenter is person-silhouette tuned, not general object — worse for shirt patterns. Stick with @imgly.
+
+**Decision for demo-builder:** ship deterministic baseline always; lazy-import @imgly/background-removal behind a feature flag (`process.env.NEXT_PUBLIC_SMART_ALIGN_AI=true` or just always attempt). Gate the import behind a try/catch so WASM load failure degrades gracefully to deterministic.
+
+---
+
+## Q4: Texture-compositing + UV-island technique — confirmed approach
+
+**Single CanvasTexture (2048×2048) is correct** over two separate textures/materials because:
+- The body CylinderGeometry has one UV space; splitting it requires two mesh groups + two materials which complicates the wrap-all-around mode
+- Single canvas compositor draws both islands in one pass; `texture.needsUpdate=true` on rAF throttle is efficient
+
+**UV island pixel coordinates on a 2048×2048 canvas:**
+- FRONT island: `x: 512→1536, y: 0→2048` (U 0.25→0.75 of body cylinder)
+- BACK island: Since UVs wrap continuously and CylinderGeometry U goes 0→1, the back occupies U 0.75→1.0 AND U 0.0→0.25, which in canvas pixels = `x: 1536→2048` plus `x: 0→512` (two strips, left-edge + right-edge of canvas) — in wrap-all-around mode this is seamless
+- For wrap-all-around mode: draw the single image at full 2048px width → it naturally occupies all U space, wrapping around the cylinder with the seam hidden at U=0 (right underarm)
+- For front/back separate mode: draw frontImage into `[512,0,1024,2048]` and backImage into left+right strips
+
+**<100ms recomposite:** a 2048×2048 CanvasContext drawImage call takes ~2-5ms. The bottleneck is texture upload to GPU; `texture.needsUpdate=true` is cheap. rAF throttle (requestAnimationFrame gate) prevents queuing multiple recomposes. Add a 16ms debounce on slider input before firing compositor.
+
+**Keeping existing Decal (back text) working:** after switching to CylinderGeometry, the Decal must target the back face. Set Decal `position={[0, 0.2, -0.38]}` (rear of cylinder radius), `rotation={[0, Math.PI, 0]}`. The canvas compositor handles the image layer; Decal renders ON TOP in three.js compositing order. Keep as-is; just update position for the new mesh radius.
+
+---
+
+## Q5: Seamless wrap-all-around — technique
+
+**Correct approach: continuous canvas + ClampToEdge, with seam hidden at underarm:**
+
+1. Set `texture.wrapS = THREE.ClampToEdgeWrapping` (not RepeatWrapping — the canvas itself IS the full wrap).
+2. In wrap-one mode, draw the uploaded image scaled to fill the entire 2048px canvas width. The CylinderGeometry U=0→1 maps the full canvas left-to-right around the body → single seam at U=0 (right underarm, hidden from front camera view).
+3. No visual seam at U=0 if the image is a pattern or has matching left/right edges. For non-pattern photos (headshots, logos), the seam IS visible under the right arm — that is acceptable (same as owayo; the seam is structural, not a defect).
+4. **Mirror/overlap trick (optional enhancement):** for images that don't tile, draw the image at `[256, 0, 1536, 2048]` (centered), and draw it again flipped horizontally at the left/right edges to smooth the seam. This works well for symmetric logos/patterns. Surface as a "mirror seam" toggle in the UI.
+5. Owayo flat-pattern projection: they render a pre-designed flat layout (like a dressmaking pattern) and project it onto the 3D form via bespoke UV mapping. We replicate this by making our compositor canvas layout-aware (front island = exactly the body front panel's natural UV region). For non-owayo users uploading a photo, the wrap-around behavior is correct as-is.
+6. **Side-seam distortion:** CylinderGeometry at 48 radial segments has very little faceting. The stretch at the cylinder shoulder curve (top taper) can be reduced by adding extra V segments (`heightSegments: 8`) so the taper interpolates smoothly. No additional correction needed for photos.
+
+---
+
+## handoff
+- produced: answers to Q1–Q5 — no free jersey GLB exists (commit to procedural volumetric CylinderGeometry); fabric material recipe (meshPhysicalMaterial params + Environment preset + Poly Haven normal map URL); smart-align stack (@imgly/background-removal lazy WASM + deterministic alpha-bbox fallback with pseudocode); single CanvasTexture UV island layout (pixel coordinates for 2048px canvas); seamless wrap technique (ClampToEdge + seam at U=0 underarm).
+- decisions: procedural mesh locked in (no GLB); @imgly/background-removal for optional refine (lazy import, ~12MB, static-hostable, WASM); deterministic alpha-bbox is always-on <10ms; single CanvasTexture with FRONT island at canvas pixels 512–1536 and BACK split at 0–512 + 1536–2048; Poly Haven knit_fabric_02 normal map for fabric realism.
+- next needs: planner flips PLAN-STATUS to ready with geometry=procedural confirmed. Demo-builder: (1) swap ShirtCanvas to CylinderGeometry body + sleeve/collar primitives; (2) add compositor.ts with the UV island pixel layout above; (3) add smartAlign.ts with alpha-bbox + lazy @imgly import; (4) load Poly Haven normal map URL into meshPhysicalMaterial; (5) add OptionsPanel upload slots + toggle + sliders; (6) adjust Decal position to cylinder radius.
+- risks: @imgly/background-removal CDN model fetch may be slow on first use (~12MB) — mitigate by showing "analyzing..." spinner and applying deterministic result instantly while model loads; Poly Haven CDN URL may require CORS check at build time; CylinderGeometry collar/placket styling is geometry-only (no UV detail) so button/mandarin detail depends on geometry + material fidelity, not texture.

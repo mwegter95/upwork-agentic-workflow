@@ -1,0 +1,37 @@
+# Intake — bowling-shirt-designer
+
+Parsed Upwork posting + orchestrator decisions into `brief.json`.
+
+## Key assignments from brief
+
+**Client problem:** E-commerce apparel customizer broken by dead clicks (`undefined is not an object`) + homepage bounce from script blocking. Needs audit + Remediation Roadmap.
+
+**Michael's demo:** Full-featured bowling shirt store with 3D interactive customizer (pattern library, color picker, text-on-back), product page + cart, audit credibility section. Proves architectural rigor + performance optimization that directly solves client's exact problems.
+
+**Architecture:**
+- Frontend: Vite + React 18 + Three.js + @react-three/fiber (avoids Redux boilerplate bugs; Zustand for state)
+- Backend: Flask blueprint on mw-backend (POST/GET /bowling/patterns, /bowling/customize, /bowling/sessions)
+- Deployment: Vite build → `../michaelwegter.com/public/demos/bowling-shirt-designer/` (static, same-origin)
+- Design: Retro-modern bowling alley (navy #1a1f3c, cream #f5f0e8, coral #e84040, gold #f5a623)
+
+**Feature scope (richness 10/10):**
+1. Hero: 3D customizer (orbit controls, 6+ patterns + upload, live textures, color pickers, text-on-back)
+2. Supporting 1: Product page + cart (size selector, localStorage persistence, thumbnail preview)
+3. Supporting 2: Audit credibility section (error pattern vs. architectural solutions)
+
+**Hard gates:**
+- Visible 3D shirt with applied texture (blank canvas = fail)
+- Pattern upload works live (user picks file, shirt updates instantly)
+- Text-on-back visible on 3D model (not just form field)
+- Cart shows customization thumbnail
+- Zero console errors on first paint
+- Fast homepage load (deferred Three.js canvas proves optimization)
+- Cover letter names Microsoft Clarity + dead-click diagnosis
+
+**Critical path:** Researcher MUST find free bowling/short-sleeve shirt GLTF model before demo-builder starts. Fallback: procedural plane-based shirt. UV texture mapping for text-on-back may need custom model or canvas-overlay approach.
+
+## handoff
+- produced: `brief.json` — full structured intake (posting summary, Michael's vision, architecture decisions, 3-feature list, design tokens, hard gates, risks, scope fence)
+- decisions: Vite+React+Three.js static app (no Node server); 3 features all fully working; PHP proxy in proposal narrative only; Flask backend real; retro bowling palette (zero michaelwegter.com tokens)
+- next needs: Planner locks detailed feature/design spec + component tree; researcher finds free shirt GLTF + 6+ pattern assets + three.js customizer UX reference; demo-builder executes with zero console errors on first paint
+- risks: GLTF availability is blocker (researcher owns); UV layout for text-on-back may require custom approach; Three.js material swaps must render on first paint with patterns applied

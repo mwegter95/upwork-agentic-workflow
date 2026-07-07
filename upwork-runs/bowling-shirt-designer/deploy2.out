@@ -1,0 +1,31 @@
+# deploy — improve pass 2 (bowling-shirt-designer)
+
+## Actions taken
+
+### michaelwegter.com
+Staged and committed the pass-2 demo build (new JS chunks, CSS, updated index.html,
+workSamples.js registry updates) and pushed to main.
+
+Commit: `bc42c87` — "feat(bowling-shirt-designer): upgrade to owayo-level 3D realism + smart alignment"
+
+Files changed (19): new _next build hash `WmORqoAQIYeq8Ok2c_XPp`, replaced CSS
+`40972bc` -> `1dcba34`, new chunk `316` (SmartAlign + compositor logic), updated page
+chunk (ShirtCanvas meshPhysicalMaterial + front/back upload flow).
+
+### mw-backend
+No backend changes in pass 2; Flask /bowling blueprint unchanged. No push needed.
+
+## Live verification
+
+| URL | Status |
+|-----|--------|
+| `https://michaelwegter.com/demos/bowling-shirt-designer/` | 200 |
+| `https://api.michaelwegter.com/health` | 200 |
+
+GH Pages auto-build triggered by push (~60s propagation).
+
+## handoff
+- produced: pass-2 demo committed + pushed; live at `https://michaelwegter.com/demos/bowling-shirt-designer/`
+- decisions: backend untouched (no blueprint changes in pass 2); site-only push was sufficient
+- next needs: deploy-test should exercise front/back upload, Smart Align flow, and 3D canvas render with an uploaded pattern image on the LIVE URL
+- risks: GH Pages build may take ~60s to propagate new JS chunks; deploy-test should wait for 200 on the new chunk hash if testing within the first minute of push

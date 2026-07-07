@@ -1,0 +1,174 @@
+# Pre-Researcher — bowling-shirt-designer
+
+Answering the 7 planner questions in priority order.
+
+---
+
+## Q1 [BLOCKER] — Free bowling/camp-collar shirt GLTF with separable materials + back UV
+
+**Verdict: use procedural fallback — it is the correct choice, not a compromise.**
+
+No freely downloadable, purpose-built bowling-shirt GLB with clean separable material groups and a flat back-panel UV reliably exists on Sketchfab/pmndrs market without manual mesh surgery. Searching Sketchfab for "bowling shirt" CC0/CC-BY yields generic polo or t-shirt meshes that need UV rework anyway.
+
+**Procedural shirt (recommended) — 4 mesh groups:**
+```
+ShirtBody       BoxGeometry(1.0, 1.3, 0.2) + SphereGeometry shoulders — MeshStandardMaterial #0
+Collar          TorusGeometry(0.22, 0.06) flat at top — MeshStandardMaterial #1
+Sleeves         CylinderGeometry(0.15, 0.18, 0.45) x2 — MeshStandardMaterial #2
+BackPanel       PlaneGeometry(0.7, 0.8) parented to ShirtBody, z-offset +0.101
+                UV: 0→1 across the full plane — CanvasTexture writes directly here
+```
+Benefits: zero GLTF load risk, perfect back UV (flat plane = no distortion), 3 clearly named material indices for per-segment color, works within 3-min build budget. The shirt can be simplified/stylized to read "vintage bowling shirt" without photorealism.
+
+If a real GLTF is preferred, check: `https://market.pmnd.rs/` (filter: clothing) and Sketchfab `https://sketchfab.com/search?q=polo+shirt&type=models&features=downloadable&licenses=322a749bcfa841b29dff1e8a1bb74b0b` (CC0 filter). Any download requires verifying it has distinct mesh groups or splitting in Blender before use — budget risk is real.
+
+**Decision for demo-builder: use procedural mesh. Back panel = PlaneGeometry child, fully flat UV, CanvasTexture-ready.**
+
+---
+
+## Q2 — 6+ CC0 retro/bowling tileable pattern textures
+
+**Recommended: generate programmatically in canvas — always CC0, always tileable, no external request.**
+
+Six patterns implementable as `512x512` canvas draws at startup, exported to `THREE.CanvasTexture` with `wrapS = wrapT = THREE.RepeatWrapping`:
+
+| # | Name | Canvas recipe |
+|---|------|--------------|
+| 1 | Atomic Starburst | Gold 8-point star + circle rings on navy bg |
+| 2 | Bowling Pins | White pin silhouettes offset row pattern on coral bg |
+| 3 | Argyle Diamond | Navy/cream/coral diagonal diamonds with hairline crosses |
+| 4 | 50s Polka Dot | Large cream dots on navy with small coral accent dots |
+| 5 | Lane Chevrons | Alternating navy/gold chevron rows (bowling lane arrow motif) |
+| 6 | Atomic Bowtie | Repeating hourglass/bowtie shapes, classic cocktail-lounge motif |
+
+Fallback CDN if canvas draw is skipped: `https://www.transparenttextures.com/` (CC0, many seamless patterns via direct PNG URL, e.g. `https://www.transparenttextures.com/patterns/argyle.png`). Also `https://subtlepatterns.com/` (CC0, zip download).
+
+**Decision for demo-builder: generate all 6 in canvas at module init — zero network dependency, zero license risk.**
+
+---
+
+## Q3 — Industry brand reference + competitor configurator UIs
+
+**Real bowling-apparel brands for design reference:**
+- Hammer Bowling (hammerbowling.com) — dark/industrial palette, bold typography
+- Ebonite International — uses block navy + gold
+- Brunswick Bowling (brunswickbowling.com) — clean, retro-SaaS hybrid
+- Generic "retro bowling" aesthetic: 1950s diner palette (cream/coral/navy/gold) is confirmed correct and consistent with these brands
+
+**Top competitor configurator UIs (layout/UX cues):**
+1. **Custom Ink** (customink.com/lab) — canonical apparel customizer: product canvas left, options panel right, color swatches as clickable circles, text tool with live preview. Industry gold standard for UX layout.
+2. **Printful** (printful.com/custom/men/t-shirts) — simpler panel, upload zone prominent, preview updates live in 2D mockup.
+3. **RushOrderTees** (rushordertees.com/design) — similar to CustomInk, shows front/back view toggle.
+
+**Layout to clone for bowling demo:**
+- Canvas: center or left-center (60% width), orbit controls visible
+- Options panel: right sidebar (35% width) — color pickers, pattern picker, text input stacked
+- Front/Back toggle button above canvas (rotate camera, not swap mesh)
+- Add to Cart CTA pinned at bottom of sidebar
+- Mobile: canvas full-width top, options panel scrolls below
+
+**Palette confirmation:** Navy `#1a1f3c`, cream `#f5f0e8`, coral `#e84040`, gold `#f5a623` is accurate to the aesthetic. No change needed.
+
+---
+
+## Q4 — Three.js/r3f customizer reference implementation
+
+**Canonical pattern to follow:** The Vercel AI SDK shirt demo (github.com/vercel-labs/generative-ui — the 3D shirt configurator from their 2023 Next.js Conf demo) is the most-cited r3f shirt customizer. It uses:
+- `@react-three/fiber` Canvas with `<OrbitControls>` from drei
+- `<Decal>` from drei for texture overlays (logo/image placement on mesh surface)
+- Zustand store for customization state
+- `useTexture` hook for loading textures
+
+For **applied patterns as repeating texture**: set `material.map` directly via `useTexture` or `new THREE.TextureLoader().load(url)`, then `texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(3,3)`. In r3f: pass as `map` prop on `<meshStandardMaterial>`.
+
+For **per-material color**: each mesh group gets its own `<meshStandardMaterial color={zustandStore.bodyColor}>`. React re-renders on store change, Three.js updates on next frame.
+
+For **live upload**: `URL.createObjectURL(file)` → pass URL to `useTexture` (or `new THREE.TextureLoader().load(url)`) — works in browser, GC on revoke.
+
+---
+
+## Q5 [BLOCKER] — PHP-on-Surface feasibility
+
+**Verdict: FEASIBLE. Proceed with real PHP proxied through Flask.**
+
+Mechanism (from playbook):
+1. Runner check/install PHP: `winget install PHP.PHP` via `surface_run.py --lang python` (PowerShell subprocess).
+2. PHP built-in server: `php -S 127.0.0.1:5060 -t C:/path/to/bowling-php/` — register via `surface_register_service.py` (NAME=bowling-php, CMD=php, ARGS=["-S","127.0.0.1:5060","-t","./bowling-php"], PORT=5060). run-server.ps1 owns it, survives reboots.
+3. Flask bridge: copy `bridge_blueprint_template.py` → `bowling_blueprint.py`, set PREFIX=`/bowling`, UPSTREAM=`http://127.0.0.1:5060`. Push in mw-backend; auto-deploy restarts Flask in ~30s.
+
+**PHP app surface (minimal):** 3 endpoints: `GET /patterns` (returns pattern list), `POST /session` (save customization JSON → flat file), `GET /session/<id>` (reload). No external deps, no MySQL. Flat-file JSON storage. Runner scripts must be ASCII-only (per playbook) — PHP source is written to disk separately, not embedded inline.
+
+**Single risk:** winget may not be in PATH for the runner user. Mitigation: check `php --version` first; if unavailable, demo-builder falls back to Flask-only and marks PHP as "narrative architecture." Decision must be recorded in build-report.md.
+
+---
+
+## Q6 — Best mw-backend blueprint to clone
+
+**`art_store_blueprint.py` is the cleanest template** (e-commerce pattern, in-memory store, JWT auth, no external deps, well-structured).
+
+Blueprint scaffold to copy:
+```python
+from flask import Blueprint, request, jsonify
+bowling_bp = Blueprint("bowling", __name__, url_prefix="/bowling")
+# ... endpoints ...
+```
+
+Registration line in `server.py` (add after the last `register_blueprint` block, currently line ~358):
+```python
+from bowling_blueprint import bowling_bp
+app.register_blueprint(bowling_bp)
+```
+
+Pattern: same as every other blueprint in the file — 2 lines, no special flags needed. CORS handled globally by server.py; no per-blueprint CORS config required.
+
+---
+
+## Q7 — drei `<Decal>` vs CanvasTexture for text-on-back
+
+**Verdict: use `<Decal>` from `@react-three/drei` — it is the correct technique.**
+
+Why Decal wins:
+- Projects onto any surface without requiring clean flat UV (critical for a real GLTF; irrelevant but still clean for procedural mesh)
+- Has `position`, `rotation`, `scale` props — allows interactive repositioning without UV rework
+- Survives OrbitControls transforms natively (it is part of the scene graph)
+- Mobile: works fine, no special handling
+
+Correct pattern:
+```jsx
+// offscreen canvas → texture → Decal
+const textCanvas = useMemo(() => {
+  const c = document.createElement('canvas'); c.width=512; c.height=256;
+  const ctx = c.getContext('2d');
+  ctx.font = `bold ${fontSize}px ${fontFamily}`;
+  ctx.fillStyle = textColor;
+  ctx.textAlign = 'center';
+  ctx.fillText(text, 256, 140);
+  return c;
+}, [text, fontSize, fontFamily, textColor]);
+
+const textTexture = useMemo(() => {
+  const t = new THREE.CanvasTexture(textCanvas);
+  t.needsUpdate = true;
+  return t;
+}, [textCanvas]);
+
+// Inside the shirt JSX:
+<Decal
+  position={[0, 0.1, -0.101]}   // back-center of shirt
+  rotation={[0, Math.PI, 0]}
+  scale={[0.5, 0.25, 1]}
+  map={textTexture}
+/>
+```
+
+Debounce text input at 150ms to avoid per-keystroke texture rebuild.
+
+With procedural mesh (Q1 above), the BackPanel PlaneGeometry is an even simpler alternative: just update `backPanelMesh.material.map = textTexture; map.needsUpdate = true`. Either works; Decal is the r3f-idiomatic choice.
+
+---
+
+## handoff
+- produced: answers to all 7 planner research questions — procedural shirt mesh (Q1), canvas-generated patterns (Q2), competitor UI layout cues (Q3), r3f Decal+CanvasTexture pattern (Q4+Q7), PHP-on-Surface confirmed feasible via runner/service registration (Q5), art_store_blueprint.py as clone template with exact registration line (Q6).
+- decisions: Q1 = procedural mesh (no GLTF dependency risk); Q2 = canvas-generated patterns (no CDN dependency); Q5 = PHP is real, not narrative — winget check is the single gatekeeper, Flask-only fallback if unavailable; Q7 = drei Decal is confirmed technique.
+- next needs: planner flips PLAN-STATUS to ready and confirms PHP-feasibility check is in demo-builder step 1; demo-builder uses art_store_blueprint.py as the bowl blueprint template.
+- risks: PHP winget availability on Surface runner user context is unverified until runtime; if unavailable at demo-builder time, fall back to Flask-only + note PHP as architecture diagram only. Decal positioning on procedural mesh back face requires correct rotation (Math.PI on Y axis).

@@ -1,0 +1,62 @@
+# Planner — improve pass 3 (READY)
+
+Research from pre-researcher2 fully answers Q1–Q5. Plan is locked; demo-builder can execute. This supersedes planner2's open questions.
+
+## What changes this pass (delta only — rest of demo unchanged)
+Replace the flat ExtrudeGeometry shirt with an owayo-fidelity volumetric shirt, add a full-wrap image-upload pipeline (front+back, separate or same, aligned), smart-align, and live transform sliders. Colors, patterns, back-text, and cart all stay working. ~6 files touched, backend untouched (no new endpoints).
+
+Style target from client screenshots: owayo.png = fabric realism bar (soft sheen, studio light, grounded shadow, spin-to-view); bowlifi.png = the garment style (short-sleeve button/mandarin bowling jersey with side panel). Match both.
+
+## Locked decisions (from research)
+
+**1. Geometry = procedural volumetric (NO GLB).** No free permissive short-sleeve jersey GLB with usable front/back UVs exists. Build the body as `CylinderGeometry` (radialSegments 48, heightSegments 8 for smooth shoulder taper), plus primitives for short sleeves, collar/placket. This is the confirmed path — do not hunt for a model.
+
+**2. Fabric realism = meshPhysicalMaterial + studio env + knit normal map.**
+- Material: `roughness 0.85, metalness 0, sheen 0.9, sheenRoughness 0.45, sheenColor #ffffff (tints to chosen primary at runtime), clearcoat 0, envMapIntensity 0.35`.
+- Lighting: `<Environment preset="studio" background={false}/>` (drei built-in, no CDN) + `directionalLight [3,8,5] intensity 1.2 castShadow` + `ambientLight 0.4`. `<ContactShadows opacity 0.4 scale 2 blur 1.5>` under shirt (NOT AccumulativeShadows on the shirt). `OrbitControls`/`PresentationControls` with damping for drag-to-spin.
+- Weave: Poly Haven CC0 normal map `https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/knit_fabric_02/knit_fabric_02_nor_gl_1k.jpg` (~300KB, tileable), `wrapS/wrapT RepeatWrapping`, `repeat.set(4,4)`. Fallback: `fabric_pattern_07_nor_gl_1k.jpg`. CORS-check the URL at build; if it fails, vendor the jpg into the demo assets folder.
+
+**3. Image upload pipeline = single CanvasTexture compositor (2048×2048), UV islands.**
+- One `CanvasTexture` over the body, `wrapS = ClampToEdgeWrapping`, `texture.needsUpdate=true` on an rAF-throttled recompose (16ms slider debounce). ~2–5ms per drawImage → well under the 100ms gate.
+- Two modes:
+  - **Wrap-one:** one image drawn full 2048px width → wraps all the way around, seam parked at U=0 (right underarm, off-camera). Optional "mirror seam" toggle draws flipped copies at edges for non-tiling images.
+  - **Front/back separate:** FRONT island = canvas px x:512–1536 (U 0.25–0.75); BACK island = px x:0–512 + 1536–2048 (two edge strips, the wrapped rear). Draw frontImage into front island, backImage into back strips. Same image in both = aligned front/back.
+- Back text Decal stays: reposition to cylinder rear `position [0,0.2,-0.38] rotation [0,Math.PI,0]`; it composites on top of the image layer.
+
+**4. Smart-align = deterministic always-on + optional WASM refine.**
+- Always-on baseline: alpha/variance content-bbox scan (`contentBbox()`), <10ms on a 2048px image → auto-center + auto-scale image to fill the target island. This is the "smart align" button's instant result.
+- Optional refine: lazy `import('@imgly/background-removal')` (~12MB, self-fetches ONNX from jsDelivr, WASM with transparent WebGPU speedup, static-hostable). Fires only on smart-align click; run bbox on the cutout for a tighter subject fit. Wrap in try/catch → on load failure, keep the deterministic result. Show an "analyzing…" spinner; apply deterministic instantly while the model loads. (MediaPipe rejected — selfie-tuned.)
+
+**5. Manual transforms = live sliders.** Zoom/scale, x/y offset (crop/pan), rotation per image (front and back independent). Each writes to store; compositor re-draws that island; texture updates in real time (<100ms). This is how "adjust the picture and it adjusts the shirt" works.
+
+**6. Colors + patterns retained.** When no image is loaded, primary color tints `sheenColor`/base and preset patterns draw into the compositor exactly as before. Image mode overrides pattern; color still tints trim/collar.
+
+## Files demo-builder edits (touch map)
+1. `ShirtCanvas.tsx` — swap ExtrudeGeometry → CylinderGeometry body + sleeve/collar primitives; meshPhysicalMaterial params + Environment + ContactShadows; bind compositor CanvasTexture; reposition back-text Decal.
+2. `compositor.ts` (new) — 2048² canvas, UV-island layout above, wrap-one + front/back-separate draw, rAF throttle, mirror-seam option.
+3. `smartAlign.ts` (new) — `contentBbox()` deterministic scan + lazy `@imgly/background-removal` refine behind try/catch.
+4. `OptionsPanel.tsx` — mode toggle (wrap-one / front+back), front & back upload slots, per-image zoom/offset/rotation sliders, smart-align button, keep color picker + pattern presets.
+5. store (zustand) — add `frontImage/backImage`, per-image transform state, mode, mirrorSeam flag.
+6. cart thumbnail — read from the new canvas so the saved thumbnail reflects the uploaded design.
+
+## Requirement → feature traceability
+- "owayo-realistic 3D" → §1 procedural volumetric + §2 fabric material/lighting/shadow/spin.
+- "bowlifi style" → §1 collar/placket/short-sleeve geometry.
+- "upload any picture, wraps all the way around" → §3 wrap-one mode.
+- "front and back pics, same or different, aligned" → §3 front/back-separate islands.
+- "smartly align onto the shirt" → §4 deterministic bbox + optional WASM.
+- "adjust zoom/crop/alignment, updates the render" → §5 live sliders.
+- "still choose colors" → §6.
+
+## Scope fences (feature richness 10 but bounded)
+- 1 hero (photoreal wrap-around image shirt) + 2 supporting (smart-align, front/back separate). Manual sliders + colors/patterns are polish on the hero.
+- No GLB hunting, no new backend endpoint, ~6 files, build <3min.
+- @imgly is the only new dep; must degrade gracefully (deterministic works with it disabled).
+
+## handoff
+- produced: ready improve-plan — procedural owayo-fidelity shirt + full-wrap image pipeline (front/back separate), smart-align (deterministic + lazy @imgly WASM), live transform sliders; colors/patterns/back-text/cart retained.
+- decisions: geometry=procedural CylinderGeometry (no GLB); single 2048² CanvasTexture compositor with FRONT px512–1536 / BACK px0–512+1536–2048; meshPhysicalMaterial(sheen0.9/rough0.85) + studio Environment + Poly Haven knit normal map + ContactShadows; @imgly/background-removal lazy WASM refine over always-on alpha-bbox; per-image zoom/offset/rotation sliders.
+- next needs: demo-builder edits ShirtCanvas/OptionsPanel/store + adds compositor.ts & smartAlign.ts per the touch map; CORS-check the Poly Haven URL (vendor jpg if it fails); rebuild + deploy-test the wrap + smart-align flow.
+- risks: side-seam distortion on non-tiling photos (mirror-seam toggle mitigates); @imgly 12MB first-load latency (spinner + instant deterministic); recomposite must stay <100ms (rAF throttle + 16ms debounce); collar/placket fidelity is geometry+material only (no UV detail).
+
+PLAN-STATUS: ready
